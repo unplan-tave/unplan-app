@@ -24,6 +24,14 @@ export default function TabsLayout() {
           tabBarLabel: '설정',
         }}
       />
+      <Tabs.Screen
+        name="playground"
+        options={{
+          title: 'Playground',
+          tabBarLabel: 'Playground',
+          href: __DEV__ ? undefined : null,
+        }}
+      />
     </Tabs>
   );
 }

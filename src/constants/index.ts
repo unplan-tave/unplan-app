@@ -11,3 +11,9 @@ export const APP_ENV = {
   STAGING: 'staging',
   PRODUCTION: 'production',
 } as const;
+
+// ─── Design System ────────────────────────────────────────
+export { colors } from './colors';
+export { typography, fontFamily, fontFamilyWeight } from './typography';
+export { spacing, radius } from './spacing';
+export type { Colors, TypographyVariant, Spacing, Radius } from './theme';
