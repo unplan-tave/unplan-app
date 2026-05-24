@@ -21,10 +21,6 @@
 
 import { type TextStyle } from 'react-native';
 
-export const fontFamily = {
-  suit: 'SUIT-Variable',
-} as const;
-
 /** SUIT weight별 폰트 패밀리 이름 (개별 파일 로드 시 사용) */
 export const fontFamilyWeight = {
   extraLight: 'SUIT-ExtraLight', // 200

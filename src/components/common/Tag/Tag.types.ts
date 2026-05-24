@@ -1,16 +1,15 @@
-import { type TouchableOpacityProps } from 'react-native';
+import { type ViewProps } from 'react-native';
 
 /** Condition 태그 종류 (피그마 기준) */
 export type ConditionType = 'brain' | 'labor' | 'daily' | 'urgent' | 'rest' | 'core';
 
-/** Personal 태그 크기 (피그마 기준) */
-export type PersonalSize = 'min' | 'default' | 'max';
-
 export type TagVariant = 'condition' | 'personal';
 
-interface BaseTagProps extends TouchableOpacityProps {
+interface BaseTagProps extends ViewProps {
   /** 태그 텍스트 */
   label: string;
+  /** 제공 시에만 터치 피드백이 활성화됩니다 */
+  onPress?: () => void;
 }
 
 export interface ConditionTagProps extends BaseTagProps {

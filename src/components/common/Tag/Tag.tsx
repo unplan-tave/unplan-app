@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, type TouchableOpacityProps, View } from 'react-native';
 
 import { Typography } from '@/components/common/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
@@ -15,15 +15,16 @@ const CONDITION_COLORS: Record<ConditionType, string> = {
   core: colors.condition.core, // #4275DD 핵심 작업
 };
 
-export function Tag({ variant, label, condition, style, ...props }: TagProps) {
+export function Tag({ variant, label, condition, style, onPress, ...props }: TagProps) {
   const isCondition = variant === 'condition';
+  const containerStyle = [
+    styles.container,
+    isCondition ? styles.conditionBg : styles.personalBg,
+    style,
+  ];
 
-  return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      style={[styles.container, isCondition ? styles.conditionBg : styles.personalBg, style]}
-      {...props}
-    >
+  const content = (
+    <>
       {isCondition && condition && (
         <View style={[styles.dot, { backgroundColor: CONDITION_COLORS[condition] }]} />
       )}
@@ -33,7 +34,26 @@ export function Tag({ variant, label, condition, style, ...props }: TagProps) {
       >
         {label}
       </Typography>
-    </TouchableOpacity>
+    </>
+  );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        style={containerStyle}
+        onPress={onPress}
+        {...(props as TouchableOpacityProps)}
+      >
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <View style={containerStyle} {...props}>
+      {content}
+    </View>
   );
 }
 
@@ -44,7 +64,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     borderRadius: radius.xs,
     paddingHorizontal: spacing[2],
-    paddingVertical: 4,
+    paddingVertical: spacing[1],
     gap: spacing[1],
   },
   conditionBg: {
@@ -54,8 +74,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gray[200],
   },
   dot: {
-    width: 8,
-    height: 8,
+    width: spacing[2],
+    height: spacing[2],
     borderRadius: radius.full,
   },
 });
