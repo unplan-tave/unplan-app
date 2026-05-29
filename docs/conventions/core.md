@@ -27,91 +27,80 @@
 
 ## 1. 프로젝트 구조
 
-```
+```txt
 src/
-├── app/                        # Expo Router 기반 라우팅 (파일 기반)
+├── app/                        # Expo Router 라우트 파일만 위치
+│   ├── _layout.tsx
 │   ├── (auth)/
-│   │   ├── login.tsx
-│   │   └── onboarding.tsx
+│   │   └── login.tsx           # re-export only
 │   ├── (tabs)/
-│   │   ├── index.tsx           # 홈 (오늘의 스케줄)
-│   │   ├── schedule.tsx
-│   │   ├── tasks.tsx
-│   │   └── settings.tsx
-│   └── _layout.tsx
+│   │   ├── _layout.tsx
+│   │   ├── index.tsx           # re-export only
+│   │   └── settings.tsx        # re-export only
+│   └── schedule/
+│       └── [id].tsx            # re-export only
+│
+├── features/                   # 기능(도메인) 중심 구조
+│   ├── auth/
+│   │   ├── login-screen.tsx
+│   │   ├── api.ts
+│   │   ├── model.ts
+│   │   ├── use-auth-store.ts
+│   │   ├── hooks/
+│   │   ├── components/
+│   │   ├── utils/
+│   │   └── __tests__/
+│   └── schedule/
+│       ├── schedule-screen.tsx
+│       ├── api.ts
+│       ├── model.ts
+│       ├── use-schedule-store.ts
+│       ├── hooks/
+│       ├── components/
+│       ├── utils/
+│       └── __tests__/
 │
 ├── components/
-│   ├── common/                 # 앱 전역 공통 컴포넌트
-│   │   ├── Button/
-│   │   │   ├── Button.tsx
-│   │   │   ├── Button.types.ts
-│   │   │   └── index.ts
-│   │   ├── Typography/
-│   │   └── Card/
-│   ├── schedule/               # 도메인별 컴포넌트
-│   ├── task/
-│   └── ai/
+│   └── ui/                     # 전역 재사용 UI 프리미티브/디자인 시스템
 │
-├── hooks/
-│   ├── useSchedule.ts
-│   ├── useTaskReorder.ts
-│   └── useAIRecommendation.ts
-│
-├── stores/                     # Zustand 스토어
-│   ├── scheduleStore.ts
-│   ├── taskStore.ts
-│   └── userStore.ts
-│
-├── services/                   # API 통신 레이어
+├── lib/                        # 앱 전역 인프라/크로스컷팅
 │   ├── api/
-│   │   ├── client.ts           # axios 인스턴스
-│   │   ├── schedule.api.ts
-│   │   └── ai.api.ts
-│   └── storage/
-│       └── mmkv.ts
-│
-├── types/                      # 전역 타입 정의
-│   ├── schedule.types.ts
-│   ├── task.types.ts
-│   ├── api.types.ts
-│   └── navigation.types.ts
-│
-├── utils/
-│   ├── date.utils.ts
-│   ├── schedule.utils.ts
-│   └── validation.utils.ts
+│   ├── auth/
+│   ├── i18n/
+│   ├── storage/
+│   ├── hooks/
+│   └── utils/
 │
 ├── constants/
-│   ├── theme.ts
-│   ├── colors.ts
-│   └── config.ts
-│
+├── types/
+├── translations/
 └── assets/
-    ├── fonts/
-    ├── images/
-    └── icons/
 ```
 
 **규칙:**
-- 도메인(기능) 단위로 묶는다. 기술 단위(components/hooks/styles)로만 나누지 않는다.
-- 컴포넌트는 폴더 단위로 분리하고 `index.ts` 배럴 파일로 export한다.
-- 공통 컴포넌트와 도메인 컴포넌트를 명확히 구분한다.
+- `app/`은 라우팅 엔트리만 담당하고, 화면/비즈니스 로직은 `features/`에 둔다.
+- 같은 feature 내부 참조는 상대 경로를 사용하고, feature 간 참조는 `@/features/...` 절대 경로를 사용한다.
+- `features/<name>/components|hooks|utils`는 외부 feature에서 직접 import하지 않는다.
+- 공통 컴포넌트는 "2개 이상 feature에서 재사용 + 도메인 로직 없음"일 때만 `components/ui`로 승격한다.
+- 배럴 export(`index.ts`)는 기본 금지한다.
 
 ---
+
 
 ## 2. 네이밍 컨벤션
 
 ### 파일명
 | 대상 | 규칙 | 예시 |
 |------|------|------|
-| 컴포넌트 파일 | PascalCase | `ScheduleCard.tsx` |
-| 훅 파일 | camelCase, use 접두사 | `useSchedule.ts` |
-| 유틸 파일 | camelCase, .utils 접미사 | `date.utils.ts` |
-| 타입 파일 | camelCase, .types 접미사 | `schedule.types.ts` |
-| 스토어 파일 | camelCase, Store 접미사 | `scheduleStore.ts` |
-| 상수 파일 | camelCase | `colors.ts`, `theme.ts` |
-| API 파일 | camelCase, .api 접미사 | `schedule.api.ts` |
-| 테스트 파일 | 대상파일명.test.ts(x) | `ScheduleCard.test.tsx` |
+| 라우트 파일(`src/app`) | Expo Router 규칙 준수 | `index.tsx`, `[id].tsx`, `_layout.tsx` |
+| Screen 파일(`features`) | kebab-case + `-screen.tsx` | `schedule-detail-screen.tsx` |
+| 훅 파일 | kebab-case, `use-` 접두사 | `use-schedule-filter.ts` |
+| feature store 파일 | kebab-case, `use-*-store.ts` | `use-schedule-store.ts` |
+| feature API 파일 | 단일 `api.ts` | `api.ts` |
+| feature 모델 파일 | 단일 `model.ts` | `model.ts` |
+| 유틸 파일 | kebab-case | `format-schedule-time.ts` |
+| 전역 상수 파일 | camelCase 또는 kebab-case 일관 유지 | `colors.ts`, `storage-keys.ts` |
+| 테스트 파일 | 대상파일명.test.ts(x) | `schedule-card.test.tsx` |
 
 ### 변수 & 함수
 ```ts
@@ -167,6 +156,7 @@ const shouldShowAITip = false;
 ```
 
 ---
+
 
 ## 3. TypeScript 컨벤션
 
@@ -710,30 +700,38 @@ EXPO_PUBLIC_API_URL=https://api.yourapp.com
 ## 9. 네비게이션 컨벤션
 
 ### Expo Router (파일 기반)
-```
-app/
-├── _layout.tsx                 # 루트 레이아웃
+```txt
+src/app/
+├── _layout.tsx                   # 루트 레이아웃
 ├── (auth)/
 │   ├── _layout.tsx
-│   └── login.tsx               # /auth/login
+│   └── login.tsx                 # route file (re-export only)
 ├── (tabs)/
-│   ├── _layout.tsx             # 탭 레이아웃
-│   ├── index.tsx               # / (홈)
-│   └── schedule.tsx            # /schedule
+│   ├── _layout.tsx               # 탭 레이아웃
+│   ├── index.tsx                 # route file (re-export only)
+│   └── schedule.tsx              # route file (re-export only)
 └── schedule/
-    └── [id].tsx                # /schedule/:id (동적 라우트)
+    └── [id].tsx                  # route file (re-export only)
 ```
+
+### 라우트 파일 규칙
+```tsx
+// src/app/(tabs)/schedule.tsx
+export { ScheduleScreen as default } from '@/features/schedule/schedule-screen';
+```
+
+- `src/app` 내부 파일에는 화면 로직, API 호출, 상태 관리 코드를 넣지 않는다.
+- 라우트 파일은 기본적으로 feature screen을 re-export하는 thin layer로 유지한다.
+- 예외는 `_layout.tsx`, `+not-found.tsx`처럼 라우팅 자체 구성이 필요한 파일뿐이다.
 
 ### 라우터 사용
 ```tsx
 import { router, useLocalSearchParams } from 'expo-router';
 
-// 이동
 router.push('/schedule/123');
 router.replace('/(tabs)/');
 router.back();
 
-// 파라미터 수신 (타입 안전하게)
 const { id } = useLocalSearchParams<{ id: string }>();
 ```
 
@@ -756,39 +754,37 @@ const { id } = useLocalSearchParams<{ id: string }>();
 ### Import 순서 (eslint-plugin-import로 강제)
 ```ts
 // 1. React / React Native 코어
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, StyleSheet } from 'react-native';
 
 // 2. 외부 라이브러리 (알파벳순)
-import Animated from 'react-native-reanimated';
 import { useQuery } from '@tanstack/react-query';
+import Animated from 'react-native-reanimated';
 
 // 3. 내부 절대 경로 (@/) - 알파벳순
-import { Button } from '@/components/common/Button';
+import { Button } from '@/components/ui/button';
 import { colors } from '@/constants/colors';
-import { useScheduleStore } from '@/stores/scheduleStore';
-import type { Schedule } from '@/types/schedule.types';
+import { useScheduleStore } from '@/features/schedule/use-schedule-store';
 
-// 4. 상대 경로
-import { ScheduleHeader } from './ScheduleHeader';
+// 4. 같은 feature 내부 상대 경로
+import { ScheduleHeader } from './components/schedule-header';
 
-// 규칙: type import는 별도로 마지막에
-import type { ScheduleCardProps } from './ScheduleCard.types';
+// 5. type import
+import type { Schedule } from './model';
 ```
+
+### 경로 사용 규칙
+- 같은 feature 내부 import는 상대 경로(`./`, `../`)를 우선한다.
+- feature 간 import는 절대 경로(`@/features/...`)를 사용한다.
+- 다른 feature의 `components/`, `hooks/`, `utils/` 내부 파일 직접 참조를 금지한다.
 
 ### 배럴 파일 (index.ts)
-```ts
-// components/common/Button/index.ts
-export { Button } from './Button';
-export type { ButtonProps } from './Button.types';
-
-// components/common/index.ts
-export { Button } from './Button';
-export { Typography } from './Typography';
-export { Card } from './Card';
-```
+- 기본 정책: 배럴 export 금지.
+- 예외: `components/ui`처럼 전역 UI 프리미티브 집합에 한해 제한적으로 허용 가능.
+- Fast Refresh 안정성을 위해 feature 내부 배럴(`features/*/index.ts`)은 사용하지 않는다.
 
 ---
+
 
 ## 11. Git 컨벤션
 
