@@ -1,9 +1,11 @@
-import { SafeAreaView, StyleSheet, Text } from 'react-native';
+import { SafeAreaView, StyleSheet } from 'react-native';
+
+import { Typography } from '@/components/ui/Typography';
 
 export function ScheduleScreen() {
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>일정</Text>
+      <Typography variant="titleL">일정</Typography>
     </SafeAreaView>
   );
 }
@@ -13,9 +15,5 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
   },
 });

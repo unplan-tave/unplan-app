@@ -1,10 +1,17 @@
-import { SafeAreaView, StyleSheet, Text } from 'react-native';
+import { SafeAreaView, StyleSheet } from 'react-native';
+
+import { Typography } from '@/components/ui/Typography';
+import { colors, spacing } from '@/constants/theme';
 
 export function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>AI 스마트 스케줄러</Text>
-      <Text style={styles.subtitle}>오늘의 일정을 관리하세요</Text>
+      <Typography variant="titleL" style={styles.title}>
+        AI 스마트 스케줄러
+      </Typography>
+      <Typography variant="bodyM" color={colors.text.secondary}>
+        오늘의 일정을 관리하세요
+      </Typography>
     </SafeAreaView>
   );
 }
@@ -14,15 +21,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+    padding: spacing[4],
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
+    marginBottom: spacing[2],
   },
 });
