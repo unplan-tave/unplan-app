@@ -4,7 +4,7 @@
  */
 
 export { colors } from './colors';
-export { typography, fontFamily, fontFamilyWeight } from './typography';
+export { typography, fontFamilyWeight } from './typography';
 export { spacing, radius } from './spacing';
 
 export type { Colors } from './colors';
