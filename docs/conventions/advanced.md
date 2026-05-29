@@ -1118,21 +1118,30 @@ Zustand + React Query 조합 선택
 
 ## 20. 폴더 내 파일 한도 & 분리 기준
 
-```
-컴포넌트 폴더: 파일 5개 초과 시 하위 도메인 폴더로 분리
-hooks/: 파일 10개 초과 시 도메인별 폴더 분리
-  hooks/schedule/, hooks/task/, hooks/ai/
-utils/: 파일 8개 초과 시 도메인별 분리
-stores/: 스토어 1개 = 파일 1개 (절대 1개 파일에 여러 스토어 금지)
-types/: 도메인별 1파일 원칙
-  ❌ types/index.ts (모든 타입을 한 파일에)
-  ✅ types/schedule.types.ts, types/task.types.ts
+```txt
+기본 단위: feature
+
+features/<name>/components/: 파일 8개 초과 시 하위 도메인 폴더 분리
+features/<name>/hooks/: 파일 6개 초과 시 목적별 분리 (query/, form/, interaction/)
+features/<name>/utils/: 파일 6개 초과 시 model 성격 기준으로 분리
+features/<name>/__tests__/: 테스트 파일 10개 초과 시 단위별 분리 (screen/, hooks/, api/)
+
+feature store 규칙:
+- 스토어 1개 = 파일 1개
+- feature 전용 스토어는 features/<name>/use-*-store.ts에 둔다
+- 전역 앱 상태만 lib 또는 별도 전역 레이어로 승격한다
+
+전역 승격 기준:
+- 2개 이상 feature에서 재사용
+- feature 도메인 지식이 없음
+- 위 조건을 만족할 때만 components/ui 또는 lib/* 로 이동
 ```
 
 ### 컴포넌트 복잡도 한도
-```
+```txt
 한 컴포넌트 파일: 최대 200줄
 한 함수/훅: 최대 80줄
 중첩 삼항 연산자: 최대 1단계
 JSX 깊이: 최대 5단계 (초과 시 컴포넌트 분리)
 ```
+

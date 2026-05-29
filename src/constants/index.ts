@@ -14,6 +14,6 @@ export const APP_ENV = {
 
 // ─── Design System ────────────────────────────────────────
 export { colors } from './colors';
-export { typography, fontFamily, fontFamilyWeight } from './typography';
+export { typography, fontFamilyWeight } from './typography';
 export { spacing, radius } from './spacing';
 export type { Colors, TypographyVariant, Spacing, Radius } from './theme';

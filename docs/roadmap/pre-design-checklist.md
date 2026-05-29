@@ -8,18 +8,18 @@
 
 ## 진행 상황
 
-> 2026-05-23 기준 · 레포 현재 상태 반영
+> 2026-05-29 기준 · 레포 현재 상태 반영
 
 | Phase | 항목 | 상태 |
 |-------|------|------|
-| 1 | 프로젝트 뼈대 세우기 | ✅ 완료 |
-| 2 | ERD → 타입 정의 | 🟡 진행 중 (기본 `User`, `Schedule`만 존재) |
-| 3 | API 레이어 구축 | 🟡 진행 중 (`client.ts`만 존재) |
-| 4 | 네비게이션 구조 | ✅ 완료 (auth + tabs) |
-| 5 | 디자인 토큰 선정의 | ⬜ 미완 |
-| 6 | 공통 컴포넌트 | ⬜ 미완 |
-| 7 | 스토어 & 비즈니스 로직 | 🟡 진행 중 (`authStore`만 존재) |
-| 8 | 화면 Placeholder | 🟡 진행 중 (기본 탭 화면만 존재) |
+| 1 | 프로젝트 뼈대 세우기 | ✅ 완료 (feature 중심 구조로 정리) |
+| 2 | ERD → 타입 정의 | 🟡 진행 중 (기본 타입만 존재, 도메인 타입 확장 필요) |
+| 3 | API 레이어 구축 | 🟡 진행 중 (`lib/api/client.ts` 구성 완료) |
+| 4 | 네비게이션 구조 | ✅ 완료 (auth + tabs, route thin layer 적용) |
+| 5 | 디자인 토큰 선(先)정의 | 🟡 진행 중 (`constants` 토큰 구성됨, 값/스키마 고도화 필요) |
+| 6 | 공통 컴포넌트 | 🟡 진행 중 (`Typography`, `Tag` 구현 및 `components/ui` 이동) |
+| 7 | 스토어 & 비즈니스 로직 | 🟡 진행 중 (`features/auth/use-auth-store.ts` 기준 정리) |
+| 8 | 화면 Placeholder | ✅ 완료 (auth/home/schedule/settings/playground 기본 화면 분리) |
 | 9 | 백엔드 연동 준비 | ⬜ 미완 |
 
 ### Phase별 체크리스트
@@ -31,7 +31,7 @@
 - [ ] **Phase 5** — `colors.ts`, `theme.ts` 디자인 토큰
 - [ ] **Phase 6** — Button, TextInput, Typography 등 공통 컴포넌트
 - [ ] **Phase 7** — schedule/task 스토어, 유틸 함수
-- [ ] **Phase 8** — 데이터 흐름 연결된 Placeholder 화면
+- [x] **Phase 8** — 데이터 흐름 연결된 Placeholder 화면
 - [ ] **Phase 9** — API 스펙 협의, MSW 설정
 
 ---
@@ -610,7 +610,7 @@ interface AppState {
 
 ---
 
-## Phase 8: 화면 Placeholder 구현 (1일) 🟡
+## Phase 8: 화면 Placeholder 구현 (1일) ✅
 
 > 실제 UI는 없지만 라우팅 & 데이터 흐름 검증용
 
