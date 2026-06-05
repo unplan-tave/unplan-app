@@ -920,25 +920,24 @@ chore(deps): add react-native-reanimated v3.8.0
 ```yaml
 # .github/workflows/
 
-# PR → develop: 린트 + 타입체크 + 테스트
-pr-check.yml
+# PR/Push → develop, main: 린트 + 타입체크 + 테스트
+ci.yml
 
 # develop 머지: EAS Preview 빌드 (내부 테스트용)
 preview-build.yml
 
-# main 머지: EAS Production 빌드 + App Store 제출
-production-build.yml
-
-# 수동 트리거: OTA 업데이트 (Expo Updates)
-ota-update.yml
+# v*.*.* 태그 또는 수동 트리거: EAS Production 빌드
+release.yml
 ```
 
 ```yaml
-# .github/workflows/pr-check.yml
-name: PR Check
+# .github/workflows/ci.yml
+name: CI
 
 on:
   pull_request:
+    branches: [develop, main]
+  push:
     branches: [develop, main]
 
 jobs:
@@ -954,7 +953,7 @@ jobs:
       - run: npm ci
       - run: npm run type-check
       - run: npm run lint
-      - run: npm run test -- --coverage --ci
+      - run: npm test --if-present
 ```
 
 ### EAS 빌드 프로파일
@@ -975,16 +974,21 @@ jobs:
       "autoIncrement": true,
       "channel": "production"
     }
-  },
-  "submit": {
-    "production": {
-      "ios": {
-        "appleId": "your@email.com",
-        "ascAppId": "123456789"
-      }
-    }
   }
 }
+```
+
+### 스토어 제출 자동화 정책
+```
+현재 단계:
+  - release.yml은 production build만 실행한다.
+  - App Store / Play Store submit 자동화는 비활성화한다.
+
+출시 직전 활성화:
+  - App Store Connect API 키 연결
+  - ascAppId 확인
+  - eas.json submit.production 설정 추가
+  - release.yml에 eas submit 단계 추가
 ```
 
 ### OTA 업데이트 정책
@@ -1144,4 +1148,3 @@ feature store 규칙:
 중첩 삼항 연산자: 최대 1단계
 JSX 깊이: 최대 5단계 (초과 시 컴포넌트 분리)
 ```
-
