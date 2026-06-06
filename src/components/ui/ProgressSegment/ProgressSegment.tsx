@@ -16,6 +16,7 @@ const DEFAULT_OPTIONS: ProgressSegmentOption[] = [
 ];
 
 const SEGMENT_WIDTH = 62;
+const MAX_OPTION_COUNT = 3;
 
 export function ProgressSegment({
   value,
@@ -23,7 +24,8 @@ export function ProgressSegment({
   onChange,
   style,
 }: ProgressSegmentProps) {
-  const selectedIndex = options.findIndex((option) => option.value === value);
+  const visibleOptions = options.slice(0, MAX_OPTION_COUNT);
+  const selectedIndex = visibleOptions.findIndex((option) => option.value === value);
 
   return (
     <View style={[styles.container, style]}>
@@ -32,7 +34,7 @@ export function ProgressSegment({
       ) : null}
 
       <View style={styles.textRow}>
-        {options.map((option, index) => {
+        {visibleOptions.map((option, index) => {
           const selected = option.value === value;
           const showDivider =
             index > 0 &&
