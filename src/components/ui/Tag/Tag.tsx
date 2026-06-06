@@ -1,7 +1,7 @@
-import { StyleSheet, TouchableOpacity, type TouchableOpacityProps, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Typography } from '@/components/ui/Typography';
-import { colors, radius, spacing } from '@/constants/theme';
+import { colors, radius } from '@/constants/theme';
 
 import { type ConditionType, type TagProps } from './tag.types';
 
@@ -19,7 +19,7 @@ export function Tag({ variant, label, condition, style, onPress, ...props }: Tag
   const isCondition = variant === 'condition';
   const containerStyle = [
     styles.container,
-    isCondition ? styles.conditionBg : styles.personalBg,
+    isCondition ? styles.condition : styles.personal,
     style,
   ];
 
@@ -29,8 +29,10 @@ export function Tag({ variant, label, condition, style, onPress, ...props }: Tag
         <View style={[styles.dot, { backgroundColor: CONDITION_COLORS[condition] }]} />
       )}
       <Typography
-        variant="caption"
-        color={isCondition ? colors.text.primary : colors.text.secondary}
+        variant="tag"
+        color={isCondition ? colors.gray[800] : colors.gray[700]}
+        align="center"
+        style={styles.label}
       >
         {label}
       </Typography>
@@ -39,14 +41,14 @@ export function Tag({ variant, label, condition, style, onPress, ...props }: Tag
 
   if (onPress) {
     return (
-      <TouchableOpacity
-        activeOpacity={0.7}
-        style={containerStyle}
+      <Pressable
+        accessibilityRole="button"
+        style={({ pressed }) => [containerStyle, pressed && styles.pressed]}
         onPress={onPress}
-        {...(props as TouchableOpacityProps)}
+        {...props}
       >
         {content}
-      </TouchableOpacity>
+      </Pressable>
     );
   }
 
@@ -59,23 +61,37 @@ export function Tag({ variant, label, condition, style, onPress, ...props }: Tag
 
 const styles = StyleSheet.create({
   container: {
+    height: 19.997,
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
     borderRadius: radius.xs,
-    paddingHorizontal: spacing[2],
-    paddingVertical: spacing[1],
-    gap: spacing[1],
+    paddingVertical: 1,
   },
-  conditionBg: {
-    backgroundColor: colors.gray.white,
+  condition: {
+    gap: 5,
+    paddingLeft: 7,
+    paddingRight: 5,
+    backgroundColor: colors.alpha.white80,
+    shadowColor: 'rgb(60,94,103)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.15,
+    shadowRadius: 47.998,
+    elevation: 3,
   },
-  personalBg: {
+  personal: {
+    paddingHorizontal: 5,
     backgroundColor: colors.gray[200],
   },
+  label: {
+    opacity: 0.6,
+  },
   dot: {
-    width: spacing[2],
-    height: spacing[2],
+    width: 5.411,
+    height: 5.411,
     borderRadius: radius.full,
+  },
+  pressed: {
+    opacity: 0.72,
   },
 });

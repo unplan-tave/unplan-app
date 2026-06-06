@@ -41,6 +41,15 @@ export const colors = {
     900: '#040506',
   },
 
+  alpha: {
+    white10: 'rgba(255,255,255,0.1)',
+    white20: 'rgba(255,255,255,0.2)',
+    white50: 'rgba(255,255,255,0.5)',
+    white70: 'rgba(255,255,255,0.7)',
+    white80: 'rgba(255,255,255,0.8)',
+    black05: 'rgba(0,0,0,0.05)',
+  },
+
   // ─── Semantic ───────────────────────────────────────────
   background: '#FFFFFF',
   surface: '#F9FAFB',
