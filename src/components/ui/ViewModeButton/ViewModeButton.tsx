@@ -23,13 +23,13 @@ export function ViewModeButton({
     <Pressable
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityRole="button"
-      style={({ pressed }) => [styles.container, pressed && styles.pressed, style]}
+      style={({ pressed }) => [styles.container, pressed ? styles.pressed : undefined, style]}
       {...props}
     >
-      <Typography variant="caption" color={colors.gray.white} align="right" style={styles.label}>
+      <Typography variant="caption" color={colors.gray.white} align="right">
         {label}
       </Typography>
-      <Icon name="maximize" size={9} color={colors.gray.white} style={styles.icon} />
+      <Icon name="maximize" size={9} color={colors.gray.white} />
     </Pressable>
   );
 }
@@ -44,14 +44,9 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     borderRadius: 4,
     backgroundColor: colors.alpha.white10,
-  },
-  label: {
-    opacity: 0.6,
-  },
-  icon: {
     opacity: 0.6,
   },
   pressed: {
-    opacity: 0.72,
+    opacity: 0.432,
   },
 });
