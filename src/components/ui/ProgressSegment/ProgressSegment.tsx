@@ -34,7 +34,9 @@ export function ProgressSegment({
       <View style={styles.textRow}>
         {options.map((option, index) => {
           const selected = option.value === value;
-          const showDivider = index > 0 && selectedIndex < 0;
+          const showDivider =
+            index > 0 &&
+            (selectedIndex < 0 || (index !== selectedIndex && index !== selectedIndex + 1));
 
           return (
             <View key={option.value} style={styles.optionWrap}>

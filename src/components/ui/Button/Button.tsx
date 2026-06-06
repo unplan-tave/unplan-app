@@ -46,8 +46,10 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: {
-    width: 351.398,
+    width: '100%',
+    maxWidth: 351.398,
     height: 40,
+    alignSelf: 'stretch',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.xl,
@@ -65,6 +67,7 @@ const styles = StyleSheet.create({
   },
   fullWidth: {
     width: '100%',
+    maxWidth: '100%',
   },
   disabled: {
     backgroundColor: colors.gray[200],

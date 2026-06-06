@@ -7,18 +7,33 @@ import { colors } from '@/constants/theme';
 import { type InputProps } from './input.types';
 
 export function Input({ label, fieldProps, addFieldProps, recommendation, style }: InputProps) {
+  const resolvedFieldProps = {
+    ...fieldProps,
+    width: fieldProps.width ?? '100%',
+  } satisfies InputProps['fieldProps'];
+  const resolvedAddFieldProps = addFieldProps
+    ? ({
+        ...addFieldProps,
+        width: addFieldProps.width ?? '100%',
+      } satisfies InputProps['fieldProps'])
+    : undefined;
+
   return (
     <View style={[styles.container, style]}>
       <View style={styles.row}>
         <Typography variant="bodyM" color={colors.gray[800]} style={styles.label}>
           {label}
         </Typography>
-        <TextField {...fieldProps} />
+        <View style={styles.field}>
+          <TextField {...resolvedFieldProps} />
+        </View>
       </View>
 
-      {addFieldProps ? (
+      {resolvedAddFieldProps ? (
         <View style={styles.fieldOnlyRow}>
-          <TextField {...addFieldProps} />
+          <View style={styles.field}>
+            <TextField {...resolvedAddFieldProps} />
+          </View>
         </View>
       ) : null}
 
@@ -40,7 +55,9 @@ export function Input({ label, fieldProps, addFieldProps, recommendation, style 
 
 const styles = StyleSheet.create({
   container: {
-    width: 357.832,
+    width: '100%',
+    maxWidth: 357.832,
+    alignSelf: 'stretch',
     gap: 6,
   },
   row: {
@@ -52,11 +69,16 @@ const styles = StyleSheet.create({
   label: {
     flexShrink: 0,
   },
+  field: {
+    flex: 1,
+    minWidth: 0,
+  },
   fieldOnlyRow: {
     alignItems: 'flex-end',
   },
   recommendationRow: {
-    width: 263,
+    width: '100%',
+    maxWidth: 263,
     alignSelf: 'flex-end',
     paddingHorizontal: 12,
   },

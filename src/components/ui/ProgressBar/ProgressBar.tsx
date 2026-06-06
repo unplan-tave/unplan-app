@@ -6,11 +6,10 @@ import { type ProgressBarProps } from './progressBar.types';
 
 export function ProgressBar({ value, width = 240, style }: ProgressBarProps) {
   const clampedValue = Math.min(100, Math.max(0, value));
-  const visibleValue = clampedValue === 0 ? 4.17 : clampedValue;
 
   return (
     <View style={[styles.track, { width }, style]}>
-      <View style={[styles.fill, { width: `${visibleValue}%` }]} />
+      <View style={[styles.fill, { width: `${clampedValue}%` }]} />
     </View>
   );
 }

@@ -105,6 +105,31 @@ function renderDisplayContent(
     );
   }
 
+  if (variant === 'time' || variant === 'duration') {
+    return (
+      <>
+        <Typography
+          variant="bodyM"
+          color={textColor}
+          numberOfLines={1}
+          style={[styles.displayText, textStyle]}
+        >
+          {label}
+        </Typography>
+        {rightLabel ? (
+          <>
+            <View style={styles.verticalDivider} />
+            <Typography variant="bodyM" color={textColor} numberOfLines={1} style={textStyle}>
+              {rightLabel}
+            </Typography>
+          </>
+        ) : null}
+        <View style={styles.shortDivider} />
+        <Icon name="chevronDown" size={20} color={textColor} disabled={disabled} />
+      </>
+    );
+  }
+
   return (
     <>
       <Typography
@@ -168,6 +193,11 @@ const styles = StyleSheet.create({
   verticalDivider: {
     width: 1,
     height: 16,
+    backgroundColor: colors.gray[400],
+  },
+  shortDivider: {
+    width: 1,
+    height: 8,
     backgroundColor: colors.gray[400],
   },
   disabled: {

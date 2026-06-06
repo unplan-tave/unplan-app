@@ -1,4 +1,5 @@
 import {
+  type DimensionValue,
   type PressableProps,
   type StyleProp,
   type TextInputProps,
@@ -10,7 +11,7 @@ export type TextFieldVariant = 'short' | 'long' | 'add' | 'time' | 'duration' | 
 
 interface BaseTextFieldProps {
   variant?: TextFieldVariant;
-  width?: number;
+  width?: DimensionValue;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
 }

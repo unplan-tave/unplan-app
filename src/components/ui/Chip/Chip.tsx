@@ -34,7 +34,7 @@ export function Chip({
       {...props}
     >
       {iconName ? (
-        <Icon name={iconName} size={20} color={contentColor} disabled={disabled} />
+        <Icon name={iconName} size={20} color={disabled ? colors.gray[300] : contentColor} />
       ) : null}
       <Typography
         variant="bodyS"
@@ -51,13 +51,13 @@ export function Chip({
 const styles = StyleSheet.create({
   container: {
     minWidth: 39,
-    height: 24,
+    minHeight: 24,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 5,
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 0,
     borderRadius: 33,
     backgroundColor: colors.gray.white,
     borderWidth: 1,
