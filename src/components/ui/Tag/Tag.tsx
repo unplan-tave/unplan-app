@@ -3,7 +3,7 @@ import { StyleSheet, TouchableOpacity, type TouchableOpacityProps, View } from '
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 
-import { type ConditionType, type TagProps } from './Tag.types';
+import { type ConditionType, type TagProps } from './tag.types';
 
 /** 피그마 condition → dot 색상 매핑 */
 const CONDITION_COLORS: Record<ConditionType, string> = {

@@ -2,7 +2,7 @@ import { StyleSheet, Text } from 'react-native';
 
 import { colors, typography } from '@/constants/theme';
 
-import { type TypographyProps } from './Typography.types';
+import { type TypographyProps } from './typography.types';
 
 export function Typography({
   variant = 'bodyM',
