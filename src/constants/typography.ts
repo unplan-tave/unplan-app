@@ -16,6 +16,7 @@
  * │ bodyM    │  16  │  400   │   25.6     │   -0.32      │
  * │ bodyS    │  14  │  300   │   22.4     │   -0.28      │
  * │ caption  │  12  │  400   │   19.2     │   -0.24      │
+ * │ tag      │  12  │  500   │   19.2     │   -0.24      │
  * └──────────┴──────┴────────┴────────────┴──────────────┘
  */
 
@@ -83,6 +84,13 @@ export const typography = {
     fontFamily: fontFamilyWeight.regular,
     fontSize: 12,
     fontWeight: '400',
+    lineHeight: 19.2,
+    letterSpacing: -0.24,
+  },
+  tag: {
+    fontFamily: fontFamilyWeight.medium,
+    fontSize: 12,
+    fontWeight: '500',
     lineHeight: 19.2,
     letterSpacing: -0.24,
   },
