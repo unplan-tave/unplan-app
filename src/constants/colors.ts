@@ -6,7 +6,7 @@
 export const colors = {
   // ─── Brand ─────────────────────────────────────────────
   primary: '#248DFE', // Main
-  secondary: '#F15D5D', // Sub
+  secondary: '#F15E5E', // Sub
 
   // ─── Condition (태그 dot 색상) ───────────────────────────
   condition: {
@@ -39,6 +39,15 @@ export const colors = {
     700: '#363E46',
     800: '#1A2026',
     900: '#040506',
+  },
+
+  alpha: {
+    white10: 'rgba(255,255,255,0.1)',
+    white20: 'rgba(255,255,255,0.2)',
+    white50: 'rgba(255,255,255,0.5)',
+    white70: 'rgba(255,255,255,0.7)',
+    white80: 'rgba(255,255,255,0.8)',
+    black05: 'rgba(0,0,0,0.05)',
   },
 
   // ─── Semantic ───────────────────────────────────────────
