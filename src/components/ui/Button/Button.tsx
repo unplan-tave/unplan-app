@@ -19,6 +19,7 @@ export function Button({
     <Pressable
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityRole="button"
+      accessibilityState={{ disabled }}
       disabled={disabled}
       style={({ pressed }) => [
         styles.base,
@@ -47,7 +48,7 @@ export function Button({
 const styles = StyleSheet.create({
   base: {
     width: '100%',
-    maxWidth: 351.398,
+    maxWidth: 351,
     height: 40,
     alignSelf: 'stretch',
     alignItems: 'center',

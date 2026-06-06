@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gray[200],
   },
   long: {
-    minHeight: 49.6,
+    minHeight: 50,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
