@@ -2,7 +2,7 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
-import { colors } from '@/constants/theme';
+import { colors, radius } from '@/constants/theme';
 
 import { type ViewModeButtonProps } from './viewModeButton.types';
 
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 5,
     paddingVertical: 1,
-    borderRadius: 4,
+    borderRadius: radius['2xs'],
     backgroundColor: colors.alpha.white10,
     opacity: 0.6,
   },

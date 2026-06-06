@@ -20,6 +20,7 @@ export const spacing = {
 
 export const radius = {
   xs: 3, // Tag
+  '2xs': 4, // ViewModeButton
   sm: 6, // TextField / ProgressSegment
   md: 8, // Card
   lg: 10, // System panel
