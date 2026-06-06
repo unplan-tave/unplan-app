@@ -24,31 +24,25 @@ export function Input({ label, fieldProps, addFieldProps, recommendation, style 
         <Typography variant="bodyM" color={colors.gray[800]} style={styles.label}>
           {label}
         </Typography>
-        <View style={styles.field}>
+        <View style={styles.fieldColumn}>
           <TextField {...resolvedFieldProps} />
+
+          {resolvedAddFieldProps ? <TextField {...resolvedAddFieldProps} /> : null}
+
+          {recommendation ? (
+            <View style={styles.recommendationRow}>
+              <Typography
+                variant="tag"
+                color={colors.secondary}
+                numberOfLines={1}
+                style={styles.recommendation}
+              >
+                {recommendation}
+              </Typography>
+            </View>
+          ) : null}
         </View>
       </View>
-
-      {resolvedAddFieldProps ? (
-        <View style={styles.fieldOnlyRow}>
-          <View style={styles.field}>
-            <TextField {...resolvedAddFieldProps} />
-          </View>
-        </View>
-      ) : null}
-
-      {recommendation ? (
-        <View style={styles.recommendationRow}>
-          <Typography
-            variant="tag"
-            color={colors.secondary}
-            numberOfLines={1}
-            style={styles.recommendation}
-          >
-            {recommendation}
-          </Typography>
-        </View>
-      ) : null}
     </View>
   );
 }
@@ -69,17 +63,13 @@ const styles = StyleSheet.create({
   label: {
     flexShrink: 0,
   },
-  field: {
+  fieldColumn: {
     flex: 1,
     minWidth: 0,
-  },
-  fieldOnlyRow: {
-    alignItems: 'flex-end',
+    gap: 6,
   },
   recommendationRow: {
     width: '100%',
-    maxWidth: 263,
-    alignSelf: 'flex-end',
     paddingHorizontal: 12,
   },
   recommendation: {

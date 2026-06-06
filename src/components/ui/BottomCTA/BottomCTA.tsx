@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Typography } from '@/components/ui/Typography';
-import { colors } from '@/constants/theme';
+import { colors, radius } from '@/constants/theme';
 
 import { type BottomCTAProps } from './bottomCTA.types';
 
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     height: 60,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 65,
+    borderRadius: radius.full,
     backgroundColor: colors.alpha.white50,
     borderWidth: 1,
     borderColor: colors.gray.white,

@@ -28,7 +28,15 @@ export function TextField(props: TextFieldProps) {
     void excludedVariant;
 
     return (
-      <View style={[styles.container, variant === 'long' && styles.long, { width }, style]}>
+      <View
+        style={[
+          styles.container,
+          variant === 'long' && styles.long,
+          { width },
+          disabled && styles.disabled,
+          style,
+        ]}
+      >
         <TextInput
           editable={!disabled}
           placeholderTextColor={placeholderTextColor ?? colors.gray[300]}
@@ -172,7 +180,6 @@ const styles = StyleSheet.create({
   add: {
     height: 42,
     justifyContent: 'center',
-    opacity: 0.5,
   },
   input: {
     flex: 1,
