@@ -53,7 +53,9 @@ function handlePress(
   }
 
   if (!multiple) {
-    onChange(currentValue === nextValue ? undefined : nextValue);
+    const singleValue = Array.isArray(currentValue) ? undefined : currentValue;
+
+    onChange(singleValue === nextValue ? undefined : nextValue);
     return;
   }
 
