@@ -1,2 +1,2 @@
 export { Tag } from './Tag';
-export type { TagProps, ConditionType, TagVariant } from './Tag.types';
+export type { TagProps, ConditionType, TagVariant } from './tag.types';

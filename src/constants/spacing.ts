@@ -20,9 +20,12 @@ export const spacing = {
 
 export const radius = {
   xs: 3, // Tag
-  sm: 5, // Card 내부
-  md: 10, // Card
-  lg: 16,
+  '2xs': 4, // ViewModeButton
+  sm: 6, // TextField / ProgressSegment
+  md: 8, // Card
+  lg: 10, // System panel
+  xl: 11, // Button
+  xxl: 15, // SearchBar
   full: 9999,
 } as const;
 
