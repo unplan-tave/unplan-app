@@ -18,6 +18,7 @@ export function BottomCTA({
       <Pressable
         accessibilityLabel={accessibilityLabel ?? label}
         accessibilityRole="button"
+        accessibilityState={{ disabled }}
         disabled={disabled}
         style={({ pressed }) => [
           styles.button,

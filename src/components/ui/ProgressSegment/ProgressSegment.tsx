@@ -26,9 +26,10 @@ export function ProgressSegment({
 }: ProgressSegmentProps) {
   const visibleOptions = options.slice(0, MAX_OPTION_COUNT);
   const selectedIndex = visibleOptions.findIndex((option) => option.value === value);
+  const containerWidth = visibleOptions.length * SEGMENT_WIDTH;
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, { width: containerWidth }, style]}>
       {selectedIndex >= 0 ? (
         <View style={[styles.highlighter, { left: selectedIndex * SEGMENT_WIDTH }]} />
       ) : null}
@@ -85,7 +86,6 @@ function getOptionColor(optionValue: ProgressSegmentValue, selectedValue?: Progr
 
 const styles = StyleSheet.create({
   container: {
-    width: 186,
     height: 36,
     overflow: 'hidden',
     borderRadius: radius.sm,
@@ -127,9 +127,9 @@ const styles = StyleSheet.create({
   divider: {
     position: 'absolute',
     left: 0,
-    top: 9.423,
+    top: 9,
     width: 1,
-    height: 17.153,
+    height: 17,
     backgroundColor: colors.gray[400],
   },
 });

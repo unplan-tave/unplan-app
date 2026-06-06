@@ -61,7 +61,7 @@ export function Tag({ variant, label, condition, style, onPress, ...props }: Tag
 
 const styles = StyleSheet.create({
   container: {
-    height: 19.997,
+    height: 20,
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     shadowColor: 'rgb(60,94,103)',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.15,
-    shadowRadius: 47.998,
+    shadowRadius: 48,
     elevation: 3,
   },
   personal: {
@@ -87,8 +87,8 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   dot: {
-    width: 5.411,
-    height: 5.411,
+    width: 5,
+    height: 5,
     borderRadius: radius.full,
   },
   pressed: {

@@ -50,7 +50,7 @@ export function Input({ label, fieldProps, addFieldProps, recommendation, style 
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    maxWidth: 357.832,
+    maxWidth: 358,
     alignSelf: 'stretch',
     gap: 6,
   },

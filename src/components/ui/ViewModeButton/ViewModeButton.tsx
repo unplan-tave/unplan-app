@@ -36,7 +36,7 @@ export function ViewModeButton({
 
 const styles = StyleSheet.create({
   container: {
-    height: 21.2,
+    height: 21,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -47,6 +47,6 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   pressed: {
-    opacity: 0.432,
+    opacity: 0.4,
   },
 });
