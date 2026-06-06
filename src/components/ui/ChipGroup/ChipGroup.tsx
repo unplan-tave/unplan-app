@@ -53,7 +53,7 @@ function handlePress(
   }
 
   if (!multiple) {
-    onChange(nextValue);
+    onChange(currentValue === nextValue ? undefined : nextValue);
     return;
   }
 

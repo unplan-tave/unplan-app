@@ -14,6 +14,6 @@ export interface ChipGroupProps {
   value?: string | string[];
   multiple?: boolean;
   scrollable?: boolean;
-  onChange?: (value: string | string[]) => void;
+  onChange?: (value: string | string[] | undefined) => void;
   style?: StyleProp<ViewStyle>;
 }
