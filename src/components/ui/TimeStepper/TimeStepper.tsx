@@ -23,7 +23,7 @@ export function TimeStepper({
           disabled={disabled}
           hitSlop={8}
           onPress={onDecrease}
-          style={({ pressed }) => pressed && !disabled && styles.pressed}
+          style={({ pressed }) => (pressed && !disabled ? styles.pressed : undefined)}
         >
           <Icon name="minus" size={20} color={colors.gray[700]} disabled={disabled} />
         </Pressable>
@@ -40,7 +40,7 @@ export function TimeStepper({
           disabled={disabled}
           hitSlop={8}
           onPress={onIncrease}
-          style={({ pressed }) => pressed && !disabled && styles.pressed}
+          style={({ pressed }) => (pressed && !disabled ? styles.pressed : undefined)}
         >
           <Icon name="plus" size={20} color={colors.gray[700]} disabled={disabled} />
         </Pressable>

@@ -18,7 +18,7 @@ export function Icon({
   const width = name === 'toggle' ? size * 1.3 : size;
 
   return (
-    <View style={[styles.container, { width, height: size, opacity: disabled ? 0.5 : 1 }, style]}>
+    <View style={[styles.container, { width, height: size }, style]}>
       <Svg width={width} height={size} viewBox={getViewBox(name)} fill="none">
         {renderIcon(name, iconColor)}
       </Svg>
@@ -49,8 +49,9 @@ function renderIcon(name: IconProps['name'], color: string) {
     case 'arrowRight':
       return <ArrowRight color={color} />;
     case 'arrowDown':
-    case 'chevronDown':
       return <ArrowDown color={color} />;
+    case 'chevronDown':
+      return <ChevronDown color={color} />;
     case 'bell':
       return <Bell color={color} />;
     case 'cancel':
@@ -165,8 +166,23 @@ function ArrowRight({ color }: { color: string }) {
 
 function ArrowDown({ color }: { color: string }) {
   return (
+    <>
+      <SvgLine x1={12} y1={5} x2={12} y2={17} color={color} />
+      <Polyline
+        points="7 12 12 17 17 12"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </>
+  );
+}
+
+function ChevronDown({ color }: { color: string }) {
+  return (
     <Polyline
-      points="6 9 12 15 18 9"
+      points="6.5 9 12 14.5 17.5 9"
       stroke={color}
       strokeWidth={2}
       strokeLinecap="round"

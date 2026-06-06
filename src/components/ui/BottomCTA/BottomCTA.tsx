@@ -46,7 +46,9 @@ export function BottomCTA({
 
 const styles = StyleSheet.create({
   container: {
-    width: 353,
+    width: '100%',
+    maxWidth: 353,
+    alignSelf: 'stretch',
     alignItems: 'center',
     gap: 6,
   },
