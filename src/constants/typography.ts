@@ -15,7 +15,7 @@
  * │ titleS   │  18  │  600   │   28.8     │   -0.36      │
  * │ bodyM    │  16  │  400   │   25.6     │   -0.32      │
  * │ bodyS    │  14  │  300   │   22.4     │   -0.28      │
- * │ caption  │  12  │  200   │   19.2     │   -0.24      │
+ * │ caption  │  12  │  400   │   19.2     │   -0.24      │
  * └──────────┴──────┴────────┴────────────┴──────────────┘
  */
 
@@ -80,9 +80,9 @@ export const typography = {
     letterSpacing: -0.28,
   },
   caption: {
-    fontFamily: fontFamilyWeight.extraLight,
+    fontFamily: fontFamilyWeight.regular,
     fontSize: 12,
-    fontWeight: '200',
+    fontWeight: '400',
     lineHeight: 19.2,
     letterSpacing: -0.24,
   },

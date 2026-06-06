@@ -6,7 +6,7 @@
 export const colors = {
   // ─── Brand ─────────────────────────────────────────────
   primary: '#248DFE', // Main
-  secondary: '#F15D5D', // Sub
+  secondary: '#F15E5E', // Sub
 
   // ─── Condition (태그 dot 색상) ───────────────────────────
   condition: {

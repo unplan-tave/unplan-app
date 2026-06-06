@@ -2,7 +2,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Tag } from '@/components/ui/Tag';
-import { type ConditionType } from '@/components/ui/Tag/Tag.types';
+import { type ConditionType } from '@/components/ui/Tag/tag.types';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing, typography, type TypographyVariant } from '@/constants/theme';
 
