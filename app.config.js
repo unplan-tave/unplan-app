@@ -35,6 +35,12 @@ module.exports = {
       output: 'static',
       favicon: './assets/favicon.png',
     },
+    updates: {
+      url: 'https://u.expo.dev/a6983ac6-260d-4677-90cb-0112e5050b79',
+    },
+    runtimeVersion: {
+      policy: 'appVersion',
+    },
     plugins: [
       './plugins/with-kakao-maven-repository',
       ['expo-router', { root: 'src/app' }],
