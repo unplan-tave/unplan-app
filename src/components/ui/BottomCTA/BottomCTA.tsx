@@ -40,7 +40,7 @@ export function BottomCTA({
         </Typography>
       </Pressable>
 
-      {caption ? (
+      {caption != null ? (
         <Typography variant="bodyS" color={colors.gray[500]} align="center" style={styles.caption}>
           {caption}
         </Typography>

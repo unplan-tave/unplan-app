@@ -15,8 +15,13 @@ const recoveryOptionDefinitions = [
   { id: 'walk', labelKey: 'onboarding.recovery.walk', icon: '🚶' },
   { id: 'stretching', labelKey: 'onboarding.recovery.stretching', icon: '🧘' },
   { id: 'food', labelKey: 'onboarding.recovery.food', icon: '🍽️' },
-  { id: 'custom', labelKey: 'onboarding.option.custom', icon: 'plus' },
-] satisfies ReadonlyArray<{ id: RecoveryOptionId; labelKey: TranslationKey; icon: string }>;
+  { id: 'custom', labelKey: 'onboarding.option.custom', icon: '', isCustom: true },
+] satisfies ReadonlyArray<{
+  id: RecoveryOptionId;
+  labelKey: TranslationKey;
+  icon: string;
+  isCustom?: boolean;
+}>;
 
 export function RecoveryScreen() {
   const router = useRouter();
@@ -25,6 +30,7 @@ export function RecoveryScreen() {
   const recoveryOptions = recoveryOptionDefinitions.map((option) => ({
     id: option.id,
     icon: option.icon,
+    isCustom: option.isCustom,
     label: t(option.labelKey),
   }));
 
