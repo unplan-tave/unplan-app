@@ -32,7 +32,7 @@ export function OnboardingStepLayout({
 
   return (
     <ScreenLayout
-      backgroundColor="#F1F5F7"
+      backgroundColor={colors.onboardingBackground}
       header={
         <HeaderProgress progress={progress} onBackPress={router.back} style={styles.header} />
       }
@@ -40,7 +40,7 @@ export function OnboardingStepLayout({
         <View style={styles.footer}>
           <BottomCTA
             label={t('common.confirm')}
-            caption={ctaCaption ?? undefined}
+            caption={ctaCaption}
             disabled={ctaDisabled}
             variant="primary"
             onPress={onConfirm}

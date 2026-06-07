@@ -15,6 +15,13 @@ const CIRCLE_RADIUS = CIRCLE_SIZE / 2;
 const TARGET_LINE_LENGTH = 212;
 const SLEEP_MINUTES_MAX = 720;
 const SLEEP_STEP_MINUTES = 15;
+const sleepConditionColors = {
+  target: colors.secondary,
+  risk: '#8A7AB9',
+  lack: '#91D2C4',
+  good: colors.primary,
+  excess: colors.gray[200],
+} as const;
 
 function formatMinutes(totalMinutes: number) {
   const hours = Math.floor(totalMinutes / 60);
@@ -173,11 +180,14 @@ export function SleepConditionCircle({
         6 시간
       </Typography>
       <View style={styles.legend}>
-        <LegendItem color={colors.secondary} label={t('onboarding.sleep.legendTarget')} />
-        <LegendItem color="#6C5DA1" label={t('onboarding.sleep.risk')} />
-        <LegendItem color="#47B399" label={t('onboarding.sleep.lack')} />
-        <LegendItem color={colors.primary} label={t('onboarding.sleep.good')} />
-        <LegendItem color={colors.gray[200]} label={t('onboarding.sleep.excess')} />
+        <LegendItem
+          color={sleepConditionColors.target}
+          label={t('onboarding.sleep.legendTarget')}
+        />
+        <LegendItem color={sleepConditionColors.risk} label={t('onboarding.sleep.risk')} />
+        <LegendItem color={sleepConditionColors.lack} label={t('onboarding.sleep.lack')} />
+        <LegendItem color={sleepConditionColors.good} label={t('onboarding.sleep.good')} />
+        <LegendItem color={sleepConditionColors.excess} label={t('onboarding.sleep.excess')} />
       </View>
     </View>
   );
@@ -227,22 +237,22 @@ const styles = StyleSheet.create({
   excess: {
     left: 0,
     top: 0,
-    backgroundColor: '#D9DFE5',
+    backgroundColor: sleepConditionColors.excess,
   },
   risk: {
     right: 0,
     top: 0,
-    backgroundColor: '#8A7AB9',
+    backgroundColor: sleepConditionColors.risk,
   },
   good: {
     left: 0,
     bottom: 0,
-    backgroundColor: '#7EC2F6',
+    backgroundColor: sleepConditionColors.good,
   },
   lack: {
     right: 0,
     bottom: 0,
-    backgroundColor: '#91D2C4',
+    backgroundColor: sleepConditionColors.lack,
   },
   excessLabel: {
     position: 'absolute',
@@ -271,7 +281,7 @@ const styles = StyleSheet.create({
     width: TARGET_LINE_LENGTH,
     height: 2,
     borderRadius: 1,
-    backgroundColor: colors.secondary,
+    backgroundColor: sleepConditionColors.target,
   },
   targetBadge: {
     position: 'absolute',
@@ -280,7 +290,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
-    backgroundColor: colors.secondary,
+    backgroundColor: sleepConditionColors.target,
   },
   timeBadge: {
     position: 'absolute',

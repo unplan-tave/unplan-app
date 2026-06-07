@@ -2,7 +2,7 @@ import { type PressableProps, type StyleProp, type TextStyle, type ViewStyle } f
 
 export interface BottomCTAProps extends Omit<PressableProps, 'style' | 'children'> {
   label?: string;
-  caption?: string;
+  caption?: string | null;
   disabled?: boolean;
   variant?: 'default' | 'primary';
   style?: StyleProp<ViewStyle>;

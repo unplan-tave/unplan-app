@@ -8,20 +8,23 @@ import { colors } from '@/constants/theme';
 interface OnboardingOptionCardProps {
   label: string;
   icon: string;
+  isCustom?: boolean;
   selected: boolean;
   disabled?: boolean;
   onPress: () => void;
 }
 
+export const ONBOARDING_OPTION_CARD_WIDTH = 128;
+const ONBOARDING_OPTION_CARD_HEIGHT = 140;
+
 export function OnboardingOptionCard({
   label,
   icon,
+  isCustom = false,
   selected,
   disabled = false,
   onPress,
 }: OnboardingOptionCardProps) {
-  const isCustom = icon === 'plus';
-
   return (
     <Card
       accessibilityLabel={label}
@@ -52,8 +55,8 @@ export function OnboardingOptionCard({
 
 const styles = StyleSheet.create({
   card: {
-    width: 128,
-    height: 140,
+    width: ONBOARDING_OPTION_CARD_WIDTH,
+    height: ONBOARDING_OPTION_CARD_HEIGHT,
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingBottom: 18,

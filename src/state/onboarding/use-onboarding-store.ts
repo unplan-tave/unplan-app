@@ -111,6 +111,7 @@ export const useOnboardingStore = create<OnboardingState>()((set) => ({
     ),
 
   completeOnboarding: () => {
+    // TODO: Persist preferences to the server after the onboarding API contract is available.
     mmkvStorage.set(ONBOARDING_COMPLETED_KEY, 'true');
 
     set(

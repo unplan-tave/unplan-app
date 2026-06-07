@@ -7,6 +7,9 @@ import { t } from '@/lib/i18n';
 import { onboardingRoutes } from '@/state/onboarding/routes';
 import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
+const ACTIVITY_RAILS_MARGIN_TOP = 57;
+const ACTIVITY_RAILS_GAP = 60;
+
 export function ActivityScreen() {
   const router = useRouter();
   const preferences = useOnboardingStore((state) => state.preferences);
@@ -46,7 +49,7 @@ export function ActivityScreen() {
 const styles = StyleSheet.create({
   rails: {
     width: '100%',
-    marginTop: 57,
-    gap: 60,
+    marginTop: ACTIVITY_RAILS_MARGIN_TOP,
+    gap: ACTIVITY_RAILS_GAP,
   },
 });
