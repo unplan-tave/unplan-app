@@ -33,6 +33,7 @@ module.exports = {
       favicon: './assets/favicon.png',
     },
     plugins: [
+      './plugins/with-kakao-maven-repository',
       ['expo-router', { root: 'src/app' }],
       'expo-status-bar',
       [
