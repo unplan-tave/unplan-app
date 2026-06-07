@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius } from '@/constants/theme';
@@ -9,10 +10,15 @@ export function BottomCTA({
   label = '확인',
   caption = '다음에 할래요',
   disabled = false,
+  variant = 'default',
   style,
+  textStyle,
   accessibilityLabel,
   ...props
 }: BottomCTAProps) {
+  const isPrimary = variant === 'primary';
+  const textColor = disabled ? colors.gray[300] : isPrimary ? colors.gray.white : colors.gray[800];
+
   return (
     <View style={[styles.container, style]}>
       <Pressable
@@ -22,16 +28,14 @@ export function BottomCTA({
         disabled={disabled}
         style={({ pressed }) => [
           styles.button,
+          isPrimary && styles.primaryButton,
           disabled && styles.disabledButton,
           pressed && !disabled && styles.pressed,
         ]}
         {...props}
       >
-        <Typography
-          variant="titleL"
-          color={disabled ? colors.gray[300] : colors.gray[800]}
-          align="center"
-        >
+        {isPrimary && !disabled ? <PrimaryButtonFill /> : null}
+        <Typography variant="titleL" color={textColor} align="center" style={textStyle}>
           {label}
         </Typography>
       </Pressable>
@@ -42,6 +46,20 @@ export function BottomCTA({
         </Typography>
       ) : null}
     </View>
+  );
+}
+
+function PrimaryButtonFill() {
+  return (
+    <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" preserveAspectRatio="none">
+      <Defs>
+        <RadialGradient id="ctaGradient" cx="50%" cy="50%" rx="70%" ry="70%">
+          <Stop offset="0" stopColor={colors.primary} stopOpacity={0.5} />
+          <Stop offset="1" stopColor={colors.primary} stopOpacity={1} />
+        </RadialGradient>
+      </Defs>
+      <Rect width="100%" height="100%" fill="url(#ctaGradient)" />
+    </Svg>
   );
 }
 
@@ -56,12 +74,16 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     height: 60,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.full,
     backgroundColor: colors.alpha.white50,
     borderWidth: 1,
     borderColor: colors.gray.white,
+  },
+  primaryButton: {
+    backgroundColor: colors.primary,
   },
   disabledButton: {
     backgroundColor: colors.gray[200],
