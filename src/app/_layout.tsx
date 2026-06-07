@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { fontFamilyWeight } from '@/constants/typography';
+import { initializeKakaoAuthSDK } from '@/lib/auth/kakao-sdk';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +35,12 @@ export default function RootLayout() {
   useEffect(() => {
     if (error) throw error;
   }, [error]);
+
+  useEffect(() => {
+    void initializeKakaoAuthSDK().catch((sdkError: unknown) => {
+      console.error('Failed to initialize Kakao SDK.', sdkError);
+    });
+  }, []);
 
   if (!loaded) {
     return null;
