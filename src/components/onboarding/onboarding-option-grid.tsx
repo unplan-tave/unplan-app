@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { OnboardingOptionCard } from './OnboardingOptionCard';
+import { OnboardingOptionCard } from './onboarding-option-card';
 
 interface OnboardingOption {
   id: string;

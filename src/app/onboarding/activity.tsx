@@ -1,1 +1,1 @@
-export { ActivityScreen as default } from '@/features/onboarding/activity-screen';
+export { ActivityScreen as default } from '@/screens/onboarding/activity-screen';

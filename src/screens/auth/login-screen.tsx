@@ -1,16 +1,15 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
+import { SocialLoginButton } from '@/components/auth/social-login-button';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { HomeIndicator } from '@/components/ui/Footer';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
-import { useAuth } from '@/features/auth/hooks/use-auth';
-import { onboardingRoutes } from '@/features/onboarding/routes';
+import { useAuth } from '@/hooks/use-auth';
 import { t } from '@/lib/i18n';
-
-import { SocialLoginButton } from './components/SocialLoginButton';
+import { onboardingRoutes } from '@/state/onboarding/routes';
 
 export function LoginScreen() {
   const router = useRouter();

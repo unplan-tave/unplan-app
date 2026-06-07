@@ -1,12 +1,11 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
+import { ActivityTimeRail } from '@/components/onboarding/activity-time-rail';
+import { OnboardingStepLayout } from '@/components/onboarding/onboarding-step-layout';
 import { t } from '@/lib/i18n';
-
-import { ActivityTimeRail } from './components/ActivityTimeRail';
-import { OnboardingStepLayout } from './components/OnboardingStepLayout';
-import { onboardingRoutes } from './routes';
-import { useOnboardingStore } from './use-onboarding-store';
+import { onboardingRoutes } from '@/state/onboarding/routes';
+import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
 export function ActivityScreen() {
   const router = useRouter();

@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius } from '@/constants/theme';
 
-import type { TimeRange } from '../model';
+import type { TimeRange } from '@/state/onboarding/model';
 
 interface ActivityTimeRailProps {
   label: string;

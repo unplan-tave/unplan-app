@@ -1,11 +1,10 @@
 import { useRouter } from 'expo-router';
 
+import { OnboardingStepLayout } from '@/components/onboarding/onboarding-step-layout';
+import { SleepConditionCircle } from '@/components/onboarding/sleep-condition-circle';
 import { t } from '@/lib/i18n';
-
-import { OnboardingStepLayout } from './components/OnboardingStepLayout';
-import { SleepConditionCircle } from './components/SleepConditionCircle';
-import { onboardingRoutes } from './routes';
-import { useOnboardingStore } from './use-onboarding-store';
+import { onboardingRoutes } from '@/state/onboarding/routes';
+import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
 export function SleepScreen() {
   const router = useRouter();

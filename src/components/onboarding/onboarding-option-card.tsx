@@ -1,8 +1,9 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
-import { colors, radius } from '@/constants/theme';
+import { colors } from '@/constants/theme';
 
 interface OnboardingOptionCardProps {
   label: string;
@@ -22,17 +23,11 @@ export function OnboardingOptionCard({
   const isCustom = icon === 'plus';
 
   return (
-    <Pressable
+    <Card
       accessibilityLabel={label}
-      accessibilityRole="button"
-      accessibilityState={{ selected, disabled }}
       disabled={disabled}
-      style={({ pressed }) => [
-        styles.card,
-        selected && styles.selectedCard,
-        disabled && styles.disabledCard,
-        pressed && !disabled && styles.pressed,
-      ]}
+      selected={selected}
+      style={styles.card}
       onPress={onPress}
     >
       <View style={styles.iconBox}>
@@ -51,7 +46,7 @@ export function OnboardingOptionCard({
       >
         {label}
       </Typography>
-    </Pressable>
+    </Card>
   );
 }
 
@@ -63,18 +58,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     paddingBottom: 18,
     gap: 12,
-    borderRadius: radius.sm,
-    backgroundColor: colors.gray.white,
-    borderWidth: 1,
-    borderColor: colors.gray.white,
-  },
-  selectedCard: {
-    borderColor: colors.primary,
-    backgroundColor: 'rgba(36,141,254,0.1)',
-  },
-  disabledCard: {
-    backgroundColor: colors.alpha.white20,
-    borderColor: colors.gray[200],
   },
   iconBox: {
     width: 89,
@@ -85,8 +68,5 @@ const styles = StyleSheet.create({
   emoji: {
     fontSize: 48,
     lineHeight: 57,
-  },
-  pressed: {
-    opacity: 0.72,
   },
 });

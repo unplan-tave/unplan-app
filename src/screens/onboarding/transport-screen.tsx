@@ -1,12 +1,11 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
+import { OnboardingOptionGrid } from '@/components/onboarding/onboarding-option-grid';
+import { OnboardingStepLayout } from '@/components/onboarding/onboarding-step-layout';
 import { t } from '@/lib/i18n';
-
-import { OnboardingOptionGrid } from './components/OnboardingOptionGrid';
-import { OnboardingStepLayout } from './components/OnboardingStepLayout';
-import { type TransportOptionId } from './model';
-import { useOnboardingStore } from './use-onboarding-store';
+import { type TransportOptionId } from '@/state/onboarding/model';
+import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
 const transportOptions: ReadonlyArray<{ id: TransportOptionId; label: string; icon: string }> = [
   { id: 'walk', label: t('onboarding.transport.walk'), icon: '🚶' },

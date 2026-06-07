@@ -1,1 +1,1 @@
-export { RecoveryScreen as default } from '@/features/onboarding/recovery-screen';
+export { RecoveryScreen as default } from '@/screens/onboarding/recovery-screen';
