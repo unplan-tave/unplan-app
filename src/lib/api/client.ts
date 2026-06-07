@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 import { API_TIMEOUT } from '@/constants';
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+import { Config } from '@/constants/config';
+import { tokenStorage } from '@/lib/auth/token-storage';
 
 export const apiClient = axios.create({
-  baseURL: API_URL,
+  baseURL: Config.apiUrl,
   timeout: API_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
@@ -13,7 +13,15 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use(
-  (config) => config,
+  async (config) => {
+    const accessToken = await tokenStorage.getAccessToken();
+
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+
+    return config;
+  },
   (error: unknown) => Promise.reject(error),
 );
 
