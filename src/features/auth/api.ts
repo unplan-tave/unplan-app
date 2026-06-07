@@ -20,6 +20,10 @@ function getSocialAuthEndpoint(provider: SocialLoginRequest['provider']): string
   return `/auth/${provider}`;
 }
 
+function getSocialAuthTokenKey(provider: SocialLoginRequest['provider']): string {
+  return `${provider}_access_token`;
+}
+
 export async function submitSocialLogin({
   accessToken,
   deviceId,
@@ -28,7 +32,7 @@ export async function submitSocialLogin({
   const response = await apiClient.post<
     ApiResponse<BackendSocialLoginResponse> | BackendSocialLoginResponse
   >(getSocialAuthEndpoint(provider), {
-    kakao_access_token: accessToken,
+    [getSocialAuthTokenKey(provider)]: accessToken,
     device_id: deviceId,
   });
 
