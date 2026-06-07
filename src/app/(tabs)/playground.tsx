@@ -1,1 +1,1 @@
-export { PlaygroundScreen as default } from '@/features/playground/playground-screen';
+export { PlaygroundScreen as default } from '@/screens/playground/playground-screen';

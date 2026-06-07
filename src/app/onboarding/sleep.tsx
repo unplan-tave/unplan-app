@@ -1,1 +1,1 @@
-export { SleepScreen as default } from '@/features/onboarding/sleep-screen';
+export { SleepScreen as default } from '@/screens/onboarding/sleep-screen';

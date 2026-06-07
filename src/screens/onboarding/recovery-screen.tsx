@@ -1,13 +1,12 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
+import { OnboardingOptionGrid } from '@/components/onboarding/onboarding-option-grid';
+import { OnboardingStepLayout } from '@/components/onboarding/onboarding-step-layout';
 import { t } from '@/lib/i18n';
-
-import { OnboardingOptionGrid } from './components/OnboardingOptionGrid';
-import { OnboardingStepLayout } from './components/OnboardingStepLayout';
-import { type RecoveryOptionId } from './model';
-import { onboardingRoutes } from './routes';
-import { useOnboardingStore } from './use-onboarding-store';
+import { type RecoveryOptionId } from '@/state/onboarding/model';
+import { onboardingRoutes } from '@/state/onboarding/routes';
+import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
 const recoveryOptions: ReadonlyArray<{ id: RecoveryOptionId; label: string; icon: string }> = [
   { id: 'nap', label: t('onboarding.recovery.nap'), icon: '😴' },

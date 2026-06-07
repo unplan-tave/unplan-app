@@ -1,10 +1,10 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect } from 'react';
 
-import { useAuth } from '@/features/auth/hooks/use-auth';
-import { onboardingRoutes } from '@/features/onboarding/routes';
-import { SplashScreen } from '@/features/onboarding/splash-screen';
-import { useOnboardingStore } from '@/features/onboarding/use-onboarding-store';
+import { useAuth } from '@/hooks/use-auth';
+import { SplashScreen } from '@/screens/onboarding/splash-screen';
+import { onboardingRoutes } from '@/state/onboarding/routes';
+import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
 export default function IndexRoute() {
   const router = useRouter();

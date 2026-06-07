@@ -1,1 +1,1 @@
-export { TransportScreen as default } from '@/features/onboarding/transport-screen';
+export { TransportScreen as default } from '@/screens/onboarding/transport-screen';

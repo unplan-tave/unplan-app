@@ -1,7 +1,7 @@
 import { produce } from 'immer';
 import { create } from 'zustand';
 
-import type { User } from '@/features/auth/model';
+import type { User } from '@/state/auth/model';
 
 interface AuthState {
   user: User | null;
