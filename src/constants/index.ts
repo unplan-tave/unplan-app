@@ -2,6 +2,7 @@ export const API_TIMEOUT = 10_000; // 10 seconds
 
 export const STORAGE_KEYS = {
   AUTH_TOKEN: 'auth_token',
+  DEVICE_ID: 'device_id',
   REFRESH_TOKEN: 'refresh_token',
   USER_PREFERENCES: 'user_preferences',
 } as const;
