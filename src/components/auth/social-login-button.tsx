@@ -8,6 +8,7 @@ type SocialProvider = 'apple' | 'google' | 'kakao';
 interface SocialLoginButtonProps {
   label: string;
   provider: SocialProvider;
+  disabled?: boolean;
   onPress: () => void;
 }
 
@@ -32,17 +33,25 @@ const providerStyles = {
   },
 } as const;
 
-export function SocialLoginButton({ label, provider, onPress }: SocialLoginButtonProps) {
+export function SocialLoginButton({
+  label,
+  provider,
+  disabled = false,
+  onPress,
+}: SocialLoginButtonProps) {
   const theme = providerStyles[provider];
 
   return (
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      disabled={disabled}
       style={({ pressed }) => [
         styles.button,
         { backgroundColor: theme.backgroundColor, borderColor: theme.borderColor },
-        pressed && styles.pressed,
+        disabled && styles.disabled,
+        pressed && !disabled && styles.pressed,
       ]}
       onPress={onPress}
     >
@@ -86,5 +95,8 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.72,
+  },
+  disabled: {
+    opacity: 0.5,
   },
 });

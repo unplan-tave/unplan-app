@@ -8,6 +8,8 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { fontFamilyWeight } from '@/constants/typography';
+import { initializeKakaoAuthSDK } from '@/lib/auth/kakao-sdk';
+import { useAuthStore } from '@/state/auth/use-auth-store';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +36,18 @@ export default function RootLayout() {
   useEffect(() => {
     if (error) throw error;
   }, [error]);
+
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        await Promise.all([initializeKakaoAuthSDK(), useAuthStore.getState().hydrateSession()]);
+      } catch (appInitError: unknown) {
+        console.error('Failed to initialize app session.', appInitError);
+      }
+    };
+
+    void initializeApp();
+  }, []);
 
   if (!loaded) {
     return null;
