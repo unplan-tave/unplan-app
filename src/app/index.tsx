@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { colors } from '@/constants/theme';
@@ -12,16 +12,15 @@ export default function IndexRoute() {
   const router = useRouter();
   const { hasHydratedSession, isAuthenticated } = useAuth();
   const hasCompletedOnboarding = useOnboardingStore((state) => state.hasCompletedOnboarding);
-  const hydrateOnboarding = useOnboardingStore((state) => state.hydrateOnboarding);
+  const hasNavigatedRef = useRef(false);
+  const [isSplashDone, setIsSplashDone] = useState(false);
 
   useEffect(() => {
-    hydrateOnboarding();
-  }, [hydrateOnboarding]);
-
-  const handleSplashFinish = useCallback(() => {
-    if (!hasHydratedSession) {
+    if (!isSplashDone || !hasHydratedSession || hasNavigatedRef.current) {
       return;
     }
+
+    hasNavigatedRef.current = true;
 
     if (!isAuthenticated) {
       router.replace('/login');
@@ -34,7 +33,15 @@ export default function IndexRoute() {
     }
 
     router.replace('/(tabs)');
-  }, [hasCompletedOnboarding, hasHydratedSession, isAuthenticated, router]);
+  }, [hasCompletedOnboarding, hasHydratedSession, isAuthenticated, isSplashDone, router]);
+
+  const handleSplashFinish = useCallback(() => {
+    setIsSplashDone(true);
+  }, []);
+
+  if (!isSplashDone) {
+    return <SplashScreen onFinish={handleSplashFinish} />;
+  }
 
   if (!hasHydratedSession) {
     return (
@@ -44,7 +51,11 @@ export default function IndexRoute() {
     );
   }
 
-  return <SplashScreen onFinish={handleSplashFinish} />;
+  return (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator accessibilityLabel="초기 화면 이동 중" color={colors.primary} />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
