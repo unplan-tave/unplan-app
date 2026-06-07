@@ -1,10 +1,27 @@
 export interface User {
   id: string;
-  email: string;
+  email?: string | null;
   name: string;
   createdAt: string;
   updatedAt: string;
 }
+
+export type SocialProvider = 'kakao' | 'google' | 'apple';
+
+export interface AuthSession {
+  accessToken: string;
+  refreshToken?: string | null;
+  isNewUser?: boolean;
+  user?: User | null;
+}
+
+export interface SocialLoginRequest {
+  provider: SocialProvider;
+  accessToken: string;
+  deviceId: string;
+}
+
+export interface SocialLoginResponse extends AuthSession {}
 
 export interface Schedule {
   id: string;

@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { SocialLoginButton } from '@/components/auth/social-login-button';
 import { BrandLogo } from '@/components/ui/BrandLogo';
@@ -7,23 +8,37 @@ import { HomeIndicator } from '@/components/ui/Footer';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
-import { useAuth } from '@/hooks/use-auth';
 import { t } from '@/lib/i18n';
+import { getSocialLoginErrorMessage, loginWithKakao } from '@/state/auth/social-login';
 import { onboardingRoutes } from '@/state/onboarding/routes';
+import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
 export function LoginScreen() {
   const router = useRouter();
-  const { setUser } = useAuth();
+  const hasCompletedOnboarding = useOnboardingStore((state) => state.hasCompletedOnboarding);
+  const [isKakaoLoginLoading, setIsKakaoLoginLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSocialLogin = (provider: 'apple' | 'google' | 'kakao') => {
-    setUser({
-      id: `${provider}-preview-user`,
-      email: `${provider}@unplan.local`,
-      name: 'Unplan User',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-    router.replace(onboardingRoutes.recovery);
+  const handleUnavailableLogin = () => {
+    setErrorMessage('아직 지원하지 않는 로그인 방식입니다.');
+  };
+
+  const handleKakaoLogin = async () => {
+    if (isKakaoLoginLoading) {
+      return;
+    }
+
+    setIsKakaoLoginLoading(true);
+    setErrorMessage(null);
+
+    try {
+      await loginWithKakao();
+      router.replace(hasCompletedOnboarding ? '/(tabs)' : onboardingRoutes.recovery);
+    } catch (error) {
+      setErrorMessage(getSocialLoginErrorMessage(error));
+    } finally {
+      setIsKakaoLoginLoading(false);
+    }
   };
 
   return (
@@ -40,19 +55,39 @@ export function LoginScreen() {
           <SocialLoginButton
             provider="apple"
             label={t('auth.login.apple')}
-            onPress={() => handleSocialLogin('apple')}
+            disabled={isKakaoLoginLoading}
+            onPress={handleUnavailableLogin}
           />
           <SocialLoginButton
             provider="google"
             label={t('auth.login.google')}
-            onPress={() => handleSocialLogin('google')}
+            disabled={isKakaoLoginLoading}
+            onPress={handleUnavailableLogin}
           />
           <SocialLoginButton
             provider="kakao"
-            label={t('auth.login.kakao')}
-            onPress={() => handleSocialLogin('kakao')}
+            label={isKakaoLoginLoading ? '로그인 중' : t('auth.login.kakao')}
+            disabled={isKakaoLoginLoading}
+            onPress={handleKakaoLogin}
           />
+          {isKakaoLoginLoading ? (
+            <ActivityIndicator
+              accessibilityLabel="카카오 로그인 처리 중"
+              color={colors.gray[800]}
+              style={styles.loadingIndicator}
+            />
+          ) : null}
         </View>
+        {errorMessage ? (
+          <Typography
+            variant="bodyS"
+            color={colors.secondary}
+            align="center"
+            accessibilityLiveRegion="polite"
+          >
+            {errorMessage}
+          </Typography>
+        ) : null}
         <Typography variant="caption" color={colors.gray[600]} align="center" style={styles.terms}>
           {t('auth.login.termsNotice')}
         </Typography>
@@ -80,6 +115,11 @@ const styles = StyleSheet.create({
   buttonGroup: {
     width: '100%',
     gap: 12,
+  },
+  loadingIndicator: {
+    position: 'absolute',
+    right: spacing[4],
+    bottom: 20,
   },
   terms: {
     width: '100%',
