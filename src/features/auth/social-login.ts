@@ -6,6 +6,7 @@ import {
 import { isAxiosError } from 'axios';
 
 import { ensureKakaoAuthSDKInitialized } from '@/lib/auth/kakao-sdk';
+import { getDeviceId } from '@/lib/device/device-id';
 
 import { submitSocialLogin } from './api';
 import { type AuthSession } from './model';
@@ -108,9 +109,11 @@ async function requestKakaoAccessToken(): Promise<KakaoLoginToken> {
 export async function loginWithKakao(): Promise<AuthSession> {
   try {
     const kakaoToken = await requestKakaoAccessToken();
+    const deviceId = await getDeviceId();
     const session = await submitSocialLogin({
+      accessToken: kakaoToken.accessToken,
+      deviceId,
       provider: 'kakao',
-      token: kakaoToken.accessToken,
     });
 
     await useAuthStore.getState().setSession(session);
