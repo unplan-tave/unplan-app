@@ -923,7 +923,7 @@ chore(deps): add react-native-reanimated v3.8.0
 # PR/Push → develop, main: 린트 + 타입체크 + 테스트
 ci.yml
 
-# develop 머지: EAS Preview 빌드 (내부 테스트용)
+# develop 머지: EAS Preview 빌드
 preview-build.yml
 
 # v*.*.* 태그 또는 수동 트리거: EAS Production 빌드
@@ -963,6 +963,10 @@ jobs:
   "build": {
     "development": {
       "developmentClient": true,
+      "distribution": "internal"
+    },
+    "development-simulator": {
+      "developmentClient": true,
       "distribution": "internal",
       "ios": { "simulator": true }
     },
@@ -976,6 +980,19 @@ jobs:
     }
   }
 }
+```
+
+### iOS Preview 빌드 정책
+```
+현재 단계:
+  - 유료 Apple Developer 팀 credential이 아직 없으므로 iOS preview CI는 simulator build로 검증한다.
+  - preview-build.yml의 iOS step은 development-simulator 프로파일을 사용한다.
+  - 결과물은 iOS Simulator 전용이며 실제 iPhone, TestFlight, App Store 배포에는 사용할 수 없다.
+
+Apple Developer credential 준비 후:
+  - preview-build.yml의 iOS step을 preview 프로파일로 되돌린다.
+  - EAS에서 iOS internal distribution certificate/provisioning profile을 준비한다.
+  - 필요하면 eas build --platform ios --profile preview --non-interactive --refresh-ad-hoc-provisioning-profile을 사용한다.
 ```
 
 ### 스토어 제출 자동화 정책

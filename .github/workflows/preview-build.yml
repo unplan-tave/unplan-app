@@ -32,5 +32,7 @@ jobs:
       - name: Build preview (Android)
         run: eas build --platform android --profile preview --non-interactive
 
-      - name: Build preview (iOS)
-        run: eas build --platform ios --profile preview --non-interactive
+      - name: Build preview (iOS simulator)
+        # iOS device/internal builds require paid Apple Developer credentials.
+        # Until those credentials are available, CI validates iOS with a simulator build.
+        run: eas build --platform ios --profile development-simulator --non-interactive
