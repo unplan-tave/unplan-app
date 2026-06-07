@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import { useCallback, useMemo } from 'react';
+import { type GestureResponderEvent, PanResponder, StyleSheet, View } from 'react-native';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
@@ -6,7 +7,14 @@ import { t } from '@/lib/i18n';
 
 interface SleepConditionCircleProps {
   targetSleepMinutes: number;
+  onTargetSleepMinutesChange: (minutes: number) => void;
 }
+
+const CIRCLE_SIZE = 300;
+const CIRCLE_RADIUS = CIRCLE_SIZE / 2;
+const TARGET_LINE_LENGTH = 212;
+const SLEEP_MINUTES_MAX = 720;
+const SLEEP_STEP_MINUTES = 15;
 
 function formatMinutes(totalMinutes: number) {
   const hours = Math.floor(totalMinutes / 60);
@@ -15,7 +23,65 @@ function formatMinutes(totalMinutes: number) {
   return `${hours}시간 ${minutes}분`;
 }
 
-export function SleepConditionCircle({ targetSleepMinutes }: SleepConditionCircleProps) {
+function clampTargetSleepMinutes(minutes: number) {
+  return Math.max(0, Math.min(SLEEP_MINUTES_MAX, minutes));
+}
+
+function getTargetSleepMinutesFromLocation(locationX: number, locationY: number) {
+  const deltaX = locationX - CIRCLE_RADIUS;
+  const deltaY = locationY - CIRCLE_RADIUS;
+  const angleFromRight = Math.atan2(deltaY, deltaX);
+  const clockwiseFromTop = (angleFromRight + Math.PI / 2 + Math.PI * 2) % (Math.PI * 2);
+  const rawMinutes = (clockwiseFromTop / (Math.PI * 2)) * SLEEP_MINUTES_MAX;
+
+  return clampTargetSleepMinutes(Math.round(rawMinutes / SLEEP_STEP_MINUTES) * SLEEP_STEP_MINUTES);
+}
+
+function getTargetGeometry(targetSleepMinutes: number) {
+  const clampedMinutes = clampTargetSleepMinutes(targetSleepMinutes);
+  const angle = (clampedMinutes / SLEEP_MINUTES_MAX) * Math.PI * 2 - Math.PI / 2;
+  const badgeRadius = CIRCLE_RADIUS - 42;
+
+  return {
+    lineRotation: `${angle}rad`,
+    badgeLeft: CIRCLE_RADIUS + Math.cos(angle) * badgeRadius - 34,
+    badgeTop: CIRCLE_RADIUS + Math.sin(angle) * badgeRadius - 12,
+  };
+}
+
+export function SleepConditionCircle({
+  targetSleepMinutes,
+  onTargetSleepMinutesChange,
+}: SleepConditionCircleProps) {
+  const targetGeometry = getTargetGeometry(targetSleepMinutes);
+  const updateTargetFromEvent = useCallback(
+    (event: GestureResponderEvent) => {
+      const { locationX, locationY } = event.nativeEvent;
+
+      onTargetSleepMinutesChange(getTargetSleepMinutesFromLocation(locationX, locationY));
+    },
+    [onTargetSleepMinutesChange],
+  );
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderGrant: updateTargetFromEvent,
+        onPanResponderMove: updateTargetFromEvent,
+      }),
+    [updateTargetFromEvent],
+  );
+  const handleAccessibilityAction = useCallback(
+    (event: { nativeEvent: { actionName: string } }) => {
+      const delta =
+        event.nativeEvent.actionName === 'increment' ? SLEEP_STEP_MINUTES : -SLEEP_STEP_MINUTES;
+
+      onTargetSleepMinutesChange(clampTargetSleepMinutes(targetSleepMinutes + delta));
+    },
+    [onTargetSleepMinutesChange, targetSleepMinutes],
+  );
+
   return (
     <View style={styles.container}>
       <Typography variant="bodyS" color={colors.gray[500]} align="center">
@@ -25,7 +91,18 @@ export function SleepConditionCircle({ targetSleepMinutes }: SleepConditionCircl
         <Typography variant="bodyS" color={colors.gray[500]} style={styles.leftAxis}>
           9 시간
         </Typography>
-        <View style={styles.circle}>
+        <View
+          {...panResponder.panHandlers}
+          accessibilityActions={[
+            { name: 'increment', label: '15분 늘리기' },
+            { name: 'decrement', label: '15분 줄이기' },
+          ]}
+          accessibilityLabel="목표 수면 기준선"
+          accessibilityRole="adjustable"
+          accessibilityValue={{ text: formatMinutes(targetSleepMinutes) }}
+          onAccessibilityAction={handleAccessibilityAction}
+          style={styles.circle}
+        >
           <View style={[styles.quadrant, styles.excess]} />
           <View style={[styles.quadrant, styles.risk]} />
           <View style={[styles.quadrant, styles.good]} />
@@ -42,12 +119,26 @@ export function SleepConditionCircle({ targetSleepMinutes }: SleepConditionCircl
           <Typography variant="titleS" color={colors.gray.white} style={styles.lackLabel}>
             {t('onboarding.sleep.lack')}
           </Typography>
-          <View style={styles.targetLine}>
-            <View style={styles.targetBadge}>
-              <Typography variant="caption" color={colors.gray.white}>
-                {formatMinutes(targetSleepMinutes)}
-              </Typography>
-            </View>
+          <View
+            style={[
+              styles.targetLine,
+              {
+                transform: [{ rotate: targetGeometry.lineRotation }],
+              },
+            ]}
+          />
+          <View
+            style={[
+              styles.targetBadge,
+              {
+                left: targetGeometry.badgeLeft,
+                top: targetGeometry.badgeTop,
+              },
+            ]}
+          >
+            <Typography variant="caption" color={colors.gray.white}>
+              {formatMinutes(targetSleepMinutes)}
+            </Typography>
           </View>
           <View style={[styles.timeBadge, styles.badgeLeft]}>
             <Typography variant="bodyM" color={colors.gray[700]}>
@@ -122,10 +213,10 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '90deg' }],
   },
   circle: {
-    width: 300,
-    height: 300,
+    width: CIRCLE_SIZE,
+    height: CIRCLE_SIZE,
     overflow: 'hidden',
-    borderRadius: 150,
+    borderRadius: CIRCLE_RADIUS,
     backgroundColor: colors.gray[200],
   },
   quadrant: {
@@ -175,16 +266,19 @@ const styles = StyleSheet.create({
   },
   targetLine: {
     position: 'absolute',
-    left: 52,
-    top: 200,
-    width: 124,
-    height: 28,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    transform: [{ rotate: '-45deg' }],
+    left: CIRCLE_RADIUS - TARGET_LINE_LENGTH / 2,
+    top: CIRCLE_RADIUS - 1,
+    width: TARGET_LINE_LENGTH,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: colors.secondary,
   },
   targetBadge: {
+    position: 'absolute',
+    minWidth: 68,
+    alignItems: 'center',
     paddingHorizontal: 8,
+    paddingVertical: 2,
     borderRadius: 4,
     backgroundColor: colors.secondary,
   },

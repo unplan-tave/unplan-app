@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { OnboardingOptionCard } from './onboarding-option-card';
 
@@ -13,7 +13,7 @@ interface OnboardingOptionGridProps<TOptionId extends string> {
   options: ReadonlyArray<OnboardingOption & { id: TOptionId }>;
   selectedIds: readonly TOptionId[];
   onToggle: (optionId: TOptionId) => void;
-  style?: object;
+  style?: StyleProp<ViewStyle>;
 }
 
 export function OnboardingOptionGrid<TOptionId extends string>({

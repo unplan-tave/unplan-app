@@ -6,19 +6,25 @@ import { OnboardingStepLayout } from '@/components/onboarding/onboarding-step-la
 import { t } from '@/lib/i18n';
 import { type TransportOptionId } from '@/state/onboarding/model';
 import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
+import { type TranslationKey } from '@/translations/ko';
 
-const transportOptions: ReadonlyArray<{ id: TransportOptionId; label: string; icon: string }> = [
-  { id: 'walk', label: t('onboarding.transport.walk'), icon: '🚶' },
-  { id: 'bicycle', label: t('onboarding.transport.bicycle'), icon: '🚲' },
-  { id: 'publicTransit', label: t('onboarding.transport.publicTransit'), icon: '🚆' },
-  { id: 'car', label: t('onboarding.transport.car'), icon: '🚗' },
-];
+const transportOptionDefinitions = [
+  { id: 'walk', labelKey: 'onboarding.transport.walk', icon: '🚶' },
+  { id: 'bicycle', labelKey: 'onboarding.transport.bicycle', icon: '🚲' },
+  { id: 'publicTransit', labelKey: 'onboarding.transport.publicTransit', icon: '🚆' },
+  { id: 'car', labelKey: 'onboarding.transport.car', icon: '🚗' },
+] satisfies ReadonlyArray<{ id: TransportOptionId; labelKey: TranslationKey; icon: string }>;
 
 export function TransportScreen() {
   const router = useRouter();
   const selectedIds = useOnboardingStore((state) => state.preferences.transportOptionIds);
   const toggleTransportOption = useOnboardingStore((state) => state.toggleTransportOption);
   const completeOnboarding = useOnboardingStore((state) => state.completeOnboarding);
+  const transportOptions = transportOptionDefinitions.map((option) => ({
+    id: option.id,
+    icon: option.icon,
+    label: t(option.labelKey),
+  }));
 
   const handleConfirm = () => {
     completeOnboarding();
