@@ -11,12 +11,14 @@ export type SocialProvider = 'kakao' | 'google' | 'apple';
 export interface AuthSession {
   accessToken: string;
   refreshToken?: string | null;
+  isNewUser?: boolean;
   user?: User | null;
 }
 
 export interface SocialLoginRequest {
   provider: SocialProvider;
-  token: string;
+  accessToken: string;
+  deviceId: string;
 }
 
 export interface SocialLoginResponse extends AuthSession {}
