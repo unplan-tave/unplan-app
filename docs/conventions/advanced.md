@@ -987,6 +987,7 @@ jobs:
 현재 단계:
   - 유료 Apple Developer 팀 credential이 아직 없으므로 iOS preview CI는 simulator build로 검증한다.
   - preview-build.yml의 iOS step은 development-simulator 프로파일을 사용한다.
+  - Android preview와 iOS simulator preview는 GitHub Actions job timeout을 피하기 위해 병렬 job으로 실행한다.
   - 결과물은 iOS Simulator 전용이며 실제 iPhone, TestFlight, App Store 배포에는 사용할 수 없다.
 
 Apple Developer credential 준비 후:
