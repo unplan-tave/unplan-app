@@ -16,6 +16,9 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.unplan.app',
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
     android: {
       adaptiveIcon: {
