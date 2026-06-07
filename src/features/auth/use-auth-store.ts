@@ -1,43 +1,72 @@
 import { produce } from 'immer';
 import { create } from 'zustand';
 
-import type { User } from '@/features/auth/model';
+import { tokenStorage } from '@/lib/auth/token-storage';
+
+import type { AuthSession, User } from '@/features/auth/model';
 
 interface AuthState {
   user: User | null;
   token: string | null;
+  refreshToken: string | null;
+  hasHydratedSession: boolean;
   isAuthenticated: boolean;
-  setUser: (user: User) => void;
-  setToken: (token: string) => void;
-  logout: () => void;
+  setSession: (session: AuthSession) => Promise<void>;
+  hydrateSession: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()((set) => ({
   user: null,
   token: null,
+  refreshToken: null,
+  hasHydratedSession: false,
   isAuthenticated: false,
 
-  setUser: (user: User) =>
+  setSession: async (session: AuthSession) => {
+    await tokenStorage.setTokens({
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+    });
+
     set(
       produce((state: AuthState) => {
-        state.user = user;
+        state.user = session.user ?? null;
+        state.token = session.accessToken;
+        state.refreshToken = session.refreshToken ?? null;
+        state.hasHydratedSession = true;
         state.isAuthenticated = true;
       }),
-    ),
+    );
+  },
 
-  setToken: (token: string) =>
+  hydrateSession: async () => {
+    const [accessToken, refreshToken] = await Promise.all([
+      tokenStorage.getAccessToken(),
+      tokenStorage.getRefreshToken(),
+    ]);
+
     set(
       produce((state: AuthState) => {
-        state.token = token;
+        state.token = accessToken;
+        state.refreshToken = refreshToken;
+        state.hasHydratedSession = true;
+        state.isAuthenticated = Boolean(accessToken);
       }),
-    ),
+    );
+  },
 
-  logout: () =>
+  logout: async () => {
+    await tokenStorage.clearTokens();
+
     set(
       produce((state: AuthState) => {
         state.user = null;
         state.token = null;
+        state.refreshToken = null;
+        state.hasHydratedSession = true;
         state.isAuthenticated = false;
       }),
-    ),
+    );
+  },
 }));
