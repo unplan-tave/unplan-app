@@ -1,11 +1,47 @@
-import { Redirect } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { colors } from '@/constants/theme';
-import { useAuth } from '@/features/auth/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth';
+import { SplashScreen } from '@/screens/onboarding/splash-screen';
+import { onboardingRoutes } from '@/state/onboarding/routes';
+import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
 export default function IndexRoute() {
+  const router = useRouter();
   const { hasHydratedSession, isAuthenticated } = useAuth();
+  const hasCompletedOnboarding = useOnboardingStore((state) => state.hasCompletedOnboarding);
+  const hasNavigatedRef = useRef(false);
+  const [isSplashDone, setIsSplashDone] = useState(false);
+
+  useEffect(() => {
+    if (!isSplashDone || !hasHydratedSession || hasNavigatedRef.current) {
+      return;
+    }
+
+    hasNavigatedRef.current = true;
+
+    if (!isAuthenticated) {
+      router.replace('/login');
+      return;
+    }
+
+    if (!hasCompletedOnboarding) {
+      router.replace(onboardingRoutes.recovery);
+      return;
+    }
+
+    router.replace('/(tabs)');
+  }, [hasCompletedOnboarding, hasHydratedSession, isAuthenticated, isSplashDone, router]);
+
+  const handleSplashFinish = useCallback(() => {
+    setIsSplashDone(true);
+  }, []);
+
+  if (!isSplashDone) {
+    return <SplashScreen onFinish={handleSplashFinish} />;
+  }
 
   if (!hasHydratedSession) {
     return (
@@ -15,11 +51,11 @@ export default function IndexRoute() {
     );
   }
 
-  if (isAuthenticated) {
-    return <Redirect href="/(tabs)" />;
-  }
-
-  return <Redirect href="/login" />;
+  return (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator accessibilityLabel="초기 화면 이동 중" color={colors.primary} />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

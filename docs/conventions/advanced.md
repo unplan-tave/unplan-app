@@ -1123,21 +1123,22 @@ Zustand + React Query 조합 선택
 ## 20. 폴더 내 파일 한도 & 분리 기준
 
 ```txt
-기본 단위: feature
+기본 단위: route/screen/domain
 
-features/<name>/components/: 파일 8개 초과 시 하위 도메인 폴더 분리
-features/<name>/hooks/: 파일 6개 초과 시 목적별 분리 (query/, form/, interaction/)
-features/<name>/utils/: 파일 6개 초과 시 model 성격 기준으로 분리
-features/<name>/__tests__/: 테스트 파일 10개 초과 시 단위별 분리 (screen/, hooks/, api/)
+screens/<domain>/: 화면 파일 8개 초과 시 하위 도메인 폴더 분리
+components/<domain>/: 파일 8개 초과 시 하위 도메인 폴더 분리
+hooks/: 파일 8개 초과 시 목적별 분리 (query/, form/, interaction/)
+lib/utils/: 파일 8개 초과 시 model 성격 기준으로 분리
+__tests__ 또는 *.test.ts(x): 테스트 파일 10개 초과 시 단위별 분리 (screen/, hooks/, api/)
 
-feature store 규칙:
+state store 규칙:
 - 스토어 1개 = 파일 1개
-- feature 전용 스토어는 features/<name>/use-*-store.ts에 둔다
-- 전역 앱 상태만 lib 또는 별도 전역 레이어로 승격한다
+- 도메인 스토어는 state/<domain>/use-*-store.ts에 둔다
+- 도메인 모델은 state/<domain>/model.ts에 둔다
 
 전역 승격 기준:
-- 2개 이상 feature에서 재사용
-- feature 도메인 지식이 없음
+- 2개 이상 화면군에서 재사용
+- 특정 화면군 도메인 지식이 없음
 - 위 조건을 만족할 때만 components/ui 또는 lib/* 로 이동
 ```
 

@@ -8,8 +8,9 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { fontFamilyWeight } from '@/constants/typography';
-import { useAuthStore } from '@/features/auth/use-auth-store';
 import { initializeKakaoAuthSDK } from '@/lib/auth/kakao-sdk';
+import { useAuthStore } from '@/state/auth/use-auth-store';
+import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,6 +41,7 @@ export default function RootLayout() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        useOnboardingStore.getState().hydrateOnboarding();
         await Promise.all([initializeKakaoAuthSDK(), useAuthStore.getState().hydrateSession()]);
       } catch (appInitError: unknown) {
         console.error('Failed to initialize app session.', appInitError);
@@ -58,7 +60,9 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <StatusBar style="auto" />
         <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
       </QueryClientProvider>
