@@ -3,7 +3,7 @@ import { create } from 'zustand';
 
 import { tokenStorage } from '@/lib/auth/token-storage';
 
-import type { AuthSession, User } from '@/features/auth/model';
+import type { AuthSession, User } from '@/state/auth/model';
 
 interface AuthState {
   user: User | null;

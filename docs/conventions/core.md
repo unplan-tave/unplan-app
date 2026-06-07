@@ -31,6 +31,7 @@
 src/
 ├── app/                        # Expo Router 라우트 파일만 위치
 │   ├── _layout.tsx
+│   ├── index.tsx
 │   ├── (auth)/
 │   │   └── login.tsx           # re-export only
 │   ├── (tabs)/
@@ -40,37 +41,36 @@ src/
 │   └── schedule/
 │       └── [id].tsx            # re-export only
 │
-├── features/                   # 기능(도메인) 중심 구조
+├── screens/                    # 라우트가 렌더링하는 화면 구현
 │   ├── auth/
-│   │   ├── login-screen.tsx
-│   │   ├── api.ts
-│   │   ├── model.ts
-│   │   ├── use-auth-store.ts
-│   │   ├── hooks/
-│   │   ├── components/
-│   │   ├── utils/
-│   │   └── __tests__/
+│   │   └── login-screen.tsx
+│   ├── onboarding/
+│   │   ├── recovery-screen.tsx
+│   │   └── sleep-screen.tsx
 │   └── schedule/
-│       ├── schedule-screen.tsx
-│       ├── api.ts
-│       ├── model.ts
-│       ├── use-schedule-store.ts
-│       ├── hooks/
-│       ├── components/
-│       ├── utils/
-│       └── __tests__/
+│       └── schedule-screen.tsx
 │
-├── components/
-│   └── ui/                     # 전역 재사용 UI 프리미티브/디자인 시스템
+├── components/                 # 재사용 컴포넌트
+│   ├── ui/                     # 전역 base primitive / 디자인 시스템
+│   ├── auth/                   # 인증 화면군 조합 컴포넌트
+│   └── onboarding/             # 온보딩 화면군 조합 컴포넌트
+│
+├── state/                      # 앱 상태, 도메인 모델, store
+│   ├── auth/
+│   │   ├── model.ts
+│   │   └── use-auth-store.ts
+│   └── onboarding/
+│       ├── model.ts
+│       └── use-onboarding-store.ts
 │
 ├── lib/                        # 앱 전역 인프라/크로스컷팅
 │   ├── api/
 │   ├── auth/
 │   ├── i18n/
 │   ├── storage/
-│   ├── hooks/
 │   └── utils/
 │
+├── hooks/                      # 앱 전역 hook
 ├── constants/
 ├── types/
 ├── translations/
@@ -78,11 +78,14 @@ src/
 ```
 
 **규칙:**
-- `app/`은 라우팅 엔트리만 담당하고, 화면/비즈니스 로직은 `features/`에 둔다.
-- 같은 feature 내부 참조는 상대 경로를 사용하고, feature 간 참조는 `@/features/...` 절대 경로를 사용한다.
-- `features/<name>/components|hooks|utils`는 외부 feature에서 직접 import하지 않는다.
-- 공통 컴포넌트는 "2개 이상 feature에서 재사용 + 도메인 로직 없음"일 때만 `components/ui`로 승격한다.
-- 배럴 export(`index.ts`)는 기본 금지한다.
+- `app/`은 Expo Router route/layout 파일만 담당한다.
+- 화면 구현은 `screens/<domain>/*-screen.tsx`에 둔다.
+- 전역 base primitive는 `components/ui`에 둔다.
+- 화면군에서 재사용되는 조합 컴포넌트는 `components/<domain>`에 둔다.
+- 앱 상태, 도메인 모델, store는 `state/<domain>`에 둔다.
+- 앱 전역 hook은 `hooks/`에 둔다.
+- 새 컴포넌트는 기존 `components/ui` primitive를 먼저 기반으로 구현한다. primitive가 부족하면 도메인 컴포넌트에서 중복 구현하지 말고 primitive를 확장한다.
+- 배럴 export(`index.ts`)는 기본 금지하되, `components/ui`처럼 import 경로 안정성이 필요한 base primitive에는 제한적으로 허용한다.
 
 ---
 
@@ -93,11 +96,12 @@ src/
 | 대상 | 규칙 | 예시 |
 |------|------|------|
 | 라우트 파일(`src/app`) | Expo Router 규칙 준수 | `index.tsx`, `[id].tsx`, `_layout.tsx` |
-| Screen 파일(`features`) | kebab-case + `-screen.tsx` | `schedule-detail-screen.tsx` |
+| Screen 파일(`src/screens`) | kebab-case + `-screen.tsx` | `schedule-detail-screen.tsx` |
+| 컴포넌트 파일 | kebab-case 또는 기존 `components/ui` 폴더 규칙 유지 | `social-login-button.tsx` |
 | 훅 파일 | kebab-case, `use-` 접두사 | `use-schedule-filter.ts` |
-| feature store 파일 | kebab-case, `use-*-store.ts` | `use-schedule-store.ts` |
-| feature API 파일 | 단일 `api.ts` | `api.ts` |
-| feature 모델 파일 | 단일 `model.ts` | `model.ts` |
+| store 파일(`src/state`) | kebab-case, `use-*-store.ts` | `use-schedule-store.ts` |
+| API 파일 | 단일 `api.ts` 또는 도메인별 kebab-case | `api.ts`, `schedule-api.ts` |
+| 모델 파일(`src/state`) | 단일 `model.ts` | `model.ts` |
 | 유틸 파일 | kebab-case | `format-schedule-time.ts` |
 | 전역 상수 파일 | camelCase 또는 kebab-case 일관 유지 | `colors.ts`, `storage-keys.ts` |
 | 테스트 파일 | 대상파일명.test.ts(x) | `schedule-card.test.tsx` |
@@ -717,11 +721,11 @@ src/app/
 ### 라우트 파일 규칙
 ```tsx
 // src/app/(tabs)/schedule.tsx
-export { ScheduleScreen as default } from '@/features/schedule/schedule-screen';
+export { ScheduleScreen as default } from '@/screens/schedule/schedule-screen';
 ```
 
 - `src/app` 내부 파일에는 화면 로직, API 호출, 상태 관리 코드를 넣지 않는다.
-- 라우트 파일은 기본적으로 feature screen을 re-export하는 thin layer로 유지한다.
+- 라우트 파일은 기본적으로 `screens`의 screen을 re-export하는 thin layer로 유지한다.
 - 예외는 `_layout.tsx`, `+not-found.tsx`처럼 라우팅 자체 구성이 필요한 파일뿐이다.
 
 ### 라우터 사용
@@ -764,24 +768,28 @@ import Animated from 'react-native-reanimated';
 // 3. 내부 절대 경로 (@/) - 알파벳순
 import { Button } from '@/components/ui/button';
 import { colors } from '@/constants/colors';
-import { useScheduleStore } from '@/features/schedule/use-schedule-store';
+import { useScheduleStore } from '@/state/schedule/use-schedule-store';
 
-// 4. 같은 feature 내부 상대 경로
-import { ScheduleHeader } from './components/schedule-header';
+// 4. 같은 폴더 내부 상대 경로
+import { ScheduleHeader } from './schedule-header';
 
 // 5. type import
-import type { Schedule } from './model';
+import type { Schedule } from '@/state/schedule/model';
 ```
 
 ### 경로 사용 규칙
-- 같은 feature 내부 import는 상대 경로(`./`, `../`)를 우선한다.
-- feature 간 import는 절대 경로(`@/features/...`)를 사용한다.
-- 다른 feature의 `components/`, `hooks/`, `utils/` 내부 파일 직접 참조를 금지한다.
+- `src/app`은 route/layout 외 파일을 두지 않는다.
+- 화면은 `@/screens/<domain>/...`에서 import한다.
+- 상태와 도메인 모델은 `@/state/<domain>/...`에서 import한다.
+- 전역 hook은 `@/hooks/...`에서 import한다.
+- base primitive는 `@/components/ui/...`에서 import한다.
+- 화면군 조합 컴포넌트는 `@/components/<domain>/...`에서 import한다.
+- 같은 폴더 안의 작은 private helper만 상대 경로(`./`, `../`)를 사용한다.
 
 ### 배럴 파일 (index.ts)
 - 기본 정책: 배럴 export 금지.
 - 예외: `components/ui`처럼 전역 UI 프리미티브 집합에 한해 제한적으로 허용 가능.
-- Fast Refresh 안정성을 위해 feature 내부 배럴(`features/*/index.ts`)은 사용하지 않는다.
+- Fast Refresh 안정성을 위해 screen/state/domain 폴더에 광범위한 배럴 파일을 만들지 않는다.
 
 ---
 

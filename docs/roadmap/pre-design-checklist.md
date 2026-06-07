@@ -18,7 +18,7 @@
 | 4 | 네비게이션 구조 | ✅ 완료 (auth + tabs, route thin layer 적용) |
 | 5 | 디자인 토큰 선(先)정의 | 🟡 진행 중 (`constants` 토큰 구성됨, 값/스키마 고도화 필요) |
 | 6 | 공통 컴포넌트 | 🟡 진행 중 (`Typography`, `Tag` 구현 및 `components/ui` 이동) |
-| 7 | 스토어 & 비즈니스 로직 | 🟡 진행 중 (`features/auth/use-auth-store.ts` 기준 정리) |
+| 7 | 스토어 & 비즈니스 로직 | 🟡 진행 중 (`state/auth/use-auth-store.ts` 기준 정리) |
 | 8 | 화면 Placeholder | ✅ 완료 (auth/home/schedule/settings/playground 기본 화면 분리) |
 | 9 | 백엔드 연동 준비 | ⬜ 미완 |
 
