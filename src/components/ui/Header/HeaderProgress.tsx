@@ -13,7 +13,7 @@ export function HeaderProgress({ progress, onBackPress, style }: HeaderProgressP
       <Pressable
         accessibilityLabel="이전 화면으로 이동"
         accessibilityRole="button"
-        hitSlop={12}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         style={styles.backButton}
         onPress={onBackPress}
       >

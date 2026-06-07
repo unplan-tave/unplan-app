@@ -72,7 +72,7 @@ export const useOnboardingStore = create<OnboardingState>()((set) => ({
           ? state.preferences.recoveryOptionIds.filter((selectedId) => selectedId !== optionId)
           : [...state.preferences.recoveryOptionIds, optionId];
 
-        if (optionId === 'custom' && !isSelected) {
+        if (optionId === 'custom' && isSelected) {
           state.preferences.customRecoveryLabel = null;
         }
       }),
