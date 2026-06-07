@@ -6,8 +6,6 @@ export function useAuth() {
   const refreshToken = useAuthStore((state) => state.refreshToken);
   const hasHydratedSession = useAuthStore((state) => state.hasHydratedSession);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const setUser = useAuthStore((state) => state.setUser);
-  const setToken = useAuthStore((state) => state.setToken);
   const setSession = useAuthStore((state) => state.setSession);
   const hydrateSession = useAuthStore((state) => state.hydrateSession);
   const logout = useAuthStore((state) => state.logout);
@@ -18,8 +16,6 @@ export function useAuth() {
     refreshToken,
     hasHydratedSession,
     isAuthenticated,
-    setUser,
-    setToken,
     setSession,
     hydrateSession,
     logout,

@@ -9,7 +9,9 @@ function createDeviceId(): string {
   return globalThis.crypto?.randomUUID?.() ?? createFallbackDeviceId();
 }
 
-export async function getDeviceId(): Promise<string> {
+let deviceIdPromise: Promise<string> | null = null;
+
+async function resolveDeviceId(): Promise<string> {
   const storedDeviceId = await secureStorage.get(STORAGE_KEYS.DEVICE_ID);
 
   if (storedDeviceId) {
@@ -20,4 +22,13 @@ export async function getDeviceId(): Promise<string> {
   await secureStorage.set(STORAGE_KEYS.DEVICE_ID, deviceId);
 
   return deviceId;
+}
+
+export function getDeviceId(): Promise<string> {
+  deviceIdPromise ??= resolveDeviceId().catch((error: unknown) => {
+    deviceIdPromise = null;
+    throw error;
+  });
+
+  return deviceIdPromise;
 }

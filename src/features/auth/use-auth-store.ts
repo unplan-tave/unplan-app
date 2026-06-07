@@ -11,8 +11,6 @@ interface AuthState {
   refreshToken: string | null;
   hasHydratedSession: boolean;
   isAuthenticated: boolean;
-  setUser: (user: User) => void;
-  setToken: (token: string) => void;
   setSession: (session: AuthSession) => Promise<void>;
   hydrateSession: () => Promise<void>;
   logout: () => Promise<void>;
@@ -24,22 +22,6 @@ export const useAuthStore = create<AuthState>()((set) => ({
   refreshToken: null,
   hasHydratedSession: false,
   isAuthenticated: false,
-
-  setUser: (user: User) =>
-    set(
-      produce((state: AuthState) => {
-        state.user = user;
-        state.isAuthenticated = true;
-      }),
-    ),
-
-  setToken: (token: string) =>
-    set(
-      produce((state: AuthState) => {
-        state.token = token;
-        state.isAuthenticated = true;
-      }),
-    ),
 
   setSession: async (session: AuthSession) => {
     await tokenStorage.setTokens({

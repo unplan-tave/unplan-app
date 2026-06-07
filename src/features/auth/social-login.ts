@@ -5,7 +5,7 @@ import {
 } from '@react-native-kakao/user';
 import { isAxiosError } from 'axios';
 
-import { ensureKakaoAuthSDKInitialized } from '@/lib/auth/kakao-sdk';
+import { ensureKakaoAuthSDKInitialized, KakaoSDKConfigError } from '@/lib/auth/kakao-sdk';
 import { getDeviceId } from '@/lib/device/device-id';
 
 import { submitSocialLogin } from './api';
@@ -79,7 +79,7 @@ function toSocialLoginError(error: unknown): SocialLoginError {
     return new SocialLoginError('sdk', '카카오 로그인 처리 중 오류가 발생했습니다.');
   }
 
-  if (error instanceof Error && error.message.includes('EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY')) {
+  if (error instanceof KakaoSDKConfigError) {
     return new SocialLoginError('config', '카카오 앱 키 설정이 필요합니다.');
   }
 

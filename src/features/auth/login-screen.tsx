@@ -7,6 +7,11 @@ import { colors, spacing } from '@/constants/theme';
 
 import { getSocialLoginErrorMessage, loginWithKakao } from './social-login';
 
+const KAKAO_BRAND = {
+  background: '#FEE500',
+  text: '#000000',
+} as const;
+
 export function LoginScreen() {
   const [isKakaoLoginLoading, setIsKakaoLoginLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -84,15 +89,15 @@ const styles = StyleSheet.create({
     gap: spacing[3],
   },
   kakaoButton: {
-    backgroundColor: '#FEE500',
-    borderColor: '#FEE500',
+    backgroundColor: KAKAO_BRAND.background,
+    borderColor: KAKAO_BRAND.background,
   },
   kakaoButtonText: {
-    color: '#000000',
+    color: KAKAO_BRAND.text,
   },
   loadingIndicator: {
     position: 'absolute',
     right: spacing[4],
-    top: 10,
+    top: spacing[2],
   },
 });
