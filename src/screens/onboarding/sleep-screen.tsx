@@ -15,6 +15,7 @@ export function SleepScreen() {
     <OnboardingStepLayout
       title={t('onboarding.sleep.title')}
       subtitle={t('onboarding.sleep.subtitle')}
+      note={t('onboarding.sleep.note')}
       progress={0.38}
       ctaCaption={null}
       onConfirm={() => router.push(onboardingRoutes.activity)}
