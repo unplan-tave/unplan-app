@@ -5,6 +5,12 @@ on:
     branches: [develop, main]
   push:
     branches: [develop, main]
+  workflow_dispatch:
+    inputs:
+      force_native_build:
+        description: '네이티브 풀 빌드 강제 실행'
+        type: boolean
+        default: false
 
 jobs:
   quality:
@@ -32,3 +38,110 @@ jobs:
 
       - name: Test
         run: npm test --if-present
+
+  detect-preview-changes:
+    if: github.ref == 'refs/heads/develop' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      native: ${{ steps.filter.outputs.native }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            native:
+              - 'android/**'
+              - 'ios/**'
+              - 'app.config.*'
+              - 'app.json'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'eas.json'
+              - 'plugins/**'
+              - 'assets/icon.png'
+              - 'assets/android-icon-*.png'
+
+  ota-update:
+    needs: [quality, detect-preview-changes]
+    if: needs.detect-preview-changes.outputs.native == 'false' && !inputs.force_native_build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: OTA Update (preview channel)
+        run: eas update --channel preview --message "$(git log -1 --pretty=%s)" --non-interactive
+
+  android-preview:
+    needs: [quality, detect-preview-changes]
+    if: needs.detect-preview-changes.outputs.native == 'true' || inputs.force_native_build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build preview (Android)
+        run: eas build --platform android --profile preview --non-interactive
+
+  ios-simulator-preview:
+    needs: [quality, detect-preview-changes]
+    if: needs.detect-preview-changes.outputs.native == 'true' || inputs.force_native_build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build preview (iOS simulator)
+        run: eas build --platform ios --profile development-simulator --non-interactive
