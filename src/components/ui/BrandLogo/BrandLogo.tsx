@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
@@ -59,18 +60,14 @@ export function BrandLogo({
   const wordmarkSize = LOGO_WORDMARK_SIZE[size];
   const shouldShowSymbol = variant === 'symbol' || variant === 'combined';
   const shouldShowWordmark = variant === 'wordmark' || variant === 'combined';
+  const symbolXml = useMemo(() => getLogoSymbolXml(color), [color]);
+  const wordmarkXml = useMemo(() => getLogoWordmarkXml(color), [color]);
 
   return (
     <View accessibilityLabel="Unplan 로고" style={[styles.container, style]}>
-      {shouldShowSymbol ? (
-        <SvgXml width={symbolSize} height={symbolSize} xml={getLogoSymbolXml(color)} />
-      ) : null}
+      {shouldShowSymbol ? <SvgXml width={symbolSize} height={symbolSize} xml={symbolXml} /> : null}
       {shouldShowWordmark ? (
-        <SvgXml
-          width={wordmarkSize.width}
-          height={wordmarkSize.height}
-          xml={getLogoWordmarkXml(color)}
-        />
+        <SvgXml width={wordmarkSize.width} height={wordmarkSize.height} xml={wordmarkXml} />
       ) : null}
     </View>
   );
