@@ -4,6 +4,11 @@ import { type GestureResponderEvent, PanResponder, StyleSheet, View } from 'reac
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
 import { t } from '@/lib/i18n';
+import {
+  classifySleepMinutes,
+  SLEEP_CONDITION_VISIBLE_MAX_MINUTES,
+  type SleepCondition,
+} from '@/state/onboarding/sleep-condition';
 
 interface SleepConditionCircleProps {
   targetSleepMinutes: number;
@@ -13,7 +18,6 @@ interface SleepConditionCircleProps {
 const CIRCLE_SIZE = 300;
 const CIRCLE_RADIUS = CIRCLE_SIZE / 2;
 const TARGET_LINE_LENGTH = 212;
-const SLEEP_MINUTES_MAX = 720;
 const SLEEP_STEP_MINUTES = 15;
 const sleepConditionColors = {
   target: colors.secondary,
@@ -22,6 +26,12 @@ const sleepConditionColors = {
   good: colors.primary,
   excess: colors.gray[200],
 } as const;
+const sleepConditionLabelKeys: Record<SleepCondition, Parameters<typeof t>[0]> = {
+  risk: 'onboarding.sleep.risk',
+  lack: 'onboarding.sleep.lack',
+  good: 'onboarding.sleep.good',
+  excess: 'onboarding.sleep.excess',
+};
 
 function formatMinutes(totalMinutes: number) {
   const hours = Math.floor(totalMinutes / 60);
@@ -31,7 +41,7 @@ function formatMinutes(totalMinutes: number) {
 }
 
 function clampTargetSleepMinutes(minutes: number) {
-  return Math.max(0, Math.min(SLEEP_MINUTES_MAX, minutes));
+  return Math.max(0, Math.min(SLEEP_CONDITION_VISIBLE_MAX_MINUTES, minutes));
 }
 
 function getTargetSleepMinutesFromLocation(locationX: number, locationY: number) {
@@ -39,14 +49,14 @@ function getTargetSleepMinutesFromLocation(locationX: number, locationY: number)
   const deltaY = locationY - CIRCLE_RADIUS;
   const angleFromRight = Math.atan2(deltaY, deltaX);
   const clockwiseFromTop = (angleFromRight + Math.PI / 2 + Math.PI * 2) % (Math.PI * 2);
-  const rawMinutes = (clockwiseFromTop / (Math.PI * 2)) * SLEEP_MINUTES_MAX;
+  const rawMinutes = (clockwiseFromTop / (Math.PI * 2)) * SLEEP_CONDITION_VISIBLE_MAX_MINUTES;
 
   return clampTargetSleepMinutes(Math.round(rawMinutes / SLEEP_STEP_MINUTES) * SLEEP_STEP_MINUTES);
 }
 
 function getTargetGeometry(targetSleepMinutes: number) {
   const clampedMinutes = clampTargetSleepMinutes(targetSleepMinutes);
-  const angle = (clampedMinutes / SLEEP_MINUTES_MAX) * Math.PI * 2 - Math.PI / 2;
+  const angle = (clampedMinutes / SLEEP_CONDITION_VISIBLE_MAX_MINUTES) * Math.PI * 2 - Math.PI / 2;
   const badgeRadius = CIRCLE_RADIUS - 42;
 
   return {
@@ -61,6 +71,7 @@ export function SleepConditionCircle({
   onTargetSleepMinutesChange,
 }: SleepConditionCircleProps) {
   const targetGeometry = getTargetGeometry(targetSleepMinutes);
+  const targetSleepCondition = classifySleepMinutes(targetSleepMinutes);
   const updateTargetFromEvent = useCallback(
     (event: GestureResponderEvent) => {
       const { locationX, locationY } = event.nativeEvent;
@@ -106,7 +117,9 @@ export function SleepConditionCircle({
           ]}
           accessibilityLabel="목표 수면 기준선"
           accessibilityRole="adjustable"
-          accessibilityValue={{ text: formatMinutes(targetSleepMinutes) }}
+          accessibilityValue={{
+            text: `${formatMinutes(targetSleepMinutes)}, ${t(sleepConditionLabelKeys[targetSleepCondition])}`,
+          }}
           onAccessibilityAction={handleAccessibilityAction}
           style={styles.circle}
         >
