@@ -13,6 +13,7 @@ interface OnboardingStepLayoutProps {
   children: React.ReactNode;
   title: string;
   subtitle: string;
+  note?: string;
   progress: number;
   ctaDisabled?: boolean;
   ctaCaption?: string | null;
@@ -23,6 +24,7 @@ export function OnboardingStepLayout({
   children,
   title,
   subtitle,
+  note,
   progress,
   ctaDisabled = false,
   ctaCaption = t('common.skip'),
@@ -57,6 +59,11 @@ export function OnboardingStepLayout({
         <Typography variant="bodyM" align="center" color={colors.gray[700]}>
           {subtitle}
         </Typography>
+        {note ? (
+          <Typography variant="bodyS" align="center" color={colors.secondary} style={styles.note}>
+            {note}
+          </Typography>
+        ) : null}
       </View>
       {children}
     </ScreenLayout>
@@ -79,6 +86,9 @@ const styles = StyleSheet.create({
   },
   title: {
     minHeight: 68,
+  },
+  note: {
+    marginTop: spacing[2],
   },
   footer: {
     alignItems: 'center',
