@@ -14,6 +14,8 @@ module.exports = [
       'dist/**',
       'build/**',
       'coverage/**',
+      'src/lib/api/endpoints/**',
+      'src/lib/api/model/**',
       'babel.config.js',
       'eslint.config.js',
       'metro.config.js',
