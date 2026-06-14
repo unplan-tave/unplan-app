@@ -43,13 +43,13 @@ export const getSleepConditions = (
   signal?: AbortSignal,
 ) => {
   return apiMutator<ApiResponseSleepConditionResponse>(
-    { url: `/api/member-settings/sleep-conditions`, method: 'GET', signal },
+    { url: `/member-settings/sleep-conditions`, method: 'GET', signal },
     options,
   );
 };
 
 export const getGetSleepConditionsQueryKey = () => {
-  return [`/api/member-settings/sleep-conditions`] as const;
+  return [`/member-settings/sleep-conditions`] as const;
 };
 
 export const getGetSleepConditionsQueryOptions = <
@@ -161,7 +161,7 @@ export const updateSleepConditions = (
 ) => {
   return apiMutator<ApiResponseSleepConditionResponse>(
     {
-      url: `/api/member-settings/sleep-conditions`,
+      url: `/member-settings/sleep-conditions`,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       data: updateConditions,
@@ -245,13 +245,13 @@ export const getRecoveryMethods = (
   signal?: AbortSignal,
 ) => {
   return apiMutator<ApiResponseGetMethods>(
-    { url: `/api/member-settings/recovery-methods`, method: 'GET', signal },
+    { url: `/member-settings/recovery-methods`, method: 'GET', signal },
     options,
   );
 };
 
 export const getGetRecoveryMethodsQueryKey = () => {
-  return [`/api/member-settings/recovery-methods`] as const;
+  return [`/member-settings/recovery-methods`] as const;
 };
 
 export const getGetRecoveryMethodsQueryOptions = <
@@ -363,7 +363,7 @@ export const updateRecoveryMethods = (
 ) => {
   return apiMutator<ApiResponseUpdateMethods>(
     {
-      url: `/api/member-settings/recovery-methods`,
+      url: `/member-settings/recovery-methods`,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       data: updateMethods,

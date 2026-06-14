@@ -6,7 +6,18 @@ export const apiMutator = <T>(
   config: AxiosRequestConfig,
   options?: AxiosRequestConfig,
 ): Promise<T> => {
-  return apiClient({ ...config, ...options }).then(({ data }) => data);
+  return apiClient({
+    ...config,
+    ...options,
+    headers: {
+      ...config.headers,
+      ...options?.headers,
+    },
+    params: {
+      ...config.params,
+      ...options?.params,
+    },
+  }).then(({ data }) => data);
 };
 
 export type ErrorType<Error> = AxiosError<Error>;
