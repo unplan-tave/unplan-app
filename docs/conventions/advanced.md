@@ -921,10 +921,12 @@ chore(deps): add react-native-reanimated v3.8.0
 # .github/workflows/
 
 # PR/Push → develop, main: 린트 + 타입체크 + 테스트
+# develop push 한정: quality 성공 후 Preview 배포
+#   - JS/TS만 변경 → eas update (OTA, ~2분)
+#   - 네이티브 파일 변경(app.config.*, plugins/**, android/, ios/ 등) → eas build (풀 빌드)
+#   - 수동 실행 시 force_native_build 옵션으로 풀 빌드 강제 가능
+# main push: quality 만 실행
 ci.yml
-
-# develop 머지: EAS Preview 빌드
-preview-build.yml
 
 # v*.*.* 태그 또는 수동 트리거: EAS Production 빌드
 release.yml
