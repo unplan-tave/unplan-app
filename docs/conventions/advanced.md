@@ -923,7 +923,7 @@ chore(deps): add react-native-reanimated v3.8.0
 # PR/Push → develop, main: 린트 + 타입체크 + 테스트
 # develop push 한정: quality 성공 후 Preview 배포
 #   - JS/TS만 변경 → eas update (OTA, ~2분)
-#   - 네이티브 파일 변경(app.config.*, plugins/**, android/, ios/ 등) → eas build (풀 빌드)
+#   - 네이티브 파일 변경(app.json, app.config.*, plugins/**, android/, ios/ 등) → eas build (풀 빌드)
 #   - 수동 실행 시 force_native_build 옵션으로 풀 빌드 강제 가능
 # main push: quality 만 실행
 ci.yml
@@ -943,7 +943,7 @@ on:
     branches: [develop, main]
 
 jobs:
-  check:
+  quality:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
