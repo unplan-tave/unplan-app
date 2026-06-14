@@ -13,7 +13,7 @@ import { getSocialLoginErrorMessage, loginWithKakao } from '@/state/auth/social-
 import { onboardingRoutes } from '@/state/onboarding/routes';
 import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
-const loginBackground = require('../../../assets/login-background.png');
+const loginBackground = require('../../../assets/login-background.jpg');
 
 export function LoginScreen() {
   const router = useRouter();
