@@ -3,10 +3,6 @@ import { defineConfig } from 'orval';
 
 config({ path: '.env.local', quiet: true });
 
-declare const process: {
-  env: Record<string, string | undefined>;
-};
-
 const openApiSpecUrl = process.env.OPENAPI_SPEC_URL;
 
 if (!openApiSpecUrl) {

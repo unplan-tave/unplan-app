@@ -27,5 +27,8 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: unknown) => Promise.reject(error),
+  (error: unknown) => {
+    // TODO: Add 401 refresh-token retry handling once the backend refresh endpoint is finalized.
+    return Promise.reject(error);
+  },
 );
