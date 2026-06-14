@@ -17,6 +17,7 @@ export * from './condition';
 export * from './conditionType';
 export * from './create';
 export * from './deleteMemosParams';
+export * from './getAccessTokenParams';
 export * from './getMemosParams';
 export * from './getMethods';
 export * from './getMethodsDefaultMethodsItem';
