@@ -54,14 +54,6 @@ function isKakaoLoginCancelled(error: unknown): boolean {
   return code.includes('cancel') || message.includes('cancel');
 }
 
-function isGoogleLoginCancelled(error: unknown): boolean {
-  if (typeof error !== 'object' || error === null || !('type' in error)) {
-    return false;
-  }
-
-  return error.type === 'cancelled';
-}
-
 function shouldFallbackToKakaoAccount(error: unknown): boolean {
   const nativeError = getNativeModuleError(error);
   const code = nativeError.code ?? '';
@@ -78,10 +70,6 @@ function toSocialLoginError(error: unknown): SocialLoginError {
 
   if (isKakaoLoginCancelled(error)) {
     return new SocialLoginError('cancelled', '카카오 로그인이 취소되었습니다.');
-  }
-
-  if (isGoogleLoginCancelled(error)) {
-    return new SocialLoginError('cancelled', '구글 로그인이 취소되었습니다.');
   }
 
   if (isAxiosError(error)) {
@@ -153,7 +141,7 @@ async function requestGoogleIdToken(): Promise<string> {
   const response = await GoogleSignin.signIn();
 
   if (response.type === 'cancelled') {
-    throw response;
+    throw new SocialLoginError('cancelled', '구글 로그인이 취소되었습니다.');
   }
 
   const { idToken } = response.data;
