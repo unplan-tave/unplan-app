@@ -21,6 +21,10 @@ function getSocialAuthEndpoint(provider: SocialLoginRequest['provider']): string
 }
 
 function getSocialAuthTokenKey(provider: SocialLoginRequest['provider']): string {
+  if (provider === 'google') {
+    return 'google_id_token';
+  }
+
   return `${provider}_access_token`;
 }
 
