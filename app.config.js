@@ -9,13 +9,13 @@ const googleIosUrlSchemeForNativeConfig =
 
 module.exports = {
   expo: {
-    name: 'scheduler-app',
-    slug: 'scheduler-app',
+    name: 'Unplan',
+    slug: 'unplan',
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'light',
-    scheme: 'scheduler-app',
+    scheme: 'unplan',
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.unplan.app',
