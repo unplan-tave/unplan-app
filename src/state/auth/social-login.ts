@@ -1,10 +1,13 @@
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import {
   isKakaoTalkLoginAvailable,
   login as kakaoLogin,
   type KakaoLoginToken,
 } from '@react-native-kakao/user';
 import { isAxiosError } from 'axios';
+import { Platform } from 'react-native';
 
+import { ensureGoogleAuthSDKConfigured, GoogleSDKConfigError } from '@/lib/auth/google-sdk';
 import { ensureKakaoAuthSDKInitialized, KakaoSDKConfigError } from '@/lib/auth/kakao-sdk';
 import { getDeviceId } from '@/lib/device/device-id';
 
@@ -51,6 +54,14 @@ function isKakaoLoginCancelled(error: unknown): boolean {
   return code.includes('cancel') || message.includes('cancel');
 }
 
+function isGoogleLoginCancelled(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null || !('type' in error)) {
+    return false;
+  }
+
+  return error.type === 'cancelled';
+}
+
 function shouldFallbackToKakaoAccount(error: unknown): boolean {
   const nativeError = getNativeModuleError(error);
   const code = nativeError.code ?? '';
@@ -69,6 +80,10 @@ function toSocialLoginError(error: unknown): SocialLoginError {
     return new SocialLoginError('cancelled', '카카오 로그인이 취소되었습니다.');
   }
 
+  if (isGoogleLoginCancelled(error)) {
+    return new SocialLoginError('cancelled', '구글 로그인이 취소되었습니다.');
+  }
+
   if (isAxiosError(error)) {
     return new SocialLoginError('network', '로그인 서버와 통신하지 못했습니다.');
   }
@@ -81,6 +96,10 @@ function toSocialLoginError(error: unknown): SocialLoginError {
 
   if (error instanceof KakaoSDKConfigError) {
     return new SocialLoginError('config', '카카오 앱 키 설정이 필요합니다.');
+  }
+
+  if (error instanceof GoogleSDKConfigError) {
+    return new SocialLoginError('config', '구글 Client ID 설정이 필요합니다.');
   }
 
   return new SocialLoginError('unknown', '로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.');
@@ -114,6 +133,46 @@ export async function loginWithKakao(): Promise<AuthSession> {
       accessToken: kakaoToken.accessToken,
       deviceId,
       provider: 'kakao',
+    });
+
+    await useAuthStore.getState().setSession(session);
+
+    return session;
+  } catch (error) {
+    throw toSocialLoginError(error);
+  }
+}
+
+async function requestGoogleIdToken(): Promise<string> {
+  ensureGoogleAuthSDKConfigured();
+
+  if (Platform.OS === 'android') {
+    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+  }
+
+  const response = await GoogleSignin.signIn();
+
+  if (response.type === 'cancelled') {
+    throw response;
+  }
+
+  const { idToken } = response.data;
+
+  if (!idToken) {
+    throw new SocialLoginError('sdk', '구글 ID 토큰을 가져오지 못했습니다.');
+  }
+
+  return idToken;
+}
+
+export async function loginWithGoogle(): Promise<AuthSession> {
+  try {
+    const googleIdToken = await requestGoogleIdToken();
+    const deviceId = await getDeviceId();
+    const session = await submitSocialLogin({
+      accessToken: googleIdToken,
+      deviceId,
+      provider: 'google',
     });
 
     await useAuthStore.getState().setSession(session);
