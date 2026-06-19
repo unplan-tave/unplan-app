@@ -5,6 +5,7 @@
   "dependencies": {
     "@expo/metro-runtime": "~56.0.14",
     "@hookform/resolvers": "^5.4.0",
+    "@react-native-google-signin/google-signin": "^16.1.2",
     "@react-native-kakao/core": "^2.4.5",
     "@react-native-kakao/user": "^2.4.5",
     "@sun-typeface/suit": "^2.0.5",

@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { fontFamilyWeight } from '@/constants/typography';
+import { configureGoogleAuthSDK } from '@/lib/auth/google-sdk';
 import { initializeKakaoAuthSDK } from '@/lib/auth/kakao-sdk';
 import { useAuthStore } from '@/state/auth/use-auth-store';
 import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
@@ -41,6 +42,7 @@ export default function RootLayout() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        configureGoogleAuthSDK();
         useOnboardingStore.getState().hydrateOnboarding();
         await Promise.all([initializeKakaoAuthSDK(), useAuthStore.getState().hydrateSession()]);
       } catch (appInitError: unknown) {

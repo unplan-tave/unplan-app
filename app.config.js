@@ -1,18 +1,21 @@
 const kakaoNativeAppKey = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY;
+const googleIosUrlScheme = process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME;
 
 // TODO: Set EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY in .env.local/EAS env before iOS prebuild/build.
 // The fallback is a non-secret placeholder so Expo config can still be evaluated locally.
 const kakaoNativeAppKeyForNativeConfig = kakaoNativeAppKey ?? 'TODO_KAKAO_NATIVE_APP_KEY';
+const googleIosUrlSchemeForNativeConfig =
+  googleIosUrlScheme ?? 'com.googleusercontent.apps.TODO_GOOGLE_IOS_URL_SCHEME';
 
 module.exports = {
   expo: {
-    name: 'scheduler-app',
-    slug: 'scheduler-app',
+    name: 'Unplan',
+    slug: 'unplan',
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'light',
-    scheme: 'scheduler-app',
+    scheme: 'unplan',
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.unplan.app',
@@ -43,6 +46,7 @@ module.exports = {
     },
     plugins: [
       './plugins/with-kakao-maven-repository',
+      './plugins/with-google-modular-headers',
       ['expo-router', { root: 'src/app' }],
       'expo-status-bar',
       [
@@ -58,6 +62,12 @@ module.exports = {
           ios: {
             handleKakaoOpenUrl: true,
           },
+        },
+      ],
+      [
+        '@react-native-google-signin/google-signin',
+        {
+          iosUrlScheme: googleIosUrlSchemeForNativeConfig,
         },
       ],
     ],
