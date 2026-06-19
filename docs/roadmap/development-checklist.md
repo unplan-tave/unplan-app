@@ -1,47 +1,105 @@
-# 디자인 전 개발 체크리스트
+# 개발 진행 체크리스트 (디자인·API·프론트 병행)
 
-> ERD만 있고 Figma가 없을 때, 디자인 나오기 전에 프론트엔드가 선행할 작업
+> ⚠️ **전제 변경 (2026-06-20):** 이 문서는 원래 "ERD만 있고 디자인 없을 때 프론트가 선행"하는 가이드로 시작했습니다.
+> 현재는 **디자인(Figma) · API · 프론트엔드가 동시에 진행**되고 있고, **API 개발 중 ERD가 계속 수정**될 수 있습니다.
+> 따라서 더 이상 "확정된 ERD를 보고 타입을 미리 다 짜두는" 접근은 위험하며, 변경에 강한 구조를 우선합니다.
+> 아래 [§0 병행 개발 원칙](#0-병행-개발-원칙-erd가-계속-바뀐다)을 먼저 읽으세요. 이후 Phase 설명은 참고용 히스토리입니다.
 
-[← 문서 목록](../README.md) · [코어 컨벤션](../conventions/core.md) · [확장 컨벤션](../conventions/advanced.md)
+[← 문서 목록](../README.md) · [개요](../overview.md) · [코어 컨벤션](../conventions/core.md) · [확장 컨벤션](../conventions/advanced.md)
+
+---
+
+## 0. 병행 개발 원칙 (ERD가 계속 바뀐다)
+
+디자인·API·프론트가 동시에 굴러가고 ERD가 불안정한 상황에서 프론트가 깨지지 않으려면, **불안정한 것에 직접 의존하지 않는 것**이 핵심입니다.
+
+### 0-1. 타입은 손으로 짜지 말고 생성한다
+
+- ERD/DTO 타입을 `state/*/model.ts`에 **수기로 미리 박아두지 않는다.** ERD가 바뀌면 전부 따라 수정해야 함.
+- 대신 **Orval로 OpenAPI 스펙에서 자동생성**(`npm run api:generate`)한다. 스펙이 바뀌면 재생성만 하면 됨.
+  - `src/lib/api/endpoints/**`, `src/lib/api/model/**`는 **생성물이므로 직접 수정 금지**(이미 ESLint ignore).
+  - 백엔드와 **OpenAPI(Swagger) 스펙을 단일 진실 원천(SSOT)**으로 합의한다. ERD 문서가 아니라 스펙이 기준.
+
+### 0-2. 서버 타입과 화면 타입을 분리한다 (Anti-Corruption Layer)
+
+- 생성된 서버 타입(`*Dto`, `*Response`)을 화면/컴포넌트에서 **직접 쓰지 않는다.**
+- 화면은 프론트 전용 **ViewModel**만 보고, 서버 타입 → ViewModel 변환을 `state/<domain>` 안의 얇은 매퍼 한 곳에 둔다.
+- 효과: ERD/DTO 필드명이 바뀌어도 **매퍼 한 군데만 고치면** 화면 코드는 그대로. (이미 `state/auth/api.ts`가 `BackendSocialLoginResponse` → `AuthSession`으로 unwrap하는 패턴을 쓰고 있음 — 이걸 도메인 전반의 기본값으로 삼는다.)
+
+### 0-3. 불안정 영역은 늦게, 안정 영역은 먼저
+
+| 지금 적극 진행해도 안전 (ERD 영향 적음) | ERD 안정될 때까지 얇게만 | 
+|---|---|
+| 디자인 토큰 / `components/ui` primitive | 도메인 모델 타입 (생성+매퍼로 처리) |
+| 네비게이션·라우팅 골격 | 화면-서버 바인딩(React Query 훅 연결) |
+| 화면 레이아웃/인터랙션(목 데이터 기반) | 영속 스키마(MMKV에 DTO 통째 저장 금지) |
+
+- 화면은 **목(mock)/고정 데이터로 먼저** 만들고, 스펙이 굳으면 React Query 훅으로 갈아끼운다.
+- MMKV/SecureStore에 **서버 DTO를 그대로 저장하지 않는다.** 스키마가 바뀌면 마이그레이션 지옥. 꼭 필요한 최소 필드만 저장.
+
+### 0-4. 변경을 흡수하는 운영 루틴
+
+- 백엔드 스펙 변경 시: ① `npm run api:generate` 재생성 → ② `npm run type-check`로 **터지는 지점 = 영향 범위 자동 식별** → ③ 매퍼/훅만 수정.
+- 그래서 **strict TS + 생성 타입**이 곧 회귀 안전망. 손으로 짠 타입이 많을수록 이 안전망이 무력화됨.
+- PR 단위로 "스펙 버전(OpenAPI version)"을 명시해 프론트/백 간 어긋남을 추적.
+
+> 한 줄 요약: **ERD가 흔들려도 화면이 안 흔들리게.** 생성 타입으로 받아서, 매퍼로 끊고, 화면은 ViewModel만 본다.
 
 ---
 
 ## 진행 상황
 
-> 2026-05-29 기준 · 레포 현재 상태 반영
+> **2026-06-20 기준 · 실제 레포 상태로 갱신.** 코드베이스 전체 그림은 [개요 문서](../overview.md) 참고.
+>
+> 이 로드맵은 "디자인 전 선행 작업" 가이드로 작성됐으나, 이후 디자인(Figma) 일부가 나오면서
+> 인증·온보딩 실제 구현과 디자인 시스템 선구현이 진행됐습니다. 아래는 그 현황입니다.
 
 | Phase | 항목 | 상태 |
 |-------|------|------|
-| 1 | 프로젝트 뼈대 세우기 | ✅ 완료 (feature 중심 구조로 정리) |
-| 2 | ERD → 타입 정의 | 🟡 진행 중 (기본 타입만 존재, 도메인 타입 확장 필요) |
-| 3 | API 레이어 구축 | 🟡 진행 중 (`lib/api/client.ts` 구성 완료) |
-| 4 | 네비게이션 구조 | ✅ 완료 (auth + tabs, route thin layer 적용) |
-| 5 | 디자인 토큰 선(先)정의 | 🟡 진행 중 (`constants` 토큰 구성됨, 값/스키마 고도화 필요) |
-| 6 | 공통 컴포넌트 | 🟡 진행 중 (`Typography`, `Tag` 구현 및 `components/ui` 이동) |
-| 7 | 스토어 & 비즈니스 로직 | 🟡 진행 중 (`state/auth/use-auth-store.ts` 기준 정리) |
-| 8 | 화면 Placeholder | ✅ 완료 (auth/home/schedule/settings/playground 기본 화면 분리) |
-| 9 | 백엔드 연동 준비 | ⬜ 미완 |
+| 1 | 프로젝트 뼈대 세우기 | ✅ 완료 (feature 중심 구조, ESLint/Prettier/Husky, CI/CD) |
+| 2 | ERD → 타입 정의 | 🟡 진행 중 (Orval로 API 모델 자동생성, 도메인 타입은 일부) |
+| 3 | API 레이어 구축 | 🟡 진행 중 (axios client + 인터셉터 + Orval 생성 완료, 401 refresh 미구현) |
+| 4 | 네비게이션 구조 | ✅ 완료 (index 스플래시 분기 + auth + onboarding + tabs) |
+| 5 | 디자인 토큰 선(先)정의 | ✅ 완료 (colors/typography/spacing/theme + SUIT 폰트) |
+| 6 | 공통 컴포넌트 | ✅ 대부분 완료 (`components/ui` 30+ primitive 선구현, 일부 화면 미연결) |
+| 7 | 스토어 & 비즈니스 로직 | 🟡 진행 중 (auth/onboarding store 동작, schedule/task 미착수) |
+| 8 | 화면 구현 | 🟡 인증·온보딩 실구현 / 홈·일정·설정은 플레이스홀더 |
+| 9 | 백엔드 연동 | 🟡 인증만 실연동, 온보딩·일정 등 나머지 도메인 미연동 |
 
 ### Phase별 체크리스트
 
-- [x] **Phase 1** — Expo 세팅, 패키지, ESLint/Prettier/Husky, 폴더 구조
-- [ ] **Phase 2** — ERD 전체 타입, Zod 스키마
-- [ ] **Phase 3** — API 함수, Mock 데이터, React Query 훅
-- [x] **Phase 4** — Expo Router (auth, tabs)
-- [ ] **Phase 5** — `colors.ts`, `theme.ts` 디자인 토큰
-- [ ] **Phase 6** — Button, TextInput, Typography 등 공통 컴포넌트
-- [ ] **Phase 7** — schedule/task 스토어, 유틸 함수
-- [x] **Phase 8** — 데이터 흐름 연결된 Placeholder 화면
-- [ ] **Phase 9** — API 스펙 협의, MSW 설정
+- [x] **Phase 1** — Expo SDK 56 세팅, 패키지, ESLint/Prettier/Husky, 폴더 구조, EAS/CI
+- [~] **Phase 2** — Orval로 API 모델 자동생성 (도메인/Zod 스키마는 확장 필요)
+- [~] **Phase 3** — axios client + 인터셉터 + Orval React Query 훅 생성 (생성 훅 미사용, 401 refresh TODO)
+- [x] **Phase 4** — Expo Router (index 분기 + auth + onboarding + tabs)
+- [x] **Phase 5** — colors/typography/spacing/theme 디자인 토큰 + SUIT 폰트
+- [x] **Phase 6** — Typography 등 `components/ui` primitive 선구현 (다수 화면 미연결)
+- [~] **Phase 7** — auth/onboarding store 완료, schedule/task 스토어 미착수
+- [x] **Phase 8** — 인증·온보딩 화면 실구현, 홈/일정/설정 플레이스홀더
+- [~] **Phase 9** — 카카오/구글 소셜 로그인 실연동, 온보딩 서버 저장·MSW 미설정
+
+> 범례: `[x]` 완료 · `[~]` 진행 중 · `[ ]` 미착수
+
+### 이 로드맵 이후 실제로 추가된 것 (원문 계획에 없던 항목)
+
+- 카카오 · 구글 **소셜 로그인** 실연동 (SDK 초기화, 에러 정규화, 디바이스 ID)
+- **온보딩 플로우** (recovery → sleep → activity → transport) + 수면 컨디션 분류
+- **Orval** 기반 OpenAPI → 타입/훅 자동생성 파이프라인
+- **EAS + GitHub Actions** OTA/네이티브 빌드 분기 CI/CD
+- **SUIT 폰트** 및 디자인 토큰/primitive 시스템 선구현
 
 ---
 
 ## 개요
 
 ```
-현재 상황:  ERD(백엔드 데이터 모델) O  |  디자인(Figma) X
-목표:       디자인 나올 때 바로 화면 개발 시작할 수 있는 상태 만들기
+초기 상황:  ERD O  |  디자인(Figma) X        → "디자인 전 프론트 선행" (이 문서의 원래 전제)
+현재 상황:  디자인 · API · 프론트 동시 진행  |  ERD는 API 개발 중 계속 변경 가능
+목표:       ERD/스펙이 바뀌어도 화면이 깨지지 않는 구조로, 세 트랙을 병행 진행
 ```
+
+> 운영 전략은 [§0 병행 개발 원칙](#0-병행-개발-원칙-erd가-계속-바뀐다)을 기준으로 합니다.
+> 아래 Phase들은 초기 선행 작업 기록이며, 상태값은 위 [진행 상황](#진행-상황) 표를 최신으로 봅니다.
 
 ---
 
