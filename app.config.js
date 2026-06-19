@@ -46,6 +46,7 @@ module.exports = {
     },
     plugins: [
       './plugins/with-kakao-maven-repository',
+      './plugins/with-google-modular-headers',
       ['expo-router', { root: 'src/app' }],
       'expo-status-bar',
       [
