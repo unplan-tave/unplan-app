@@ -116,11 +116,6 @@ async function requestKakaoAccessToken(): Promise<KakaoLoginToken> {
 export async function loginWithKakao(): Promise<AuthSession> {
   try {
     const kakaoToken = await requestKakaoAccessToken();
-
-    if (__DEV__) {
-      console.warn('Kakao Access Token:', kakaoToken.accessToken);
-    }
-
     const deviceId = await getDeviceId();
     const session = await submitSocialLogin({
       accessToken: kakaoToken.accessToken,
@@ -153,10 +148,6 @@ async function requestGoogleIdToken(): Promise<string> {
 
   if (!idToken) {
     throw new SocialLoginError('sdk', '구글 ID 토큰을 가져오지 못했습니다.');
-  }
-
-  if (__DEV__) {
-    console.warn('Google ID Token:', idToken);
   }
 
   return idToken;
