@@ -2,7 +2,7 @@
 
 > AI 스마트 스케줄러 앱 | Expo + TypeScript + iOS-first
 
-[← 문서 목록](../README.md) · [확장 컨벤션](./advanced.md) · [개발 체크리스트](../roadmap/pre-design-checklist.md)
+[← 문서 목록](../README.md) · [확장 컨벤션](./advanced.md) · [개발 체크리스트](../roadmap/development-checklist.md)
 
 ---
 
@@ -476,13 +476,16 @@ const styles = StyleSheet.create({
 
 ### Zustand 스토어 패턴
 ```ts
-// stores/scheduleStore.ts
+// state/schedule/use-schedule-store.ts
+// 참고: 아래는 persist+immer 미들웨어를 쓴 권장 예시입니다.
+// 현재 레포의 store(use-auth-store, use-onboarding-store)는
+// 미들웨어 대신 create() + immer의 produce()를 직접 사용합니다.
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { MMKVStorage } from '@/services/storage/mmkv';
-import type { Schedule, CreateScheduleDTO } from '@/types/schedule.types';
+import { mmkvStorage } from '@/lib/storage/mmkv-storage';
+import type { Schedule, CreateScheduleDTO } from '@/state/schedule/model';
 
 // 상태와 액션 타입 분리
 interface ScheduleState {
@@ -538,7 +541,7 @@ export const useScheduleStore = create<ScheduleStore>()(
       }),
       {
         name: 'schedule-store',
-        storage: createJSONStorage(() => MMKVStorage),
+        storage: createJSONStorage(() => mmkvStorage),
         // 민감하지 않은 것만 persist
         partialize: (state) => ({ selectedDate: state.selectedDate }),
       },
@@ -636,10 +639,10 @@ export function useTaskReorder(initialTasks: Task[]) {
 
 ### API 클라이언트
 ```ts
-// services/api/client.ts
+// lib/api/client.ts
 
 import axios from 'axios';
-import { tokenStorage } from '@/services/storage/mmkv';
+import { tokenStorage } from '@/lib/auth/token-storage';
 
 export const apiClient = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
