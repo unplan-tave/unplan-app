@@ -5,6 +5,7 @@ import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
+import { t } from '@/lib/i18n';
 import { useAuthStore } from '@/state/auth/use-auth-store';
 import { onboardingRoutes } from '@/state/onboarding/routes';
 import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
@@ -33,7 +34,7 @@ export function SettingsScreen() {
       await logout();
       router.replace('/login');
     } catch {
-      setLogoutError('로그아웃하지 못했습니다. 다시 시도해 주세요.');
+      setLogoutError(t('settings.logoutError'));
     } finally {
       setIsLoggingOut(false);
     }
@@ -41,13 +42,17 @@ export function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Typography variant="titleL">설정</Typography>
+      <Typography variant="titleL">{t('settings.title')}</Typography>
       <View style={styles.actions}>
         {__DEV__ ? (
-          <Button label="온보딩 초기화" disabled={isLoggingOut} onPress={handleOnboardingReset} />
+          <Button
+            label={t('settings.resetOnboarding')}
+            disabled={isLoggingOut}
+            onPress={handleOnboardingReset}
+          />
         ) : null}
         <Button
-          label={isLoggingOut ? '로그아웃 중' : '로그아웃'}
+          label={isLoggingOut ? t('settings.loggingOut') : t('settings.logout')}
           variant="primary"
           disabled={isLoggingOut}
           onPress={() => void handleLogout()}

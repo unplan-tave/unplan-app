@@ -8,6 +8,7 @@ export const ko = {
     '가입과 동시에 서비스 이용약관 및\n개인정보 수집 및 이용약관에 동의하는 것으로 간주됩니다.',
   'auth.login.unavailable': '아직 지원하지 않는 로그인 방식입니다.',
   'common.confirm': '확인',
+  'common.saving': '저장 중',
   'common.skip': '다음에 할래요',
   'onboarding.activity.focusTime': '집중 잘 되는 시간',
   'onboarding.activity.required': '필수 표시',
@@ -39,6 +40,16 @@ export const ko = {
   'onboarding.transport.title': '선호하는 이동방식을 알려주세요!',
   'onboarding.transport.walk': '도보',
   'onboarding.option.custom': '직접 입력',
+  'onboarding.error.network': '온보딩 정보를 저장하지 못했습니다. 네트워크 연결을 확인해 주세요.',
+  'onboarding.error.recoveryRequired': '회복 방법을 한 가지 이상 선택해 주세요.',
+  'onboarding.error.retry': '확인 버튼을 눌러 다시 시도해 주세요.',
+  'onboarding.error.saveFailed': '온보딩 정보를 저장하지 못했습니다.',
+  'onboarding.error.sleepTimeRequired': '수면 시간을 한 시간 이상 선택해 주세요.',
+  'settings.loggingOut': '로그아웃 중',
+  'settings.logout': '로그아웃',
+  'settings.logoutError': '로그아웃하지 못했습니다. 다시 시도해 주세요.',
+  'settings.resetOnboarding': '온보딩 초기화',
+  'settings.title': '설정',
 } as const;
 
 export type TranslationKey = keyof typeof ko;
