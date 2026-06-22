@@ -52,7 +52,7 @@ module.exports = [
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
 
       // Console
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-console': ['warn', { allow: ['info', 'warn', 'error'] }],
 
       // Import ordering: builtin → external → internal → type
       'import/order': [
