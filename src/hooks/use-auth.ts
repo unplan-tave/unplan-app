@@ -1,7 +1,6 @@
 import { useAuthStore } from '@/state/auth/use-auth-store';
 
 export function useAuth() {
-  const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
   const refreshToken = useAuthStore((state) => state.refreshToken);
   const hasHydratedSession = useAuthStore((state) => state.hasHydratedSession);
@@ -11,7 +10,6 @@ export function useAuth() {
   const logout = useAuthStore((state) => state.logout);
 
   return {
-    user,
     token,
     refreshToken,
     hasHydratedSession,
