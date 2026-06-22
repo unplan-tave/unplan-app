@@ -3,12 +3,9 @@ import { create } from 'zustand';
 
 import { mmkvStorage } from '@/lib/storage/mmkv-storage';
 
-import type {
-  OnboardingPreferences,
-  RecoveryOptionId,
-  TimeRange,
-  TransportOptionId,
-} from './model';
+import { toggleActivityHourRange, toggleContinuousSleepRange } from './activity-time-ranges';
+
+import type { OnboardingPreferences, RecoveryOptionId, TransportOptionId } from './model';
 
 const ONBOARDING_COMPLETED_KEY = 'onboarding.completed';
 
@@ -43,18 +40,6 @@ interface OnboardingState {
   ) => void;
   toggleTransportOption: (optionId: TransportOptionId) => void;
   completeOnboarding: () => void;
-}
-
-function toggleHourRange(ranges: TimeRange[], hour: number): TimeRange[] {
-  const existingIndex = ranges.findIndex((range) => range.startHour === hour);
-
-  if (existingIndex >= 0) {
-    return ranges.filter((_, index) => index !== existingIndex);
-  }
-
-  return [...ranges, { startHour: hour, endHour: (hour + 1) % 24 }].sort(
-    (first, second) => first.startHour - second.startHour,
-  );
 }
 
 export const useOnboardingStore = create<OnboardingState>()((set) => ({
@@ -112,7 +97,12 @@ export const useOnboardingStore = create<OnboardingState>()((set) => ({
   toggleActivityHour: (rangeKey, hour) =>
     set(
       produce((state: OnboardingState) => {
-        state.preferences[rangeKey] = toggleHourRange(state.preferences[rangeKey], hour);
+        const ranges = state.preferences[rangeKey];
+
+        state.preferences[rangeKey] =
+          rangeKey === 'sleepTimeRanges'
+            ? toggleContinuousSleepRange(ranges, hour)
+            : toggleActivityHourRange(ranges, hour);
       }),
     ),
 
