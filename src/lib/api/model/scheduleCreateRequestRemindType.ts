@@ -6,12 +6,11 @@
  * OpenAPI spec version: v1.0.0
  */
 
-export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType];
+export type ScheduleCreateRequestRemindType =
+  (typeof ScheduleCreateRequestRemindType)[keyof typeof ScheduleCreateRequestRemindType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const ConditionType = {
-  DANGER: 'DANGER',
-  LACK: 'LACK',
-  OPTIMAL: 'OPTIMAL',
-  EXCESS: 'EXCESS',
+export const ScheduleCreateRequestRemindType = {
+  BEFORE: 'BEFORE',
+  AFTER: 'AFTER',
 } as const;

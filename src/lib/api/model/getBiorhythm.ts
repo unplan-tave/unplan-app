@@ -5,9 +5,10 @@
  * Unplan Server API Documentation
  * OpenAPI spec version: v1.0.0
  */
-import type { ConditionType } from './conditionType';
 
-export interface Condition {
-  type?: ConditionType;
-  duration?: number;
+export interface GetBiorhythm {
+  memberId?: number;
+  focusedTimeline?: string;
+  drowsyTimeline?: string;
+  sleepTimeline?: string;
 }
