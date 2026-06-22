@@ -11,6 +11,7 @@ export function BottomCTA({
   caption = '다음에 할래요',
   onCaptionPress,
   disabled = false,
+  captionDisabled = false,
   variant = 'default',
   style,
   textStyle,
@@ -52,8 +53,10 @@ export function BottomCTA({
           <Pressable
             accessibilityLabel={caption ?? undefined}
             accessibilityRole="button"
+            accessibilityState={{ disabled: captionDisabled }}
+            disabled={captionDisabled}
             hitSlop={8}
-            style={({ pressed }) => pressed && styles.captionPressed}
+            style={({ pressed }) => pressed && !captionDisabled && styles.captionPressed}
             onPress={onCaptionPress}
           >
             {captionContent}

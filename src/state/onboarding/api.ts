@@ -90,7 +90,7 @@ export function getOnboardingSubmissionErrorMessage(error: unknown): string {
 export async function submitOnboarding(preferences: OnboardingPreferences): Promise<void> {
   const response = await saveOnboarding(toOnboardingRequest(preferences));
 
-  if (response.success !== true) {
-    throw new Error(response.message ?? t('onboarding.error.saveFailed'));
+  if (!response || response.success !== true) {
+    throw new Error(response?.message ?? t('onboarding.error.saveFailed'));
   }
 }
