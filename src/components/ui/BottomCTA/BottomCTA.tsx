@@ -42,14 +42,24 @@ export function BottomCTA({
       </Pressable>
 
       {caption != null ? (
-        <Pressable
-          accessibilityLabel={caption}
-          accessibilityRole={onCaptionPress ? 'button' : 'text'}
-          disabled={!onCaptionPress}
-          hitSlop={8}
-          style={({ pressed }) => pressed && onCaptionPress && styles.captionPressed}
-          onPress={onCaptionPress}
-        >
+        onCaptionPress ? (
+          <Pressable
+            accessibilityLabel={caption}
+            accessibilityRole="button"
+            hitSlop={8}
+            style={({ pressed }) => pressed && styles.captionPressed}
+            onPress={onCaptionPress}
+          >
+            <Typography
+              variant="bodyS"
+              color={colors.gray[500]}
+              align="center"
+              style={styles.caption}
+            >
+              {caption}
+            </Typography>
+          </Pressable>
+        ) : (
           <Typography
             variant="bodyS"
             color={colors.gray[500]}
@@ -58,7 +68,7 @@ export function BottomCTA({
           >
             {caption}
           </Typography>
-        </Pressable>
+        )
       ) : null}
     </View>
   );
