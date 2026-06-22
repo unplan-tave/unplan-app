@@ -35,7 +35,6 @@ export function SettingsScreen() {
       router.replace('/login');
     } catch {
       setLogoutError(t('settings.logoutError'));
-    } finally {
       setIsLoggingOut(false);
     }
   };

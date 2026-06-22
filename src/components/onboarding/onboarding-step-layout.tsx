@@ -21,6 +21,7 @@ interface OnboardingStepLayoutProps {
   ctaLabel?: string;
   ctaDisabled?: boolean;
   ctaCaption?: string | null;
+  ctaCaptionDisabled?: boolean;
   onCtaCaptionPress?: () => void;
   contentRaised?: boolean;
   backgroundColor?: string;
@@ -37,6 +38,7 @@ export function OnboardingStepLayout({
   ctaLabel = t('common.confirm'),
   ctaDisabled = false,
   ctaCaption = t('common.skip'),
+  ctaCaptionDisabled = false,
   onCtaCaptionPress,
   contentRaised = false,
   backgroundColor = colors.onboardingBackground,
@@ -103,6 +105,7 @@ export function OnboardingStepLayout({
           <BottomCTA
             label={ctaLabel}
             caption={ctaCaption}
+            captionDisabled={ctaCaptionDisabled}
             onCaptionPress={onCtaCaptionPress}
             disabled={ctaDisabled}
             variant="primary"

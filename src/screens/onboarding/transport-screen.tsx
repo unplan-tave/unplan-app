@@ -61,6 +61,7 @@ export function TransportScreen() {
       progress={0.96}
       ctaLabel={isSubmitting ? t('common.saving') : t('common.confirm')}
       ctaDisabled={selectedIds.length === 0 || isSubmitting}
+      ctaCaptionDisabled={isSubmitting}
       onCtaCaptionPress={() => void handleSkip()}
       onConfirm={() => void handleConfirm()}
     >
