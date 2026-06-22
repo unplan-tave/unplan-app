@@ -47,20 +47,40 @@ runs:
           exit 0
         fi
 
-        if [ "$DEPLOY_STATUS" = "success" ]; then
-          title="✅ 앱 배포 성공"
-          color=5763719
-        else
-          title="❌ 앱 배포 실패"
-          color=15548997
-        fi
+        case "$DEPLOY_STATUS" in
+          success)
+            title="✅ 앱 배포 성공"
+            status_label="성공"
+            color=5763719
+            ;;
+          failure)
+            title="❌ 앱 배포 실패"
+            status_label="실패"
+            color=15548997
+            ;;
+          cancelled)
+            title="⚪ 앱 배포 취소"
+            status_label="취소"
+            color=9807270
+            ;;
+          skipped)
+            title="⚪ 앱 배포 미실행"
+            status_label="미실행"
+            color=9807270
+            ;;
+          *)
+            title="⚠️ 앱 배포 상태 확인 필요"
+            status_label="$DEPLOY_STATUS"
+            color=16705372
+            ;;
+        esac
 
         short_sha="${COMMIT_SHA:0:7}"
         payload="$(
           jq -n \
             --arg title "$title" \
             --arg deploy_type "$DEPLOY_TYPE" \
-            --arg status "$DEPLOY_STATUS" \
+            --arg status "$status_label" \
             --arg ref_name "$REF_NAME" \
             --arg commit_sha "$short_sha" \
             --arg actor "$ACTOR" \
