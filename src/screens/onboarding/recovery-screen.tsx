@@ -1,8 +1,11 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Keyboard, ScrollView, StyleSheet } from 'react-native';
 
 import { OnboardingOptionGrid } from '@/components/onboarding/onboarding-option-grid';
 import { OnboardingStepLayout } from '@/components/onboarding/onboarding-step-layout';
+import { Typography } from '@/components/ui/Typography';
+import { colors, fontFamilyWeight } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { type RecoveryOptionId } from '@/state/onboarding/model';
 import { onboardingRoutes } from '@/state/onboarding/routes';
@@ -26,34 +29,106 @@ const recoveryOptionDefinitions = [
 export function RecoveryScreen() {
   const router = useRouter();
   const selectedIds = useOnboardingStore((state) => state.preferences.recoveryOptionIds);
+  const customRecoveryLabel = useOnboardingStore((state) => state.preferences.customRecoveryLabel);
   const toggleRecoveryOption = useOnboardingStore((state) => state.toggleRecoveryOption);
+  const setCustomRecoveryLabel = useOnboardingStore((state) => state.setCustomRecoveryLabel);
+  const [isCustomEditing, setIsCustomEditing] = useState(false);
+  const [customDraft, setCustomDraft] = useState(customRecoveryLabel ?? '');
   const recoveryOptions = recoveryOptionDefinitions.map((option) => ({
     id: option.id,
     icon: option.icon,
     isCustom: option.isCustom,
     label: t(option.labelKey),
   }));
+  const hasSelection = selectedIds.length > 0;
+
+  useEffect(() => {
+    if (!isCustomEditing) {
+      setCustomDraft(customRecoveryLabel ?? '');
+    }
+  }, [customRecoveryLabel, isCustomEditing]);
+
+  const handleOptionPress = (optionId: RecoveryOptionId) => {
+    if (optionId !== 'custom') {
+      toggleRecoveryOption(optionId);
+      return;
+    }
+
+    setCustomDraft(customRecoveryLabel ?? '');
+    setIsCustomEditing(true);
+  };
+
+  const handleCustomSubmit = () => {
+    const normalizedLabel = customDraft.trim();
+
+    if (!normalizedLabel) {
+      setCustomRecoveryLabel(null);
+
+      if (selectedIds.includes('custom')) {
+        toggleRecoveryOption('custom');
+      }
+    } else {
+      setCustomRecoveryLabel(normalizedLabel);
+
+      if (!selectedIds.includes('custom')) {
+        toggleRecoveryOption('custom');
+      }
+    }
+
+    setIsCustomEditing(false);
+    Keyboard.dismiss();
+  };
 
   return (
     <OnboardingStepLayout
       title={t('onboarding.recovery.title')}
-      subtitle={t('onboarding.recovery.subtitle')}
+      subtitle={
+        <Typography variant="bodyM" align="center" color={colors.gray[700]}>
+          가장 지쳤을 때 회복할 수 있도록 알려드릴게요! 최소{' '}
+          <Typography style={styles.subtitleStrong}>1가지</Typography> 이상 선택해 주세요.
+        </Typography>
+      }
       progress={0.04}
-      ctaDisabled={selectedIds.length === 0}
+      ctaDisabled={!hasSelection}
+      ctaCaption={null}
+      contentRaised={isCustomEditing}
       onConfirm={() => router.push(onboardingRoutes.sleep)}
     >
-      <OnboardingOptionGrid
-        options={recoveryOptions}
-        selectedIds={selectedIds}
-        onToggle={toggleRecoveryOption}
-        style={styles.grid}
-      />
+      <ScrollView
+        automaticallyAdjustKeyboardInsets={false}
+        bounces={false}
+        contentInsetAdjustmentBehavior="never"
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <OnboardingOptionGrid
+          options={recoveryOptions}
+          selectedIds={selectedIds}
+          customEditing={isCustomEditing}
+          customInputValue={customDraft}
+          onCustomInputChange={setCustomDraft}
+          onCustomInputSubmit={handleCustomSubmit}
+          onToggle={handleOptionPress}
+        />
+      </ScrollView>
     </OnboardingStepLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: {
-    marginTop: 28,
+  subtitleStrong: {
+    fontFamily: fontFamilyWeight.bold,
+  },
+  scroll: {
+    width: '100%',
+    marginTop: 24,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    alignItems: 'center',
+    paddingBottom: 16,
   },
 });
