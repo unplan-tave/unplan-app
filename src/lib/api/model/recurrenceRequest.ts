@@ -10,7 +10,7 @@ import type { RecurrenceRequestFreq } from './recurrenceRequestFreq';
 export interface RecurrenceRequest {
   freq: RecurrenceRequestFreq;
   interval: number;
-  byDay?: string;
-  byMonthDay?: string;
+  by_day?: string;
+  by_month_day?: string;
   until: string;
 }

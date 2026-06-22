@@ -8,5 +8,5 @@
 import type { TransportRequestTransportTypesItem } from './transportRequestTransportTypesItem';
 
 export interface TransportRequest {
-  transportTypes: TransportRequestTransportTypesItem[];
+  transport_types: TransportRequestTransportTypesItem[];
 }

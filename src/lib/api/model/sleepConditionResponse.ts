@@ -8,7 +8,7 @@
 import type { Condition } from './condition';
 
 export interface SleepConditionResponse {
-  memberId?: number;
-  targetDuration?: number;
+  member_id?: number;
+  target_duration?: number;
   conditions?: Condition[];
 }

@@ -7,8 +7,8 @@
  */
 
 export interface UpdateBiorhythm {
-  memberId?: number;
-  focusedTimeline?: string;
-  drowsyTimeline?: string;
-  sleepTimeline?: string;
+  member_id?: number;
+  focused_timeline?: string;
+  drowsy_timeline?: string;
+  sleep_timeline?: string;
 }

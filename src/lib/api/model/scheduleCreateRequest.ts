@@ -6,25 +6,25 @@
  * OpenAPI spec version: v1.0.0
  */
 import type { ScheduleCreateRequestConditionTag } from './scheduleCreateRequestConditionTag';
-import type { LocalTime } from './localTime';
 import type { ScheduleCreateRequestRemindType } from './scheduleCreateRequestRemindType';
 import type { ScheduleCreateRequestRemindSoundType } from './scheduleCreateRequestRemindSoundType';
 import type { RecurrenceRequest } from './recurrenceRequest';
 
 export interface ScheduleCreateRequest {
+  /** @minLength 1 */
   title: string;
-  conditionTag: ScheduleCreateRequestConditionTag;
-  personalTags?: string[];
+  condition_tag: ScheduleCreateRequestConditionTag;
+  personal_tags?: string[];
   date?: string;
-  startTime?: LocalTime;
-  endTime?: LocalTime;
-  estimatedTime?: number;
+  start_time?: string;
+  end_time?: string;
+  estimated_time?: number;
   latitude?: number;
   longitude?: number;
   memo?: string;
-  isRemindOn: boolean;
-  remindMinutes?: number;
-  remindType?: ScheduleCreateRequestRemindType;
-  remindSoundType?: ScheduleCreateRequestRemindSoundType;
+  is_remind_on: boolean;
+  remind_minutes?: number;
+  remind_type?: ScheduleCreateRequestRemindType;
+  remind_sound_type?: ScheduleCreateRequestRemindSoundType;
   recurrence?: RecurrenceRequest;
 }

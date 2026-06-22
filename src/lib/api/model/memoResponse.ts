@@ -7,6 +7,6 @@
  */
 
 export interface MemoResponse {
-  dailyMemoId?: number;
+  daily_memo_id?: number;
   content?: string;
 }
