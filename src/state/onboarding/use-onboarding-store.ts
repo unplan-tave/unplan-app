@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { mmkvStorage } from '@/lib/storage/mmkv-storage';
 
 import { toggleActivityHourRange, toggleContinuousSleepRange } from './activity-time-ranges';
+import { submitOnboarding } from './api';
 
 import type { OnboardingPreferences, RecoveryOptionId, TransportOptionId } from './model';
 
@@ -24,6 +25,8 @@ const initialPreferences: OnboardingPreferences = {
 
 interface OnboardingState {
   hasCompletedOnboarding: boolean;
+  isSubmitting: boolean;
+  submissionError: string | null;
   preferences: OnboardingPreferences;
   hydrateOnboarding: () => void;
   toggleRecoveryOption: (optionId: RecoveryOptionId) => void;
@@ -39,11 +42,14 @@ interface OnboardingState {
     hour: number,
   ) => void;
   toggleTransportOption: (optionId: TransportOptionId) => void;
-  completeOnboarding: () => void;
+  completeOnboarding: (options?: { skipTransport?: boolean }) => Promise<boolean>;
+  resetOnboarding: () => void;
 }
 
-export const useOnboardingStore = create<OnboardingState>()((set) => ({
+export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
   hasCompletedOnboarding: false,
+  isSubmitting: false,
+  submissionError: null,
   preferences: initialPreferences,
 
   hydrateOnboarding: () => {
@@ -117,13 +123,62 @@ export const useOnboardingStore = create<OnboardingState>()((set) => ({
       }),
     ),
 
-  completeOnboarding: () => {
-    // TODO: Persist preferences to the server after the onboarding API contract is available.
-    mmkvStorage.set(ONBOARDING_COMPLETED_KEY, 'true');
+  completeOnboarding: async (options) => {
+    if (get().isSubmitting) {
+      return false;
+    }
 
     set(
       produce((state: OnboardingState) => {
-        state.hasCompletedOnboarding = true;
+        state.isSubmitting = true;
+        state.submissionError = null;
+      }),
+    );
+
+    try {
+      const preferences = get().preferences;
+      const submissionPreferences = options?.skipTransport
+        ? { ...preferences, transportOptionIds: [] }
+        : preferences;
+
+      await submitOnboarding(submissionPreferences);
+      mmkvStorage.set(ONBOARDING_COMPLETED_KEY, 'true');
+
+      set(
+        produce((state: OnboardingState) => {
+          state.hasCompletedOnboarding = true;
+        }),
+      );
+
+      return true;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '온보딩 정보를 저장하지 못했습니다.';
+
+      set(
+        produce((state: OnboardingState) => {
+          state.submissionError = message;
+        }),
+      );
+
+      return false;
+    } finally {
+      set(
+        produce((state: OnboardingState) => {
+          state.isSubmitting = false;
+        }),
+      );
+    }
+  },
+
+  resetOnboarding: () => {
+    mmkvStorage.remove(ONBOARDING_COMPLETED_KEY);
+
+    set(
+      produce((state: OnboardingState) => {
+        state.hasCompletedOnboarding = false;
+        state.isSubmitting = false;
+        state.submissionError = null;
+        state.preferences = initialPreferences;
       }),
     );
   },

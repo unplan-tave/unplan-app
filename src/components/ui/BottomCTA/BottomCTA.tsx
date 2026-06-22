@@ -9,6 +9,7 @@ import { type BottomCTAProps } from './bottomCTA.types';
 export function BottomCTA({
   label = '확인',
   caption = '다음에 할래요',
+  onCaptionPress,
   disabled = false,
   variant = 'default',
   style,
@@ -41,9 +42,23 @@ export function BottomCTA({
       </Pressable>
 
       {caption != null ? (
-        <Typography variant="bodyS" color={colors.gray[500]} align="center" style={styles.caption}>
-          {caption}
-        </Typography>
+        <Pressable
+          accessibilityLabel={caption}
+          accessibilityRole={onCaptionPress ? 'button' : 'text'}
+          disabled={!onCaptionPress}
+          hitSlop={8}
+          style={({ pressed }) => pressed && onCaptionPress && styles.captionPressed}
+          onPress={onCaptionPress}
+        >
+          <Typography
+            variant="bodyS"
+            color={colors.gray[500]}
+            align="center"
+            style={styles.caption}
+          >
+            {caption}
+          </Typography>
+        </Pressable>
       ) : null}
     </View>
   );
@@ -91,6 +106,9 @@ const styles = StyleSheet.create({
   },
   caption: {
     width: '100%',
+  },
+  captionPressed: {
+    opacity: 0.6,
   },
   pressed: {
     opacity: 0.72,
