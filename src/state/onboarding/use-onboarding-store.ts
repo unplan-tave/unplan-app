@@ -3,12 +3,9 @@ import { create } from 'zustand';
 
 import { mmkvStorage } from '@/lib/storage/mmkv-storage';
 
-import type {
-  OnboardingPreferences,
-  RecoveryOptionId,
-  TimeRange,
-  TransportOptionId,
-} from './model';
+import { toggleActivityHourRange, toggleContinuousSleepRange } from './activity-time-ranges';
+
+import type { OnboardingPreferences, RecoveryOptionId, TransportOptionId } from './model';
 
 const ONBOARDING_COMPLETED_KEY = 'onboarding.completed';
 
@@ -16,6 +13,9 @@ const initialPreferences: OnboardingPreferences = {
   recoveryOptionIds: [],
   customRecoveryLabel: null,
   targetSleepMinutes: 450,
+  sleepDangerThresholdMinutes: 180,
+  sleepLackThresholdMinutes: 360,
+  sleepOptimalThresholdMinutes: 540,
   focusTimeRanges: [],
   sleepyTimeRanges: [],
   sleepTimeRanges: [],
@@ -29,24 +29,17 @@ interface OnboardingState {
   toggleRecoveryOption: (optionId: RecoveryOptionId) => void;
   setCustomRecoveryLabel: (label: string | null) => void;
   setTargetSleepMinutes: (minutes: number) => void;
+  setSleepConditionThresholds: (thresholds: {
+    dangerMinutes: number;
+    lackMinutes: number;
+    optimalMinutes: number;
+  }) => void;
   toggleActivityHour: (
     rangeKey: 'focusTimeRanges' | 'sleepyTimeRanges' | 'sleepTimeRanges',
     hour: number,
   ) => void;
   toggleTransportOption: (optionId: TransportOptionId) => void;
   completeOnboarding: () => void;
-}
-
-function toggleHourRange(ranges: TimeRange[], hour: number): TimeRange[] {
-  const existingIndex = ranges.findIndex((range) => range.startHour === hour);
-
-  if (existingIndex >= 0) {
-    return ranges.filter((_, index) => index !== existingIndex);
-  }
-
-  return [...ranges, { startHour: hour, endHour: (hour + 1) % 24 }].sort(
-    (first, second) => first.startHour - second.startHour,
-  );
 }
 
 export const useOnboardingStore = create<OnboardingState>()((set) => ({
@@ -92,10 +85,24 @@ export const useOnboardingStore = create<OnboardingState>()((set) => ({
       }),
     ),
 
+  setSleepConditionThresholds: (thresholds) =>
+    set(
+      produce((state: OnboardingState) => {
+        state.preferences.sleepDangerThresholdMinutes = thresholds.dangerMinutes;
+        state.preferences.sleepLackThresholdMinutes = thresholds.lackMinutes;
+        state.preferences.sleepOptimalThresholdMinutes = thresholds.optimalMinutes;
+      }),
+    ),
+
   toggleActivityHour: (rangeKey, hour) =>
     set(
       produce((state: OnboardingState) => {
-        state.preferences[rangeKey] = toggleHourRange(state.preferences[rangeKey], hour);
+        const ranges = state.preferences[rangeKey];
+
+        state.preferences[rangeKey] =
+          rangeKey === 'sleepTimeRanges'
+            ? toggleContinuousSleepRange(ranges, hour)
+            : toggleActivityHourRange(ranges, hour);
       }),
     ),
 
