@@ -7,7 +7,9 @@
  */
 
 export interface SocialLoginResponseDto {
-  accessToken: string;
-  refreshToken: string;
-  isNewUser: boolean;
+  /** @minLength 1 */
+  access_token: string;
+  /** @minLength 1 */
+  refresh_token: string;
+  is_new_user: boolean;
 }

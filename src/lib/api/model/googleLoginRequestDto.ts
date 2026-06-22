@@ -7,6 +7,8 @@
  */
 
 export interface GoogleLoginRequestDto {
-  googleIdToken: string;
-  deviceId: string;
+  /** @minLength 1 */
+  google_id_token: string;
+  /** @minLength 1 */
+  device_id: string;
 }

@@ -12,17 +12,17 @@ export interface BiorhythmRequest {
    * @maxLength 24
    * @pattern ^[01]{24}$
    */
-  focusedTimeline: string;
+  focused_timeline: string;
   /**
    * @minLength 24
    * @maxLength 24
    * @pattern ^[01]{24}$
    */
-  drowsyTimeline: string;
+  drowsy_timeline: string;
   /**
    * @minLength 24
    * @maxLength 24
    * @pattern ^[01]{24}$
    */
-  sleepTimeline: string;
+  sleep_timeline: string;
 }

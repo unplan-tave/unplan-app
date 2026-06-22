@@ -11,23 +11,23 @@ import type { ScheduleDetailResponseRemindType } from './scheduleDetailResponseR
 import type { ScheduleDetailResponseRemindSoundType } from './scheduleDetailResponseRemindSoundType';
 
 export interface ScheduleDetailResponse {
-  scheduleId?: number;
+  schedule_id?: number;
   title?: string;
   date?: string;
-  startTime?: string;
-  endTime?: string;
-  estimatedTime?: number;
-  isQueue?: boolean;
+  start_time?: string;
+  end_time?: string;
+  estimated_time?: number;
+  is_queue?: boolean;
   status?: ScheduleDetailResponseStatus;
-  conditionTag?: ScheduleDetailResponseConditionTag;
+  condition_tag?: ScheduleDetailResponseConditionTag;
   memo?: string;
   location?: string;
-  isRemindOn?: boolean;
-  remindMinutes?: number;
-  remindType?: ScheduleDetailResponseRemindType;
-  remindSoundType?: ScheduleDetailResponseRemindSoundType;
-  isRecurring?: boolean;
-  isConflict?: boolean;
+  is_remind_on?: boolean;
+  remind_minutes?: number;
+  remind_type?: ScheduleDetailResponseRemindType;
+  remind_sound_type?: ScheduleDetailResponseRemindSoundType;
+  is_recurring?: boolean;
+  is_conflict?: boolean;
   latitude?: number;
   longitude?: number;
 }

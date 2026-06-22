@@ -58,7 +58,5 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     marginTop: ACTIVITY_RAILS_MARGIN_TOP,
     gap: ACTIVITY_RAILS_GAP,
-    marginLeft: 8,
-    marginRight: -20,
   },
 });

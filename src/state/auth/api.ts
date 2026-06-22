@@ -6,9 +6,9 @@ type SocialLoginApiResponse = Awaited<ReturnType<typeof kakaoLogin>>;
 
 function toAuthSession(response: SocialLoginApiResponse): AuthSession {
   return {
-    accessToken: response.accessToken,
-    refreshToken: response.refreshToken,
-    isNewUser: response.isNewUser,
+    accessToken: response.access_token,
+    refreshToken: response.refresh_token,
+    isNewUser: response.is_new_user,
   };
 }
 
@@ -19,16 +19,16 @@ export async function submitSocialLogin({
 }: SocialLoginRequest): Promise<AuthSession> {
   if (provider === 'kakao') {
     const response = await kakaoLogin({
-      kakaoAccessToken: accessToken,
-      deviceId,
+      kakao_access_token: accessToken,
+      device_id: deviceId,
     });
 
     return toAuthSession(response);
   }
 
   const response = await googleLogin({
-    googleIdToken: accessToken,
-    deviceId,
+    google_id_token: accessToken,
+    device_id: deviceId,
   });
 
   return toAuthSession(response);
