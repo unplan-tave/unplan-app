@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     top: CIRCLE_RADIUS - THRESHOLD_CONTAINER_HEIGHT / 2,
     width: THRESHOLD_CONTAINER_WIDTH,
     height: THRESHOLD_CONTAINER_HEIGHT,
-    transformOrigin: `0px ${THRESHOLD_CONTAINER_HEIGHT / 2}px`,
+    transformOrigin: [0, THRESHOLD_CONTAINER_HEIGHT / 2, 0],
     justifyContent: 'center',
   },
   thresholdLine: {

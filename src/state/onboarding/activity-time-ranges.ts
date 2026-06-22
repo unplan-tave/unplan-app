@@ -65,7 +65,12 @@ export function toggleContinuousSleepRange(ranges: TimeRange[], hour: number): T
   const hasNextHour = selectedHours.has(nextHour);
 
   if (selectedHours.has(normalizedHour)) {
-    if (selectedHours.size === 1 || !hasPreviousHour || !hasNextHour) {
+    if (
+      selectedHours.size === 1 ||
+      selectedHours.size === HOURS_PER_DAY ||
+      !hasPreviousHour ||
+      !hasNextHour
+    ) {
       selectedHours.delete(normalizedHour);
     }
 

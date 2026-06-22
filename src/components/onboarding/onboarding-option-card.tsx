@@ -84,7 +84,7 @@ export function OnboardingOptionCard({
       ) : (
         <Typography
           variant="titleS"
-          color={disabled ? colors.gray[400] : selected ? '#007BFF' : colors.gray[700]}
+          color={disabled ? colors.gray[400] : selected ? colors.primary : colors.gray[700]}
           align="center"
           numberOfLines={1}
           style={isCustom && inputValue ? styles.customLabel : undefined}
