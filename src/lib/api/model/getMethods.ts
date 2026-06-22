@@ -8,6 +8,6 @@
 import type { GetMethodsDefaultMethodsItem } from './getMethodsDefaultMethodsItem';
 
 export interface GetMethods {
-  defaultMethods?: GetMethodsDefaultMethodsItem[];
-  customMethods?: string[];
+  default_methods?: GetMethodsDefaultMethodsItem[];
+  custom_methods?: string[];
 }

@@ -18,8 +18,11 @@ interface OnboardingStepLayoutProps {
   subtitle: React.ReactNode;
   note?: string;
   progress: number;
+  ctaLabel?: string;
   ctaDisabled?: boolean;
   ctaCaption?: string | null;
+  ctaCaptionDisabled?: boolean;
+  onCtaCaptionPress?: () => void;
   contentRaised?: boolean;
   backgroundColor?: string;
   titleMinHeight?: number;
@@ -32,8 +35,11 @@ export function OnboardingStepLayout({
   subtitle,
   note,
   progress,
+  ctaLabel = t('common.confirm'),
   ctaDisabled = false,
   ctaCaption = t('common.skip'),
+  ctaCaptionDisabled = false,
+  onCtaCaptionPress,
   contentRaised = false,
   backgroundColor = colors.onboardingBackground,
   titleMinHeight = 68,
@@ -97,8 +103,10 @@ export function OnboardingStepLayout({
       footer={
         <View style={styles.footer}>
           <BottomCTA
-            label={t('common.confirm')}
+            label={ctaLabel}
             caption={ctaCaption}
+            captionDisabled={ctaCaptionDisabled}
+            onCaptionPress={onCtaCaptionPress}
             disabled={ctaDisabled}
             variant="primary"
             onPress={onConfirm}

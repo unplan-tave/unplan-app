@@ -9,13 +9,13 @@ import type { ScheduleGetResponseStatus } from './scheduleGetResponseStatus';
 import type { ScheduleGetResponseConditionTag } from './scheduleGetResponseConditionTag';
 
 export interface ScheduleGetResponse {
-  scheduleId?: number;
+  schedule_id?: number;
   title?: string;
   date?: string;
-  startTime?: string;
-  endTime?: string;
-  estimatedTime?: number;
-  isQueue?: boolean;
+  start_time?: string;
+  end_time?: string;
+  estimated_time?: number;
+  is_queue?: boolean;
   status?: ScheduleGetResponseStatus;
-  conditionTag?: ScheduleGetResponseConditionTag;
+  condition_tag?: ScheduleGetResponseConditionTag;
 }

@@ -9,7 +9,9 @@ import { type BottomCTAProps } from './bottomCTA.types';
 export function BottomCTA({
   label = '확인',
   caption = '다음에 할래요',
+  onCaptionPress,
   disabled = false,
+  captionDisabled = false,
   variant = 'default',
   style,
   textStyle,
@@ -18,6 +20,12 @@ export function BottomCTA({
 }: BottomCTAProps) {
   const isPrimary = variant === 'primary';
   const textColor = disabled ? colors.gray[300] : isPrimary ? colors.gray.white : colors.gray[800];
+  const captionContent =
+    caption != null ? (
+      <Typography variant="bodyS" color={colors.gray[500]} align="center" style={styles.caption}>
+        {caption}
+      </Typography>
+    ) : null;
 
   return (
     <View style={[styles.container, style]}>
@@ -40,10 +48,22 @@ export function BottomCTA({
         </Typography>
       </Pressable>
 
-      {caption != null ? (
-        <Typography variant="bodyS" color={colors.gray[500]} align="center" style={styles.caption}>
-          {caption}
-        </Typography>
+      {captionContent ? (
+        onCaptionPress ? (
+          <Pressable
+            accessibilityLabel={caption ?? undefined}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: captionDisabled }}
+            disabled={captionDisabled}
+            hitSlop={8}
+            style={({ pressed }) => pressed && !captionDisabled && styles.captionPressed}
+            onPress={onCaptionPress}
+          >
+            {captionContent}
+          </Pressable>
+        ) : (
+          captionContent
+        )
       ) : null}
     </View>
   );
@@ -91,6 +111,9 @@ const styles = StyleSheet.create({
   },
   caption: {
     width: '100%',
+  },
+  captionPressed: {
+    opacity: 0.6,
   },
   pressed: {
     opacity: 0.72,

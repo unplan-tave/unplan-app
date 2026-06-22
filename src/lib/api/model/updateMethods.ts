@@ -8,6 +8,6 @@
 import type { UpdateMethodsDefaultMethodsItem } from './updateMethodsDefaultMethodsItem';
 
 export interface UpdateMethods {
-  defaultMethods: UpdateMethodsDefaultMethodsItem[];
-  customMethods: string[];
+  default_methods: UpdateMethodsDefaultMethodsItem[];
+  custom_methods: string[];
 }

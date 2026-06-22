@@ -6,22 +6,21 @@
  * OpenAPI spec version: v1.0.0
  */
 import type { ScheduleUpdateRequestConditionTag } from './scheduleUpdateRequestConditionTag';
-import type { LocalTime } from './localTime';
 import type { ScheduleUpdateRequestStatus } from './scheduleUpdateRequestStatus';
 import type { ScheduleUpdateRequestRemindType } from './scheduleUpdateRequestRemindType';
 import type { ScheduleUpdateRequestRemindSoundType } from './scheduleUpdateRequestRemindSoundType';
 
 export interface ScheduleUpdateRequest {
   title?: string;
-  conditionTag?: ScheduleUpdateRequestConditionTag;
+  condition_tag?: ScheduleUpdateRequestConditionTag;
   date?: string;
-  startTime?: LocalTime;
-  endTime?: LocalTime;
-  estimatedTime?: number;
+  start_time?: string;
+  end_time?: string;
+  estimated_time?: number;
   memo?: string;
   status?: ScheduleUpdateRequestStatus;
-  isRemindOn?: boolean;
-  remindMinutes?: number;
-  remindType?: ScheduleUpdateRequestRemindType;
-  remindSoundType?: ScheduleUpdateRequestRemindSoundType;
+  is_remind_on?: boolean;
+  remind_minutes?: number;
+  remind_type?: ScheduleUpdateRequestRemindType;
+  remind_sound_type?: ScheduleUpdateRequestRemindSoundType;
 }

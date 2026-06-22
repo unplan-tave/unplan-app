@@ -60,9 +60,9 @@ src/
 │   ├── index.tsx         # 스플래시 → 세션/온보딩 판단 후 분기 진입점
 │   ├── (auth)/           # 로그인
 │   ├── onboarding/        # recovery → sleep → activity → transport
-│   └── (tabs)/           # 홈 · 일정 · 설정 · Playground(dev 전용)
+│   └── (tabs)/           # 홈 · 일정 · 설정
 ├── screens/          # 라우트가 렌더링하는 실제 화면 구현 (<domain>/*-screen.tsx)
-│   ├── auth/ home/ schedule/ settings/ onboarding/ playground/
+│   ├── auth/ home/ schedule/ settings/ onboarding/
 ├── components/
 │   ├── ui/               # 전역 base primitive (디자인 시스템, 30+ 컴포넌트)
 │   ├── onboarding/        # 온보딩 전용 조합 컴포넌트
@@ -109,16 +109,13 @@ src/
 - **`hooks/use-auth.ts`** — store 셀렉터 묶음.
 - **`lib/device/device-id.ts`** — UUID 디바이스 ID 생성·영속(SecureStore), 폴백 포함.
 
-### 5.2 온보딩 (onboarding) — ✅ 동작 (로컬 only)
-- **`state/onboarding/use-onboarding-store.ts`** — 회복 수단, 목표 수면시간, 집중/졸림/수면 시간대, 이동수단 선택 관리. 완료 플래그는 MMKV에 저장.
+### 5.2 온보딩 (onboarding) — ✅ API 연동
+- **`state/onboarding/use-onboarding-store.ts`** — 회복 수단, 목표 수면시간, 집중/졸림/수면 시간대, 이동수단 선택과 제출 상태 관리. 서버 저장 성공 후 완료 플래그를 MMKV에 저장.
+- **`state/onboarding/api.ts`** — 프론트 모델을 생성 DTO로 변환하고 최초 온보딩 단일 저장 API를 호출.
 - **`state/onboarding/sleep-condition.ts`** — 수면 분(minute)을 risk/lack/good/excess로 분류(Figma 스펙 반영).
-- ⚠️ **서버 미연동**: `completeOnboarding()`에 "API 계약 확정 후 서버 저장" TODO. 현재 선호도는 로컬에만 남고 서버로 전송되지 않음.
 
-### 5.3 메인 탭 (home / schedule / settings) — 🟡 플레이스홀더
-- 세 화면 모두 `Typography` 한두 줄만 렌더하는 스켈레톤. 실제 기능 미구현.
-
-### 5.4 Playground — 🛠️ 개발 전용
-- `(tabs)/playground.tsx`는 `__DEV__`에서만 탭에 노출(`href: __DEV__ ? undefined : null`). 디자인 시스템(Typography·Tag) 미리보기 용도.
+### 5.3 메인 탭 (home / schedule / settings) — 🟡 진행 중
+- 홈·일정은 플레이스홀더이며, 설정에는 로그아웃과 개발용 온보딩 초기화 기능이 연결됨.
 
 ---
 
@@ -126,8 +123,8 @@ src/
 
 - **클라이언트**: `lib/api/client.ts` — `Config.apiUrl` 기반 axios. 요청 인터셉터가 SecureStore의 access token을 Bearer로 주입. 응답 인터셉터에 **401 refresh-token 재시도 TODO**(미구현).
 - **Orval 자동생성**: `orval.config.ts`가 `OPENAPI_SPEC_URL`에서 스펙을 받아 `src/lib/api/endpoints`(태그별 React Query 훅)와 `src/lib/api/model`(타입)을 생성. 커스텀 mutator(`orval-mutator.ts`)로 공용 axios 인스턴스 재사용. 두 디렉터리는 ESLint ignore 대상.
-- 생성된 태그: `auth-controller`, `daily-memo`, `onboarding`, `test-controller`.
-- ⚠️ **현재 생성된 훅은 화면에서 사용되지 않음.** 인증은 `state/auth/api.ts`의 수기 구현을 사용. (자세한 내용은 §9 리뷰 참고.)
+- 생성된 태그: `auth-controller`, `daily-memo`, `onboarding`, `setting-onboarding`, `schedule-crud`, `test-controller`.
+- 온보딩은 `state/onboarding/api.ts`, 인증은 `state/auth/api.ts`의 수기 래퍼를 통해 생성 함수를 사용함.
 
 ---
 
@@ -182,10 +179,10 @@ src/
 - 디자인 토큰 + primitive-first 컨벤션으로 디자인 변경에 강함.
 
 ### 정리하면 좋은 점 (불필요 / 중복)
-1. **미사용 UI primitive 다수** — `Button`, `Input`, `Modal`, `BottomSheet`, `Calendar`, `GNB`, `ConditionCard`, `RecommendCard`, `ProgressBar`, `ProgressSegment`, `StatusBar`, `TimeStepper`, `ViewModeButton`, `ChipGroup`, `AppIcon` 등이 화면에서 전혀 사용되지 않음(`Tag`는 Playground에서만). 디자인 선반영 의도라면 OK지만, 화면 구현이 임박하지 않았다면 드리프트/유지보수 부담. 살릴 것·뺄 것을 트래킹 권장.
-2. **Orval 생성 훅 미사용** — 생성된 `endpoints/*`가 어디서도 import되지 않고, 인증은 `state/auth/api.ts`로 수기 구현(생성 `kakaoLogin`과 중복). API 단일 소스(생성 vs 수기)를 정할 것.
+1. **미사용 UI primitive 다수** — `Input`, `Modal`, `BottomSheet`, `Calendar`, `GNB`, `ConditionCard`, `RecommendCard`, `ProgressBar`, `ProgressSegment`, `StatusBar`, `TimeStepper`, `ViewModeButton`, `ChipGroup`, `AppIcon`, `Tag` 등이 화면에서 전혀 사용되지 않음. 디자인 선반영 의도라면 OK지만, 화면 구현이 임박하지 않았다면 드리프트/유지보수 부담. 살릴 것·뺄 것을 트래킹 권장.
+2. **Orval 생성 훅 활용 범위 제한** — 인증·온보딩은 수기 래퍼에서 생성 함수를 사용하지만, 나머지 도메인은 아직 화면과 연결되지 않음.
 3. **타입 중복/데드코드** — `state/auth/model.ts`의 `Schedule`, `ApiError` 인터페이스가 미사용. `ApiResponse`는 생성 모델과 개념 중복.
-4. **미구현 TODO** — (a) axios 401 refresh 재시도, (b) 온보딩 선호도 서버 저장. 백엔드 계약 확정 시 처리 필요.
+4. **미구현 TODO** — axios 401 refresh 재시도. 백엔드 계약 확정 시 처리 필요.
 5. **테스트 부재** — CI는 `npm test --if-present`를 돌리지만 테스트 프레임워크/스크립트가 전혀 없음(devDeps에도 없음). 검증 공백.
 6. **네이밍 잔재** — `package.json`의 `name: scheduler-app`, MMKV id `scheduler-app-storage`가 리브랜딩된 `Unplan`과 불일치.
 7. **빈 디렉터리 마커** — `src/lib/hooks/.gitkeep`(빈 폴더), `src/lib/i18n/.gitkeep`·`src/lib/auth/.gitkeep`(이미 파일 있어 불필요).
@@ -197,7 +194,7 @@ src/
 
 ## 10. 다음 단계 제안
 
-- 백엔드 API 계약 확정 후: Orval 훅으로 전환, 401 refresh 구현, 온보딩 서버 저장.
+- 백엔드 API 계약 확정 후: 나머지 도메인의 Orval 연동과 401 refresh 구현.
 - 홈/일정/설정 화면을 선구현된 primitive로 실제 구현.
 - 테스트 환경(예: Jest + RNTL) 도입 및 CI에 연결.
 - 데드코드/네이밍 정리 + 미사용 컴포넌트 정책 결정.
