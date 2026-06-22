@@ -1,8 +1,10 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { OnboardingOptionGrid } from '@/components/onboarding/onboarding-option-grid';
 import { OnboardingStepLayout } from '@/components/onboarding/onboarding-step-layout';
+import { Typography } from '@/components/ui/Typography';
+import { colors, spacing } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { type TransportOptionId } from '@/state/onboarding/model';
 import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
@@ -20,15 +22,36 @@ export function TransportScreen() {
   const selectedIds = useOnboardingStore((state) => state.preferences.transportOptionIds);
   const toggleTransportOption = useOnboardingStore((state) => state.toggleTransportOption);
   const completeOnboarding = useOnboardingStore((state) => state.completeOnboarding);
+  const isSubmitting = useOnboardingStore((state) => state.isSubmitting);
+  const submissionError = useOnboardingStore((state) => state.submissionError);
   const transportOptions = transportOptionDefinitions.map((option) => ({
     id: option.id,
     icon: option.icon,
     label: t(option.labelKey),
   }));
 
-  const handleConfirm = () => {
-    completeOnboarding();
-    router.replace('/(tabs)');
+  const handleConfirm = async () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    const didComplete = await completeOnboarding();
+
+    if (didComplete) {
+      router.replace('/(tabs)');
+    }
+  };
+
+  const handleSkip = async () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    const didComplete = await completeOnboarding({ skipTransport: true });
+
+    if (didComplete) {
+      router.replace('/(tabs)');
+    }
   };
 
   return (
@@ -36,20 +59,40 @@ export function TransportScreen() {
       title={t('onboarding.transport.title')}
       subtitle={t('onboarding.transport.subtitle')}
       progress={0.96}
-      ctaDisabled={selectedIds.length === 0}
-      onConfirm={handleConfirm}
+      ctaLabel={isSubmitting ? '저장 중' : t('common.confirm')}
+      ctaDisabled={selectedIds.length === 0 || isSubmitting}
+      onCtaCaptionPress={() => void handleSkip()}
+      onConfirm={() => void handleConfirm()}
     >
-      <OnboardingOptionGrid
-        options={transportOptions}
-        selectedIds={selectedIds}
-        onToggle={toggleTransportOption}
-        style={styles.grid}
-      />
+      <View style={styles.content}>
+        <OnboardingOptionGrid
+          options={transportOptions}
+          selectedIds={selectedIds}
+          onToggle={toggleTransportOption}
+          style={styles.grid}
+        />
+        {submissionError ? (
+          <Typography
+            variant="bodyS"
+            color={colors.secondary}
+            align="center"
+            accessibilityLiveRegion="polite"
+          >
+            {submissionError}
+            {'\n'}확인 버튼을 눌러 다시 시도해 주세요.
+          </Typography>
+        ) : null}
+      </View>
     </OnboardingStepLayout>
   );
 }
 
 const styles = StyleSheet.create({
+  content: {
+    width: '100%',
+    alignItems: 'center',
+    gap: spacing[5],
+  },
   grid: {
     marginTop: 40,
   },
