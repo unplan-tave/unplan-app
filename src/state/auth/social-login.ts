@@ -179,10 +179,6 @@ async function requestGoogleIdToken(): Promise<string> {
 
   const { idToken } = response.data;
 
-  // if (__DEV__) {
-  //   console.warn('Google ID Token:', idToken);
-  // }
-
   if (!idToken) {
     throw new SocialLoginError('sdk', '구글 ID 토큰을 가져오지 못했습니다.');
   }

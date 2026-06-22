@@ -2,8 +2,11 @@ export const ko = {
   'auth.login.apple': 'Apple로 로그인',
   'auth.login.google': 'Google로 로그인',
   'auth.login.kakao': '카카오로 로그인',
+  'auth.login.loading': '로그인 중',
+  'auth.login.loadingAccessibilityLabel': '소셜 로그인 처리 중',
   'auth.login.termsNotice':
     '가입과 동시에 서비스 이용약관 및\n개인정보 수집 및 이용약관에 동의하는 것으로 간주됩니다.',
+  'auth.login.unavailable': '아직 지원하지 않는 로그인 방식입니다.',
   'common.confirm': '확인',
   'common.skip': '다음에 할래요',
   'onboarding.activity.focusTime': '집중 잘 되는 시간',
@@ -15,8 +18,9 @@ export const ko = {
   'onboarding.recovery.food': '음식/간식',
   'onboarding.recovery.music': '음악 감상',
   'onboarding.recovery.nap': '짧은 낮잠',
-  'onboarding.recovery.subtitle':
-    '가장 지쳤을 때 회복할 수 있도록 알려드릴게요! 최소 1가지 이상 선택해 주세요.',
+  'onboarding.recovery.subtitleHighlight': '1가지',
+  'onboarding.recovery.subtitlePrefix': '가장 지쳤을 때 회복할 수 있도록 알려드릴게요! 최소 ',
+  'onboarding.recovery.subtitleSuffix': ' 이상 선택해 주세요.',
   'onboarding.recovery.stretching': '스트레칭',
   'onboarding.recovery.title': '컨디션을 회복하기 위한\n방법을 골라주세요!',
   'onboarding.recovery.walk': '가벼운 산책',

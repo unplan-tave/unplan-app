@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef } from 'react';
-import { type GestureResponderEvent, PanResponder, StyleSheet, View } from 'react-native';
+import { PanResponder, StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
@@ -220,37 +220,34 @@ export function SleepConditionCircle({
     ],
   );
 
-  const beginDrag = useCallback(
-    (event: GestureResponderEvent) => {
-      const { locationX, locationY } = event.nativeEvent;
-      const minutes = getMinutesFromLocation(locationX, locationY);
-      const nearestLine = findNearestLine(minutes, lineValues);
-
-      activeLineRef.current = nearestLine;
-      updateLine(nearestLine, minutes);
-    },
-    [lineValues, updateLine],
-  );
-
-  const continueDrag = useCallback(
-    (event: GestureResponderEvent) => {
-      if (!activeLineRef.current) {
-        return;
-      }
-
-      const { locationX, locationY } = event.nativeEvent;
-      updateLine(activeLineRef.current, getMinutesFromLocation(locationX, locationY));
-    },
-    [updateLine],
-  );
+  const dragStateRef = useRef({ lineValues, updateLine });
+  dragStateRef.current = { lineValues, updateLine };
 
   const panResponder = useMemo(
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: () => true,
-        onPanResponderGrant: beginDrag,
-        onPanResponderMove: continueDrag,
+        onPanResponderGrant: (event) => {
+          const { locationX, locationY } = event.nativeEvent;
+          const minutes = getMinutesFromLocation(locationX, locationY);
+          const { lineValues: currentLineValues, updateLine: currentUpdateLine } =
+            dragStateRef.current;
+          const nearestLine = findNearestLine(minutes, currentLineValues);
+
+          activeLineRef.current = nearestLine;
+          currentUpdateLine(nearestLine, minutes);
+        },
+        onPanResponderMove: (event) => {
+          const activeLine = activeLineRef.current;
+
+          if (!activeLine) {
+            return;
+          }
+
+          const { locationX, locationY } = event.nativeEvent;
+          dragStateRef.current.updateLine(activeLine, getMinutesFromLocation(locationX, locationY));
+        },
         onPanResponderRelease: () => {
           activeLineRef.current = null;
         },
@@ -258,7 +255,7 @@ export function SleepConditionCircle({
           activeLineRef.current = null;
         },
       }),
-    [beginDrag, continueDrag],
+    [],
   );
 
   const targetSleepCondition = classifySleepMinutes(targetSleepMinutes, thresholds);
