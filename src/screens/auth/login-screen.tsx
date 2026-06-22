@@ -30,7 +30,7 @@ export function LoginScreen() {
   const isSocialLoginLoading = isGoogleLoginLoading || isKakaoLoginLoading;
 
   const handleUnavailableLogin = () => {
-    setErrorMessage('아직 지원하지 않는 로그인 방식입니다.');
+    setErrorMessage(t('auth.login.unavailable'));
   };
 
   const handleSocialLogin = async (provider: SocialProvider) => {
@@ -75,19 +75,19 @@ export function LoginScreen() {
             />
             <SocialLoginButton
               provider="google"
-              label={isGoogleLoginLoading ? '로그인 중' : t('auth.login.google')}
+              label={isGoogleLoginLoading ? t('auth.login.loading') : t('auth.login.google')}
               disabled={isSocialLoginLoading}
               onPress={() => void handleSocialLogin('google')}
             />
             <SocialLoginButton
               provider="kakao"
-              label={isKakaoLoginLoading ? '로그인 중' : t('auth.login.kakao')}
+              label={isKakaoLoginLoading ? t('auth.login.loading') : t('auth.login.kakao')}
               disabled={isSocialLoginLoading}
               onPress={() => void handleSocialLogin('kakao')}
             />
             {isSocialLoginLoading ? (
               <ActivityIndicator
-                accessibilityLabel="소셜 로그인 처리 중"
+                accessibilityLabel={t('auth.login.loadingAccessibilityLabel')}
                 color={colors.gray[800]}
                 style={styles.loadingIndicator}
               />

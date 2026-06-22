@@ -84,8 +84,11 @@ export function RecoveryScreen() {
       title={t('onboarding.recovery.title')}
       subtitle={
         <Typography variant="bodyM" align="center" color={colors.gray[700]}>
-          가장 지쳤을 때 회복할 수 있도록 알려드릴게요! 최소{' '}
-          <Typography style={styles.subtitleStrong}>1가지</Typography> 이상 선택해 주세요.
+          {t('onboarding.recovery.subtitlePrefix')}
+          <Typography style={styles.subtitleStrong}>
+            {t('onboarding.recovery.subtitleHighlight')}
+          </Typography>
+          {t('onboarding.recovery.subtitleSuffix')}
         </Typography>
       }
       progress={0.04}
