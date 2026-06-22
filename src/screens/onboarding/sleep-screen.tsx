@@ -8,8 +8,11 @@ import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
 export function SleepScreen() {
   const router = useRouter();
-  const targetSleepMinutes = useOnboardingStore((state) => state.preferences.targetSleepMinutes);
+  const preferences = useOnboardingStore((state) => state.preferences);
   const setTargetSleepMinutes = useOnboardingStore((state) => state.setTargetSleepMinutes);
+  const setSleepConditionThresholds = useOnboardingStore(
+    (state) => state.setSleepConditionThresholds,
+  );
 
   return (
     <OnboardingStepLayout
@@ -21,8 +24,12 @@ export function SleepScreen() {
       onConfirm={() => router.push(onboardingRoutes.activity)}
     >
       <SleepConditionCircle
-        targetSleepMinutes={targetSleepMinutes}
+        targetSleepMinutes={preferences.targetSleepMinutes}
+        dangerThresholdMinutes={preferences.sleepDangerThresholdMinutes}
+        lackThresholdMinutes={preferences.sleepLackThresholdMinutes}
+        optimalThresholdMinutes={preferences.sleepOptimalThresholdMinutes}
         onTargetSleepMinutesChange={setTargetSleepMinutes}
+        onThresholdsChange={setSleepConditionThresholds}
       />
     </OnboardingStepLayout>
   );

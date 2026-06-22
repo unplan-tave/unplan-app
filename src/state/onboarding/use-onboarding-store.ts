@@ -16,6 +16,9 @@ const initialPreferences: OnboardingPreferences = {
   recoveryOptionIds: [],
   customRecoveryLabel: null,
   targetSleepMinutes: 450,
+  sleepDangerThresholdMinutes: 180,
+  sleepLackThresholdMinutes: 360,
+  sleepOptimalThresholdMinutes: 540,
   focusTimeRanges: [],
   sleepyTimeRanges: [],
   sleepTimeRanges: [],
@@ -29,6 +32,11 @@ interface OnboardingState {
   toggleRecoveryOption: (optionId: RecoveryOptionId) => void;
   setCustomRecoveryLabel: (label: string | null) => void;
   setTargetSleepMinutes: (minutes: number) => void;
+  setSleepConditionThresholds: (thresholds: {
+    dangerMinutes: number;
+    lackMinutes: number;
+    optimalMinutes: number;
+  }) => void;
   toggleActivityHour: (
     rangeKey: 'focusTimeRanges' | 'sleepyTimeRanges' | 'sleepTimeRanges',
     hour: number,
@@ -89,6 +97,15 @@ export const useOnboardingStore = create<OnboardingState>()((set) => ({
     set(
       produce((state: OnboardingState) => {
         state.preferences.targetSleepMinutes = minutes;
+      }),
+    ),
+
+  setSleepConditionThresholds: (thresholds) =>
+    set(
+      produce((state: OnboardingState) => {
+        state.preferences.sleepDangerThresholdMinutes = thresholds.dangerMinutes;
+        state.preferences.sleepLackThresholdMinutes = thresholds.lackMinutes;
+        state.preferences.sleepOptimalThresholdMinutes = thresholds.optimalMinutes;
       }),
     ),
 

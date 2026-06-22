@@ -11,6 +11,9 @@ export interface OnboardingPreferences {
   recoveryOptionIds: RecoveryOptionId[];
   customRecoveryLabel: string | null;
   targetSleepMinutes: number;
+  sleepDangerThresholdMinutes: number;
+  sleepLackThresholdMinutes: number;
+  sleepOptimalThresholdMinutes: number;
   focusTimeRanges: TimeRange[];
   sleepyTimeRanges: TimeRange[];
   sleepTimeRanges: TimeRange[];
