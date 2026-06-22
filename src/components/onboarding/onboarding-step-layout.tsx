@@ -21,6 +21,8 @@ interface OnboardingStepLayoutProps {
   ctaDisabled?: boolean;
   ctaCaption?: string | null;
   contentRaised?: boolean;
+  backgroundColor?: string;
+  titleMinHeight?: number;
   onConfirm: () => void;
 }
 
@@ -33,6 +35,8 @@ export function OnboardingStepLayout({
   ctaDisabled = false,
   ctaCaption = t('common.skip'),
   contentRaised = false,
+  backgroundColor = colors.onboardingBackground,
+  titleMinHeight = 68,
   onConfirm,
 }: OnboardingStepLayoutProps) {
   const router = useRouter();
@@ -59,7 +63,7 @@ export function OnboardingStepLayout({
   };
   return (
     <ScreenLayout
-      backgroundColor={colors.onboardingBackground}
+      backgroundColor={backgroundColor}
       header={
         <View style={styles.headerLayer}>
           <Animated.View
@@ -106,7 +110,12 @@ export function OnboardingStepLayout({
     >
       <Animated.View style={[styles.body, contentTransform]}>
         <View style={styles.head}>
-          <Typography variant="titleL" align="center" color={colors.gray[900]} style={styles.title}>
+          <Typography
+            variant="titleL"
+            align="center"
+            color={colors.gray[900]}
+            style={{ minHeight: titleMinHeight }}
+          >
             {title}
           </Typography>
           {typeof subtitle === 'string' ? (
@@ -165,9 +174,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 35,
     gap: spacing[1],
-  },
-  title: {
-    minHeight: 68,
   },
   note: {
     marginTop: spacing[2],

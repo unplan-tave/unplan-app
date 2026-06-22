@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { type GestureResponderEvent, PanResponder, StyleSheet, View } from 'react-native';
-import Svg, { Line, Path } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
@@ -28,8 +28,11 @@ type DraggableLine = 'danger' | 'lack' | 'target' | 'optimal';
 
 const CIRCLE_SIZE = 300;
 const CIRCLE_RADIUS = CIRCLE_SIZE / 2;
-const BADGE_RADIUS = 116;
-const LABEL_RADIUS = 67;
+const THRESHOLD_LINE_LENGTH = 150;
+const THRESHOLD_CONTAINER_WIDTH = 152;
+const THRESHOLD_CONTAINER_HEIGHT = 26;
+const LABEL_RADIUS = 42;
+const MINIMUM_LABEL_RANGE_MINUTES = 90;
 const MINIMUM_RANGE_MINUTES = SLEEP_CONDITION_STEP_MINUTES;
 
 const sleepConditionColors = {
@@ -123,13 +126,8 @@ function getLabelPosition(startMinutes: number, endMinutes: number) {
   };
 }
 
-function getBadgePosition(minutes: number) {
-  const point = getPoint(minutes, BADGE_RADIUS);
-
-  return {
-    left: clamp(point.x - 38, 0, CIRCLE_SIZE - 76),
-    top: clamp(point.y - 13, 0, CIRCLE_SIZE - 26),
-  };
+function getLineRotation(minutes: number) {
+  return (getAngle(minutes) * 180) / Math.PI;
 }
 
 export function SleepConditionCircle({
@@ -321,53 +319,56 @@ export function SleepConditionCircle({
                 fill={sleepConditionColors[sector.condition]}
               />
             ))}
-            {(['danger', 'lack', 'optimal', 'target'] as DraggableLine[]).map((line) => {
-              const point = getPoint(lineValues[line], CIRCLE_RADIUS);
-
-              return (
-                <Line
-                  key={line}
-                  x1={CIRCLE_RADIUS}
-                  y1={CIRCLE_RADIUS}
-                  x2={point.x}
-                  y2={point.y}
-                  stroke={line === 'target' ? sleepConditionColors.target : colors.gray.white}
-                  strokeWidth={line === 'target' ? 2 : 1}
-                />
-              );
-            })}
           </Svg>
 
-          {sectors.map((sector) => (
-            <Typography
-              key={sector.condition}
-              variant="titleS"
-              align="center"
-              color={sector.condition === 'excess' ? colors.gray[400] : colors.gray.white}
-              style={[styles.conditionLabel, getLabelPosition(sector.start, sector.end)]}
-            >
-              {t(sleepConditionLabelKeys[sector.condition])}
-            </Typography>
-          ))}
+          {(['danger', 'lack', 'optimal', 'target'] as DraggableLine[]).map((line) => {
+            const rotation = getLineRotation(lineValues[line]);
+            const shouldReverseText = rotation > 90 || rotation <= -90;
 
-          {(['danger', 'lack', 'optimal', 'target'] as DraggableLine[]).map((line) => (
-            <View
-              key={line}
-              pointerEvents="none"
-              style={[
-                styles.timeBadge,
-                line === 'target' && styles.targetBadge,
-                getBadgePosition(lineValues[line]),
-              ]}
-            >
-              <Typography
-                variant="caption"
-                color={line === 'target' ? colors.gray.white : colors.gray[700]}
+            return (
+              <View
+                key={line}
+                pointerEvents="none"
+                style={[
+                  styles.thresholdContainer,
+                  {
+                    transform: [{ rotate: `${rotation}deg` }],
+                  },
+                ]}
               >
-                {formatMinutes(lineValues[line])}
+                <View
+                  style={[styles.thresholdLine, line === 'target' && styles.targetThresholdLine]}
+                />
+                <View
+                  style={[
+                    styles.timeBadge,
+                    line === 'target' && styles.targetBadge,
+                    shouldReverseText && styles.reversedBadge,
+                  ]}
+                >
+                  <TimeBadgeContent
+                    minutes={lineValues[line]}
+                    color={line === 'target' ? colors.gray.white : colors.gray[700]}
+                  />
+                </View>
+              </View>
+            );
+          })}
+
+          {sectors.map((sector) =>
+            sector.end - sector.start >= MINIMUM_LABEL_RANGE_MINUTES ? (
+              <Typography
+                key={sector.condition}
+                pointerEvents="none"
+                variant="titleS"
+                align="center"
+                color={sector.condition === 'excess' ? colors.gray[400] : colors.gray.white}
+                style={[styles.conditionLabel, getLabelPosition(sector.start, sector.end)]}
+              >
+                {t(sleepConditionLabelKeys[sector.condition])}
               </Typography>
-            </View>
-          ))}
+            ) : null,
+          )}
         </View>
         <AxisLabel value="3" style={styles.rightAxis} />
       </View>
@@ -400,6 +401,32 @@ function AxisLabel({ value, style }: { value: string; style?: object }) {
   );
 }
 
+function TimeBadgeContent({ minutes, color }: { minutes: number; color: string }) {
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  return (
+    <>
+      <View style={styles.badgeValue}>
+        <Typography variant="bodyM" color={color}>
+          {hours}
+        </Typography>
+        <Typography variant="caption" color={color}>
+          시간
+        </Typography>
+      </View>
+      <View style={styles.badgeValue}>
+        <Typography variant="bodyM" color={color}>
+          {remainingMinutes}
+        </Typography>
+        <Typography variant="caption" color={color}>
+          분
+        </Typography>
+      </View>
+    </>
+  );
+}
+
 function LegendItem({ color, label }: { color: string; label: string }) {
   return (
     <View style={styles.legendItem}>
@@ -415,7 +442,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     alignItems: 'center',
-    marginTop: 35,
+    marginTop: 21,
   },
   row: {
     width: 362,
@@ -427,7 +454,7 @@ const styles = StyleSheet.create({
   circle: {
     width: CIRCLE_SIZE,
     height: CIRCLE_SIZE,
-    overflow: 'hidden',
+    overflow: 'visible',
     borderRadius: CIRCLE_RADIUS,
     backgroundColor: colors.gray[200],
   },
@@ -450,25 +477,56 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 56,
   },
+  thresholdContainer: {
+    position: 'absolute',
+    left: CIRCLE_RADIUS,
+    top: CIRCLE_RADIUS - THRESHOLD_CONTAINER_HEIGHT / 2,
+    width: THRESHOLD_CONTAINER_WIDTH,
+    height: THRESHOLD_CONTAINER_HEIGHT,
+    transformOrigin: `0px ${THRESHOLD_CONTAINER_HEIGHT / 2}px`,
+    justifyContent: 'center',
+  },
+  thresholdLine: {
+    position: 'absolute',
+    left: 0,
+    width: THRESHOLD_LINE_LENGTH,
+    height: 1,
+    backgroundColor: colors.gray.white,
+  },
+  targetThresholdLine: {
+    height: 2,
+    backgroundColor: sleepConditionColors.target,
+  },
   timeBadge: {
     position: 'absolute',
-    width: 76,
-    height: 26,
+    right: 0,
+    height: THRESHOLD_CONTAINER_HEIGHT,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 7,
+    paddingHorizontal: 8,
     borderRadius: 4,
     backgroundColor: colors.gray.white,
     shadowColor: colors.gray[400],
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 2,
+    elevation: 2,
+  },
+  reversedBadge: {
+    transform: [{ rotate: '180deg' }],
   },
   targetBadge: {
     backgroundColor: sleepConditionColors.target,
   },
+  badgeValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 1,
+  },
   legend: {
     width: 238,
-    marginTop: 30,
+    marginTop: 24,
     paddingHorizontal: 36,
     paddingVertical: 16,
     flexDirection: 'row',
