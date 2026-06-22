@@ -10,7 +10,11 @@ function redactSensitiveData(value: unknown, key = ''): unknown {
     return value.map((item) => redactSensitiveData(item));
   }
 
-  if (typeof value === 'object' && value !== null) {
+  if (
+    value !== null &&
+    typeof value === 'object' &&
+    Object.prototype.toString.call(value) === '[object Object]'
+  ) {
     return Object.fromEntries(
       Object.entries(value).map(([entryKey, entryValue]) => [
         entryKey,
