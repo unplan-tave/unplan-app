@@ -16,12 +16,20 @@ export const tokenStorage = {
   },
 
   async setTokens({ accessToken, refreshToken }: StoredAuthTokens): Promise<void> {
-    await secureStorage.set(STORAGE_KEYS.AUTH_TOKEN, accessToken);
+    try {
+      if (refreshToken) {
+        await secureStorage.set(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+      } else {
+        await secureStorage.remove(STORAGE_KEYS.REFRESH_TOKEN);
+      }
 
-    if (refreshToken) {
-      await secureStorage.set(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
-    } else {
-      await secureStorage.remove(STORAGE_KEYS.REFRESH_TOKEN);
+      await secureStorage.set(STORAGE_KEYS.AUTH_TOKEN, accessToken);
+    } catch (error) {
+      await Promise.allSettled([
+        secureStorage.remove(STORAGE_KEYS.AUTH_TOKEN),
+        secureStorage.remove(STORAGE_KEYS.REFRESH_TOKEN),
+      ]);
+      throw error;
     }
   },
 

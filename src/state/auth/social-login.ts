@@ -15,7 +15,13 @@ import { submitSocialLogin } from './api';
 import { type AuthSession } from './model';
 import { useAuthStore } from './use-auth-store';
 
-export type SocialLoginErrorType = 'cancelled' | 'network' | 'sdk' | 'config' | 'unknown';
+export type SocialLoginErrorType =
+  | 'cancelled'
+  | 'network'
+  | 'server'
+  | 'sdk'
+  | 'config'
+  | 'unknown';
 
 export class SocialLoginError extends Error {
   type: SocialLoginErrorType;
@@ -37,12 +43,26 @@ interface NativeModuleError {
   isPackageError?: boolean;
 }
 
+interface ApiErrorResponse {
+  message?: string;
+}
+
 function getNativeModuleError(error: unknown): NativeModuleError {
   if (typeof error !== 'object' || error === null) {
     return {};
   }
 
   return error as NativeModuleError;
+}
+
+function getApiErrorMessage(data: unknown): string | null {
+  if (typeof data !== 'object' || data === null || !('message' in data)) {
+    return null;
+  }
+
+  const { message } = data as ApiErrorResponse;
+
+  return typeof message === 'string' && message.trim() ? message : null;
 }
 
 function isKakaoLoginCancelled(error: unknown): boolean {
@@ -73,6 +93,19 @@ function toSocialLoginError(error: unknown): SocialLoginError {
   }
 
   if (isAxiosError(error)) {
+    if (error.response) {
+      const message = getApiErrorMessage(error.response.data);
+
+      return new SocialLoginError(
+        'server',
+        message ?? '로그인 요청이 거절되었습니다. 다시 시도해 주세요.',
+      );
+    }
+
+    if (error.code === 'ECONNABORTED') {
+      return new SocialLoginError('network', '로그인 서버 응답이 지연되고 있습니다.');
+    }
+
     return new SocialLoginError('network', '로그인 서버와 통신하지 못했습니다.');
   }
 
@@ -145,6 +178,10 @@ async function requestGoogleIdToken(): Promise<string> {
   }
 
   const { idToken } = response.data;
+
+  // if (__DEV__) {
+  //   console.warn('Google ID Token:', idToken);
+  // }
 
   if (!idToken) {
     throw new SocialLoginError('sdk', '구글 ID 토큰을 가져오지 못했습니다.');
