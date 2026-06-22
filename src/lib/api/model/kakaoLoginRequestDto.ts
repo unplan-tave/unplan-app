@@ -7,6 +7,8 @@
  */
 
 export interface KakaoLoginRequestDto {
-  kakaoAccessToken: string;
-  deviceId: string;
+  /** @minLength 1 */
+  kakao_access_token: string;
+  /** @minLength 1 */
+  device_id: string;
 }

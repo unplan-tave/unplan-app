@@ -6,9 +6,6 @@
  * OpenAPI spec version: v1.0.0
  */
 
-export interface UpdateConditions {
-  target_duration: number;
-  danger_threshold: number;
-  lack_threshold: number;
-  optimal_threshold: number;
+export interface OnboardingResponse {
+  member_id?: number;
 }

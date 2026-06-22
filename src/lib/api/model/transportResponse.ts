@@ -8,6 +8,6 @@
 import type { TransportResponseTransportTypesItem } from './transportResponseTransportTypesItem';
 
 export interface TransportResponse {
-  memberId?: number;
-  transportTypes?: TransportResponseTransportTypesItem[];
+  member_id?: number;
+  transport_types?: TransportResponseTransportTypesItem[];
 }

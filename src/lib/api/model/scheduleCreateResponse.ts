@@ -7,11 +7,11 @@
  */
 
 export interface ScheduleCreateResponse {
-  scheduleId?: number;
+  schedule_id?: number;
   title?: string;
   date?: string;
-  startTime?: string;
-  endTime?: string;
-  estimatedTime?: number;
-  isQueue?: boolean;
+  start_time?: string;
+  end_time?: string;
+  estimated_time?: number;
+  is_queue?: boolean;
 }
