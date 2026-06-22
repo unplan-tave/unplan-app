@@ -11,7 +11,7 @@ export const ko = {
   'onboarding.activity.sleepTime': '수면 시간',
   'onboarding.activity.sleepyTime': '졸린 시간',
   'onboarding.activity.subtitle': '시간대에 따라 더 적합한 일정을 추천해 드릴게요!',
-  'onboarding.activity.title': '생체리듬 패턴을 알려주세요!',
+  'onboarding.activity.title': '하루 활동 패턴을 알려주세요!',
   'onboarding.recovery.food': '음식/간식',
   'onboarding.recovery.music': '음악 감상',
   'onboarding.recovery.nap': '짧은 낮잠',

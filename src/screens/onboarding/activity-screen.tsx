@@ -21,23 +21,30 @@ export function ActivityScreen() {
       title={t('onboarding.activity.title')}
       subtitle={t('onboarding.activity.subtitle')}
       progress={0.71}
+      backgroundColor="#F1F5F7"
+      titleMinHeight={34}
       ctaDisabled={!hasSleepTime}
+      ctaCaption={null}
       onConfirm={() => router.push(onboardingRoutes.transport)}
     >
       <View style={styles.rails}>
         <ActivityTimeRail
+          id="focus"
           label={t('onboarding.activity.focusTime')}
           ranges={preferences.focusTimeRanges}
           onToggleHour={(hour) => toggleActivityHour('focusTimeRanges', hour)}
         />
         <ActivityTimeRail
+          id="sleepy"
           label={t('onboarding.activity.sleepyTime')}
           ranges={preferences.sleepyTimeRanges}
           onToggleHour={(hour) => toggleActivityHour('sleepyTimeRanges', hour)}
         />
         <ActivityTimeRail
+          id="sleep"
           label={t('onboarding.activity.sleepTime')}
           required
+          requiredLabel={t('onboarding.activity.required')}
           ranges={preferences.sleepTimeRanges}
           onToggleHour={(hour) => toggleActivityHour('sleepTimeRanges', hour)}
         />
@@ -48,8 +55,10 @@ export function ActivityScreen() {
 
 const styles = StyleSheet.create({
   rails: {
-    width: '100%',
+    alignSelf: 'stretch',
     marginTop: ACTIVITY_RAILS_MARGIN_TOP,
     gap: ACTIVITY_RAILS_GAP,
+    marginLeft: 8,
+    marginRight: -20,
   },
 });
