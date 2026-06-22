@@ -6,6 +6,9 @@ on:
       - 'v*.*.*'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -31,4 +34,19 @@ jobs:
         run: npm ci
 
       - name: Build production (all)
+        id: deploy
         run: eas build --platform all --profile production --non-interactive
+
+      - name: Notify Discord
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/notify-discord-deploy
+        with:
+          webhook-url: ${{ secrets.DISCORD_APP_DEPLOY_WEBHOOK_URL }}
+          deploy-type: Production Android/iOS Build
+          deploy-status: ${{ steps.deploy.outcome }}
+          ref-name: ${{ github.ref_name }}
+          commit-sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          repository: ${{ github.repository }}
+          run-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

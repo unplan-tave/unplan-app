@@ -1,0 +1,117 @@
+name: Notify Discord deployment
+description: Send an app deployment result to Discord as an embed.
+
+inputs:
+  webhook-url:
+    description: Discord webhook URL
+    required: false
+  deploy-type:
+    description: App deployment type
+    required: true
+  deploy-status:
+    description: Outcome of the deployment step
+    required: true
+  ref-name:
+    description: Branch or tag name
+    required: true
+  commit-sha:
+    description: Full commit SHA
+    required: true
+  actor:
+    description: GitHub actor who triggered the workflow
+    required: true
+  repository:
+    description: GitHub repository
+    required: true
+  run-url:
+    description: GitHub Actions run URL
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Send Discord notification
+      shell: bash
+      env:
+        WEBHOOK_URL: ${{ inputs.webhook-url }}
+        DEPLOY_TYPE: ${{ inputs.deploy-type }}
+        DEPLOY_STATUS: ${{ inputs.deploy-status }}
+        REF_NAME: ${{ inputs.ref-name }}
+        COMMIT_SHA: ${{ inputs.commit-sha }}
+        ACTOR: ${{ inputs.actor }}
+        REPOSITORY: ${{ inputs.repository }}
+        RUN_URL: ${{ inputs.run-url }}
+      run: |
+        if [ -z "$WEBHOOK_URL" ]; then
+          echo "Discord webhook URL is not configured; skipping notification."
+          exit 0
+        fi
+
+        case "$DEPLOY_STATUS" in
+          success)
+            title="✅ 앱 배포 성공"
+            status_label="성공"
+            color=5763719
+            ;;
+          failure)
+            title="❌ 앱 배포 실패"
+            status_label="실패"
+            color=15548997
+            ;;
+          cancelled)
+            title="⚪ 앱 배포 취소"
+            status_label="취소"
+            color=9807270
+            ;;
+          skipped)
+            title="⚪ 앱 배포 미실행"
+            status_label="미실행"
+            color=9807270
+            ;;
+          *)
+            title="⚠️ 앱 배포 상태 확인 필요"
+            status_label="$DEPLOY_STATUS"
+            color=16705372
+            ;;
+        esac
+
+        short_sha="${COMMIT_SHA:0:7}"
+        payload="$(
+          jq -n \
+            --arg title "$title" \
+            --arg deploy_type "$DEPLOY_TYPE" \
+            --arg status "$status_label" \
+            --arg ref_name "$REF_NAME" \
+            --arg commit_sha "$short_sha" \
+            --arg actor "$ACTOR" \
+            --arg repository "$REPOSITORY" \
+            --arg run_url "$RUN_URL" \
+            --argjson color "$color" \
+            '{
+              embeds: [
+                {
+                  title: $title,
+                  color: $color,
+                  fields: [
+                    { name: "배포 종류", value: $deploy_type, inline: false },
+                    { name: "상태", value: $status, inline: true },
+                    { name: "브랜치 또는 태그", value: $ref_name, inline: true },
+                    { name: "커밋", value: $commit_sha, inline: true },
+                    { name: "실행자", value: $actor, inline: true },
+                    { name: "저장소", value: $repository, inline: true },
+                    { name: "GitHub Actions", value: ("[실행 보기](" + $run_url + ")"), inline: false }
+                  ]
+                }
+              ]
+            }'
+        )"
+
+        if ! curl \
+          --fail \
+          --silent \
+          --show-error \
+          -H "Content-Type: application/json" \
+          -d "$payload" \
+          "$WEBHOOK_URL"; then
+          echo "Warning: Failed to send Discord notification."
+        fi
