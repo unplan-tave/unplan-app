@@ -1,0 +1,95 @@
+name: Notify Discord deployment
+description: Send an app deployment result to Discord as an embed.
+
+inputs:
+  webhook-url:
+    description: Discord webhook URL
+    required: false
+  deploy-type:
+    description: App deployment type
+    required: true
+  deploy-status:
+    description: Outcome of the deployment step
+    required: true
+  ref-name:
+    description: Branch or tag name
+    required: true
+  commit-sha:
+    description: Full commit SHA
+    required: true
+  actor:
+    description: GitHub actor who triggered the workflow
+    required: true
+  repository:
+    description: GitHub repository
+    required: true
+  run-url:
+    description: GitHub Actions run URL
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Send Discord notification
+      shell: bash
+      env:
+        WEBHOOK_URL: ${{ inputs.webhook-url }}
+        DEPLOY_TYPE: ${{ inputs.deploy-type }}
+        DEPLOY_STATUS: ${{ inputs.deploy-status }}
+        REF_NAME: ${{ inputs.ref-name }}
+        COMMIT_SHA: ${{ inputs.commit-sha }}
+        ACTOR: ${{ inputs.actor }}
+        REPOSITORY: ${{ inputs.repository }}
+        RUN_URL: ${{ inputs.run-url }}
+      run: |
+        if [ -z "$WEBHOOK_URL" ]; then
+          echo "Discord webhook URL is not configured; skipping notification."
+          exit 0
+        fi
+
+        if [ "$DEPLOY_STATUS" = "success" ]; then
+          title="✅ 앱 배포 성공"
+          color=5763719
+        else
+          title="❌ 앱 배포 실패"
+          color=15548997
+        fi
+
+        short_sha="${COMMIT_SHA:0:7}"
+        payload="$(
+          jq -n \
+            --arg title "$title" \
+            --arg deploy_type "$DEPLOY_TYPE" \
+            --arg status "$DEPLOY_STATUS" \
+            --arg ref_name "$REF_NAME" \
+            --arg commit_sha "$short_sha" \
+            --arg actor "$ACTOR" \
+            --arg repository "$REPOSITORY" \
+            --arg run_url "$RUN_URL" \
+            --argjson color "$color" \
+            '{
+              embeds: [
+                {
+                  title: $title,
+                  color: $color,
+                  fields: [
+                    { name: "배포 종류", value: $deploy_type, inline: false },
+                    { name: "상태", value: $status, inline: true },
+                    { name: "브랜치 또는 태그", value: $ref_name, inline: true },
+                    { name: "커밋", value: $commit_sha, inline: true },
+                    { name: "실행자", value: $actor, inline: true },
+                    { name: "저장소", value: $repository, inline: true },
+                    { name: "GitHub Actions", value: ("[실행 보기](" + $run_url + ")"), inline: false }
+                  ]
+                }
+              ]
+            }'
+        )"
+
+        curl \
+          --fail \
+          --silent \
+          --show-error \
+          -H "Content-Type: application/json" \
+          -d "$payload" \
+          "$WEBHOOK_URL"
