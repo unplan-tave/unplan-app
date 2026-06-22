@@ -86,10 +86,12 @@ runs:
             }'
         )"
 
-        curl \
+        if ! curl \
           --fail \
           --silent \
           --show-error \
           -H "Content-Type: application/json" \
           -d "$payload" \
-          "$WEBHOOK_URL"
+          "$WEBHOOK_URL"; then
+          echo "Warning: Failed to send Discord notification."
+        fi
