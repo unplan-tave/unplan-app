@@ -12,6 +12,9 @@ on:
         type: boolean
         default: false
 
+permissions:
+  contents: read
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -88,7 +91,22 @@ jobs:
         run: npm ci
 
       - name: OTA Update (preview channel)
+        id: deploy
         run: eas update --channel preview --message "$(git log -1 --pretty=%s)" --non-interactive
+
+      - name: Notify Discord
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/notify-discord-deploy
+        with:
+          webhook-url: ${{ secrets.DISCORD_APP_DEPLOY_WEBHOOK_URL }}
+          deploy-type: Preview OTA Update
+          deploy-status: ${{ steps.deploy.outcome }}
+          ref-name: ${{ github.ref_name }}
+          commit-sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          repository: ${{ github.repository }}
+          run-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   android-preview:
     needs: [quality, detect-preview-changes]
@@ -116,7 +134,22 @@ jobs:
         run: npm ci
 
       - name: Build preview (Android)
+        id: deploy
         run: eas build --platform android --profile preview --non-interactive
+
+      - name: Notify Discord
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/notify-discord-deploy
+        with:
+          webhook-url: ${{ secrets.DISCORD_APP_DEPLOY_WEBHOOK_URL }}
+          deploy-type: Android Preview Build
+          deploy-status: ${{ steps.deploy.outcome }}
+          ref-name: ${{ github.ref_name }}
+          commit-sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          repository: ${{ github.repository }}
+          run-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   ios-simulator-preview:
     needs: [quality, detect-preview-changes]
@@ -144,4 +177,19 @@ jobs:
         run: npm ci
 
       - name: Build preview (iOS simulator)
+        id: deploy
         run: eas build --platform ios --profile development-simulator --non-interactive
+
+      - name: Notify Discord
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/notify-discord-deploy
+        with:
+          webhook-url: ${{ secrets.DISCORD_APP_DEPLOY_WEBHOOK_URL }}
+          deploy-type: iOS Simulator Preview Build
+          deploy-status: ${{ steps.deploy.outcome }}
+          ref-name: ${{ github.ref_name }}
+          commit-sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          repository: ${{ github.repository }}
+          run-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
