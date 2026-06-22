@@ -14,6 +14,10 @@ interface OnboardingOptionGridProps<TOptionId extends string> {
   options: ReadonlyArray<OnboardingOption & { id: TOptionId }>;
   selectedIds: readonly TOptionId[];
   onToggle: (optionId: TOptionId) => void;
+  customEditing?: boolean;
+  customInputValue?: string;
+  onCustomInputChange?: (value: string) => void;
+  onCustomInputSubmit?: () => void;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -25,6 +29,10 @@ export function OnboardingOptionGrid<TOptionId extends string>({
   options,
   selectedIds,
   onToggle,
+  customEditing = false,
+  customInputValue = '',
+  onCustomInputChange,
+  onCustomInputSubmit,
   style,
 }: OnboardingOptionGridProps<TOptionId>) {
   return (
@@ -35,8 +43,12 @@ export function OnboardingOptionGrid<TOptionId extends string>({
           label={option.label}
           icon={option.icon}
           isCustom={option.isCustom}
-          selected={selectedIds.includes(option.id)}
+          selected={selectedIds.includes(option.id) && !(option.isCustom && customEditing)}
           disabled={option.disabled}
+          editing={option.isCustom && customEditing}
+          inputValue={option.isCustom ? customInputValue : undefined}
+          onInputChange={option.isCustom ? onCustomInputChange : undefined}
+          onInputSubmit={option.isCustom ? onCustomInputSubmit : undefined}
           onPress={() => onToggle(option.id)}
         />
       ))}

@@ -18,6 +18,7 @@ export default defineConfig({
       client: 'react-query',
       httpClient: 'axios',
       mode: 'tags-split',
+      prettier: true,
       override: {
         mutator: {
           path: './src/lib/api/mutator/orval-mutator.ts',

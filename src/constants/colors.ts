@@ -53,7 +53,7 @@ export const colors = {
   // ─── Semantic ───────────────────────────────────────────
   background: '#FFFFFF',
   surface: '#F9FAFB',
-  onboardingBackground: '#F1F5F7',
+  onboardingBackground: '#F9FAFB',
   border: '#D9DFE5',
 
   text: {

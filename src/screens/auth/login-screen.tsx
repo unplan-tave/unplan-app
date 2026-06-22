@@ -17,6 +17,8 @@ import {
 import { onboardingRoutes } from '@/state/onboarding/routes';
 import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
+import type { SocialProvider } from '@/state/auth/model';
+
 const loginBackground = require('../../../assets/login-background.jpg');
 
 export function LoginScreen() {
@@ -28,42 +30,27 @@ export function LoginScreen() {
   const isSocialLoginLoading = isGoogleLoginLoading || isKakaoLoginLoading;
 
   const handleUnavailableLogin = () => {
-    setErrorMessage('아직 지원하지 않는 로그인 방식입니다.');
+    setErrorMessage(t('auth.login.unavailable'));
   };
 
-  const handleKakaoLogin = async () => {
+  const handleSocialLogin = async (provider: SocialProvider) => {
     if (isSocialLoginLoading) {
       return;
     }
 
-    setIsKakaoLoginLoading(true);
+    const setLoading = provider === 'kakao' ? setIsKakaoLoginLoading : setIsGoogleLoginLoading;
+    const login = provider === 'kakao' ? loginWithKakao : loginWithGoogle;
+
+    setLoading(true);
     setErrorMessage(null);
 
     try {
-      await loginWithKakao();
+      await login();
       router.replace(hasCompletedOnboarding ? '/(tabs)' : onboardingRoutes.recovery);
     } catch (error) {
       setErrorMessage(getSocialLoginErrorMessage(error));
     } finally {
-      setIsKakaoLoginLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    if (isSocialLoginLoading) {
-      return;
-    }
-
-    setIsGoogleLoginLoading(true);
-    setErrorMessage(null);
-
-    try {
-      await loginWithGoogle();
-      router.replace(hasCompletedOnboarding ? '/(tabs)' : onboardingRoutes.recovery);
-    } catch (error) {
-      setErrorMessage(getSocialLoginErrorMessage(error));
-    } finally {
-      setIsGoogleLoginLoading(false);
+      setLoading(false);
     }
   };
 
@@ -88,19 +75,19 @@ export function LoginScreen() {
             />
             <SocialLoginButton
               provider="google"
-              label={isGoogleLoginLoading ? '로그인 중' : t('auth.login.google')}
+              label={isGoogleLoginLoading ? t('auth.login.loading') : t('auth.login.google')}
               disabled={isSocialLoginLoading}
-              onPress={handleGoogleLogin}
+              onPress={() => void handleSocialLogin('google')}
             />
             <SocialLoginButton
               provider="kakao"
-              label={isKakaoLoginLoading ? '로그인 중' : t('auth.login.kakao')}
+              label={isKakaoLoginLoading ? t('auth.login.loading') : t('auth.login.kakao')}
               disabled={isSocialLoginLoading}
-              onPress={handleKakaoLogin}
+              onPress={() => void handleSocialLogin('kakao')}
             />
             {isSocialLoginLoading ? (
               <ActivityIndicator
-                accessibilityLabel="소셜 로그인 처리 중"
+                accessibilityLabel={t('auth.login.loadingAccessibilityLabel')}
                 color={colors.gray[800]}
                 style={styles.loadingIndicator}
               />

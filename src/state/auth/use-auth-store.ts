@@ -3,10 +3,9 @@ import { create } from 'zustand';
 
 import { tokenStorage } from '@/lib/auth/token-storage';
 
-import type { AuthSession, User } from '@/state/auth/model';
+import type { AuthSession } from '@/state/auth/model';
 
 interface AuthState {
-  user: User | null;
   token: string | null;
   refreshToken: string | null;
   hasHydratedSession: boolean;
@@ -17,7 +16,6 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>()((set) => ({
-  user: null,
   token: null,
   refreshToken: null,
   hasHydratedSession: false,
@@ -31,7 +29,6 @@ export const useAuthStore = create<AuthState>()((set) => ({
 
     set(
       produce((state: AuthState) => {
-        state.user = session.user ?? null;
         state.token = session.accessToken;
         state.refreshToken = session.refreshToken ?? null;
         state.hasHydratedSession = true;
@@ -61,7 +58,6 @@ export const useAuthStore = create<AuthState>()((set) => ({
 
     set(
       produce((state: AuthState) => {
-        state.user = null;
         state.token = null;
         state.refreshToken = null;
         state.hasHydratedSession = true;

@@ -3,11 +3,13 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
 
-type SocialProvider = 'apple' | 'google' | 'kakao';
+import type { SocialProvider } from '@/state/auth/model';
+
+type SocialLoginButtonProvider = SocialProvider | 'apple';
 
 interface SocialLoginButtonProps {
   label: string;
-  provider: SocialProvider;
+  provider: SocialLoginButtonProvider;
   disabled?: boolean;
   onPress: () => void;
 }
