@@ -59,7 +59,7 @@ export function TransportScreen() {
       title={t('onboarding.transport.title')}
       subtitle={t('onboarding.transport.subtitle')}
       progress={0.96}
-      ctaLabel={isSubmitting ? '저장 중' : t('common.confirm')}
+      ctaLabel={isSubmitting ? t('common.saving') : t('common.confirm')}
       ctaDisabled={selectedIds.length === 0 || isSubmitting}
       onCtaCaptionPress={() => void handleSkip()}
       onConfirm={() => void handleConfirm()}
@@ -79,7 +79,8 @@ export function TransportScreen() {
             accessibilityLiveRegion="polite"
           >
             {submissionError}
-            {'\n'}확인 버튼을 눌러 다시 시도해 주세요.
+            {'\n'}
+            {t('onboarding.error.retry')}
           </Typography>
         ) : null}
       </View>

@@ -19,6 +19,12 @@ export function BottomCTA({
 }: BottomCTAProps) {
   const isPrimary = variant === 'primary';
   const textColor = disabled ? colors.gray[300] : isPrimary ? colors.gray.white : colors.gray[800];
+  const captionContent =
+    caption != null ? (
+      <Typography variant="bodyS" color={colors.gray[500]} align="center" style={styles.caption}>
+        {caption}
+      </Typography>
+    ) : null;
 
   return (
     <View style={[styles.container, style]}>
@@ -41,33 +47,19 @@ export function BottomCTA({
         </Typography>
       </Pressable>
 
-      {caption != null ? (
+      {captionContent ? (
         onCaptionPress ? (
           <Pressable
-            accessibilityLabel={caption}
+            accessibilityLabel={caption ?? undefined}
             accessibilityRole="button"
             hitSlop={8}
             style={({ pressed }) => pressed && styles.captionPressed}
             onPress={onCaptionPress}
           >
-            <Typography
-              variant="bodyS"
-              color={colors.gray[500]}
-              align="center"
-              style={styles.caption}
-            >
-              {caption}
-            </Typography>
+            {captionContent}
           </Pressable>
         ) : (
-          <Typography
-            variant="bodyS"
-            color={colors.gray[500]}
-            align="center"
-            style={styles.caption}
-          >
-            {caption}
-          </Typography>
+          captionContent
         )
       ) : null}
     </View>

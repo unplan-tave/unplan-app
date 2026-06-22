@@ -1,10 +1,12 @@
 import { produce } from 'immer';
 import { create } from 'zustand';
 
+import { t } from '@/lib/i18n';
 import { mmkvStorage } from '@/lib/storage/mmkv-storage';
 
 import { toggleActivityHourRange, toggleContinuousSleepRange } from './activity-time-ranges';
-import { submitOnboarding } from './api';
+import { getOnboardingSubmissionErrorMessage, submitOnboarding } from './api';
+import { validateOnboardingPreferences } from './validation';
 
 import type { OnboardingPreferences, RecoveryOptionId, TransportOptionId } from './model';
 
@@ -128,6 +130,22 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
       return false;
     }
 
+    const preferences = get().preferences;
+    const submissionPreferences = options?.skipTransport
+      ? { ...preferences, transportOptionIds: [] }
+      : preferences;
+    const validationErrorKey = validateOnboardingPreferences(submissionPreferences);
+
+    if (validationErrorKey) {
+      set(
+        produce((state: OnboardingState) => {
+          state.submissionError = t(validationErrorKey);
+        }),
+      );
+
+      return false;
+    }
+
     set(
       produce((state: OnboardingState) => {
         state.isSubmitting = true;
@@ -136,11 +154,6 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
     );
 
     try {
-      const preferences = get().preferences;
-      const submissionPreferences = options?.skipTransport
-        ? { ...preferences, transportOptionIds: [] }
-        : preferences;
-
       await submitOnboarding(submissionPreferences);
       mmkvStorage.set(ONBOARDING_COMPLETED_KEY, 'true');
 
@@ -152,11 +165,9 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
 
       return true;
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : '온보딩 정보를 저장하지 못했습니다.';
-
       set(
         produce((state: OnboardingState) => {
-          state.submissionError = message;
+          state.submissionError = getOnboardingSubmissionErrorMessage(error);
         }),
       );
 
