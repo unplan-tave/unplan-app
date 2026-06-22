@@ -5,10 +5,10 @@
  * Unplan Server API Documentation
  * OpenAPI spec version: v1.0.0
  */
-import type { ApiResponseVoidData } from './apiResponseVoidData';
+import type { UpdateBiorhythm } from './updateBiorhythm';
 
-export interface ApiResponseVoid {
+export interface ApiResponseUpdateBiorhythm {
   success?: boolean;
   message?: string;
-  data?: ApiResponseVoidData;
+  data?: UpdateBiorhythm;
 }

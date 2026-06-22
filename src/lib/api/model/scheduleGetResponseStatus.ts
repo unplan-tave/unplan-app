@@ -6,12 +6,12 @@
  * OpenAPI spec version: v1.0.0
  */
 
-export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType];
+export type ScheduleGetResponseStatus =
+  (typeof ScheduleGetResponseStatus)[keyof typeof ScheduleGetResponseStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const ConditionType = {
-  DANGER: 'DANGER',
-  LACK: 'LACK',
-  OPTIMAL: 'OPTIMAL',
-  EXCESS: 'EXCESS',
+export const ScheduleGetResponseStatus = {
+  TODO: 'TODO',
+  IN_PROGRESS: 'IN_PROGRESS',
+  DONE: 'DONE',
 } as const;
