@@ -64,6 +64,14 @@ function renderIcon(name: IconProps['name'], color: string) {
       return <Sort color={color} />;
     case 'toggle':
       return <Toggle color={color} />;
+    case 'home':
+      return <Home color={color} />;
+    case 'list':
+      return <List color={color} />;
+    case 'condition':
+      return <Condition color={color} />;
+    case 'setting':
+      return <Setting color={color} />;
     default:
       return null;
   }
@@ -246,6 +254,52 @@ function Toggle({ color }: { color: string }) {
       <Rect x={1} y={1} width={50} height={38} rx={19} stroke={color} strokeWidth={1.8} />
       <Circle cx={20} cy={20} r={10} fill={color} />
     </>
+  );
+}
+
+function Home({ color }: { color: string }) {
+  return (
+    <G stroke={color} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M4.8 10.8L12 4.8L19.2 10.8" />
+      <Path d="M7.2 10.2V19.2H16.8V10.2" />
+      <Path d="M10 19.2V14.3H14V19.2" />
+    </G>
+  );
+}
+
+function List({ color }: { color: string }) {
+  return (
+    <G fill={color}>
+      <Rect x={5} y={5} width={6} height={6} rx={1.2} />
+      <Rect x={13} y={5} width={6} height={6} rx={1.2} />
+      <Rect x={5} y={13} width={6} height={6} rx={1.2} />
+      <Rect x={13} y={13} width={6} height={6} rx={1.2} />
+    </G>
+  );
+}
+
+function Condition({ color }: { color: string }) {
+  return (
+    <G fill={color}>
+      <Path d="M12 4.5C10 6.2 9 8.1 9 10.2C9 12.1 10.3 13.4 12 13.4C13.7 13.4 15 12.1 15 10.2C15 8.1 14 6.2 12 4.5Z" />
+      <Path
+        d="M6.4 11.1C5.2 12.2 4.6 13.4 4.6 14.7C4.6 16.2 5.7 17.3 7.1 17.3C8.5 17.3 9.6 16.2 9.6 14.7C9.6 13.4 8.5 12.1 6.4 11.1Z"
+        opacity={0.75}
+      />
+      <Path
+        d="M17.6 11.1C15.5 12.1 14.4 13.4 14.4 14.7C14.4 16.2 15.5 17.3 16.9 17.3C18.3 17.3 19.4 16.2 19.4 14.7C19.4 13.4 18.8 12.2 17.6 11.1Z"
+        opacity={0.75}
+      />
+    </G>
+  );
+}
+
+function Setting({ color }: { color: string }) {
+  return (
+    <G stroke={color} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
+      <Circle cx={12} cy={12} r={3.2} />
+      <Path d="M12 4.4V6.1M12 17.9V19.6M4.4 12H6.1M17.9 12H19.6M6.6 6.6L7.8 7.8M16.2 16.2L17.4 17.4M17.4 6.6L16.2 7.8M7.8 16.2L6.6 17.4" />
+    </G>
   );
 }
 
