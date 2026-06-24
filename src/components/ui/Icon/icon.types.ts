@@ -14,7 +14,11 @@ export type IconName =
   | 'done'
   | 'edit'
   | 'sort'
-  | 'toggle';
+  | 'toggle'
+  | 'home'
+  | 'list'
+  | 'condition'
+  | 'setting';
 
 export interface IconProps {
   name: IconName;

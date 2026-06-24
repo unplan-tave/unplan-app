@@ -26,10 +26,15 @@ export function Card({ children, disabled = false, selected = false, style, ...p
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.gray.white,
-    backgroundColor: colors.gray.white,
+    backgroundColor: colors.alpha.white50,
+    shadowColor: 'rgb(60,94,103)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.15,
+    shadowRadius: 48,
+    elevation: 6,
   },
   selected: {
     borderColor: colors.primary,
