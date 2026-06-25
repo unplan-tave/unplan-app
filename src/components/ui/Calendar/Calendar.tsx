@@ -56,19 +56,19 @@ function isSameDate(date: Date, selectedDate?: Date) {
 
 const styles = StyleSheet.create({
   container: {
-    width: 369,
+    width: '100%',
+    maxWidth: 369,
     gap: 8,
   },
   weekdays: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
   },
   weekday: {
-    width: 49.286,
+    flex: 1,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 4,
+    rowGap: 4,
   },
 });

@@ -65,7 +65,8 @@ export function CalendarDayCell({
 
 const styles = StyleSheet.create({
   container: {
-    width: 49.286,
+    flexBasis: '14.2857%',
+    maxWidth: '14.2857%',
     height: 60,
     alignItems: 'center',
     paddingHorizontal: 7,
