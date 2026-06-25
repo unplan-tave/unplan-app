@@ -14,6 +14,21 @@ export function AppIcon({
   const block = 28 * unit;
   const smallBlock = 19 * unit;
   const gap = 8 * unit;
+  const shadowOffset = 4 * unit;
+  const blocks = [
+    { width: block, height: block, left: 0, top: 0 },
+    { width: block, height: block, left: block + gap, top: 0 },
+    { width: block, height: block, left: 0, top: block + gap },
+    { width: block, height: block, left: block + gap, top: block + gap },
+    { width: block, height: block, left: block * 2 + gap * 2, top: block + gap },
+    { width: block, height: block, left: block + gap, top: block * 2 + gap * 2 },
+    {
+      width: smallBlock,
+      height: smallBlock,
+      left: block * 3 + gap * 2.8,
+      top: block * 2 + gap * 2.4,
+    },
+  ];
 
   return (
     <View
@@ -31,79 +46,22 @@ export function AppIcon({
       ]}
     >
       <View style={[styles.symbol, { width: block * 4 + gap * 2, height: block * 3 + gap * 2 }]}>
-        <View
-          style={[
-            styles.block,
-            styles.shadowBlue,
-            { width: block, height: block, left: 0, top: 0, backgroundColor: color },
-          ]}
-        />
-        <View
-          style={[
-            styles.block,
-            styles.shadowBlue,
-            { width: block, height: block, left: block + gap, top: 0, backgroundColor: color },
-          ]}
-        />
-        <View
-          style={[
-            styles.block,
-            styles.shadowBlue,
-            { width: block, height: block, left: 0, top: block + gap, backgroundColor: color },
-          ]}
-        />
-        <View
-          style={[
-            styles.block,
-            styles.shadowBlue,
-            {
-              width: block,
-              height: block,
-              left: block + gap,
-              top: block + gap,
-              backgroundColor: color,
-            },
-          ]}
-        />
-        <View
-          style={[
-            styles.block,
-            styles.shadowBlue,
-            {
-              width: block,
-              height: block,
-              left: block * 2 + gap * 2,
-              top: block + gap,
-              backgroundColor: color,
-            },
-          ]}
-        />
-        <View
-          style={[
-            styles.block,
-            styles.shadowBlue,
-            {
-              width: block,
-              height: block,
-              left: block + gap,
-              top: block * 2 + gap * 2,
-              backgroundColor: color,
-            },
-          ]}
-        />
-        <View
-          style={[
-            styles.block,
-            styles.shadowBlue,
-            {
-              width: smallBlock,
-              height: smallBlock,
-              left: block * 3 + gap * 2.8,
-              top: block * 2 + gap * 2.4,
-              backgroundColor: color,
-            },
-          ]}
-        />
+        {blocks.map((blockStyle, index) => (
+          <View key={`${blockStyle.left}-${blockStyle.top}-${index}`}>
+            <View
+              style={[
+                styles.block,
+                blockStyle,
+                {
+                  left: blockStyle.left + shadowOffset,
+                  top: blockStyle.top + shadowOffset,
+                  backgroundColor: colors.primary,
+                },
+              ]}
+            />
+            <View style={[styles.block, blockStyle, { backgroundColor: color }]} />
+          </View>
+        ))}
       </View>
     </View>
   );
@@ -126,11 +84,5 @@ const styles = StyleSheet.create({
   block: {
     position: 'absolute',
     borderRadius: radius.xs,
-  },
-  shadowBlue: {
-    shadowColor: colors.primary,
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.8,
-    shadowRadius: 0,
   },
 });

@@ -10,7 +10,7 @@ export function Footer({ children, style }: FooterProps) {
 
 const styles = StyleSheet.create({
   container: {
-    width: 393,
+    width: '100%',
     minHeight: 106,
     alignItems: 'center',
     justifyContent: 'flex-end',

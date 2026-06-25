@@ -1,25 +1,16 @@
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 export function HomeIndicator() {
-  return (
-    <View style={styles.container}>
-      <View style={styles.bar} />
-    </View>
-  );
+  if (Platform.OS === 'ios') {
+    return null;
+  }
+
+  return <View style={styles.androidSpace} />;
 }
 
 const styles = StyleSheet.create({
-  container: {
+  androidSpace: {
     width: '100%',
-    height: 34,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingBottom: 8,
-  },
-  bar: {
-    width: 144,
-    height: 5,
-    borderRadius: 100,
-    backgroundColor: '#000000',
+    height: 16,
   },
 });

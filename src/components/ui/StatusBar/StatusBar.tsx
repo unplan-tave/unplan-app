@@ -34,7 +34,7 @@ export function StatusBar({
 
 const styles = StyleSheet.create({
   container: {
-    width: 402,
+    width: '100%',
     height: 62,
     alignItems: 'center',
     justifyContent: 'center',

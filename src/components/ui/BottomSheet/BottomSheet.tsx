@@ -58,7 +58,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.12)',
   },
   sheet: {
-    width: 393,
+    width: '100%',
+    maxWidth: 393,
     alignSelf: 'center',
     gap: 16,
     paddingHorizontal: 20,
