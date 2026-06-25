@@ -17,6 +17,7 @@ export function GNBItem({ item, selected = false, style, ...props }: GNBItemProp
       disabled={item.disabled}
       style={({ pressed }) => [
         styles.container,
+        selected && styles.selected,
         item.disabled && styles.disabled,
         pressed && !item.disabled && styles.pressed,
         style,
@@ -44,6 +45,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     opacity: 0.5,
+  },
+  selected: {
+    opacity: 1,
   },
   label: {
     opacity: 0.8,

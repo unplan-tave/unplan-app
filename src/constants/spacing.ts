@@ -25,7 +25,9 @@ export const radius = {
   md: 8, // Card
   lg: 10, // System panel
   xl: 11, // Button
+  modal: 13,
   xxl: 15, // SearchBar
+  nav: 65,
   full: 9999,
 } as const;
 
