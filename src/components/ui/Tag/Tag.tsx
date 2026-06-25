@@ -5,14 +5,13 @@ import { colors, radius } from '@/constants/theme';
 
 import { type ConditionType, type TagProps } from './tag.types';
 
-/** 피그마 condition → dot 색상 매핑 */
 const CONDITION_COLORS: Record<ConditionType, string> = {
-  brain: colors.condition.brain, // #F89F3A 두뇌 활동
-  labor: colors.condition.labor, // #47B399 단순 노동
-  daily: colors.condition.daily, // #D288DD 일상 작업
-  urgent: colors.condition.urgent, // #E56666 긴급 처리
-  rest: colors.condition.rest, // #6C5DA1 기력 회복
-  core: colors.condition.core, // #4275DD 핵심 작업
+  brain: colors.condition.brain,
+  labor: colors.condition.labor,
+  daily: colors.condition.daily,
+  urgent: colors.condition.urgent,
+  rest: colors.condition.rest,
+  core: colors.condition.core,
 };
 
 export function Tag({ variant, label, condition, style, onPress, ...props }: TagProps) {
@@ -73,7 +72,7 @@ const styles = StyleSheet.create({
     paddingLeft: 7,
     paddingRight: 5,
     backgroundColor: colors.alpha.white80,
-    shadowColor: 'rgb(60,94,103)',
+    shadowColor: colors.shadow.blueGray,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.15,
     shadowRadius: 48,

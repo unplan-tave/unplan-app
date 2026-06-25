@@ -47,11 +47,21 @@ export const colors = {
     white50: 'rgba(255,255,255,0.5)',
     white70: 'rgba(255,255,255,0.7)',
     white80: 'rgba(255,255,255,0.8)',
+    white88: 'rgba(255,255,255,0.88)',
     black05: 'rgba(0,0,0,0.05)',
+    black12: 'rgba(0,0,0,0.12)',
+    black35: 'rgba(0,0,0,0.35)',
+    primary20: 'rgba(36,141,254,0.2)',
+    gray70050: 'rgba(54,62,70,0.5)',
+  },
+
+  shadow: {
+    blueGray: 'rgb(60,94,103)',
   },
 
   // ─── Semantic ───────────────────────────────────────────
   background: '#FFFFFF',
+  appIconBackground: '#EAF4FF',
   surface: '#F9FAFB',
   onboardingBackground: '#F9FAFB',
   border: '#D9DFE5',

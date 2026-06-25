@@ -9,8 +9,10 @@ export interface GNBItemData {
   disabled?: boolean;
 }
 
+export type GNBItems = [GNBItemData, GNBItemData, GNBItemData, GNBItemData];
+
 export interface GNBProps {
-  items?: GNBItemData[];
+  items?: GNBItems;
   value?: string;
   onChange?: (value: string) => void;
   onAddPress?: PressableProps['onPress'];

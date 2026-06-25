@@ -182,7 +182,7 @@ export function UiPrimitivesScreen() {
         </Section>
 
         <Section title="Card">
-          <Card style={styles.scheduleCard}>
+          <Card variant="glass" style={styles.scheduleCard}>
             <Typography variant="titleM" color={colors.gray[800]}>
               일정 제목
             </Typography>

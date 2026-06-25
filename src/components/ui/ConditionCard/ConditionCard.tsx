@@ -17,7 +17,13 @@ export function ConditionCard({
   ...props
 }: ConditionCardProps) {
   return (
-    <Card selected={selected} disabled={disabled} style={[styles.card, style]} {...props}>
+    <Card
+      selected={selected}
+      disabled={disabled}
+      variant="glass"
+      style={[styles.card, style]}
+      {...props}
+    >
       <View style={styles.header}>
         <Typography variant="titleS" color={colors.gray[800]} numberOfLines={1}>
           {title}
