@@ -47,22 +47,24 @@ export function AppIcon({
       ]}
     >
       <View style={[styles.symbol, { width: block * 4 + gap * 2, height: block * 3 + gap * 2 }]}>
-        {blocks.map((blockStyle, index) => (
-          <View key={`${blockStyle.left}-${blockStyle.top}-${index}`}>
-            <View
-              style={[
-                styles.block,
-                blockStyle,
-                {
-                  left: blockStyle.left + shadowOffset,
-                  top: blockStyle.top + shadowOffset,
-                  backgroundColor: colors.primary,
-                },
-              ]}
-            />
-            <View style={[styles.block, blockStyle, { backgroundColor: color }]} />
-          </View>
-        ))}
+        {blocks.flatMap((blockStyle, index) => [
+          <View
+            key={`shadow-${index}`}
+            style={[
+              styles.block,
+              blockStyle,
+              {
+                left: blockStyle.left + shadowOffset,
+                top: blockStyle.top + shadowOffset,
+                backgroundColor: colors.primary,
+              },
+            ]}
+          />,
+          <View
+            key={`block-${index}`}
+            style={[styles.block, blockStyle, { backgroundColor: color }]}
+          />,
+        ])}
       </View>
     </View>
   );

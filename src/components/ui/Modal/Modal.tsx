@@ -1,6 +1,6 @@
 import { Modal as RNModal, Pressable, StyleSheet, View } from 'react-native';
 
-import { colors } from '@/constants/theme';
+import { colors, radius } from '@/constants/theme';
 
 import { type ModalProps } from './modal.types';
 
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     paddingTop: 24,
     paddingBottom: 16,
-    borderRadius: 13,
+    borderRadius: radius.modal,
     backgroundColor: colors.alpha.white50,
     shadowColor: colors.shadow.blueGray,
     shadowOffset: { width: 0, height: 0 },

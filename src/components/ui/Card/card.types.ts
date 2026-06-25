@@ -17,7 +17,7 @@ export interface CardTagItem {
 }
 
 export interface CardTagListProps {
-  tags: CardTagItem[];
+  tags?: CardTagItem[];
   maxVisible?: number;
   style?: StyleProp<ViewStyle>;
   moreTextStyle?: StyleProp<TextStyle>;

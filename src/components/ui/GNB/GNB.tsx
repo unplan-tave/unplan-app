@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { colors } from '@/constants/theme';
+import { colors, radius } from '@/constants/theme';
 
 import { type GNBItems, type GNBProps } from './gnb.types';
 import { GNBAddButton } from './GNBAddButton';
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderWidth: 1,
     borderColor: colors.gray.white,
-    borderRadius: 65,
+    borderRadius: radius.nav,
     backgroundColor: colors.alpha.gray70050,
     shadowColor: colors.gray[300],
     shadowOffset: { width: 0, height: 0 },
