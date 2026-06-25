@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   },
   label: {
     opacity: 0.8,
-    textShadowColor: 'rgba(0,0,0,0.35)',
+    textShadowColor: colors.alpha.black35,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 5,
   },

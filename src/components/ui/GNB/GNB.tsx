@@ -2,15 +2,15 @@ import { StyleSheet, View } from 'react-native';
 
 import { colors } from '@/constants/theme';
 
-import { type GNBProps } from './gnb.types';
+import { type GNBItems, type GNBProps } from './gnb.types';
 import { GNBAddButton } from './GNBAddButton';
 import { GNBItem } from './GNBItem';
 
-const DEFAULT_ITEMS = [
-  { label: 'home', value: 'home', iconName: 'home' as const },
-  { label: 'card list', value: 'list', iconName: 'list' as const },
-  { label: 'condition', value: 'condition', iconName: 'condition' as const },
-  { label: 'setting', value: 'setting', iconName: 'setting' as const },
+const DEFAULT_ITEMS: GNBItems = [
+  { label: '홈', value: 'home', iconName: 'home' },
+  { label: '카드', value: 'list', iconName: 'list' },
+  { label: '컨디션', value: 'condition', iconName: 'condition' },
+  { label: '설정', value: 'setting', iconName: 'setting' },
 ];
 
 export function GNB({
@@ -21,10 +21,12 @@ export function GNB({
   addAccessibilityLabel,
   style,
 }: GNBProps) {
+  const [homeItem, listItem, conditionItem, settingItem] = items;
+
   return (
     <View style={[styles.container, style]}>
       <View style={styles.items}>
-        {items.slice(0, 2).map((item) => (
+        {[homeItem, listItem].map((item) => (
           <GNBItem
             key={item.value}
             item={item}
@@ -35,7 +37,7 @@ export function GNB({
       </View>
       <GNBAddButton accessibilityLabel={addAccessibilityLabel} onPress={onAddPress} />
       <View style={styles.items}>
-        {items.slice(2, 4).map((item) => (
+        {[conditionItem, settingItem].map((item) => (
           <GNBItem
             key={item.value}
             item={item}
@@ -50,18 +52,19 @@ export function GNB({
 
 const styles = StyleSheet.create({
   container: {
-    width: 354,
+    width: '100%',
+    maxWidth: 354,
     height: 66,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 20,
-    paddingHorizontal: 32,
+    gap: 12,
+    paddingHorizontal: 16,
     paddingVertical: 8,
     borderWidth: 1,
     borderColor: colors.gray.white,
     borderRadius: 65,
-    backgroundColor: 'rgba(54,62,70,0.5)',
+    backgroundColor: colors.alpha.gray70050,
     shadowColor: colors.gray[300],
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
@@ -71,6 +74,6 @@ const styles = StyleSheet.create({
   items: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 20,
+    gap: 12,
   },
 });

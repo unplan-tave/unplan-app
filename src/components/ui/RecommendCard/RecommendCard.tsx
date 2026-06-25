@@ -18,7 +18,13 @@ export function RecommendCard({
   ...props
 }: RecommendCardProps) {
   return (
-    <Card selected={selected} disabled={disabled} style={[styles.card, style]} {...props}>
+    <Card
+      selected={selected}
+      disabled={disabled}
+      variant="glass"
+      style={[styles.card, style]}
+      {...props}
+    >
       <View style={styles.iconBox}>
         <Icon name={iconName} color={selected ? colors.primary : colors.gray[500]} />
       </View>

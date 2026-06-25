@@ -30,7 +30,6 @@ export function CalendarDayCell({
       disabled={disabled}
       style={({ pressed }) => [
         styles.container,
-        selected && styles.selected,
         disabled && styles.disabled,
         pressed && !disabled && styles.pressed,
         style,
@@ -65,8 +64,7 @@ export function CalendarDayCell({
 
 const styles = StyleSheet.create({
   container: {
-    flexBasis: '14.2857%',
-    maxWidth: '14.2857%',
+    flex: 1,
     height: 60,
     alignItems: 'center',
     paddingHorizontal: 7,
@@ -93,7 +91,6 @@ const styles = StyleSheet.create({
   count: {
     width: 35,
   },
-  selected: {},
   disabled: {
     opacity: 0.5,
   },

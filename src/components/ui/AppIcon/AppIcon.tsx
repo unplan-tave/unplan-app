@@ -6,8 +6,9 @@ import { type AppIconProps } from './appIcon.types';
 
 export function AppIcon({
   size = 203,
+  accessibilityLabel = 'Unplan 앱 아이콘',
   color = colors.gray[900],
-  backgroundColor = '#EAF4FF',
+  backgroundColor = colors.appIconBackground,
   style,
 }: AppIconProps) {
   const unit = size / 203;
@@ -32,7 +33,7 @@ export function AppIcon({
 
   return (
     <View
-      accessibilityLabel="Unplan 앱 아이콘"
+      accessibilityLabel={accessibilityLabel}
       accessibilityRole="image"
       style={[
         styles.container,

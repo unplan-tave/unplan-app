@@ -6,6 +6,7 @@ export interface CardProps extends Omit<PressableProps, 'style'> {
   children: React.ReactNode;
   disabled?: boolean;
   selected?: boolean;
+  variant?: 'solid' | 'glass';
   style?: StyleProp<ViewStyle>;
 }
 

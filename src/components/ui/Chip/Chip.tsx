@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     borderColor: colors.gray.white,
   },
   selected: {
-    backgroundColor: 'rgba(36,141,254,0.2)',
+    backgroundColor: colors.alpha.primary20,
     borderColor: colors.primary,
   },
   disabled: {

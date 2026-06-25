@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { type DimensionValue, StyleSheet, View } from 'react-native';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
@@ -7,6 +7,7 @@ import { type CalendarProps } from './calendar.types';
 import { CalendarDayCell } from './CalendarDayCell';
 
 const WEEKDAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const DAY_CELL_WIDTH_PERCENT = `${100 / WEEKDAY_LABELS.length}%` as DimensionValue;
 
 export function Calendar({ days, selectedDate, onSelectDate, style }: CalendarProps) {
   return (
@@ -36,6 +37,7 @@ export function Calendar({ days, selectedDate, onSelectDate, style }: CalendarPr
               countLabel={day.countLabel}
               selected={isSameDate(day.date, selectedDate)}
               disabled={day.disabled}
+              style={{ flexBasis: DAY_CELL_WIDTH_PERCENT, maxWidth: DAY_CELL_WIDTH_PERCENT }}
               onPress={onSelectDate}
             />
           );
