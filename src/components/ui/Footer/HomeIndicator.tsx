@@ -10,6 +10,7 @@ export function HomeIndicator() {
 
 const styles = StyleSheet.create({
   androidSpace: {
+    width: '100%',
     height: 16,
   },
 });
