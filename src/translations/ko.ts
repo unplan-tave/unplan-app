@@ -63,6 +63,14 @@ export const ko = {
   'settings.logoutError': '로그아웃하지 못했습니다. 다시 시도해 주세요.',
   'settings.resetOnboarding': '온보딩 초기화',
   'settings.title': '설정',
+  'terms.privacy.body':
+    'Unplan은 로그인, 일정 추천, 사용자 설정 저장을 위해 필요한 최소한의 개인정보를 처리합니다.\n\n처리 항목에는 소셜 로그인 식별 정보, 온보딩 응답, 일정과 메모, 이동 방식 및 컨디션 설정 정보가 포함될 수 있습니다.\n\n수집된 정보는 서비스 제공과 품질 개선 목적에 한해 사용되며, 관련 법령에서 정한 기간 또는 사용자가 요청한 삭제 시점까지 보관됩니다.\n\n개인정보 관련 문의와 삭제 요청은 운영 채널을 통해 접수할 수 있습니다.',
+  'terms.privacy.link': '개인정보 처리방침',
+  'terms.privacy.title': '개인정보 처리방침',
+  'terms.service.body':
+    'Unplan은 사용자가 입력한 할 일, 컨디션, 수면 정보, 이동 방식 정보를 바탕으로 일정 추천 기능을 제공합니다.\n\n사용자는 본인의 계정과 입력 정보를 정확하게 관리해야 하며, 서비스 이용 과정에서 관련 법령과 운영 정책을 준수해야 합니다.\n\n서비스는 안정적인 제공을 위해 일부 기능을 변경하거나 중단할 수 있으며, 중요한 변경 사항은 앱 또는 별도 채널을 통해 안내합니다.\n\n본 약관은 서비스 이용 조건과 책임 범위를 설명하기 위한 문서입니다.',
+  'terms.service.link': '서비스 이용약관',
+  'terms.service.title': '서비스 이용약관',
 } as const;
 
 export type TranslationKey = keyof typeof ko;
