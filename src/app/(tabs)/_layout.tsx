@@ -24,6 +24,13 @@ export default function TabsLayout() {
           tabBarLabel: '설정',
         }}
       />
+      <Tabs.Screen
+        name="settings-ui-primitives"
+        options={{
+          href: null,
+          title: 'UI 컴포넌트',
+        }}
+      />
     </Tabs>
   );
 }

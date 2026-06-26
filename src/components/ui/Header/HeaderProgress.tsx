@@ -5,23 +5,33 @@ import { colors } from '@/constants/theme';
 
 import { type HeaderProgressProps } from './header.types';
 
-export function HeaderProgress({ progress, onBackPress, style }: HeaderProgressProps) {
+export function HeaderProgress({
+  progress = 0,
+  onBackPress,
+  showBackButton = true,
+  showProgress = true,
+  style,
+}: HeaderProgressProps) {
   const clampedProgress = Math.max(0, Math.min(progress, 1));
 
   return (
     <View style={[styles.container, style]}>
-      <Pressable
-        accessibilityLabel="이전 화면으로 이동"
-        accessibilityRole="button"
-        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        style={styles.backButton}
-        onPress={onBackPress}
-      >
-        <Icon name="arrowLeft" size={24} color={colors.gray[400]} />
-      </Pressable>
-      <View style={styles.track}>
-        <View style={[styles.fill, { width: `${clampedProgress * 100}%` }]} />
-      </View>
+      {showBackButton ? (
+        <Pressable
+          accessibilityLabel="이전 화면으로 이동"
+          accessibilityRole="button"
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          style={styles.backButton}
+          onPress={onBackPress}
+        >
+          <Icon name="arrowLeft" size={24} color={colors.gray[400]} />
+        </Pressable>
+      ) : null}
+      {showProgress ? (
+        <View style={styles.track}>
+          <View style={[styles.fill, { width: `${clampedProgress * 100}%` }]} />
+        </View>
+      ) : null}
     </View>
   );
 }

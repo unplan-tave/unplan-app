@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Image, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { SocialLoginButton } from '@/components/auth/social-login-button';
 import { BrandLogo } from '@/components/ui/BrandLogo';
@@ -33,6 +33,13 @@ export function LoginScreen() {
     setErrorMessage(t('auth.login.unavailable'));
   };
 
+  const handleTermsPress = (type: 'service' | 'privacy') => {
+    router.push({
+      pathname: '/terms',
+      params: { type },
+    });
+  };
+
   const handleSocialLogin = async (provider: SocialProvider) => {
     if (isSocialLoginLoading) {
       return;
@@ -46,7 +53,7 @@ export function LoginScreen() {
 
     try {
       await login();
-      router.replace(hasCompletedOnboarding ? '/(tabs)' : onboardingRoutes.recovery);
+      router.replace(hasCompletedOnboarding ? '/(tabs)' : onboardingRoutes.intro);
     } catch (error) {
       setErrorMessage(getSocialLoginErrorMessage(error));
     } finally {
@@ -103,14 +110,38 @@ export function LoginScreen() {
               {errorMessage}
             </Typography>
           ) : null}
-          <Typography
-            variant="caption"
-            color={colors.gray[600]}
-            align="center"
-            style={styles.terms}
-          >
-            {t('auth.login.termsNotice')}
-          </Typography>
+          <View style={styles.termsBlock}>
+            <Typography
+              variant="caption"
+              color={colors.gray[600]}
+              align="center"
+              style={styles.terms}
+            >
+              {t('auth.login.termsNotice')}
+            </Typography>
+            <View style={styles.termsLinks}>
+              <Pressable
+                accessibilityLabel={t('terms.service.title')}
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={() => handleTermsPress('service')}
+              >
+                <Typography variant="caption" color={colors.gray[700]} style={styles.termsLink}>
+                  {t('terms.service.link')}
+                </Typography>
+              </Pressable>
+              <Pressable
+                accessibilityLabel={t('terms.privacy.title')}
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={() => handleTermsPress('privacy')}
+              >
+                <Typography variant="caption" color={colors.gray[700]} style={styles.termsLink}>
+                  {t('terms.privacy.link')}
+                </Typography>
+              </Pressable>
+            </View>
+          </View>
         </View>
       </ScreenLayout>
     </View>
@@ -148,5 +179,18 @@ const styles = StyleSheet.create({
   },
   terms: {
     width: '100%',
+  },
+  termsBlock: {
+    width: '100%',
+    alignItems: 'center',
+    gap: spacing[2],
+  },
+  termsLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing[4],
+  },
+  termsLink: {
+    textDecorationLine: 'underline',
   },
 });

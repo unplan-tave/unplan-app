@@ -42,6 +42,7 @@ export const colors = {
   },
 
   alpha: {
+    transparent: 'transparent',
     white10: 'rgba(255,255,255,0.1)',
     white20: 'rgba(255,255,255,0.2)',
     white50: 'rgba(255,255,255,0.5)',
@@ -64,6 +65,7 @@ export const colors = {
   appIconBackground: '#EAF4FF',
   surface: '#F9FAFB',
   onboardingBackground: '#F9FAFB',
+  onboardingMutedBackground: '#F1F5F7',
   border: '#D9DFE5',
 
   text: {

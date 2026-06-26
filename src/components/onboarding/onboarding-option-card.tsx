@@ -103,6 +103,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingBottom: 18,
+    borderWidth: 0,
     gap: 12,
   },
   iconBox: {

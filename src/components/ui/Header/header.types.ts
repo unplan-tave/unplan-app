@@ -4,8 +4,10 @@ import { type PressableProps, type StyleProp, type ViewStyle } from 'react-nativ
 import { type ConditionType } from '@/components/ui/Tag';
 
 export interface HeaderProgressProps {
-  progress: number;
+  progress?: number;
   onBackPress?: () => void;
+  showBackButton?: boolean;
+  showProgress?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 

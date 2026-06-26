@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     borderRightColor: colors.alpha.white50,
   },
   joinedBlock: {
-    borderRightColor: 'transparent',
+    borderRightColor: colors.alpha.transparent,
   },
   selectionLayer: {
     position: 'absolute',

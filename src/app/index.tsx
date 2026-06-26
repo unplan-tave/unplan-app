@@ -28,7 +28,7 @@ export default function IndexRoute() {
     }
 
     if (!hasCompletedOnboarding) {
-      router.replace(onboardingRoutes.recovery);
+      router.replace(onboardingRoutes.intro);
       return;
     }
 
