@@ -26,6 +26,7 @@ interface OnboardingStepLayoutProps {
   contentRaised?: boolean;
   backgroundColor?: string;
   titleMinHeight?: number;
+  onBackPress?: () => void;
   onConfirm: () => void;
 }
 
@@ -43,6 +44,7 @@ export function OnboardingStepLayout({
   contentRaised = false,
   backgroundColor = colors.onboardingBackground,
   titleMinHeight = 68,
+  onBackPress,
   onConfirm,
 }: OnboardingStepLayoutProps) {
   const router = useRouter();
@@ -90,14 +92,18 @@ export function OnboardingStepLayout({
             >
               <Defs>
                 <LinearGradient id="onboardingHeaderOverlay" x1="0" y1="0.82" x2="0" y2="1">
-                  <Stop offset="0" stopColor="#F2F5F7" />
-                  <Stop offset="1" stopColor="#F2F5F7" stopOpacity="0" />
+                  <Stop offset="0" stopColor={colors.onboardingMutedBackground} />
+                  <Stop offset="1" stopColor={colors.onboardingMutedBackground} stopOpacity="0" />
                 </LinearGradient>
               </Defs>
               <Rect width="393" height="115.31" fill="url(#onboardingHeaderOverlay)" />
             </Svg>
           </Animated.View>
-          <HeaderProgress progress={progress} onBackPress={router.back} style={styles.header} />
+          <HeaderProgress
+            progress={progress}
+            onBackPress={onBackPress ?? router.back}
+            style={styles.header}
+          />
         </View>
       }
       footer={
@@ -161,7 +167,7 @@ const styles = StyleSheet.create({
   },
   safeAreaOverlay: {
     width: '100%',
-    backgroundColor: '#F2F5F7',
+    backgroundColor: colors.onboardingMutedBackground,
   },
   headerOverlayFill: {
     width: '100%',

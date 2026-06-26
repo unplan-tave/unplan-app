@@ -95,6 +95,12 @@ export function RecoveryScreen() {
       ctaDisabled={!hasSelection}
       ctaCaption={null}
       contentRaised={isCustomEditing}
+      onBackPress={() =>
+        router.replace({
+          pathname: '/onboarding/intro',
+          params: { step: '3' },
+        })
+      }
       onConfirm={() => router.push(onboardingRoutes.sleep)}
     >
       <ScrollView
