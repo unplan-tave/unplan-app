@@ -33,9 +33,11 @@ export function TermsScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <HeaderBack onPress={router.back} />
-        <Typography variant="titleS" color={colors.gray[900]} align="center" style={styles.title}>
-          {t(copy.title)}
-        </Typography>
+        <View pointerEvents="none" style={styles.titleWrapper}>
+          <Typography variant="titleS" color={colors.gray[900]} align="center" numberOfLines={1}>
+            {t(copy.title)}
+          </Typography>
+        </View>
       </View>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <Typography variant="bodyS" color={colors.gray[700]}>
@@ -56,10 +58,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing[2],
   },
-  title: {
+  titleWrapper: {
     position: 'absolute',
-    right: spacing[16],
-    left: spacing[16],
+    right: 56,
+    left: 56,
   },
   content: {
     paddingHorizontal: spacing[5],

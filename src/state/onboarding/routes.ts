@@ -1,9 +1,9 @@
 import { type Href } from 'expo-router';
 
 export const onboardingRoutes = {
-  intro: '/onboarding/intro' as Href,
-  recovery: '/onboarding/recovery' as Href,
-  sleep: '/onboarding/sleep' as Href,
-  activity: '/onboarding/activity' as Href,
-  transport: '/onboarding/transport' as Href,
-};
+  intro: '/onboarding/intro',
+  recovery: '/onboarding/recovery',
+  sleep: '/onboarding/sleep',
+  activity: '/onboarding/activity',
+  transport: '/onboarding/transport',
+} as const satisfies Record<string, Href>;

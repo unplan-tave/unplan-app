@@ -1,4 +1,4 @@
-import { type Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet, View } from 'react-native';
 
@@ -34,7 +34,10 @@ export function LoginScreen() {
   };
 
   const handleTermsPress = (type: 'service' | 'privacy') => {
-    router.push(`/terms?type=${type}` as Href);
+    router.push({
+      pathname: '/terms',
+      params: { type },
+    });
   };
 
   const handleSocialLogin = async (provider: SocialProvider) => {

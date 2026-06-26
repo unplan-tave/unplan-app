@@ -97,7 +97,7 @@ export function RecoveryScreen() {
       contentRaised={isCustomEditing}
       onBackPress={() =>
         router.replace({
-          pathname: '/onboarding/intro',
+          pathname: onboardingRoutes.intro,
           params: { step: '3' },
         })
       }

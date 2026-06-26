@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
@@ -77,11 +78,13 @@ export function BottomCTA({
 }
 
 function PrimaryButtonFill() {
+  const gradientId = useId().replace(/:/g, '');
+
   return (
     <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" preserveAspectRatio="none">
       <Defs>
         <RadialGradient
-          id="ctaGradient"
+          id={gradientId}
           cx="50%"
           cy="50%"
           rx="50%"
@@ -97,7 +100,7 @@ function PrimaryButtonFill() {
         height="100%"
         rx={BUTTON_RADIUS}
         ry={BUTTON_RADIUS}
-        fill="url(#ctaGradient)"
+        fill={`url(#${gradientId})`}
       />
     </Svg>
   );

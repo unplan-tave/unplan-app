@@ -1,6 +1,6 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { ImageBackground, Pressable, StyleSheet, View } from 'react-native';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import { BackHandler, ImageBackground, Pressable, StyleSheet, View } from 'react-native';
 
 import { BottomCTA } from '@/components/ui/BottomCTA';
 import { HomeIndicator } from '@/components/ui/Footer';
@@ -14,32 +14,30 @@ import { type TranslationKey } from '@/translations/ko';
 
 const INTRO_STEPS = [
   {
+    image: require('../../../assets/onboarding/intro-welcome.png'),
     titleKey: 'onboarding.intro.welcome.title',
     subtitleKey: 'onboarding.intro.welcome.subtitle',
   },
   {
+    image: require('../../../assets/onboarding/intro-queue.png'),
     titleKey: 'onboarding.intro.todo.title',
     subtitleKey: 'onboarding.intro.todo.subtitle',
   },
   {
+    image: require('../../../assets/onboarding/intro-pin.png'),
     titleKey: 'onboarding.intro.pin.title',
     subtitleKey: 'onboarding.intro.pin.subtitle',
   },
   {
+    image: require('../../../assets/onboarding/intro-start.png'),
     titleKey: 'onboarding.intro.start.title',
     subtitleKey: 'onboarding.intro.start.subtitle',
   },
 ] as const satisfies ReadonlyArray<{
+  image: number;
   titleKey: TranslationKey;
   subtitleKey: TranslationKey;
 }>;
-
-const INTRO_STEP_IMAGES = [
-  require('../../../assets/onboarding/intro-welcome.png'),
-  require('../../../assets/onboarding/intro-queue.png'),
-  require('../../../assets/onboarding/intro-pin.png'),
-  require('../../../assets/onboarding/intro-start.png'),
-] as const;
 
 export function IntroScreen() {
   const router = useRouter();
@@ -51,9 +49,25 @@ export function IntroScreen() {
   const isFirstStep = stepIndex === 0;
   const progressDots = useMemo(() => INTRO_STEPS.map((_, index) => index), []);
 
-  const handleBack = () => {
-    setStepIndex((currentIndex) => currentIndex - 1);
-  };
+  const handleBack = useCallback(() => {
+    setStepIndex((currentIndex) => Math.max(0, currentIndex - 1));
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+        if (stepIndex <= 0) {
+          return false;
+        }
+
+        handleBack();
+
+        return true;
+      });
+
+      return () => subscription.remove();
+    }, [handleBack, stepIndex]),
+  );
 
   const handleNext = () => {
     if (isLastStep) {
@@ -66,7 +80,7 @@ export function IntroScreen() {
 
   return (
     <ImageBackground
-      source={INTRO_STEP_IMAGES[stepIndex]}
+      source={activeStep.image}
       resizeMode="cover"
       style={styles.screen}
       imageStyle={styles.backgroundImage}
@@ -81,11 +95,17 @@ export function IntroScreen() {
         }
         footer={
           <View style={styles.footer}>
-            <View style={styles.dots} accessibilityLabel="온보딩 소개 진행 상태">
+            <View
+              style={styles.dots}
+              accessibilityLabel={t('onboarding.intro.progressAccessibilityLabel')}
+            >
               {progressDots.map((dotIndex) => (
                 <Pressable
                   key={dotIndex}
-                  accessibilityLabel={`${dotIndex + 1}번째 소개로 이동`}
+                  accessibilityLabel={t('onboarding.intro.stepAccessibilityLabel').replace(
+                    '{step}',
+                    String(dotIndex + 1),
+                  )}
                   accessibilityRole="button"
                   accessibilityState={{ selected: dotIndex === stepIndex }}
                   hitSlop={8}

@@ -49,10 +49,12 @@ export const ko = {
   'onboarding.error.sleepTimeRequired': '수면 시간을 한 시간 이상 선택해 주세요.',
   'onboarding.intro.pin.subtitle': '실행할 시간이 정해졌다면\n핀 카드로 바꿔보세요',
   'onboarding.intro.pin.title': '정해진 일정은 핀 카드로',
+  'onboarding.intro.progressAccessibilityLabel': '온보딩 소개 진행 상태',
   'onboarding.intro.start.cta': '질문 시작하기',
   'onboarding.intro.start.subtitle':
     '다음 4가지 질문에 답하고\n나에게 꼭 맞는 스케줄을 만들어 보세요',
   'onboarding.intro.start.title': '추천을 시작하기 전에,',
+  'onboarding.intro.stepAccessibilityLabel': '{step}번째 소개로 이동',
   'onboarding.intro.todo.subtitle': '시간이 정해지지 않은 일정도\n부담 없이 모아두세요',
   'onboarding.intro.todo.title': '할 일은 큐 카드로 담고',
   'onboarding.intro.welcome.subtitle':
