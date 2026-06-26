@@ -32,7 +32,7 @@ export function SleepScreen() {
       }
       progress={0.38}
       ctaCaption={null}
-      backgroundColor="#F1F5F7"
+      backgroundColor={colors.onboardingMutedBackground}
       titleMinHeight={34}
       onConfirm={() => router.push(onboardingRoutes.activity)}
     >

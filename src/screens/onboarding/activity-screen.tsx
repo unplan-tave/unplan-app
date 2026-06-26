@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { ActivityTimeRail } from '@/components/onboarding/activity-time-rail';
 import { OnboardingStepLayout } from '@/components/onboarding/onboarding-step-layout';
+import { colors } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { onboardingRoutes } from '@/state/onboarding/routes';
 import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
@@ -21,7 +22,7 @@ export function ActivityScreen() {
       title={t('onboarding.activity.title')}
       subtitle={t('onboarding.activity.subtitle')}
       progress={0.71}
-      backgroundColor="#F1F5F7"
+      backgroundColor={colors.onboardingMutedBackground}
       titleMinHeight={34}
       ctaDisabled={!hasSleepTime}
       ctaCaption={null}
