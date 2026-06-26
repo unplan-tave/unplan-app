@@ -19,7 +19,11 @@ export function SettingsScreen() {
 
   const handleOnboardingReset = () => {
     resetOnboarding();
-    router.replace(onboardingRoutes.recovery);
+    router.replace(onboardingRoutes.intro);
+  };
+
+  const handleUiPrimitivesOpen = () => {
+    router.push('/settings-ui-primitives');
   };
 
   const handleLogout = async () => {
@@ -44,11 +48,18 @@ export function SettingsScreen() {
       <Typography variant="titleL">{t('settings.title')}</Typography>
       <View style={styles.actions}>
         {__DEV__ ? (
-          <Button
-            label={t('settings.resetOnboarding')}
-            disabled={isLoggingOut}
-            onPress={handleOnboardingReset}
-          />
+          <>
+            <Button
+              label={t('settings.openUiPrimitives')}
+              disabled={isLoggingOut}
+              onPress={handleUiPrimitivesOpen}
+            />
+            <Button
+              label={t('settings.resetOnboarding')}
+              disabled={isLoggingOut}
+              onPress={handleOnboardingReset}
+            />
+          </>
         ) : null}
         <Button
           label={isLoggingOut ? t('settings.loggingOut') : t('settings.logout')}

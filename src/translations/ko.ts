@@ -61,6 +61,7 @@ export const ko = {
   'settings.loggingOut': '로그아웃 중',
   'settings.logout': '로그아웃',
   'settings.logoutError': '로그아웃하지 못했습니다. 다시 시도해 주세요.',
+  'settings.openUiPrimitives': 'UI 컴포넌트 보기',
   'settings.resetOnboarding': '온보딩 초기화',
   'settings.title': '설정',
   'terms.privacy.body':
