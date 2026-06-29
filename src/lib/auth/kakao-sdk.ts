@@ -1,4 +1,5 @@
 import { initializeKakaoSDK } from '@react-native-kakao/core';
+import { Platform } from 'react-native';
 
 import { Config } from '@/constants/config';
 
@@ -12,6 +13,10 @@ export class KakaoSDKConfigError extends Error {
 }
 
 export function initializeKakaoAuthSDK(): Promise<void> {
+  if (Platform.OS === 'web') {
+    return Promise.resolve();
+  }
+
   if (!Config.kakaoNativeAppKey) {
     console.warn('Missing EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY. Kakao login is disabled.');
     return Promise.resolve();
@@ -26,6 +31,10 @@ export function initializeKakaoAuthSDK(): Promise<void> {
 }
 
 export async function ensureKakaoAuthSDKInitialized(): Promise<void> {
+  if (Platform.OS === 'web') {
+    throw new KakaoSDKConfigError();
+  }
+
   if (!Config.kakaoNativeAppKey) {
     throw new KakaoSDKConfigError();
   }
