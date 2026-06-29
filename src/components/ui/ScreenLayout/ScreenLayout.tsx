@@ -11,13 +11,16 @@ export function ScreenLayout({
   footer,
   header,
   style,
+  useSafeArea = true,
 }: ScreenLayoutProps) {
+  const Container = useSafeArea ? SafeAreaView : View;
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor }, style]}>
+    <Container style={[styles.container, { backgroundColor }, style]}>
       {header}
       <View style={[styles.content, contentStyle]}>{children}</View>
       {footer}
-    </SafeAreaView>
+    </Container>
   );
 }
 
