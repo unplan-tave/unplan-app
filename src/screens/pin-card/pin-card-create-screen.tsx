@@ -391,6 +391,7 @@ export function PinCardCreateScreen() {
   );
 
   const handleOpenDueDurationSheet = useCallback(() => {
+    Keyboard.dismiss();
     setIsDueDurationSheetVisible(true);
   }, []);
 

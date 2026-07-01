@@ -69,6 +69,18 @@ export function PinCardViewScreen() {
   }, [cardId, patchCard]);
 
   useEffect(() => {
+    if (toast == null) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setToast(null);
+    }, 3_000);
+
+    return () => clearTimeout(timeoutId);
+  }, [toast]);
+
+  useEffect(() => {
     if (card == null) {
       router.back();
     }

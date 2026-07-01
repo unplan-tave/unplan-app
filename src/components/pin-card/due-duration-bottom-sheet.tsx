@@ -10,7 +10,6 @@ import { WEEKDAY_LABELS } from '@/state/pin-card/data';
 import { getCalendarMonth, type CalendarCell } from '@/state/pin-card/model';
 import {
   addDurationMinutes,
-  compareDueDateValues,
   createDefaultDurationDraft,
   DURATION_INCREMENT_BUTTONS,
   formatDueDateForStorage,
@@ -200,7 +199,7 @@ export function DueDurationBottomSheet({
               <DueDateCell
                 key={cell.key}
                 cell={cell}
-                isPast={cell.value.length > 0 && compareDueDateValues(cell.value, todayValue) < 0}
+                isPast={cell.value.length > 0 && cell.value < todayValue}
                 isSelected={cell.value.length > 0 && cell.value === draft.dueDate}
                 isToday={cell.value.length > 0 && cell.value === todayValue}
                 onSelect={handleSelectDate}
