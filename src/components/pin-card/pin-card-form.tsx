@@ -38,7 +38,6 @@ export function PinCardForm({
   repeatEnabled,
   recurrence,
   // reminderEnabled,
-  location,
   showTitleError,
   showDateError,
   showTimeError,
@@ -47,6 +46,7 @@ export function PinCardForm({
   onOpenConditionTag,
   onOpenPersonalTags,
   onOpenDateTime,
+  onOpenLocation,
   onToggleRepeat,
   onPressRepeatChip,
   onRemoveRepeat,
@@ -63,7 +63,6 @@ export function PinCardForm({
   repeatEnabled: boolean;
   recurrence: RecurrenceValue | null;
   // reminderEnabled: boolean;
-  location: string;
   showTitleError: boolean;
   showDateError: boolean;
   showTimeError: boolean;
@@ -72,6 +71,7 @@ export function PinCardForm({
   onOpenConditionTag: () => void;
   onOpenPersonalTags: () => void;
   onOpenDateTime: (focus: TimeFocus) => void;
+  onOpenLocation: () => void;
   onToggleRepeat: () => void;
   onPressRepeatChip: () => void;
   onRemoveRepeat: () => void;
@@ -211,23 +211,13 @@ export function PinCardForm({
           </FormBox>
 
           <FormBox>
-            <FormRow label="위치">
-              <Controller
-                control={control}
-                name="location"
-                render={({ field: { onChange, value } }) => (
-                  <TextInput
-                    accessibilityLabel="위치 입력"
-                    value={value}
-                    placeholder="위치를 입력해주세요"
-                    placeholderTextColor={colors.gray[400]}
-                    multiline
-                    style={[styles.valueInput, location.length > 0 && styles.locationValueInput]}
-                    onChangeText={onChange}
-                  />
-                )}
-              />
-            </FormRow>
+            <Controller
+              control={control}
+              name="location"
+              render={({ field: { value } }) => (
+                <LocationField location={value} control={control} onOpenLocation={onOpenLocation} />
+              )}
+            />
             {/* reminder UI disabled — not yet implemented */}
           </FormBox>
 
@@ -264,6 +254,74 @@ export function PinCardForm({
         </View>
       </View>
     </>
+  );
+}
+
+function LocationField({
+  location,
+  control,
+  onOpenLocation,
+}: {
+  location: string;
+  control: Control<PinCardFormValues>;
+  onOpenLocation: () => void;
+}) {
+  const hasLocation = location.trim().length > 0;
+
+  if (!hasLocation) {
+    return (
+      <FormRow label="위치">
+        <Pressable
+          accessibilityLabel="위치 선택"
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
+          onPress={onOpenLocation}
+        >
+          <Typography variant="bodyM" color={colors.gray[400]} numberOfLines={1}>
+            위치를 입력해주세요
+          </Typography>
+        </Pressable>
+      </FormRow>
+    );
+  }
+
+  return (
+    <View style={styles.locationFilled}>
+      <Pressable
+        accessibilityLabel="위치 수정"
+        accessibilityRole="button"
+        style={({ pressed }) => [styles.locationMainRow, pressed && styles.pressed]}
+        onPress={onOpenLocation}
+      >
+        <Typography variant="bodyM" color={colors.gray[800]}>
+          위치
+        </Typography>
+        <Typography
+          variant="bodyM"
+          color={colors.gray[600]}
+          numberOfLines={1}
+          style={styles.locationName}
+        >
+          {location}
+        </Typography>
+      </Pressable>
+      <Controller
+        control={control}
+        name="locationDetail"
+        render={({ field: { onChange, value } }) => (
+          <View style={styles.locationDetailRow}>
+            <TextInput
+              accessibilityLabel="상세 위치 입력"
+              value={value}
+              placeholder="상세위치"
+              placeholderTextColor={colors.gray[400]}
+              style={styles.locationDetailInput}
+              onChangeText={onChange}
+            />
+          </View>
+        )}
+      />
+    </View>
   );
 }
 
@@ -638,9 +696,31 @@ const styles = StyleSheet.create({
     color: colors.gray[800],
     textAlign: 'right',
   },
-  locationValueInput: {
+  locationFilled: {
+    gap: spacing[2],
+    paddingLeft: spacing[1],
+  },
+  locationMainRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing[2],
+    minHeight: 42,
+  },
+  locationName: {
+    flex: 1,
+    textAlign: 'right',
+  },
+  locationDetailRow: {
+    minHeight: 42,
+    justifyContent: 'center',
+  },
+  locationDetailInput: {
+    ...typography.bodyM,
+    flex: 1,
     color: colors.gray[600],
-    lineHeight: 32,
+    textAlign: 'right',
+    paddingVertical: spacing[2],
   },
   memoFilledInput: {
     ...typography.bodyM,

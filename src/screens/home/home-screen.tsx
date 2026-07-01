@@ -101,6 +101,7 @@ export function HomeScreen() {
         timeStart: queueCard.timeStart,
         timeEnd: queueCard.timeEnd,
         location: queueCard.location,
+        locationDetail: queueCard.locationDetail ?? '',
         memo: queueCard.memo,
         repeatEnabled: false,
         recurrence: null,

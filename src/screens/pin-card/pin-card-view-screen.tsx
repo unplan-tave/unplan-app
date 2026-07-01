@@ -97,9 +97,14 @@ function ViewFormCard({ card }: { card: PinCardItem }) {
   }
 
   if (card.location.trim().length > 0) {
+    const locationValue =
+      card.locationDetail.trim().length > 0
+        ? `${card.location}\n${card.locationDetail}`
+        : card.location;
+
     rows.push({
       key: 'location',
-      node: <ViewFormRow label="위치" value={card.location} multiline />,
+      node: <ViewFormRow label="위치" value={locationValue} multiline />,
     });
   }
 

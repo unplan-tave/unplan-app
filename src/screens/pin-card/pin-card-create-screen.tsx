@@ -6,6 +6,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { DateOnlyGuideModal } from '@/components/pin-card/date-only-guide-modal';
 import { DateTimeBottomSheet } from '@/components/pin-card/date-time-bottom-sheet';
+import { LocationBottomSheet } from '@/components/pin-card/location-bottom-sheet';
 import { PinCardCreateHeader } from '@/components/pin-card/pin-card-create-header';
 import { PinCardForm } from '@/components/pin-card/pin-card-form';
 import { PinCardRequiredToast } from '@/components/pin-card/pin-card-required-toast';
@@ -61,12 +62,19 @@ export function PinCardCreateScreen() {
   const [dateOnlyGuideVisible, setDateOnlyGuideVisible] = useState(false);
   const [repeatSheetMode, setRepeatSheetMode] = useState<RepeatSheetMode>('none');
   const [repeatSheetOrigin, setRepeatSheetOrigin] = useState<RepeatSheetOrigin>('new');
+  const [isLocationSheetVisible, setIsLocationSheetVisible] = useState(false);
   const beginCreate = usePinCardStore((store) => store.beginCreate);
   const beginEdit = usePinCardStore((store) => store.beginEdit);
   const updateDraftValues = usePinCardStore((store) => store.updateDraftValues);
   const changeDraftCardType = usePinCardStore((store) => store.changeDraftCardType);
   const personalTags = usePinCardStore((store) => store.personalTags);
   const createPersonalTag = usePinCardStore((store) => store.createPersonalTag);
+  const locationRecentSearches = usePinCardStore((store) => store.locationRecentSearches);
+  const addLocationRecentSearch = usePinCardStore((store) => store.addLocationRecentSearch);
+  const deleteLocationRecentSearch = usePinCardStore((store) => store.deleteLocationRecentSearch);
+  const deleteAllLocationRecentSearches = usePinCardStore(
+    (store) => store.deleteAllLocationRecentSearches,
+  );
   const saveDraft = usePinCardStore((store) => store.saveDraft);
   const deleteCard = usePinCardStore((store) => store.deleteCard);
   const discardDraft = usePinCardStore((store) => store.discardDraft);
@@ -95,6 +103,7 @@ export function PinCardCreateScreen() {
   const recurrence = watch('recurrence');
   // const reminderEnabled = watch('reminderEnabled');
   const location = watch('location');
+  const locationDetail = watch('locationDetail');
   const memo = watch('memo');
   const primaryTag = getConditionTagById(conditionTagId);
   const selectedPersonalTags = personalTags.filter((tag) => personalTagIds.includes(tag.id));
@@ -136,6 +145,7 @@ export function PinCardCreateScreen() {
       timeStart,
       timeEnd,
       location,
+      locationDetail,
       memo,
       repeatEnabled,
       recurrence,
@@ -147,6 +157,7 @@ export function PinCardCreateScreen() {
     dateMode,
     dateStart,
     location,
+    locationDetail,
     memo,
     personalTagIds,
     // reminderEnabled,
@@ -377,6 +388,21 @@ export function PinCardCreateScreen() {
     [saveRecurrence],
   );
 
+  const handleOpenLocationSheet = useCallback(() => {
+    setIsLocationSheetVisible(true);
+  }, []);
+
+  const handleSelectLocation = useCallback(
+    (nextLocation: string) => {
+      setValue('location', nextLocation, { shouldDirty: true });
+      setValue('locationDetail', '', { shouldDirty: true });
+      updateDraftValues({ location: nextLocation, locationDetail: '' });
+      addLocationRecentSearch(nextLocation);
+      setIsLocationSheetVisible(false);
+    },
+    [addLocationRecentSearch, setValue, updateDraftValues],
+  );
+
   // const handleToggleReminder = useCallback(() => {
   //   const nextReminderEnabled = !reminderEnabled;
   //   setValue('reminderEnabled', nextReminderEnabled, { shouldDirty: true });
@@ -471,7 +497,6 @@ export function PinCardCreateScreen() {
             repeatEnabled={repeatEnabled}
             recurrence={recurrence}
             // reminderEnabled={reminderEnabled}
-            location={location}
             showTitleError={shouldShowTitleError}
             showDateError={shouldShowDateError}
             showTimeError={shouldShowTimeError}
@@ -480,6 +505,7 @@ export function PinCardCreateScreen() {
             onOpenConditionTag={() => setTagSheetTab('condition')}
             onOpenPersonalTags={() => setTagSheetTab('personal')}
             onOpenDateTime={handleOpenDateTimeSheet}
+            onOpenLocation={handleOpenLocationSheet}
             onToggleRepeat={handleToggleRepeat}
             onPressRepeatChip={handlePressRepeatChip}
             onRemoveRepeat={handleRemoveRepeat}
@@ -533,6 +559,14 @@ export function PinCardCreateScreen() {
           scheduleDate={scheduleDate}
           onClose={handleCloseRepeatCustomSheet}
           onDone={handleDoneRepeatCustom}
+        />
+        <LocationBottomSheet
+          visible={isLocationSheetVisible}
+          recentSearches={locationRecentSearches}
+          onClose={() => setIsLocationSheetVisible(false)}
+          onSelect={handleSelectLocation}
+          onDeleteSearch={deleteLocationRecentSearch}
+          onDeleteAllSearches={deleteAllLocationRecentSearches}
         />
       </View>
     </ScreenLayout>
