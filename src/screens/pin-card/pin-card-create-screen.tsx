@@ -550,7 +550,14 @@ export function PinCardCreateScreen() {
     router.back();
   }, [cardId, deleteCard]);
 
-  const handleDone = handleSubmit(handleValidSubmit, handleInvalidSubmit);
+  const handleDone = useCallback(() => {
+    if (!isRequiredComplete) {
+      handleInvalidSubmit();
+      return;
+    }
+
+    void handleSubmit(handleValidSubmit, handleInvalidSubmit)();
+  }, [handleInvalidSubmit, handleSubmit, handleValidSubmit, isRequiredComplete]);
 
   const scrollMemoIntoView = useCallback(() => {
     const scroll = () => scrollRef.current?.scrollToEnd({ animated: true });

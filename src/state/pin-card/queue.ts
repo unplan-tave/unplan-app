@@ -165,3 +165,7 @@ export function compareDueDateValues(first: string, second: string): number {
 export function getMockRecommendationLabel(): string {
   return '오늘 오후 2:00 ~ 6:30';
 }
+
+export function getMockRecommendationTimeRange(): readonly [string, string] {
+  return ['14:00', '18:30'] as const;
+}

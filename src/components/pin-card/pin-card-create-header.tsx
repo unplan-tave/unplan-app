@@ -27,6 +27,7 @@ export function PinCardCreateHeader({
   onDone: () => void;
 }) {
   const isView = variant === 'view';
+  const isDoneDisabled = !isView && !doneEnabled;
   const viewTitle = cardType === 'queue' ? '큐 카드' : '핀 카드';
 
   return (
@@ -71,8 +72,10 @@ export function PinCardCreateHeader({
       <Pressable
         accessibilityLabel={isView ? '카드 편집' : '카드 편집 완료'}
         accessibilityRole="button"
+        accessibilityState={{ disabled: isDoneDisabled }}
+        disabled={isDoneDisabled}
         hitSlop={8}
-        style={({ pressed }) => [styles.headerAction, pressed && styles.pressed]}
+        style={({ pressed }) => [styles.headerAction, pressed && !isDoneDisabled && styles.pressed]}
         onPress={onDone}
       >
         <Typography

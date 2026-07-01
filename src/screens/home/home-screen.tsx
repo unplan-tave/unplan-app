@@ -20,6 +20,7 @@ import {
   type PinCardFormValues,
   type PinCardItem,
 } from '@/state/pin-card/model';
+import { getMockRecommendationTimeRange } from '@/state/pin-card/queue';
 import { usePinCardStore } from '@/state/pin-card/use-pin-card-store';
 
 const WEEKDAY_LABELS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
@@ -99,6 +100,7 @@ export function HomeScreen() {
       }
 
       const today = getTodayString();
+      const [recommendedStart, recommendedEnd] = getMockRecommendationTimeRange();
       const values: PinCardFormValues = {
         title: queueCard.title,
         conditionTagId: queueCard.conditionTagId,
@@ -106,9 +108,9 @@ export function HomeScreen() {
         dateMode: 'single',
         dateStart: today,
         dateEnd: '',
-        timeFilled: queueCard.timeFilled,
-        timeStart: queueCard.timeStart,
-        timeEnd: queueCard.timeEnd,
+        timeFilled: true,
+        timeStart: recommendedStart,
+        timeEnd: recommendedEnd,
         location: queueCard.location,
         locationDetail: queueCard.locationDetail ?? '',
         memo: queueCard.memo,
