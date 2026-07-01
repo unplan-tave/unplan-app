@@ -71,12 +71,7 @@ const styles = StyleSheet.create({
     gap: 5,
     paddingLeft: 7,
     paddingRight: 5,
-    backgroundColor: colors.alpha.white80,
-    shadowColor: colors.shadow.blueGray,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.15,
-    shadowRadius: 48,
-    elevation: 3,
+    backgroundColor: colors.gray.white,
   },
   personal: {
     paddingHorizontal: 5,

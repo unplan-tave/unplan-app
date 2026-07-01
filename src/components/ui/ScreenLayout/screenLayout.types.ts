@@ -8,4 +8,5 @@ export interface ScreenLayoutProps {
   footer?: ReactNode;
   header?: ReactNode;
   style?: StyleProp<ViewStyle>;
+  useSafeArea?: boolean;
 }

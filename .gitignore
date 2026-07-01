@@ -36,6 +36,9 @@ yarn-error.*
 .env.production
 .env.staging
 
+# Cursor MCP (API keys)
+.mcp.json
+
 # typescript
 *.tsbuildinfo
 

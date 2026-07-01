@@ -20,13 +20,16 @@ export const spacing = {
 
 export const radius = {
   xs: 3, // Tag
-  '2xs': 4, // ViewModeButton
+  '2xs': 4, // ViewModeButton / BottomSheet inner chip
   sm: 6, // TextField / ProgressSegment
   md: 8, // Card
   lg: 10, // System panel
   xl: 11, // Button
+  panel: 12, // BottomSheet content card
   modal: 13,
   xxl: 15, // SearchBar
+  '2xl': 16, // Modal card
+  sheet: 36, // BottomSheet top corner
   nav: 65,
   full: 9999,
 } as const;

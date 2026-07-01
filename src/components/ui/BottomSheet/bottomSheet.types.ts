@@ -16,6 +16,8 @@ export interface BottomSheetProps extends Omit<ModalProps, 'visible' | 'children
   children: ReactNode;
   onClose?: () => void;
   contentStyle?: StyleProp<ViewStyle>;
+  /** TextInput 등으로 키보드가 열릴 때 시트를 키보드 높이만큼 함께 올립니다. */
+  avoidKeyboard?: boolean;
 }
 
 export interface BottomSheetHandleProps {

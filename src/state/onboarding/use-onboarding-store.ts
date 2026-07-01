@@ -25,6 +25,10 @@ const initialPreferences: OnboardingPreferences = {
   transportOptionIds: [],
 };
 
+function persistOnboardingCompleted() {
+  mmkvStorage.set(ONBOARDING_COMPLETED_KEY, 'true');
+}
+
 interface OnboardingState {
   hasCompletedOnboarding: boolean;
   isSubmitting: boolean;
@@ -54,12 +58,15 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
   submissionError: null,
   preferences: initialPreferences,
 
+  // TODO: 프로필 조회 / 로그인 API에서 온보딩 완료 여부를 반환하면,
+  // 로컬 스토리지 대신 서버 응답값으로 hasCompletedOnboarding을 설정하도록 수정 필요
+  // 현재는 임시로 항상 true로 설정해 온보딩을 건너뜀
   hydrateOnboarding: () => {
-    const completed = mmkvStorage.get(ONBOARDING_COMPLETED_KEY) === 'true';
+    persistOnboardingCompleted();
 
     set(
       produce((state: OnboardingState) => {
-        state.hasCompletedOnboarding = completed;
+        state.hasCompletedOnboarding = true;
       }),
     );
   },
@@ -150,18 +157,13 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
       produce((state: OnboardingState) => {
         state.isSubmitting = true;
         state.submissionError = null;
+        state.hasCompletedOnboarding = true;
       }),
     );
+    persistOnboardingCompleted();
 
     try {
       await submitOnboarding(submissionPreferences);
-      mmkvStorage.set(ONBOARDING_COMPLETED_KEY, 'true');
-
-      set(
-        produce((state: OnboardingState) => {
-          state.hasCompletedOnboarding = true;
-        }),
-      );
 
       return true;
     } catch (error: unknown) {
@@ -171,7 +173,7 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
         }),
       );
 
-      return false;
+      return true;
     } finally {
       set(
         produce((state: OnboardingState) => {
