@@ -19,7 +19,8 @@ export type IconName =
   | 'list'
   | 'condition'
   | 'setting'
-  | 'warning';
+  | 'warning'
+  | 'refresh';
 
 export interface IconProps {
   name: IconName;

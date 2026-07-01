@@ -4,11 +4,14 @@ import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
 
+import type { CardTab } from '@/state/pin-card/model';
+
 const HEADER_TOP_PADDING = spacing[16];
 const HEADER_HEIGHT = spacing[6];
 
 export function PinCardCreateHeader({
   variant = 'edit',
+  cardType = 'pin',
   doneEnabled,
   deleteVisible = false,
   onClose,
@@ -16,6 +19,7 @@ export function PinCardCreateHeader({
   onDone,
 }: {
   variant?: 'edit' | 'view';
+  cardType?: CardTab;
   doneEnabled: boolean;
   deleteVisible?: boolean;
   onClose: () => void;
@@ -23,6 +27,8 @@ export function PinCardCreateHeader({
   onDone: () => void;
 }) {
   const isView = variant === 'view';
+  const isDoneDisabled = !isView && !doneEnabled;
+  const viewTitle = cardType === 'queue' ? '큐 카드' : '핀 카드';
 
   return (
     <View style={styles.header}>
@@ -48,7 +54,7 @@ export function PinCardCreateHeader({
         align="center"
         style={styles.headerTitle}
       >
-        {isView ? '핀 카드' : '카드 편집'}
+        {isView ? viewTitle : '카드 편집'}
       </Typography>
       {!isView && deleteVisible ? (
         <Pressable
@@ -66,8 +72,10 @@ export function PinCardCreateHeader({
       <Pressable
         accessibilityLabel={isView ? '카드 편집' : '카드 편집 완료'}
         accessibilityRole="button"
+        accessibilityState={{ disabled: isDoneDisabled }}
+        disabled={isDoneDisabled}
         hitSlop={8}
-        style={({ pressed }) => [styles.headerAction, pressed && styles.pressed]}
+        style={({ pressed }) => [styles.headerAction, pressed && !isDoneDisabled && styles.pressed]}
         onPress={onDone}
       >
         <Typography

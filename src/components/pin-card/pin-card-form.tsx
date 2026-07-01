@@ -16,6 +16,14 @@ import {
   type RecurrenceValue,
   type TimeFocus,
 } from '@/state/pin-card/model';
+import {
+  formatDueCountdown,
+  formatDueDateDisplay,
+  formatDurationInline,
+  hasDueDate,
+  hasQueueDurationOrUnknown,
+  UNKNOWN_DURATION_LABEL,
+} from '@/state/pin-card/queue';
 import { formatRecurrenceChipSegments } from '@/state/pin-card/recurrence';
 
 const CONTENT_MAX_WIDTH = 353;
@@ -27,6 +35,12 @@ const TOGGLE_WIDTH = spacing[10];
 const TOGGLE_HEIGHT = spacing[6];
 const TOGGLE_THUMB_SIZE = 18;
 const TOGGLE_THUMB_OFFSET = 3;
+const ADD_TAG_PADDING_H = 5;
+const ADD_TAG_PADDING_V = 1;
+const LABEL_GROUP_GAP = 2;
+const CHIP_PADDING_V = 6;
+const CHIP_CLOSE_LINE_WIDTH = 10;
+const CHIP_CLOSE_LINE_HEIGHT = 1;
 
 export function PinCardForm({
   control,
@@ -42,11 +56,18 @@ export function PinCardForm({
   showTitleError,
   showDateError,
   showTimeError,
+  showDueError = false,
+  showDurationError = false,
+  dueDate = '',
+  durationHours = 0,
+  durationMinutes = 0,
+  durationUnknown = false,
   tagFeedback,
   onChangeTab,
   onOpenConditionTag,
   onOpenPersonalTags,
   onOpenDateTime,
+  onOpenDueDuration,
   onOpenLocation,
   onToggleRepeat,
   onPressRepeatChip,
@@ -68,11 +89,18 @@ export function PinCardForm({
   showTitleError: boolean;
   showDateError: boolean;
   showTimeError: boolean;
+  showDueError?: boolean;
+  showDurationError?: boolean;
+  dueDate?: string;
+  durationHours?: number;
+  durationMinutes?: number;
+  durationUnknown?: boolean;
   tagFeedback: 'none' | 'success' | 'error';
   onChangeTab: (tab: CardTab) => void;
   onOpenConditionTag: () => void;
   onOpenPersonalTags: () => void;
   onOpenDateTime: (focus: TimeFocus) => void;
+  onOpenDueDuration?: () => void;
   onOpenLocation: () => void;
   onToggleRepeat: () => void;
   onPressRepeatChip: () => void;
@@ -157,62 +185,98 @@ export function PinCardForm({
         </View>
 
         <View style={styles.formStack}>
-          <FormBox>
-            <Controller
-              control={control}
-              name="dateMode"
-              rules={{
-                validate: (value) => value !== 'empty',
-              }}
-              render={() => (
-                <FormRow required={dateMode === 'empty'} label="날짜">
-                  <Pressable
-                    accessibilityLabel="날짜 선택"
-                    accessibilityRole="button"
-                    style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
-                    onPress={() => onOpenDateTime('start')}
-                  >
-                    <DateValue mode={dateMode} value={dateValue} error={showDateError} />
-                  </Pressable>
-                </FormRow>
-              )}
-            />
-            <Divider />
-            <Controller
-              control={control}
-              name="timeFilled"
-              rules={{
-                validate: (value) => value,
-              }}
-              render={() => (
-                <FormRow required={!timeFilled} label="시간">
-                  <Pressable
-                    accessibilityLabel="시간 선택"
-                    accessibilityRole="button"
-                    style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
-                    onPress={() => onOpenDateTime('start')}
-                  >
-                    <RangeValue value={timeValue} filled={timeFilled} error={showTimeError} />
-                  </Pressable>
-                </FormRow>
-              )}
-            />
-            <Divider />
-            <FormRow label="반복">
-              <ToggleSwitch
-                value={repeatEnabled}
-                accessibilityLabel="반복 설정"
-                onPress={onToggleRepeat}
+          {activeTab === 'pin' ? (
+            <FormBox>
+              <Controller
+                control={control}
+                name="dateMode"
+                rules={{
+                  validate: (value) => value !== 'empty',
+                }}
+                render={() => (
+                  <FormRow required={dateMode === 'empty'} label="날짜">
+                    <Pressable
+                      accessibilityLabel="날짜 선택"
+                      accessibilityRole="button"
+                      style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
+                      onPress={() => onOpenDateTime('start')}
+                    >
+                      <DateValue mode={dateMode} value={dateValue} error={showDateError} />
+                    </Pressable>
+                  </FormRow>
+                )}
               />
-            </FormRow>
-            {recurrence != null ? (
-              <RepeatSummaryChip
-                recurrence={recurrence}
-                onPress={onPressRepeatChip}
-                onRemove={onRemoveRepeat}
+              <Divider />
+              <Controller
+                control={control}
+                name="timeFilled"
+                rules={{
+                  validate: (value) => value,
+                }}
+                render={() => (
+                  <FormRow required={!timeFilled} label="시간">
+                    <Pressable
+                      accessibilityLabel="시간 선택"
+                      accessibilityRole="button"
+                      style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
+                      onPress={() => onOpenDateTime('start')}
+                    >
+                      <RangeValue value={timeValue} filled={timeFilled} error={showTimeError} />
+                    </Pressable>
+                  </FormRow>
+                )}
               />
-            ) : null}
-          </FormBox>
+              <Divider />
+              <FormRow label="반복">
+                <ToggleSwitch
+                  value={repeatEnabled}
+                  accessibilityLabel="반복 설정"
+                  onPress={onToggleRepeat}
+                />
+              </FormRow>
+              {recurrence != null ? (
+                <RepeatSummaryChip
+                  recurrence={recurrence}
+                  onPress={onPressRepeatChip}
+                  onRemove={onRemoveRepeat}
+                />
+              ) : null}
+            </FormBox>
+          ) : (
+            <FormBox>
+              <FormRow required={!hasDueDate(dueDate)} label="마감일">
+                <Pressable
+                  accessibilityLabel="마감일 선택"
+                  accessibilityRole="button"
+                  style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
+                  onPress={onOpenDueDuration}
+                >
+                  <DueDateValue dueDate={dueDate} error={showDueError} />
+                </Pressable>
+              </FormRow>
+              <Divider />
+              <FormRow
+                required={
+                  !hasQueueDurationOrUnknown(durationHours, durationMinutes, durationUnknown)
+                }
+                label="소요시간"
+              >
+                <Pressable
+                  accessibilityLabel="소요시간 선택"
+                  accessibilityRole="button"
+                  style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
+                  onPress={onOpenDueDuration}
+                >
+                  <DurationValue
+                    hours={durationHours}
+                    minutes={durationMinutes}
+                    durationUnknown={durationUnknown}
+                    error={showDurationError}
+                  />
+                </Pressable>
+              </FormRow>
+            </FormBox>
+          )}
 
           <FormBox>
             <Controller
@@ -498,6 +562,70 @@ function FormRow({
   );
 }
 
+function DueDateValue({ dueDate, error }: { dueDate: string; error: boolean }) {
+  const filled = hasDueDate(dueDate);
+  const dateText = formatDueDateDisplay(dueDate);
+  const countdown = formatDueCountdown(dueDate);
+  const dateColor = error ? colors.secondary : filled ? colors.gray[600] : colors.gray[400];
+  const countdownColor = error ? colors.secondary : colors.gray[400];
+
+  return (
+    <View style={styles.queueDueValue}>
+      <Typography variant="bodyM" color={dateColor} numberOfLines={1}>
+        {dateText}
+      </Typography>
+      <Typography variant="bodyM" color={dateColor}>
+        까지
+      </Typography>
+      <View style={styles.queueVerticalDivider} />
+      <Typography variant="bodyM" color={countdownColor}>
+        {countdown}
+      </Typography>
+    </View>
+  );
+}
+
+function DurationValue({
+  hours,
+  minutes,
+  durationUnknown,
+  error,
+}: {
+  hours: number;
+  minutes: number;
+  durationUnknown: boolean;
+  error: boolean;
+}) {
+  if (durationUnknown) {
+    return (
+      <Typography
+        variant="bodyM"
+        color={error ? colors.secondary : colors.gray[600]}
+        numberOfLines={1}
+      >
+        {UNKNOWN_DURATION_LABEL}
+      </Typography>
+    );
+  }
+
+  const filled = hours > 0 || minutes > 0;
+  const textColor = error ? colors.secondary : filled ? colors.gray[600] : colors.gray[400];
+
+  return (
+    <View style={styles.durationValue}>
+      <Typography variant="bodyM" color={textColor}>
+        약
+      </Typography>
+      <Typography variant="bodyM" color={textColor} numberOfLines={1}>
+        {formatDurationInline(hours, minutes)}
+      </Typography>
+      <Typography variant="bodyM" color={textColor}>
+        소요
+      </Typography>
+    </View>
+  );
+}
+
 function DateValue({
   mode,
   value,
@@ -681,8 +809,8 @@ const styles = StyleSheet.create({
   addPersonalTag: {
     minHeight: 20,
     justifyContent: 'center',
-    paddingHorizontal: 5,
-    paddingVertical: 1,
+    paddingHorizontal: ADD_TAG_PADDING_H,
+    paddingVertical: ADD_TAG_PADDING_V,
     borderRadius: radius.xs,
     backgroundColor: colors.gray[200],
     opacity: 0.5,
@@ -754,7 +882,7 @@ const styles = StyleSheet.create({
     width: FIELD_LABEL_WIDTH,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
+    gap: LABEL_GROUP_GAP,
   },
   requiredMark: {
     lineHeight: 18,
@@ -778,6 +906,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     gap: spacing[2],
+  },
+  queueDueValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: spacing[1],
+  },
+  durationValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: spacing[1],
+  },
+  queueVerticalDivider: {
+    width: 1,
+    height: spacing[4],
+    backgroundColor: colors.gray[200],
   },
   valueInput: {
     ...typography.bodyM,
@@ -875,7 +1020,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing[3],
     paddingRight: spacing[3],
-    paddingVertical: spacing[2] - 2,
+    paddingVertical: CHIP_PADDING_V,
     borderRadius: radius.xs,
     backgroundColor: colors.gray[50],
   },
@@ -901,16 +1046,16 @@ const styles = StyleSheet.create({
   },
   chipCloseForward: {
     position: 'absolute',
-    width: 10,
-    height: 1,
+    width: CHIP_CLOSE_LINE_WIDTH,
+    height: CHIP_CLOSE_LINE_HEIGHT,
     borderRadius: radius.full,
     backgroundColor: colors.gray[300],
     transform: [{ rotate: '45deg' }],
   },
   chipCloseBackward: {
     position: 'absolute',
-    width: 10,
-    height: 1,
+    width: CHIP_CLOSE_LINE_WIDTH,
+    height: CHIP_CLOSE_LINE_HEIGHT,
     borderRadius: radius.full,
     backgroundColor: colors.gray[300],
     transform: [{ rotate: '-45deg' }],

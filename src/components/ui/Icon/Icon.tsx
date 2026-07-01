@@ -79,6 +79,8 @@ function renderIcon(name: IconProps['name'], color: string, variant: IconProps['
       return <Setting color={color} />;
     case 'warning':
       return variant === 'badge' ? <WarningBadge /> : <Warning color={color} />;
+    case 'refresh':
+      return <Refresh color={color} />;
     default:
       return null;
   }
@@ -334,6 +336,15 @@ function Setting({ color }: { color: string }) {
     <G stroke={color} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
       <Circle cx={12} cy={12} r={3.2} />
       <Path d="M12 4.4V6.1M12 17.9V19.6M4.4 12H6.1M17.9 12H19.6M6.6 6.6L7.8 7.8M16.2 16.2L17.4 17.4M17.4 6.6L16.2 7.8M7.8 16.2L6.6 17.4" />
+    </G>
+  );
+}
+
+function Refresh({ color }: { color: string }) {
+  return (
+    <G stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M20 12a8 8 0 1 0-2.3 5.6" />
+      <Polyline points="20 4 20 12 12 12" />
     </G>
   );
 }

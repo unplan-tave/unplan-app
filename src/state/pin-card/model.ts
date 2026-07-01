@@ -26,6 +26,11 @@ export interface PinCardFormValues {
   repeatEnabled: boolean;
   recurrence: RecurrenceValue | null;
   reminderEnabled: boolean;
+  dueDate: string;
+  durationHours: number;
+  durationMinutes: number;
+  durationUnknown: boolean;
+  recommendationAcknowledged: boolean;
 }
 
 export interface PinCardItem extends PinCardFormValues {
@@ -86,6 +91,11 @@ export function createDefaultPinCardFormValues(): PinCardFormValues {
     repeatEnabled: false,
     recurrence: null,
     reminderEnabled: false,
+    dueDate: '',
+    durationHours: 0,
+    durationMinutes: 0,
+    durationUnknown: false,
+    recommendationAcknowledged: false,
   };
 }
 
@@ -156,6 +166,11 @@ export function clonePinCardFormValues(values: PinCardFormValues): PinCardFormVa
         ? null
         : { ...values.recurrence, byDay: [...values.recurrence.byDay] },
     reminderEnabled: values.reminderEnabled,
+    dueDate: values.dueDate ?? '',
+    durationHours: values.durationHours ?? 0,
+    durationMinutes: values.durationMinutes ?? 0,
+    durationUnknown: values.durationUnknown ?? false,
+    recommendationAcknowledged: values.recommendationAcknowledged ?? false,
   };
 }
 

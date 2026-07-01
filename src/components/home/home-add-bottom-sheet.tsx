@@ -8,6 +8,13 @@ import {
   type PersonalTagOption,
   type PinCardItem,
 } from '@/state/pin-card/model';
+import {
+  formatDueCountdown,
+  formatDueDateDisplay,
+  formatDurationInline,
+  hasDueDate,
+  UNKNOWN_DURATION_LABEL,
+} from '@/state/pin-card/queue';
 
 import { TimelineCard } from './timeline-card';
 
@@ -63,10 +70,7 @@ export function HomeAddBottomSheet({
             <View style={styles.recommendList}>
               {recommendations.map((item) => {
                 const { card, conditionTag, personalTags } = item;
-                const timeLabel =
-                  card.timeFilled && card.timeStart && card.timeEnd
-                    ? `${card.timeStart} - ${card.timeEnd}`
-                    : card.dateStart || '';
+                const timeLabel = getQueueRecommendationRange(card);
 
                 return (
                   <TimelineCard
@@ -118,12 +122,28 @@ export function HomeAddBottomSheet({
   );
 }
 
+function getQueueRecommendationRange(card: PinCardItem) {
+  const dueLabel = hasDueDate(card.dueDate)
+    ? `${formatDueDateDisplay(card.dueDate)} ${formatDueCountdown(card.dueDate)}`
+    : '마감일 미정';
+
+  if (card.durationUnknown) {
+    return `${dueLabel} · ${UNKNOWN_DURATION_LABEL}`;
+  }
+
+  if (card.durationHours > 0 || card.durationMinutes > 0) {
+    return `${dueLabel} · 약 ${formatDurationInline(card.durationHours, card.durationMinutes)}`;
+  }
+
+  return dueLabel;
+}
+
 const styles = StyleSheet.create({
   sheet: {
     gap: spacing[4],
     paddingHorizontal: spacing[5],
     paddingTop: spacing[3],
-    paddingBottom: spacing[16] - spacing[1],
+    paddingBottom: spacing[15],
   },
   content: {
     width: '100%',

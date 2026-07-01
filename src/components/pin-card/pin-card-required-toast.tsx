@@ -6,20 +6,27 @@ import { colors, radius, spacing } from '@/constants/theme';
 
 const TOAST_MAX_WIDTH = 353;
 const TOAST_ICON_SIZE = spacing[6];
+const TOAST_CONTENT_GAP = 10;
 
 export function PinCardToast({
   message,
   bottomOffset = 70.5,
+  variant = 'warning',
   onClose,
+  onConfirm,
 }: {
   message: string;
   bottomOffset?: number;
+  variant?: 'warning' | 'confirm';
   onClose: () => void;
+  onConfirm?: () => void;
 }) {
   return (
     <View style={[styles.toast, { bottom: bottomOffset }]}>
       <View style={styles.toastContent}>
-        <Icon name="warning" size={TOAST_ICON_SIZE} variant="badge" />
+        {variant === 'warning' ? (
+          <Icon name="warning" size={TOAST_ICON_SIZE} variant="badge" />
+        ) : null}
         <Typography
           variant="bodyM"
           color={colors.gray.white}
@@ -29,15 +36,29 @@ export function PinCardToast({
           {message}
         </Typography>
       </View>
-      <Pressable
-        accessibilityLabel="알림 닫기"
-        accessibilityRole="button"
-        hitSlop={8}
-        style={({ pressed }) => [styles.toastClose, pressed && styles.pressed]}
-        onPress={onClose}
-      >
-        <Icon name="cancel" size={TOAST_ICON_SIZE} color={colors.gray.white} />
-      </Pressable>
+      {variant === 'confirm' ? (
+        <Pressable
+          accessibilityLabel="알림 확인"
+          accessibilityRole="button"
+          hitSlop={8}
+          style={({ pressed }) => [styles.toastConfirm, pressed && styles.pressed]}
+          onPress={onConfirm ?? onClose}
+        >
+          <Typography variant="bodyM" color={colors.gray.white}>
+            확인
+          </Typography>
+        </Pressable>
+      ) : (
+        <Pressable
+          accessibilityLabel="알림 닫기"
+          accessibilityRole="button"
+          hitSlop={8}
+          style={({ pressed }) => [styles.toastClose, pressed && styles.pressed]}
+          onPress={onClose}
+        >
+          <Icon name="cancel" size={TOAST_ICON_SIZE} color={colors.gray.white} />
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -66,7 +87,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: TOAST_CONTENT_GAP,
   },
   toastText: {
     minWidth: 0,
@@ -77,6 +98,13 @@ const styles = StyleSheet.create({
     height: TOAST_ICON_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  toastConfirm: {
+    minWidth: spacing[10],
+    minHeight: spacing[8],
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing[2],
   },
   pressed: {
     opacity: 0.72,

@@ -15,6 +15,7 @@ export const spacing = {
   8: 32,
   10: 40,
   12: 48,
+  15: 60,
   16: 64,
 } as const;
 
