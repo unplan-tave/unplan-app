@@ -2,19 +2,20 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Keyboard, type KeyboardEvent, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
 import { DateOnlyGuideModal } from '@/components/pin-card/date-only-guide-modal';
 import { DateTimeBottomSheet } from '@/components/pin-card/date-time-bottom-sheet';
 import { LocationBottomSheet } from '@/components/pin-card/location-bottom-sheet';
 import { PinCardCreateHeader } from '@/components/pin-card/pin-card-create-header';
 import { PinCardForm } from '@/components/pin-card/pin-card-form';
-import { PinCardRequiredToast } from '@/components/pin-card/pin-card-required-toast';
+import { PinCardToast } from '@/components/pin-card/pin-card-required-toast';
 import { RepeatCustomBottomSheet } from '@/components/pin-card/repeat-custom-bottom-sheet';
 import { RepeatPresetBottomSheet } from '@/components/pin-card/repeat-preset-bottom-sheet';
 import { TagPickerSheet, type TagTab } from '@/components/pin-card/tag-picker-sheet';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
+import { MEMO_MAX_LENGTH } from '@/state/pin-card/model';
 import {
   type CardTab,
   type ConditionTagId,
@@ -50,7 +51,7 @@ export function PinCardCreateScreen() {
   const initialValues = useMemo(() => createDefaultPinCardFormValues(), []);
   const [activeTab, setActiveTab] = useState<CardTab>('pin');
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showTagFeedback, setShowTagFeedback] = useState(false);
   const [showTagErrorFeedback, setShowTagErrorFeedback] = useState(false);
   const [tagSheetTab, setTagSheetTab] = useState<TagTab | null>(null);
@@ -79,6 +80,9 @@ export function PinCardCreateScreen() {
   const deleteCard = usePinCardStore((store) => store.deleteCard);
   const discardDraft = usePinCardStore((store) => store.discardDraft);
   const draftMode = usePinCardStore((store) => store.draft?.mode ?? 'create');
+  const scrollRef = useRef<ScrollView>(null);
+  const isMemoFocusedRef = useRef(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const {
     control,
     handleSubmit,
@@ -171,16 +175,16 @@ export function PinCardCreateScreen() {
   ]);
 
   useEffect(() => {
-    if (!showToast) {
+    if (toastMessage == null) {
       return;
     }
 
     const timeoutId = setTimeout(() => {
-      setShowToast(false);
+      setToastMessage(null);
     }, 3_000);
 
     return () => clearTimeout(timeoutId);
-  }, [showToast]);
+  }, [toastMessage]);
 
   useEffect(() => {
     if (title === previousTitleRef.current) {
@@ -258,7 +262,7 @@ export function PinCardCreateScreen() {
 
   const handleInvalidSubmit = useCallback(() => {
     setHasSubmitted(true);
-    setShowToast(true);
+    setToastMessage('아직 입력되지 않은 필수 정보가 있어요!');
   }, []);
 
   const handleOpenDateTimeSheet = useCallback((focus: TimeFocus = 'start') => {
@@ -464,6 +468,55 @@ export function PinCardCreateScreen() {
 
   const handleDone = handleSubmit(handleValidSubmit, handleInvalidSubmit);
 
+  const scrollMemoIntoView = useCallback(() => {
+    const scroll = () => scrollRef.current?.scrollToEnd({ animated: true });
+    requestAnimationFrame(scroll);
+    setTimeout(scroll, 100);
+  }, []);
+
+  const handleMemoFocus = useCallback(() => {
+    isMemoFocusedRef.current = true;
+    scrollMemoIntoView();
+  }, [scrollMemoIntoView]);
+
+  const handleMemoBlur = useCallback(() => {
+    isMemoFocusedRef.current = false;
+  }, []);
+
+  const handleMemoReachLimit = useCallback(() => {
+    setToastMessage(`${MEMO_MAX_LENGTH}자까지만 입력 가능해요!`);
+  }, []);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const handleKeyboardShow = (event: KeyboardEvent) => {
+      setKeyboardHeight(event.endCoordinates.height);
+
+      if (!isMemoFocusedRef.current) {
+        return;
+      }
+
+      const delay = Platform.OS === 'ios' ? (event.duration ?? 250) : 100;
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), delay);
+    };
+
+    const handleKeyboardHide = () => {
+      setKeyboardHeight(0);
+    };
+
+    const showSubscription = Keyboard.addListener(showEvent, handleKeyboardShow);
+    const hideSubscription = Keyboard.addListener(hideEvent, handleKeyboardHide);
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  const toastBottomOffset = keyboardHeight > 0 ? keyboardHeight + spacing[3] : 70.5;
+
   return (
     <ScreenLayout
       backgroundColor={colors.surface}
@@ -481,9 +534,13 @@ export function PinCardCreateScreen() {
         />
 
         <ScrollView
+          ref={scrollRef}
+          automaticallyAdjustKeyboardInsets
+          keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
+          style={styles.scroll}
         >
           <PinCardForm
             control={control}
@@ -509,11 +566,13 @@ export function PinCardCreateScreen() {
             onToggleRepeat={handleToggleRepeat}
             onPressRepeatChip={handlePressRepeatChip}
             onRemoveRepeat={handleRemoveRepeat}
+            onMemoBlur={handleMemoBlur}
+            onMemoFocus={handleMemoFocus}
+            onMemoReachLimit={handleMemoReachLimit}
             // onToggleReminder={handleToggleReminder}
           />
         </ScrollView>
 
-        {showToast ? <PinCardRequiredToast onClose={() => setShowToast(false)} /> : null}
         <TagPickerSheet
           visible={tagSheetTab !== null}
           activeTab={tagSheetTab ?? 'condition'}
@@ -569,6 +628,13 @@ export function PinCardCreateScreen() {
           onDeleteAllSearches={deleteAllLocationRecentSearches}
         />
       </View>
+      {toastMessage != null ? (
+        <PinCardToast
+          bottomOffset={toastBottomOffset}
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
+        />
+      ) : null}
     </ScreenLayout>
   );
 }
@@ -588,6 +654,10 @@ function getScheduleDate(dateMode: PinCardFormValues['dateMode'], dateStart: str
 
 const styles = StyleSheet.create({
   screenContent: {
+    flex: 1,
+    position: 'relative',
+  },
+  scroll: {
     flex: 1,
   },
   canvas: {
