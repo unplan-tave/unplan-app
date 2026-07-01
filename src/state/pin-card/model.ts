@@ -8,6 +8,8 @@ export type DateMode = 'empty' | 'single' | 'range';
 export type TimeFocus = 'start' | 'end';
 export type ConditionTagId = 'urgent' | 'core' | 'brain' | 'daily' | 'labor' | 'rest';
 
+export const MEMO_MAX_LENGTH = 2000;
+
 export interface PinCardFormValues {
   title: string;
   conditionTagId: ConditionTagId;

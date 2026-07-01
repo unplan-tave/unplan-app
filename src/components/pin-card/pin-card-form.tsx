@@ -1,5 +1,6 @@
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Controller, type Control } from 'react-hook-form';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Card } from '@/components/ui/Card';
 import { Tag } from '@/components/ui/Tag';
@@ -9,6 +10,7 @@ import {
   type CardTab,
   type ConditionTagOption,
   type DateMode,
+  MEMO_MAX_LENGTH,
   type PersonalTagOption,
   type PinCardFormValues,
   type RecurrenceValue,
@@ -50,6 +52,9 @@ export function PinCardForm({
   onToggleRepeat,
   onPressRepeatChip,
   onRemoveRepeat,
+  onMemoFocus,
+  onMemoBlur,
+  onMemoReachLimit,
   // onToggleReminder,
 }: {
   control: Control<PinCardFormValues>;
@@ -75,6 +80,9 @@ export function PinCardForm({
   onToggleRepeat: () => void;
   onPressRepeatChip: () => void;
   onRemoveRepeat: () => void;
+  onMemoFocus?: () => void;
+  onMemoBlur?: () => void;
+  onMemoReachLimit?: () => void;
   // onToggleReminder: () => void;
 }) {
   return (
@@ -222,38 +230,134 @@ export function PinCardForm({
           </FormBox>
 
           <FormBox>
-            <Controller
+            <MemoField
               control={control}
-              name="memo"
-              render={({ field: { onChange, value } }) =>
-                value.length > 0 ? (
-                  <TextInput
-                    accessibilityLabel="메모 입력"
-                    value={value}
-                    placeholder="메모를 입력해주세요"
-                    placeholderTextColor={colors.gray[400]}
-                    multiline
-                    style={styles.memoFilledInput}
-                    onChangeText={onChange}
-                  />
-                ) : (
-                  <FormRow label="메모">
-                    <TextInput
-                      accessibilityLabel="메모 입력"
-                      value={value}
-                      placeholder="메모를 입력해주세요"
-                      placeholderTextColor={colors.gray[400]}
-                      style={styles.valueInput}
-                      onChangeText={onChange}
-                    />
-                  </FormRow>
-                )
-              }
+              onBlur={onMemoBlur}
+              onFocus={onMemoFocus}
+              onReachLimit={onMemoReachLimit}
             />
           </FormBox>
         </View>
       </View>
     </>
+  );
+}
+
+function MemoField({
+  control,
+  onFocus,
+  onBlur,
+  onReachLimit,
+}: {
+  control: Control<PinCardFormValues>;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  onReachLimit?: () => void;
+}) {
+  const inputRef = useRef<TextInput>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const isExpanded = isFocused;
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    onFocus?.();
+  };
+
+  useLayoutEffect(() => {
+    if (!isExpanded) {
+      return;
+    }
+
+    inputRef.current?.focus();
+    onFocus?.();
+  }, [isExpanded, onFocus]);
+
+  return (
+    <Controller
+      control={control}
+      name="memo"
+      render={({ field: { onChange, value, onBlur: fieldOnBlur } }) => {
+        const hasMemo = value.trim().length > 0;
+        const showFilledLayout = hasMemo || isExpanded;
+
+        const revertToDefault = () => {
+          onChange('');
+          setIsFocused(false);
+          inputRef.current?.blur();
+          Keyboard.dismiss();
+          onBlur?.();
+          fieldOnBlur();
+        };
+
+        const handleBlur = () => {
+          if (value.trim().length === 0) {
+            onChange('');
+          }
+          setIsFocused(false);
+          onBlur?.();
+          fieldOnBlur();
+        };
+
+        const handleChangeText = (nextValue: string) => {
+          const wasUnderLimit = value.length < MEMO_MAX_LENGTH;
+          const cappedValue = nextValue.slice(0, MEMO_MAX_LENGTH);
+          onChange(cappedValue);
+
+          if (wasUnderLimit && cappedValue.length === MEMO_MAX_LENGTH) {
+            onReachLimit?.();
+          }
+        };
+
+        const handleEnterOnEmpty = () => {
+          if (value.trim().length === 0) {
+            revertToDefault();
+          }
+        };
+
+        if (!showFilledLayout) {
+          return (
+            <FormRow label="메모">
+              <Pressable
+                accessibilityLabel="메모 입력"
+                accessibilityRole="button"
+                style={styles.memoDefaultPressable}
+                onPress={handleFocus}
+              >
+                <Typography
+                  variant="bodyM"
+                  color={colors.gray[400]}
+                  style={styles.memoDefaultPlaceholder}
+                >
+                  메모를 입력해주세요
+                </Typography>
+              </Pressable>
+            </FormRow>
+          );
+        }
+
+        return (
+          <TextInput
+            ref={inputRef}
+            accessibilityLabel="메모 입력"
+            autoFocus
+            value={value}
+            placeholder="메모를 입력해주세요"
+            placeholderTextColor={colors.gray[400]}
+            multiline
+            style={styles.memoFilledInput}
+            textAlignVertical="top"
+            onChangeText={handleChangeText}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onKeyPress={({ nativeEvent }) => {
+              if (nativeEvent.key === 'Enter') {
+                handleEnterOnEmpty();
+              }
+            }}
+          />
+        );
+      }}
+    />
   );
 }
 
@@ -722,12 +826,26 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     paddingVertical: spacing[2],
   },
+  memoDefaultPressable: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: spacing[6],
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    paddingVertical: spacing[2],
+    paddingHorizontal: spacing[3],
+    borderRadius: radius.sm,
+  },
+  memoDefaultPlaceholder: {
+    textAlign: 'right',
+  },
   memoFilledInput: {
     ...typography.bodyM,
     width: '100%',
-    minHeight: 56,
-    paddingVertical: spacing[3],
-    paddingHorizontal: spacing[1],
+    minHeight: spacing[6],
+    paddingTop: spacing[3],
+    paddingBottom: spacing[3],
+    paddingLeft: spacing[1],
     color: colors.gray[600],
     textAlignVertical: 'top',
   },
