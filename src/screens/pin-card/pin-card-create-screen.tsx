@@ -11,7 +11,6 @@ import { LocationBottomSheet } from '@/components/pin-card/location-bottom-sheet
 import { PinCardCreateHeader } from '@/components/pin-card/pin-card-create-header';
 import { PinCardForm } from '@/components/pin-card/pin-card-form';
 import { PinCardToast } from '@/components/pin-card/pin-card-required-toast';
-import { RecommendTimeModal } from '@/components/pin-card/recommend-time-modal';
 import { RepeatCustomBottomSheet } from '@/components/pin-card/repeat-custom-bottom-sheet';
 import { RepeatPresetBottomSheet } from '@/components/pin-card/repeat-preset-bottom-sheet';
 import { TagPickerSheet, type TagTab } from '@/components/pin-card/tag-picker-sheet';
@@ -33,10 +32,8 @@ import {
 } from '@/state/pin-card/model';
 import {
   type DueDurationDraft,
-  getMockRecommendationLabel,
   hasDueDate,
-  hasQueueDuration,
-  isDueDateInPast,
+  hasQueueDurationOrUnknown,
   isQueueFormComplete,
 } from '@/state/pin-card/queue';
 import {
@@ -76,7 +73,6 @@ export function PinCardCreateScreen() {
   );
   const [isDateTimeSheetVisible, setIsDateTimeSheetVisible] = useState(false);
   const [isDueDurationSheetVisible, setIsDueDurationSheetVisible] = useState(false);
-  const [isRecommendModalVisible, setIsRecommendModalVisible] = useState(false);
   const [dateTimeFocus, setDateTimeFocus] = useState<TimeFocus>('start');
   const [dateOnlyGuideVisible, setDateOnlyGuideVisible] = useState(false);
   const [repeatSheetMode, setRepeatSheetMode] = useState<RepeatSheetMode>('none');
@@ -129,7 +125,7 @@ export function PinCardCreateScreen() {
   const dueDate = watch('dueDate');
   const durationHours = watch('durationHours');
   const durationMinutes = watch('durationMinutes');
-  const recommendationAcknowledged = watch('recommendationAcknowledged');
+  const durationUnknown = watch('durationUnknown');
   const primaryTag = getConditionTagById(conditionTagId);
   const selectedPersonalTags = personalTags.filter((tag) => personalTagIds.includes(tag.id));
   const previousTitleRef = useRef(title);
@@ -139,13 +135,18 @@ export function PinCardCreateScreen() {
   const isDateMissing = dateMode === 'empty';
   const isTimeMissing = !timeFilled;
   const isDueMissing = !hasDueDate(dueDate);
-  const isDurationMissing = !hasQueueDuration(durationHours, durationMinutes);
+  const isDurationMissing = !hasQueueDurationOrUnknown(
+    durationHours,
+    durationMinutes,
+    durationUnknown,
+  );
   const isPinRequiredComplete = !isTitleMissing && !isDateMissing && !isTimeMissing;
   const isQueueRequiredComplete = isQueueFormComplete({
     title,
     dueDate,
     durationHours,
     durationMinutes,
+    durationUnknown,
   });
   const isRequiredComplete =
     activeTab === 'queue' ? isQueueRequiredComplete : isPinRequiredComplete;
@@ -156,7 +157,6 @@ export function PinCardCreateScreen() {
     activeTab === 'pin' && hasSubmitted && (Boolean(errors.timeFilled) || isTimeMissing);
   const shouldShowDueError = activeTab === 'queue' && hasSubmitted && isDueMissing;
   const shouldShowDurationError = activeTab === 'queue' && hasSubmitted && isDurationMissing;
-  const recommendationLabel = recommendationAcknowledged ? getMockRecommendationLabel() : undefined;
   const tagFeedback = showTagErrorFeedback ? 'error' : showTagFeedback ? 'success' : 'none';
 
   useEffect(() => {
@@ -193,7 +193,7 @@ export function PinCardCreateScreen() {
       dueDate,
       durationHours,
       durationMinutes,
-      recommendationAcknowledged,
+      durationUnknown,
     });
   }, [
     conditionTagId,
@@ -203,11 +203,11 @@ export function PinCardCreateScreen() {
     dueDate,
     durationHours,
     durationMinutes,
+    durationUnknown,
     location,
     locationDetail,
     memo,
     personalTagIds,
-    recommendationAcknowledged,
     repeatEnabled,
     recurrence,
     timeEnd,
@@ -297,7 +297,13 @@ export function PinCardCreateScreen() {
 
   const handleValidSubmit = useCallback(
     (values: PinCardFormValues) => {
-      saveDraft(values);
+      const saved = saveDraft(values);
+
+      if (saved != null) {
+        router.replace(`/pin-card/view?cardId=${saved.id}`);
+        return;
+      }
+
       router.back();
     },
     [saveDraft],
@@ -369,10 +375,15 @@ export function PinCardCreateScreen() {
         shouldDirty: true,
         shouldValidate: hasSubmitted,
       });
+      setValue('durationUnknown', draft.durationUnknown, {
+        shouldDirty: true,
+        shouldValidate: hasSubmitted,
+      });
       updateDraftValues({
         dueDate: draft.dueDate,
         durationHours: draft.durationHours,
         durationMinutes: draft.durationMinutes,
+        durationUnknown: draft.durationUnknown,
       });
       setIsDueDurationSheetVisible(false);
     },
@@ -383,31 +394,12 @@ export function PinCardCreateScreen() {
     setIsDueDurationSheetVisible(true);
   }, []);
 
-  const canShowRecommendation = useCallback(() => {
-    return (
-      hasDueDate(dueDate) &&
-      hasQueueDuration(durationHours, durationMinutes) &&
-      !isDueDateInPast(dueDate)
-    );
-  }, [dueDate, durationHours, durationMinutes]);
-
-  const handleOpenRecommendation = useCallback(() => {
-    if (!canShowRecommendation()) {
-      setToast({
-        message: '시간대 추천이 어려울 수 있어요!',
-        variant: 'confirm',
-      });
-      return;
-    }
-
-    setIsRecommendModalVisible(true);
-  }, [canShowRecommendation]);
-
-  const handleConfirmRecommendation = useCallback(() => {
-    setValue('recommendationAcknowledged', true, { shouldDirty: true });
-    updateDraftValues({ recommendationAcknowledged: true });
-    setIsRecommendModalVisible(false);
-  }, [setValue, updateDraftValues]);
+  const handleDurationUnknown = useCallback(() => {
+    setToast({
+      message: '시간대 추천이 어려울 수 있어요!',
+      variant: 'confirm',
+    });
+  }, []);
 
   const scheduleDate = getScheduleDate(dateMode, dateStart);
 
@@ -659,15 +651,13 @@ export function PinCardCreateScreen() {
             dueDate={dueDate}
             durationHours={durationHours}
             durationMinutes={durationMinutes}
-            recommendationAcknowledged={recommendationAcknowledged}
-            recommendationLabel={recommendationLabel}
+            durationUnknown={durationUnknown}
             tagFeedback={tagFeedback}
             onChangeTab={handleChangeTab}
             onOpenConditionTag={() => setTagSheetTab('condition')}
             onOpenPersonalTags={() => setTagSheetTab('personal')}
             onOpenDateTime={handleOpenDateTimeSheet}
             onOpenDueDuration={handleOpenDueDurationSheet}
-            onOpenRecommendation={handleOpenRecommendation}
             onOpenLocation={handleOpenLocationSheet}
             onToggleRepeat={handleToggleRepeat}
             onPressRepeatChip={handlePressRepeatChip}
@@ -717,14 +707,11 @@ export function PinCardCreateScreen() {
             dueDate,
             durationHours,
             durationMinutes,
+            durationUnknown,
           }}
           onClose={() => setIsDueDurationSheetVisible(false)}
           onDone={handleSaveDueDuration}
-        />
-        <RecommendTimeModal
-          visible={isRecommendModalVisible}
-          onClose={() => setIsRecommendModalVisible(false)}
-          onConfirm={handleConfirmRecommendation}
+          onDurationUnknown={handleDurationUnknown}
         />
         <RepeatPresetBottomSheet
           visible={repeatSheetMode === 'preset'}
