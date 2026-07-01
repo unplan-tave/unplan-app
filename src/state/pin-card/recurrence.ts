@@ -322,14 +322,33 @@ function estimateUntilByCount(value: RecurrenceValue, scheduleDate: string) {
       nextDate.setDate(nextDate.getDate() + occurrences * value.interval * 7);
       break;
     case 'MONTHLY':
-      nextDate.setMonth(nextDate.getMonth() + occurrences * value.interval);
+      addMonthsClamped(nextDate, occurrences * value.interval);
       break;
     case 'YEARLY':
-      nextDate.setFullYear(nextDate.getFullYear() + occurrences * value.interval);
+      addYearsClamped(nextDate, occurrences * value.interval);
       break;
   }
 
   return formatDateValue(nextDate);
+}
+
+function addMonthsClamped(date: Date, months: number) {
+  const originalDay = date.getDate();
+  const targetMonthIndex = date.getMonth() + months;
+  const targetYear = date.getFullYear() + Math.floor(targetMonthIndex / 12);
+  const targetMonth = ((targetMonthIndex % 12) + 12) % 12;
+  const lastDayOfTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+
+  date.setFullYear(targetYear, targetMonth, Math.min(originalDay, lastDayOfTargetMonth));
+}
+
+function addYearsClamped(date: Date, years: number) {
+  const originalDay = date.getDate();
+  const targetYear = date.getFullYear() + years;
+  const targetMonth = date.getMonth();
+  const lastDayOfTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+
+  date.setFullYear(targetYear, targetMonth, Math.min(originalDay, lastDayOfTargetMonth));
 }
 
 function parseDateValue(dateValue: string) {

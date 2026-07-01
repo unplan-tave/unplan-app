@@ -69,9 +69,17 @@ export function BottomSheet({
     };
 
     const handleKeyboardShow = (event: KeyboardEvent) => {
+      if (Platform.OS === 'android') {
+        return;
+      }
+
       animateKeyboard(event.endCoordinates.height, Platform.OS === 'ios' ? event.duration : 250);
     };
     const handleKeyboardHide = (event: KeyboardEvent) => {
+      if (Platform.OS === 'android') {
+        return;
+      }
+
       animateKeyboard(0, Platform.OS === 'ios' ? event.duration : 250);
     };
 

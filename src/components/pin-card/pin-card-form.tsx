@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Controller, type Control } from 'react-hook-form';
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
@@ -263,15 +263,6 @@ function MemoField({
     onFocus?.();
   };
 
-  useLayoutEffect(() => {
-    if (!isExpanded) {
-      return;
-    }
-
-    inputRef.current?.focus();
-    onFocus?.();
-  }, [isExpanded, onFocus]);
-
   return (
     <Controller
       control={control}
@@ -321,7 +312,7 @@ function MemoField({
                 accessibilityLabel="메모 입력"
                 accessibilityRole="button"
                 style={styles.memoDefaultPressable}
-                onPress={handleFocus}
+                onPress={() => setIsFocused(true)}
               >
                 <Typography
                   variant="bodyM"
