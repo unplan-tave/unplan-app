@@ -163,39 +163,82 @@ export function combineIntervalDigits(hundreds: number, tens: number, ones: numb
   return clampRecurrenceInterval(hundreds * 100 + tens * 10 + ones);
 }
 
-export function formatRecurrenceSummary(value: RecurrenceValue) {
-  const parts: string[] = [];
+export function normalizeRecurrenceForCustomEdit(
+  value: RecurrenceValue,
+  scheduleDate: string,
+): RecurrenceValue {
+  if (value.preset === 'custom') {
+    return cloneRecurrenceValue(value);
+  }
 
+  const presetValue = createPresetRecurrence(value.preset, scheduleDate);
+
+  return {
+    ...presetValue,
+    preset: 'custom',
+    endType: value.endType,
+    occurrenceCount: value.occurrenceCount,
+    until: value.until,
+    byDay: value.byDay.length > 0 ? [...value.byDay] : presetValue.byDay,
+  };
+}
+
+function formatRecurrenceCycleLabel(value: RecurrenceValue) {
   if (value.preset === 'daily') {
-    parts.push('매일');
-  } else if (value.preset === 'weekly') {
-    parts.push('매주');
-  } else if (value.preset === 'monthly') {
-    parts.push('매월');
-  } else if (value.preset === 'yearly') {
-    parts.push('매년');
-  } else {
-    const unit = RECURRENCE_FREQ_OPTIONS.find((option) => option.freq === value.freq)?.unitLabel;
-
-    if (unit != null) {
-      parts.push(`${value.interval}${unit}마다`);
-    }
-
-    if (value.freq === 'WEEKLY' && value.byDay.length > 0) {
-      const dayLabels = [...value.byDay]
-        .sort((first, second) => first - second)
-        .map((day) => KOREAN_WEEKDAY_LABELS[day])
-        .join(', ');
-
-      parts.push(`(${dayLabels})`);
-    }
+    return '매일';
   }
 
+  if (value.preset === 'weekly') {
+    return '매주';
+  }
+
+  if (value.preset === 'monthly') {
+    return '매월';
+  }
+
+  if (value.preset === 'yearly') {
+    return '매년';
+  }
+
+  const unit = RECURRENCE_FREQ_OPTIONS.find((option) => option.freq === value.freq)?.unitLabel;
+
+  return unit != null ? `${value.interval}${unit}마다` : null;
+}
+
+function formatRecurrenceWeeklyDetailLabel(value: RecurrenceValue) {
+  const isWeekly =
+    value.preset === 'weekly' || (value.preset === 'custom' && value.freq === 'WEEKLY');
+
+  if (!isWeekly || value.byDay.length === 0) {
+    return null;
+  }
+
+  const dayLabels = [...value.byDay]
+    .sort((first, second) => first - second)
+    .map((day) => KOREAN_WEEKDAY_LABELS[day])
+    .join(', ');
+
+  return `(${dayLabels})`;
+}
+
+function formatRecurrenceEndDetailLabel(value: RecurrenceValue) {
   if (value.endType === 'count') {
-    parts.push(`${value.occurrenceCount}회 반복`);
-  } else if (value.endType === 'until') {
-    parts.push(`${value.until}까지`);
+    return `${value.occurrenceCount}회 반복`;
   }
+
+  if (value.endType === 'until') {
+    return `${value.until}까지`;
+  }
+
+  return null;
+}
+
+export function formatRecurrenceSummary(value: RecurrenceValue) {
+  const parts = [
+    formatRecurrenceCycleLabel(value),
+    formatRecurrenceWeeklyDetailLabel(value),
+    formatRecurrenceEndDetailLabel(value),
+  ].filter((part): part is string => part != null);
 
   return parts.join(' · ');
 }
@@ -203,43 +246,30 @@ export function formatRecurrenceSummary(value: RecurrenceValue) {
 export function formatRecurrenceChipSegments(value: RecurrenceValue) {
   const segments: Array<{ text: string; muted: boolean }> = [];
 
-  if (value.preset === 'daily') {
-    segments.push({ text: '매일', muted: false });
-  } else if (value.preset === 'weekly') {
-    segments.push({ text: '매주', muted: false });
-  } else if (value.preset === 'monthly') {
-    segments.push({ text: '매월', muted: false });
-  } else if (value.preset === 'yearly') {
-    segments.push({ text: '매년', muted: false });
-  } else {
-    const unit = RECURRENCE_FREQ_OPTIONS.find((option) => option.freq === value.freq)?.unitLabel;
-
-    if (unit != null) {
-      segments.push({ text: `${value.interval}${unit}마다`, muted: false });
+  const pushMutedDot = () => {
+    if (segments.length > 0) {
+      segments.push({ text: '∙', muted: true });
     }
+  };
 
-    if (value.freq === 'WEEKLY' && value.byDay.length > 0) {
-      const dayLabels = [...value.byDay]
-        .sort((first, second) => first - second)
-        .map((day) => KOREAN_WEEKDAY_LABELS[day])
-        .join(', ');
+  const cycleLabel = formatRecurrenceCycleLabel(value);
 
-      segments.push({ text: `(${dayLabels})`, muted: false });
-    }
+  if (cycleLabel != null) {
+    segments.push({ text: cycleLabel, muted: false });
   }
 
-  if (value.endType === 'count') {
-    if (segments.length > 0) {
-      segments.push({ text: '∙', muted: true });
-    }
+  const weeklyDetail = formatRecurrenceWeeklyDetailLabel(value);
 
-    segments.push({ text: `${value.occurrenceCount}회 반복`, muted: false });
-  } else if (value.endType === 'until') {
-    if (segments.length > 0) {
-      segments.push({ text: '∙', muted: true });
-    }
+  if (weeklyDetail != null) {
+    pushMutedDot();
+    segments.push({ text: weeklyDetail, muted: false });
+  }
 
-    segments.push({ text: `${value.until}까지`, muted: false });
+  const endDetail = formatRecurrenceEndDetailLabel(value);
+
+  if (endDetail != null) {
+    pushMutedDot();
+    segments.push({ text: endDetail, muted: false });
   }
 
   return segments;

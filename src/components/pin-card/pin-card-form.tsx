@@ -201,7 +201,7 @@ export function PinCardForm({
                 onPress={onToggleRepeat}
               />
             </FormRow>
-            {repeatEnabled && recurrence != null ? (
+            {recurrence != null ? (
               <RepeatSummaryChip
                 recurrence={recurrence}
                 onPress={onPressRepeatChip}

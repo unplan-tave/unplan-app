@@ -338,14 +338,8 @@ export function PinCardCreateScreen() {
 
   const handlePressRepeatChip = useCallback(() => {
     setRepeatSheetOrigin('edit');
-
-    if (recurrence?.preset === 'custom') {
-      setRepeatSheetMode('custom');
-      return;
-    }
-
-    setRepeatSheetMode('preset');
-  }, [recurrence]);
+    setRepeatSheetMode('custom');
+  }, []);
 
   const handleCloseRepeatPresetSheet = useCallback(() => {
     setRepeatSheetMode('none');

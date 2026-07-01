@@ -9,6 +9,7 @@ import { getCalendarMonth } from '@/state/pin-card/model';
 import {
   combineIntervalDigits,
   isDateOnOrAfterSchedule,
+  normalizeRecurrenceForCustomEdit,
   type RecurrenceValue,
   RECURRENCE_END_OPTIONS,
   RECURRENCE_FREQ_OPTIONS,
@@ -43,8 +44,6 @@ export function RepeatCustomBottomSheet({
   const [draft, setDraft] = useState<RecurrenceValue>(value);
   const [openMenu, setOpenMenu] = useState<OpenMenu>('none');
   const [activePicker, setActivePicker] = useState<ActivePicker>('none');
-  const [intervalTouched, setIntervalTouched] = useState(false);
-  const [freqTouched, setFreqTouched] = useState(false);
   const [calendarBaseDate, setCalendarBaseDate] = useState(() => new Date());
 
   useEffect(() => {
@@ -52,18 +51,15 @@ export function RepeatCustomBottomSheet({
       return;
     }
 
-    const isEditing = value.preset === 'custom';
+    const normalized = normalizeRecurrenceForCustomEdit(value, scheduleDate);
 
     setDraft({
-      ...value,
-      preset: 'custom',
-      byDay: [...value.byDay],
+      ...normalized,
+      byDay: [...normalized.byDay],
     });
     setOpenMenu('none');
     setActivePicker('none');
-    setIntervalTouched(isEditing);
-    setFreqTouched(isEditing);
-    setCalendarBaseDate(getInitialCalendarBaseDate(value.until || scheduleDate));
+    setCalendarBaseDate(getInitialCalendarBaseDate(normalized.until || scheduleDate));
   }, [scheduleDate, value, visible]);
 
   const calendar = getCalendarMonth(calendarBaseDate);
@@ -104,7 +100,6 @@ export function RepeatCustomBottomSheet({
 
   const handleIntervalDigitChange = useCallback(
     (column: 'hundreds' | 'tens' | 'ones', digit: number) => {
-      setIntervalTouched(true);
       setDraft((prev) => {
         const current = splitIntervalDigits(prev.interval);
 
@@ -143,11 +138,9 @@ export function RepeatCustomBottomSheet({
     onDone({
       ...draft,
       preset: 'custom',
-      interval: intervalTouched ? draft.interval : 1,
-      freq: freqTouched ? draft.freq : 'DAILY',
-      byDay: (freqTouched ? draft.freq : 'DAILY') === 'WEEKLY' ? draft.byDay : [],
+      byDay: draft.freq === 'WEEKLY' ? draft.byDay : [],
     });
-  }, [draft, freqTouched, intervalTouched, onDone]);
+  }, [draft, onDone]);
 
   return (
     <BottomSheet visible={visible} contentStyle={styles.sheet} onClose={onClose}>
@@ -209,11 +202,10 @@ export function RepeatCustomBottomSheet({
                 onPress={() => {
                   setOpenMenu('none');
                   setActivePicker('interval');
-                  setIntervalTouched(true);
                 }}
               >
                 <Typography variant="bodyM" color={colors.gray[900]} align="center">
-                  {intervalTouched ? String(draft.interval) : ''}
+                  {String(draft.interval)}
                 </Typography>
               </Pressable>
               <Pressable
@@ -226,7 +218,7 @@ export function RepeatCustomBottomSheet({
                 }}
               >
                 <Typography variant="bodyM" color={colors.gray[900]}>
-                  {freqTouched ? freqLabel : ''}
+                  {freqLabel}
                 </Typography>
                 <Icon name="arrowDown" size={16} color={colors.gray[600]} />
               </Pressable>
@@ -250,7 +242,6 @@ export function RepeatCustomBottomSheet({
                           ? [new Date().getDay()]
                           : prev.byDay,
                     }));
-                    setFreqTouched(true);
                     setOpenMenu('none');
                   }}
                 >
@@ -274,7 +265,7 @@ export function RepeatCustomBottomSheet({
             />
           ) : null}
 
-          {draft.freq === 'WEEKLY' && freqTouched ? (
+          {draft.freq === 'WEEKLY' ? (
             <View style={styles.weekdayRow}>
               {WEEKLY_DETAIL_DAYS.map((day) => {
                 const selected = draft.byDay.includes(day.value);
@@ -623,7 +614,7 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: spacing[2],
     padding: spacing[3],
-    borderRadius: radius.md,
+    borderRadius: radius.panel,
     backgroundColor: colors.alpha.white50,
   },
   panelHeader: {
@@ -648,8 +639,8 @@ const styles = StyleSheet.create({
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing[2],
-    borderRadius: radius.xs,
+    paddingHorizontal: spacing[2] - 1,
+    borderRadius: radius['2xs'],
     backgroundColor: colors.alpha.white50,
   },
   valueFieldActive: {
@@ -660,8 +651,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing[2],
     minHeight: 32,
-    paddingHorizontal: spacing[2],
-    borderRadius: radius.xs,
+    paddingHorizontal: spacing[2] - 1,
+    borderRadius: radius['2xs'],
     backgroundColor: colors.alpha.white50,
   },
   menuList: {
