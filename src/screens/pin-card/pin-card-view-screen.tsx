@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { PinCardCreateHeader } from '@/components/pin-card/pin-card-create-header';
@@ -31,8 +31,13 @@ export function PinCardViewScreen() {
     router.push(`/pin-card/card-detail?cardId=${cardId}`);
   }, [cardId]);
 
+  useEffect(() => {
+    if (card == null) {
+      router.back();
+    }
+  }, [card]);
+
   if (card == null) {
-    router.back();
     return null;
   }
 

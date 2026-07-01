@@ -131,7 +131,7 @@ export function HomeScreen() {
 
   const handleNavItemPress = useCallback((value: string) => {
     if (value === 'home') {
-      router.replace('/');
+      router.replace('/(tabs)');
       return;
     }
 
