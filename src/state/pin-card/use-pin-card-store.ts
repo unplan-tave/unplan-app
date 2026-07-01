@@ -35,6 +35,7 @@ interface PinCardStoreState {
   updateDraftValues: (values: Partial<PinCardFormValues>) => void;
   changeDraftCardType: (cardType: CardTab) => void;
   saveDraft: (values?: PinCardFormValues) => PinCardItem | null;
+  patchCard: (cardId: string, patch: Partial<PinCardFormValues>) => void;
   deleteCard: (cardId: string) => void;
   discardDraft: () => void;
 }
@@ -179,6 +180,20 @@ export const usePinCardStore = create<PinCardStoreState>()(
         }));
 
         return createdCard;
+      },
+      patchCard: (cardId, patch) => {
+        set((state) => ({
+          cards: state.cards.map((card) => {
+            if (card.id !== cardId) {
+              return card;
+            }
+
+            return updatePinCardItem(card, card.cardType, {
+              ...clonePinCardFormValues(card),
+              ...patch,
+            });
+          }),
+        }));
       },
       deleteCard: (cardId) => {
         set((state) => ({
