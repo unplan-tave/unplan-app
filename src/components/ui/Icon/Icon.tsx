@@ -12,6 +12,7 @@ export function Icon({
   size = 20,
   color = colors.gray[700],
   disabled = false,
+  variant = 'default',
   style,
 }: IconProps) {
   const iconColor = disabled ? colors.gray[300] : color;
@@ -19,14 +20,18 @@ export function Icon({
 
   return (
     <View style={[styles.container, { width, height: size }, style]}>
-      <Svg width={width} height={size} viewBox={getViewBox(name)} fill="none">
-        {renderIcon(name, iconColor)}
+      <Svg width={width} height={size} viewBox={getViewBox(name, variant)} fill="none">
+        {renderIcon(name, iconColor, variant)}
       </Svg>
     </View>
   );
 }
 
-function getViewBox(name: IconProps['name']) {
+function getViewBox(name: IconProps['name'], variant: IconProps['variant']) {
+  if (name === 'warning' && variant === 'badge') {
+    return '0 0 96 96';
+  }
+
   if (name === 'toggle') {
     return '0 0 52 40';
   }
@@ -34,7 +39,7 @@ function getViewBox(name: IconProps['name']) {
   return '0 0 24 24';
 }
 
-function renderIcon(name: IconProps['name'], color: string) {
+function renderIcon(name: IconProps['name'], color: string, variant: IconProps['variant']) {
   switch (name) {
     case 'plus':
       return <Plus color={color} />;
@@ -72,6 +77,8 @@ function renderIcon(name: IconProps['name'], color: string) {
       return <Condition color={color} />;
     case 'setting':
       return <Setting color={color} />;
+    case 'warning':
+      return variant === 'badge' ? <WarningBadge /> : <Warning color={color} />;
     default:
       return null;
   }
@@ -291,6 +298,34 @@ function Condition({ color }: { color: string }) {
         opacity={0.75}
       />
     </G>
+  );
+}
+
+function Warning({ color }: { color: string }) {
+  return (
+    <G stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <SvgLine x1={12} y1={9} x2={12} y2={13} color={color} strokeWidth={1.8} />
+      <Circle cx={12} cy={17} r={0.5} fill={color} stroke={color} strokeWidth={1} />
+    </G>
+  );
+}
+
+function WarningBadge() {
+  return (
+    <>
+      <Circle cx={48} cy={48} r={36} fill={colors.secondary} />
+      <Line
+        x1={48}
+        y1={29}
+        x2={48}
+        y2={49}
+        stroke={colors.gray.white}
+        strokeWidth={7}
+        strokeLinecap="round"
+      />
+      <Circle cx={48} cy={63} r={3.5} fill={colors.gray.white} />
+    </>
   );
 }
 

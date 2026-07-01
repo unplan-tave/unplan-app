@@ -18,12 +18,15 @@ export type IconName =
   | 'home'
   | 'list'
   | 'condition'
-  | 'setting';
+  | 'setting'
+  | 'warning';
 
 export interface IconProps {
   name: IconName;
   size?: number;
   color?: string;
   disabled?: boolean;
+  /** `warning` 전용 — badge는 채워진 원형 경고 아이콘 */
+  variant?: 'default' | 'badge';
   style?: StyleProp<ViewStyle>;
 }

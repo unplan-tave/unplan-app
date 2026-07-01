@@ -1,6 +1,7 @@
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
-import Svg, { Circle, Defs, Line, RadialGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
+import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 
@@ -67,7 +68,7 @@ function ModalContent({
   return (
     <>
       <View style={styles.body}>
-        <AlertIcon size={95.6} />
+        <Icon name="warning" variant="badge" size={95.6} />
         <View style={styles.textGroup}>
           <Typography variant="titleS" color={colors.gray[900]} align="center">
             시간이 정해지지 않은 일정인가요?
@@ -83,24 +84,6 @@ function ModalContent({
         <ActionButton label="이대로 저장하기" onPress={onKeep} />
       </View>
     </>
-  );
-}
-
-function AlertIcon({ size }: { size: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 96 96" fill="none">
-      <Circle cx={48} cy={48} r={36} fill={colors.secondary} />
-      <Line
-        x1={48}
-        y1={29}
-        x2={48}
-        y2={49}
-        stroke={colors.gray.white}
-        strokeWidth={7}
-        strokeLinecap="round"
-      />
-      <Circle cx={48} cy={63} r={3.5} fill={colors.gray.white} />
-    </Svg>
   );
 }
 

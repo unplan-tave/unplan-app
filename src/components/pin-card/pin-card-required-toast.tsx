@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 
@@ -7,16 +8,7 @@ export function PinCardRequiredToast({ onClose }: { onClose: () => void }) {
   return (
     <View style={styles.toast}>
       <View style={styles.toastContent}>
-        <View style={styles.warningIcon}>
-          <Typography
-            variant="caption"
-            color={colors.gray.white}
-            align="center"
-            style={styles.warningText}
-          >
-            !
-          </Typography>
-        </View>
+        <Icon name="warning" size={18} color={colors.secondary} />
         <Typography
           variant="bodyM"
           color={colors.gray.white}
@@ -62,17 +54,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-  },
-  warningIcon: {
-    width: 18,
-    height: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.full,
-    backgroundColor: colors.secondary,
-  },
-  warningText: {
-    lineHeight: 18,
   },
   toastText: {
     minWidth: 0,
