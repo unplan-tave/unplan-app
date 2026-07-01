@@ -1,4 +1,7 @@
 import { CONDITION_TAG_OPTIONS, DEFAULT_DATE_RANGE, DEFAULT_TIME_RANGE } from './data';
+import { type RecurrenceValue } from './recurrence';
+
+export type { RecurrenceValue } from './recurrence';
 
 export type CardTab = 'pin' | 'queue';
 export type DateMode = 'empty' | 'single' | 'range';
@@ -18,6 +21,7 @@ export interface PinCardFormValues {
   location: string;
   memo: string;
   repeatEnabled: boolean;
+  recurrence: RecurrenceValue | null;
   reminderEnabled: boolean;
 }
 
@@ -76,6 +80,7 @@ export function createDefaultPinCardFormValues(): PinCardFormValues {
     location: '',
     memo: '',
     repeatEnabled: false,
+    recurrence: null,
     reminderEnabled: false,
   };
 }
@@ -141,6 +146,10 @@ export function clonePinCardFormValues(values: PinCardFormValues): PinCardFormVa
     location: values.location,
     memo: values.memo,
     repeatEnabled: values.repeatEnabled,
+    recurrence:
+      values.recurrence == null
+        ? null
+        : { ...values.recurrence, byDay: [...values.recurrence.byDay] },
     reminderEnabled: values.reminderEnabled,
   };
 }

@@ -103,6 +103,7 @@ export function HomeScreen() {
         location: queueCard.location,
         memo: queueCard.memo,
         repeatEnabled: false,
+        recurrence: null,
         reminderEnabled: queueCard.reminderEnabled,
       };
 

@@ -85,7 +85,10 @@ export const usePinCardStore = create<PinCardStoreState>()(
           return null;
         }
 
-        const draft = createPinCardEditDraft(card);
+        const draft = createPinCardEditDraft({
+          ...card,
+          recurrence: card.recurrence ?? null,
+        });
 
         set({ draft });
 
