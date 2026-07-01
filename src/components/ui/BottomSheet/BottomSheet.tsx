@@ -1,4 +1,15 @@
-import { Modal as RNModal, Pressable, StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import {
+  Animated,
+  Easing,
+  Keyboard,
+  Modal as RNModal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type KeyboardEvent,
+} from 'react-native';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
@@ -29,12 +40,60 @@ export function BottomSheet({
   children,
   onClose,
   contentStyle,
+  avoidKeyboard = false,
   animationType = 'slide',
   transparent = true,
   ...props
 }: BottomSheetProps) {
+  const keyboardHeightAnim = useRef(new Animated.Value(0)).current;
   const innerStyle = styles.sheetInner;
   const contentAreaStyle = [styles.sheetContent, contentStyle];
+  const sheetBorderStyle = [
+    styles.sheetBorder,
+    avoidKeyboard && { marginBottom: keyboardHeightAnim },
+  ];
+
+  useEffect(() => {
+    if (!visible || !avoidKeyboard) {
+      keyboardHeightAnim.setValue(0);
+      return;
+    }
+
+    const animateKeyboard = (toValue: number, duration: number) => {
+      Animated.timing(keyboardHeightAnim, {
+        toValue,
+        duration,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }).start();
+    };
+
+    const handleKeyboardShow = (event: KeyboardEvent) => {
+      animateKeyboard(event.endCoordinates.height, Platform.OS === 'ios' ? event.duration : 250);
+    };
+    const handleKeyboardHide = (event: KeyboardEvent) => {
+      animateKeyboard(0, Platform.OS === 'ios' ? event.duration : 250);
+    };
+
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const showSubscription = Keyboard.addListener(showEvent, handleKeyboardShow);
+    const hideSubscription = Keyboard.addListener(hideEvent, handleKeyboardHide);
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, [avoidKeyboard, keyboardHeightAnim, visible]);
+
+  useEffect(() => {
+    if (visible) {
+      return;
+    }
+
+    Keyboard.dismiss();
+    keyboardHeightAnim.setValue(0);
+  }, [keyboardHeightAnim, visible]);
 
   const sheetContent = (
     <>
@@ -69,7 +128,7 @@ export function BottomSheet({
           onPress={onClose}
         />
         {/* Border wrapper: white stroke visible at rounded corners — NO overflow:hidden */}
-        <View style={styles.sheetBorder}>
+        <Animated.View style={sheetBorderStyle}>
           <View style={innerStyle}>
             {BlurView != null ? (
               <BlurView
@@ -84,7 +143,7 @@ export function BottomSheet({
             />
             <View style={contentAreaStyle}>{sheetContent}</View>
           </View>
-        </View>
+        </Animated.View>
       </View>
     </RNModal>
   );
