@@ -6,6 +6,7 @@ import { colors, radius, spacing } from '@/constants/theme';
 
 const TOAST_MAX_WIDTH = 353;
 const TOAST_ICON_SIZE = spacing[6];
+const TOAST_CONTENT_GAP = 10;
 
 export function PinCardToast({
   message,
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: TOAST_CONTENT_GAP,
   },
   toastText: {
     minWidth: 0,

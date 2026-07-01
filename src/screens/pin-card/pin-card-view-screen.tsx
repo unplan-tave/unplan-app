@@ -31,6 +31,8 @@ const CONTENT_TOP = 100;
 const FORM_GAP = spacing[6];
 const BOX_PADDING = spacing[4];
 const FIELD_LABEL_WIDTH = 72;
+const HEAD_GAP = 6;
+const RECOMMEND_BUTTON_GAP = 10;
 
 type ToastState = {
   message: string;
@@ -581,7 +583,7 @@ const styles = StyleSheet.create({
   },
   head: {
     width: '100%',
-    gap: 6,
+    gap: HEAD_GAP,
   },
   tagRow: {
     flexDirection: 'row',
@@ -682,7 +684,7 @@ const styles = StyleSheet.create({
   recommendButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[2] + 2,
+    gap: RECOMMEND_BUTTON_GAP,
     paddingVertical: spacing[2],
     paddingLeft: spacing[3],
     paddingRight: spacing[2],

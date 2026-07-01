@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     gap: spacing[4],
     paddingHorizontal: spacing[5],
     paddingTop: spacing[3],
-    paddingBottom: spacing[16] - spacing[1],
+    paddingBottom: spacing[15],
   },
   sheetFallback: {
     backgroundColor: colors.alpha.white50,

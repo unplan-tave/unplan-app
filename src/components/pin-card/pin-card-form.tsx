@@ -35,6 +35,12 @@ const TOGGLE_WIDTH = spacing[10];
 const TOGGLE_HEIGHT = spacing[6];
 const TOGGLE_THUMB_SIZE = 18;
 const TOGGLE_THUMB_OFFSET = 3;
+const ADD_TAG_PADDING_H = 5;
+const ADD_TAG_PADDING_V = 1;
+const LABEL_GROUP_GAP = 2;
+const CHIP_PADDING_V = 6;
+const CHIP_CLOSE_LINE_WIDTH = 10;
+const CHIP_CLOSE_LINE_HEIGHT = 1;
 
 export function PinCardForm({
   control,
@@ -803,8 +809,8 @@ const styles = StyleSheet.create({
   addPersonalTag: {
     minHeight: 20,
     justifyContent: 'center',
-    paddingHorizontal: 5,
-    paddingVertical: 1,
+    paddingHorizontal: ADD_TAG_PADDING_H,
+    paddingVertical: ADD_TAG_PADDING_V,
     borderRadius: radius.xs,
     backgroundColor: colors.gray[200],
     opacity: 0.5,
@@ -876,7 +882,7 @@ const styles = StyleSheet.create({
     width: FIELD_LABEL_WIDTH,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
+    gap: LABEL_GROUP_GAP,
   },
   requiredMark: {
     lineHeight: 18,
@@ -1014,7 +1020,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing[3],
     paddingRight: spacing[3],
-    paddingVertical: spacing[2] - 2,
+    paddingVertical: CHIP_PADDING_V,
     borderRadius: radius.xs,
     backgroundColor: colors.gray[50],
   },
@@ -1040,16 +1046,16 @@ const styles = StyleSheet.create({
   },
   chipCloseForward: {
     position: 'absolute',
-    width: 10,
-    height: 1,
+    width: CHIP_CLOSE_LINE_WIDTH,
+    height: CHIP_CLOSE_LINE_HEIGHT,
     borderRadius: radius.full,
     backgroundColor: colors.gray[300],
     transform: [{ rotate: '45deg' }],
   },
   chipCloseBackward: {
     position: 'absolute',
-    width: 10,
-    height: 1,
+    width: CHIP_CLOSE_LINE_WIDTH,
+    height: CHIP_CLOSE_LINE_HEIGHT,
     borderRadius: radius.full,
     backgroundColor: colors.gray[300],
     transform: [{ rotate: '-45deg' }],

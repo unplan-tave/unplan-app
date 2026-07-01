@@ -497,12 +497,6 @@ export function PinCardCreateScreen() {
     [addLocationRecentSearch, setValue, updateDraftValues],
   );
 
-  // const handleToggleReminder = useCallback(() => {
-  //   const nextReminderEnabled = !reminderEnabled;
-  //   setValue('reminderEnabled', nextReminderEnabled, { shouldDirty: true });
-  //   updateDraftValues({ reminderEnabled: nextReminderEnabled });
-  // }, [reminderEnabled, setValue, updateDraftValues]);
-
   const handleSelectConditionTag = useCallback((tagId: ConditionTagId) => {
     setTagSheetSelectedId((prev) => (prev === tagId ? null : tagId));
   }, []);
@@ -643,7 +637,6 @@ export function PinCardCreateScreen() {
             timeValue={timeValue}
             repeatEnabled={repeatEnabled}
             recurrence={recurrence}
-            // reminderEnabled={reminderEnabled}
             showTitleError={shouldShowTitleError}
             showDateError={shouldShowDateError}
             showTimeError={shouldShowTimeError}
@@ -666,7 +659,6 @@ export function PinCardCreateScreen() {
             onMemoBlur={handleMemoBlur}
             onMemoFocus={handleMemoFocus}
             onMemoReachLimit={handleMemoReachLimit}
-            // onToggleReminder={handleToggleReminder}
           />
         </ScrollView>
 
