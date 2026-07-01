@@ -13,6 +13,7 @@
     "axios": "^1.16.1",
     "date-fns": "^4.3.0",
     "expo": "~56.0.9",
+    "expo-blur": "~56.0.3",
     "expo-constants": "~56.0.17",
     "expo-dev-client": "~56.0.19",
     "expo-font": "~56.0.5",
