@@ -102,12 +102,9 @@ function ViewFormCard({ card }: { card: PinCardItem }) {
     });
   }
 
-  if (card.reminderEnabled) {
-    rows.push({
-      key: 'reminder',
-      node: <ViewFormRow label="알림" value="시작 30분 전" icon="bell" />,
-    });
-  }
+  // if (card.reminderEnabled) {
+  //   rows.push({ key: 'reminder', node: <ViewFormRow label="알림" value="시작 30분 전" icon="bell" /> });
+  // }
 
   if (card.memo.trim().length > 0) {
     rows.push({

@@ -4,13 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { ConditionTagBottomSheet } from '@/components/pin-card/condition-tag-bottom-sheet';
 import { DateOnlyGuideModal } from '@/components/pin-card/date-only-guide-modal';
 import { DateTimeBottomSheet } from '@/components/pin-card/date-time-bottom-sheet';
-import { PersonalTagBottomSheet } from '@/components/pin-card/personal-tag-bottom-sheet';
 import { PinCardCreateHeader } from '@/components/pin-card/pin-card-create-header';
 import { PinCardForm } from '@/components/pin-card/pin-card-form';
 import { PinCardRequiredToast } from '@/components/pin-card/pin-card-required-toast';
+import { TagPickerSheet, type TagTab } from '@/components/pin-card/tag-picker-sheet';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
 import {
@@ -41,12 +40,11 @@ export function PinCardCreateScreen() {
   const [showToast, setShowToast] = useState(false);
   const [showTagFeedback, setShowTagFeedback] = useState(false);
   const [showTagErrorFeedback, setShowTagErrorFeedback] = useState(false);
-  const [isTagSheetVisible, setIsTagSheetVisible] = useState(false);
+  const [tagSheetTab, setTagSheetTab] = useState<TagTab | null>(null);
   const [tagSheetSelectedId, setTagSheetSelectedId] = useState<ConditionTagId | null>(
     initialValues.conditionTagId,
   );
   const [isDateTimeSheetVisible, setIsDateTimeSheetVisible] = useState(false);
-  const [isPersonalTagSheetVisible, setIsPersonalTagSheetVisible] = useState(false);
   const [dateTimeFocus, setDateTimeFocus] = useState<TimeFocus>('start');
   const [dateOnlyGuideVisible, setDateOnlyGuideVisible] = useState(false);
   const beginCreate = usePinCardStore((store) => store.beginCreate);
@@ -80,7 +78,7 @@ export function PinCardCreateScreen() {
   const timeStart = watch('timeStart');
   const timeEnd = watch('timeEnd');
   const repeatEnabled = watch('repeatEnabled');
-  const reminderEnabled = watch('reminderEnabled');
+  // const reminderEnabled = watch('reminderEnabled');
   const location = watch('location');
   const memo = watch('memo');
   const primaryTag = getConditionTagById(conditionTagId);
@@ -125,7 +123,7 @@ export function PinCardCreateScreen() {
       location,
       memo,
       repeatEnabled,
-      reminderEnabled,
+      // reminderEnabled,
     });
   }, [
     conditionTagId,
@@ -135,7 +133,7 @@ export function PinCardCreateScreen() {
     location,
     memo,
     personalTagIds,
-    reminderEnabled,
+    // reminderEnabled,
     repeatEnabled,
     timeEnd,
     timeFilled,
@@ -180,7 +178,7 @@ export function PinCardCreateScreen() {
       setTagSheetSelectedId('daily');
       setShowTagFeedback(false);
       setShowTagErrorFeedback(true);
-      setIsTagSheetVisible(true);
+      setTagSheetTab('condition');
       return;
     }
 
@@ -240,15 +238,11 @@ export function PinCardCreateScreen() {
     setIsDateTimeSheetVisible(true);
   }, []);
 
-  const handleClosePersonalTagSheet = useCallback(() => {
-    setIsPersonalTagSheetVisible(false);
-  }, []);
-
   const handleConfirmPersonalTags = useCallback(
     (nextPersonalTagIds: string[]) => {
       setValue('personalTagIds', nextPersonalTagIds, { shouldDirty: true });
       updateDraftValues({ personalTagIds: nextPersonalTagIds });
-      setIsPersonalTagSheetVisible(false);
+      setTagSheetTab(null);
     },
     [setValue, updateDraftValues],
   );
@@ -295,14 +289,11 @@ export function PinCardCreateScreen() {
     updateDraftValues({ repeatEnabled: nextRepeatEnabled });
   }, [repeatEnabled, setValue, updateDraftValues]);
 
-  const handleToggleReminder = useCallback(() => {
-    const nextReminderEnabled = !reminderEnabled;
-
-    setValue('reminderEnabled', nextReminderEnabled, {
-      shouldDirty: true,
-    });
-    updateDraftValues({ reminderEnabled: nextReminderEnabled });
-  }, [reminderEnabled, setValue, updateDraftValues]);
+  // const handleToggleReminder = useCallback(() => {
+  //   const nextReminderEnabled = !reminderEnabled;
+  //   setValue('reminderEnabled', nextReminderEnabled, { shouldDirty: true });
+  //   updateDraftValues({ reminderEnabled: nextReminderEnabled });
+  // }, [reminderEnabled, setValue, updateDraftValues]);
 
   const handleSelectConditionTag = useCallback((tagId: ConditionTagId) => {
     setTagSheetSelectedId((prev) => (prev === tagId ? null : tagId));
@@ -315,13 +306,13 @@ export function PinCardCreateScreen() {
 
     setValue('conditionTagId', tagSheetSelectedId, { shouldDirty: true });
     updateDraftValues({ conditionTagId: tagSheetSelectedId });
-    setIsTagSheetVisible(false);
+    setTagSheetTab(null);
     setShowTagErrorFeedback(false);
   }, [setValue, tagSheetSelectedId, updateDraftValues]);
 
   const handleCloseConditionTagSheet = useCallback(() => {
     setTagSheetSelectedId(conditionTagId);
-    setIsTagSheetVisible(false);
+    setTagSheetTab(null);
   }, [conditionTagId]);
 
   const handleOpenTimeFromGuide = useCallback(() => {
@@ -390,27 +381,34 @@ export function PinCardCreateScreen() {
             timeFilled={timeFilled}
             timeValue={timeValue}
             repeatEnabled={repeatEnabled}
-            reminderEnabled={reminderEnabled}
+            // reminderEnabled={reminderEnabled}
             location={location}
             showTitleError={shouldShowTitleError}
             showDateError={shouldShowDateError}
             showTimeError={shouldShowTimeError}
             tagFeedback={tagFeedback}
             onChangeTab={handleChangeTab}
-            onOpenPersonalTags={() => setIsPersonalTagSheetVisible(true)}
+            onOpenConditionTag={() => setTagSheetTab('condition')}
+            onOpenPersonalTags={() => setTagSheetTab('personal')}
             onOpenDateTime={handleOpenDateTimeSheet}
             onToggleRepeat={handleToggleRepeat}
-            onToggleReminder={handleToggleReminder}
+            // onToggleReminder={handleToggleReminder}
           />
         </ScrollView>
 
         {showToast ? <PinCardRequiredToast onClose={() => setShowToast(false)} /> : null}
-        <ConditionTagBottomSheet
-          visible={isTagSheetVisible}
-          selectedTagId={tagSheetSelectedId}
+        <TagPickerSheet
+          visible={tagSheetTab !== null}
+          activeTab={tagSheetTab ?? 'condition'}
+          selectedConditionTagId={tagSheetSelectedId}
+          personalTags={personalTags}
+          selectedPersonalTagIds={personalTagIds}
+          onSwitchTab={setTagSheetTab}
           onClose={handleCloseConditionTagSheet}
-          onSelect={handleSelectConditionTag}
-          onDone={handleConfirmConditionTag}
+          onSelectConditionTag={handleSelectConditionTag}
+          onDoneConditionTag={handleConfirmConditionTag}
+          onCreatePersonalTag={createPersonalTag}
+          onDonePersonalTags={handleConfirmPersonalTags}
         />
         <DateTimeBottomSheet
           visible={isDateTimeSheetVisible}
@@ -424,14 +422,6 @@ export function PinCardCreateScreen() {
           }}
           onClose={() => setIsDateTimeSheetVisible(false)}
           onDone={handleSaveDateTime}
-        />
-        <PersonalTagBottomSheet
-          visible={isPersonalTagSheetVisible}
-          personalTags={personalTags}
-          selectedTagIds={personalTagIds}
-          onClose={handleClosePersonalTagSheet}
-          onCreateTag={createPersonalTag}
-          onDone={handleConfirmPersonalTags}
         />
         <DateOnlyGuideModal
           visible={dateOnlyGuideVisible}

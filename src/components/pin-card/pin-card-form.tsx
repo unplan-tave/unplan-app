@@ -23,7 +23,6 @@ const TOGGLE_WIDTH = spacing[10];
 const TOGGLE_HEIGHT = spacing[6];
 const TOGGLE_THUMB_SIZE = 18;
 const TOGGLE_THUMB_OFFSET = 3;
-const SHOW_DEV_REMINDER_UI = __DEV__;
 
 export function PinCardForm({
   control,
@@ -35,17 +34,18 @@ export function PinCardForm({
   timeFilled,
   timeValue,
   repeatEnabled,
-  reminderEnabled,
+  // reminderEnabled,
   location,
   showTitleError,
   showDateError,
   showTimeError,
   tagFeedback,
   onChangeTab,
+  onOpenConditionTag,
   onOpenPersonalTags,
   onOpenDateTime,
   onToggleRepeat,
-  onToggleReminder,
+  // onToggleReminder,
 }: {
   control: Control<PinCardFormValues>;
   activeTab: CardTab;
@@ -56,17 +56,18 @@ export function PinCardForm({
   timeFilled: boolean;
   timeValue: readonly [string, string];
   repeatEnabled: boolean;
-  reminderEnabled: boolean;
+  // reminderEnabled: boolean;
   location: string;
   showTitleError: boolean;
   showDateError: boolean;
   showTimeError: boolean;
   tagFeedback: 'none' | 'success' | 'error';
   onChangeTab: (tab: CardTab) => void;
+  onOpenConditionTag: () => void;
   onOpenPersonalTags: () => void;
   onOpenDateTime: (focus: TimeFocus) => void;
   onToggleRepeat: () => void;
-  onToggleReminder: () => void;
+  // onToggleReminder: () => void;
 }) {
   return (
     <>
@@ -98,7 +99,13 @@ export function PinCardForm({
           </Typography>
         </View>
         <View style={styles.tagRow}>
-          <Tag variant="condition" condition={primaryTag.id} label={primaryTag.label} />
+          <Tag
+            variant="condition"
+            condition={primaryTag.id}
+            label={primaryTag.label}
+            accessibilityLabel="조건 태그 변경"
+            onPress={onOpenConditionTag}
+          />
           <Pressable
             accessibilityLabel="개인 태그 선택"
             accessibilityRole="button"
@@ -207,9 +214,7 @@ export function PinCardForm({
                 )}
               />
             </FormRow>
-            {SHOW_DEV_REMINDER_UI ? (
-              <DevReminderField enabled={reminderEnabled} onToggle={onToggleReminder} />
-            ) : null}
+            {/* reminder UI disabled — not yet implemented */}
           </FormBox>
 
           <FormBox>
@@ -403,40 +408,6 @@ function RepeatSummaryChip({ onRemove }: { onRemove: () => void }) {
         <View style={styles.chipDivider} />
         <ChipCloseIcon accessibilityLabel="반복 설정 삭제" onPress={onRemove} />
       </View>
-    </View>
-  );
-}
-
-function DevReminderField({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) {
-  return (
-    <>
-      <Divider />
-      <FormRow label="알림">
-        <ToggleSwitch value={enabled} accessibilityLabel="알림 설정" onPress={onToggle} />
-      </FormRow>
-      {enabled ? (
-        <View style={styles.reminderChipRow}>
-          <ReminderChip label="시작 30분 전" onRemove={onToggle} />
-          <ReminderChip label="시작 10분 전" onRemove={onToggle} />
-          <View style={styles.addChip}>
-            <Typography variant="bodyS" color={colors.gray[300]} align="center">
-              +
-            </Typography>
-          </View>
-        </View>
-      ) : null}
-    </>
-  );
-}
-
-function ReminderChip({ label, onRemove }: { label: string; onRemove: () => void }) {
-  return (
-    <View style={styles.reminderChip}>
-      <Typography variant="bodyS" color={colors.gray[600]}>
-        {label}
-      </Typography>
-      <View style={styles.chipDivider} />
-      <ChipCloseIcon accessibilityLabel={`${label} 알림 삭제`} onPress={onRemove} />
     </View>
   );
 }
@@ -699,32 +670,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[1],
-  },
-  reminderChipRow: {
-    width: '100%',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-end',
-    gap: spacing[1],
-  },
-  reminderChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[3],
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[2] - 2,
-    borderRadius: radius.xs,
-    backgroundColor: colors.gray[50],
-  },
-  addChip: {
-    minWidth: 44,
-    minHeight: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.gray[200],
-    borderRadius: radius.xs,
-    backgroundColor: colors.gray.white,
   },
   chipDivider: {
     width: 1,
