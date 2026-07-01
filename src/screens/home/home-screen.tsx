@@ -115,6 +115,10 @@ export function HomeScreen() {
         repeatEnabled: false,
         recurrence: null,
         reminderEnabled: queueCard.reminderEnabled,
+        dueDate: queueCard.dueDate ?? '',
+        durationHours: queueCard.durationHours ?? 0,
+        durationMinutes: queueCard.durationMinutes ?? 0,
+        recommendationAcknowledged: queueCard.recommendationAcknowledged ?? false,
       };
 
       createPinCard('pin', values);

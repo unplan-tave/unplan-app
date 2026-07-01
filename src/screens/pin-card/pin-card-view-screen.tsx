@@ -11,6 +11,14 @@ import { Tag } from '@/components/ui/Tag';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
 import { getConditionTagById, type PinCardItem } from '@/state/pin-card/model';
+import {
+  formatDueCountdown,
+  formatDueDateDisplay,
+  formatDurationDisplay,
+  getMockRecommendationLabel,
+  hasDueDate,
+  hasQueueDuration,
+} from '@/state/pin-card/queue';
 import { formatRecurrenceSummary } from '@/state/pin-card/recurrence';
 import { usePinCardStore } from '@/state/pin-card/use-pin-card-store';
 
@@ -74,6 +82,10 @@ export function PinCardViewScreen() {
 }
 
 function ViewFormCard({ card }: { card: PinCardItem }) {
+  if (card.cardType === 'queue') {
+    return <QueueViewForm card={card} />;
+  }
+
   const rows: Array<{ key: string; node: React.ReactNode }> = [];
 
   if (card.dateMode !== 'empty' && card.dateStart) {
@@ -137,6 +149,118 @@ function ViewFormCard({ card }: { card: PinCardItem }) {
         </View>
       ))}
     </Card>
+  );
+}
+
+function QueueViewForm({ card }: { card: PinCardItem }) {
+  const sections: Array<{ key: string; node: React.ReactNode }> = [];
+
+  if (hasDueDate(card.dueDate) || hasQueueDuration(card.durationHours, card.durationMinutes)) {
+    const dueRows: Array<{ key: string; node: React.ReactNode }> = [];
+
+    if (hasDueDate(card.dueDate)) {
+      dueRows.push({
+        key: 'due',
+        node: (
+          <ViewFormRow
+            label="마감일"
+            value={`${formatDueDateDisplay(card.dueDate)}까지  ${formatDueCountdown(card.dueDate)}`}
+          />
+        ),
+      });
+    }
+
+    if (hasQueueDuration(card.durationHours, card.durationMinutes)) {
+      dueRows.push({
+        key: 'duration',
+        node: (
+          <ViewFormRow
+            label="소요시간"
+            value={formatDurationDisplay(card.durationHours, card.durationMinutes)}
+          />
+        ),
+      });
+    }
+
+    sections.push({
+      key: 'due-duration',
+      node: (
+        <Card variant="solid" accessibilityRole="none" style={styles.formBox}>
+          {dueRows.map((row, index) => (
+            <View key={row.key}>
+              {index > 0 ? <Divider /> : null}
+              {row.node}
+            </View>
+          ))}
+        </Card>
+      ),
+    });
+  }
+
+  sections.push({
+    key: 'recommendation',
+    node: (
+      <Card variant="solid" accessibilityRole="none" style={styles.formBox}>
+        <View style={styles.formRow}>
+          <View style={styles.labelGroup}>
+            <Typography variant="bodyM" color={colors.gray[800]}>
+              추천 시간
+            </Typography>
+          </View>
+          <View style={styles.valueGroup}>
+            {card.recommendationAcknowledged ? (
+              <Typography variant="bodyM" color={colors.gray[600]} numberOfLines={1}>
+                {getMockRecommendationLabel()}
+              </Typography>
+            ) : (
+              <Typography variant="bodyM" color={colors.primary}>
+                확인하기
+              </Typography>
+            )}
+            <Icon name="arrowRight" size={24} color={colors.gray[600]} />
+          </View>
+        </View>
+      </Card>
+    ),
+  });
+
+  if (card.location.trim().length > 0) {
+    const locationValue =
+      card.locationDetail.trim().length > 0
+        ? `${card.location}\n${card.locationDetail}`
+        : card.location;
+
+    sections.push({
+      key: 'location',
+      node: (
+        <Card variant="solid" accessibilityRole="none" style={styles.formBox}>
+          <ViewFormRow label="위치" value={locationValue} multiline />
+        </Card>
+      ),
+    });
+  }
+
+  if (card.memo.trim().length > 0) {
+    sections.push({
+      key: 'memo',
+      node: (
+        <Card variant="solid" accessibilityRole="none" style={styles.formBox}>
+          <ViewFormRow label="메모" value={card.memo} multiline />
+        </Card>
+      ),
+    });
+  }
+
+  if (sections.length === 0) {
+    return null;
+  }
+
+  return (
+    <View style={styles.queueSections}>
+      {sections.map((section) => (
+        <View key={section.key}>{section.node}</View>
+      ))}
+    </View>
   );
 }
 
@@ -209,6 +333,10 @@ const styles = StyleSheet.create({
     gap: spacing[2],
     padding: BOX_PADDING,
     borderWidth: 0,
+  },
+  queueSections: {
+    width: '100%',
+    gap: FORM_GAP,
   },
   formRow: {
     minHeight: 42,
