@@ -29,6 +29,7 @@ export interface PinCardFormValues {
   dueDate: string;
   durationHours: number;
   durationMinutes: number;
+  durationUnknown: boolean;
   recommendationAcknowledged: boolean;
 }
 
@@ -93,6 +94,7 @@ export function createDefaultPinCardFormValues(): PinCardFormValues {
     dueDate: '',
     durationHours: 0,
     durationMinutes: 0,
+    durationUnknown: false,
     recommendationAcknowledged: false,
   };
 }
@@ -167,6 +169,7 @@ export function clonePinCardFormValues(values: PinCardFormValues): PinCardFormVa
     dueDate: values.dueDate ?? '',
     durationHours: values.durationHours ?? 0,
     durationMinutes: values.durationMinutes ?? 0,
+    durationUnknown: values.durationUnknown ?? false,
     recommendationAcknowledged: values.recommendationAcknowledged ?? false,
   };
 }

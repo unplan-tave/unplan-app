@@ -1,9 +1,21 @@
 import type { PinCardFormValues } from './model';
 
+export const UNKNOWN_DURATION_LABEL = '시간 미정';
+
+export const DURATION_INCREMENT_BUTTONS = [
+  { label: '1분', minutes: 1 },
+  { label: '5분', minutes: 5 },
+  { label: '10분', minutes: 10 },
+  { label: '30분', minutes: 30 },
+  { label: '1시간', minutes: 60 },
+  { label: '3시간', minutes: 180 },
+] as const;
+
 export interface DueDurationDraft {
   dueDate: string;
   durationHours: number;
   durationMinutes: number;
+  durationUnknown: boolean;
 }
 
 export function formatDueDateDisplay(dueDate: string): string {
@@ -62,6 +74,10 @@ export function formatDueCountdown(dueDate: string, today = new Date()): string 
   return `D+${Math.abs(diffDays)}`;
 }
 
+export function formatDurationInline(hours: number, minutes: number): string {
+  return `${hours}시간 ${minutes}분`;
+}
+
 export function formatDurationDisplay(
   hours: number,
   minutes: number,
@@ -71,11 +87,39 @@ export function formatDurationDisplay(
   const prefix = includePrefix ? '약 ' : '';
   const suffix = includeSuffix ? ' 소요' : '';
 
-  return `${prefix}${hours}시간 ${minutes}분${suffix}`;
+  return `${prefix}${formatDurationInline(hours, minutes)}${suffix}`;
+}
+
+export function addDurationMinutes(hours: number, minutes: number, addMinutes: number) {
+  const totalMinutes = hours * 60 + minutes + addMinutes;
+
+  return {
+    durationHours: Math.floor(totalMinutes / 60),
+    durationMinutes: totalMinutes % 60,
+  };
+}
+
+export function createDefaultDurationDraft(): Pick<
+  DueDurationDraft,
+  'durationHours' | 'durationMinutes' | 'durationUnknown'
+> {
+  return {
+    durationHours: 0,
+    durationMinutes: 0,
+    durationUnknown: false,
+  };
 }
 
 export function hasQueueDuration(hours: number, minutes: number): boolean {
   return hours > 0 || minutes > 0;
+}
+
+export function hasQueueDurationOrUnknown(
+  hours: number,
+  minutes: number,
+  durationUnknown: boolean,
+): boolean {
+  return durationUnknown || hasQueueDuration(hours, minutes);
 }
 
 export function hasDueDate(dueDate: string): boolean {
@@ -83,12 +127,15 @@ export function hasDueDate(dueDate: string): boolean {
 }
 
 export function isQueueFormComplete(
-  values: Pick<PinCardFormValues, 'title' | 'dueDate' | 'durationHours' | 'durationMinutes'>,
+  values: Pick<
+    PinCardFormValues,
+    'title' | 'dueDate' | 'durationHours' | 'durationMinutes' | 'durationUnknown'
+  >,
 ): boolean {
   return (
     values.title.trim().length > 0 &&
     hasDueDate(values.dueDate) &&
-    hasQueueDuration(values.durationHours, values.durationMinutes)
+    hasQueueDurationOrUnknown(values.durationHours, values.durationMinutes, values.durationUnknown)
   );
 }
 

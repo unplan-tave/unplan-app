@@ -118,6 +118,7 @@ export function HomeScreen() {
         dueDate: queueCard.dueDate ?? '',
         durationHours: queueCard.durationHours ?? 0,
         durationMinutes: queueCard.durationMinutes ?? 0,
+        durationUnknown: queueCard.durationUnknown ?? false,
         recommendationAcknowledged: queueCard.recommendationAcknowledged ?? false,
       };
 
