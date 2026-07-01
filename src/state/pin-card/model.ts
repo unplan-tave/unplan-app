@@ -19,6 +19,7 @@ export interface PinCardFormValues {
   timeStart: string;
   timeEnd: string;
   location: string;
+  locationDetail: string;
   memo: string;
   repeatEnabled: boolean;
   recurrence: RecurrenceValue | null;
@@ -78,6 +79,7 @@ export function createDefaultPinCardFormValues(): PinCardFormValues {
     timeStart: '',
     timeEnd: '',
     location: '',
+    locationDetail: '',
     memo: '',
     repeatEnabled: false,
     recurrence: null,
@@ -144,6 +146,7 @@ export function clonePinCardFormValues(values: PinCardFormValues): PinCardFormVa
     timeStart: values.timeStart,
     timeEnd: values.timeEnd,
     location: values.location,
+    locationDetail: values.locationDetail,
     memo: values.memo,
     repeatEnabled: values.repeatEnabled,
     recurrence:

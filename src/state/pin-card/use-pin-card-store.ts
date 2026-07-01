@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { mmkvStorage } from '@/lib/storage/mmkv-storage';
 
+import { addLocationRecentSearch, removeLocationRecentSearch } from './location';
 import {
   clonePinCardFormValues,
   canCreatePersonalTag,
@@ -23,8 +24,12 @@ interface PinCardStoreState {
   cards: PinCardItem[];
   draft: PinCardDraft | null;
   personalTags: PersonalTagOption[];
+  locationRecentSearches: string[];
   createCard: (cardType: CardTab, values: PinCardFormValues) => PinCardItem;
   createPersonalTag: (label: string) => PersonalTagOption | null;
+  addLocationRecentSearch: (label: string) => void;
+  deleteLocationRecentSearch: (label: string) => void;
+  deleteAllLocationRecentSearches: () => void;
   beginCreate: (values: PinCardFormValues, cardType?: CardTab) => PinCardDraft;
   beginEdit: (cardId: string) => PinCardDraft | null;
   updateDraftValues: (values: Partial<PinCardFormValues>) => void;
@@ -46,6 +51,7 @@ export const usePinCardStore = create<PinCardStoreState>()(
       cards: [],
       draft: null,
       personalTags: [],
+      locationRecentSearches: [],
       createCard: (cardType, values) => {
         const card = createPinCardItem(cardType, values);
 
@@ -70,6 +76,19 @@ export const usePinCardStore = create<PinCardStoreState>()(
 
         return tag;
       },
+      addLocationRecentSearch: (label) => {
+        set((state) => ({
+          locationRecentSearches: addLocationRecentSearch(state.locationRecentSearches, label),
+        }));
+      },
+      deleteLocationRecentSearch: (label) => {
+        set((state) => ({
+          locationRecentSearches: removeLocationRecentSearch(state.locationRecentSearches, label),
+        }));
+      },
+      deleteAllLocationRecentSearches: () => {
+        set({ locationRecentSearches: [] });
+      },
       beginCreate: (values, cardType = 'pin') => {
         const draft = createPinCardDraft(cardType, values);
 
@@ -88,6 +107,7 @@ export const usePinCardStore = create<PinCardStoreState>()(
         const draft = createPinCardEditDraft({
           ...card,
           recurrence: card.recurrence ?? null,
+          locationDetail: card.locationDetail ?? '',
         });
 
         set({ draft });
@@ -176,6 +196,7 @@ export const usePinCardStore = create<PinCardStoreState>()(
       partialize: (state) => ({
         cards: state.cards,
         personalTags: state.personalTags,
+        locationRecentSearches: state.locationRecentSearches,
       }),
     },
   ),
