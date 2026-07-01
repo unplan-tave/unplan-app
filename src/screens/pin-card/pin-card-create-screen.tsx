@@ -9,6 +9,8 @@ import { DateTimeBottomSheet } from '@/components/pin-card/date-time-bottom-shee
 import { PinCardCreateHeader } from '@/components/pin-card/pin-card-create-header';
 import { PinCardForm } from '@/components/pin-card/pin-card-form';
 import { PinCardRequiredToast } from '@/components/pin-card/pin-card-required-toast';
+import { RepeatCustomBottomSheet } from '@/components/pin-card/repeat-custom-bottom-sheet';
+import { RepeatPresetBottomSheet } from '@/components/pin-card/repeat-preset-bottom-sheet';
 import { TagPickerSheet, type TagTab } from '@/components/pin-card/tag-picker-sheet';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
@@ -25,7 +27,17 @@ import {
   type PinCardFormValues,
   type TimeFocus,
 } from '@/state/pin-card/model';
+import {
+  cloneRecurrenceValue,
+  createDefaultCustomRecurrence,
+  createPresetRecurrence,
+  type RecurrencePreset,
+  type RecurrenceValue,
+} from '@/state/pin-card/recurrence';
 import { usePinCardStore } from '@/state/pin-card/use-pin-card-store';
+
+type RepeatSheetMode = 'none' | 'preset' | 'custom';
+type RepeatSheetOrigin = 'new' | 'edit';
 
 const SCREEN_MAX_WIDTH = 393;
 const CONTENT_MAX_WIDTH = 353;
@@ -47,6 +59,8 @@ export function PinCardCreateScreen() {
   const [isDateTimeSheetVisible, setIsDateTimeSheetVisible] = useState(false);
   const [dateTimeFocus, setDateTimeFocus] = useState<TimeFocus>('start');
   const [dateOnlyGuideVisible, setDateOnlyGuideVisible] = useState(false);
+  const [repeatSheetMode, setRepeatSheetMode] = useState<RepeatSheetMode>('none');
+  const [repeatSheetOrigin, setRepeatSheetOrigin] = useState<RepeatSheetOrigin>('new');
   const beginCreate = usePinCardStore((store) => store.beginCreate);
   const beginEdit = usePinCardStore((store) => store.beginEdit);
   const updateDraftValues = usePinCardStore((store) => store.updateDraftValues);
@@ -78,6 +92,7 @@ export function PinCardCreateScreen() {
   const timeStart = watch('timeStart');
   const timeEnd = watch('timeEnd');
   const repeatEnabled = watch('repeatEnabled');
+  const recurrence = watch('recurrence');
   // const reminderEnabled = watch('reminderEnabled');
   const location = watch('location');
   const memo = watch('memo');
@@ -123,6 +138,7 @@ export function PinCardCreateScreen() {
       location,
       memo,
       repeatEnabled,
+      recurrence,
       // reminderEnabled,
     });
   }, [
@@ -135,6 +151,7 @@ export function PinCardCreateScreen() {
     personalTagIds,
     // reminderEnabled,
     repeatEnabled,
+    recurrence,
     timeEnd,
     timeFilled,
     timeStart,
@@ -280,14 +297,91 @@ export function PinCardCreateScreen() {
     [hasSubmitted, setValue, updateDraftValues],
   );
 
-  const handleToggleRepeat = useCallback(() => {
-    const nextRepeatEnabled = !repeatEnabled;
+  const scheduleDate = getScheduleDate(dateMode, dateStart);
 
-    setValue('repeatEnabled', nextRepeatEnabled, {
-      shouldDirty: true,
-    });
-    updateDraftValues({ repeatEnabled: nextRepeatEnabled });
-  }, [repeatEnabled, setValue, updateDraftValues]);
+  const saveRecurrence = useCallback(
+    (nextRecurrence: RecurrenceValue) => {
+      const nextValue = cloneRecurrenceValue(nextRecurrence);
+
+      setValue('repeatEnabled', true, { shouldDirty: true });
+      setValue('recurrence', nextValue, { shouldDirty: true });
+      updateDraftValues({ repeatEnabled: true, recurrence: nextValue });
+      setRepeatSheetMode('none');
+    },
+    [setValue, updateDraftValues],
+  );
+
+  const handleToggleRepeat = useCallback(() => {
+    if (repeatEnabled) {
+      setValue('repeatEnabled', false, { shouldDirty: true });
+      updateDraftValues({ repeatEnabled: false });
+      return;
+    }
+
+    setValue('repeatEnabled', true, { shouldDirty: true });
+    updateDraftValues({ repeatEnabled: true });
+
+    if (recurrence != null) {
+      return;
+    }
+
+    setRepeatSheetOrigin('new');
+    setRepeatSheetMode('preset');
+  }, [recurrence, repeatEnabled, setValue, updateDraftValues]);
+
+  const handleRemoveRepeat = useCallback(() => {
+    setValue('repeatEnabled', false, { shouldDirty: true });
+    setValue('recurrence', null, { shouldDirty: true });
+    updateDraftValues({ repeatEnabled: false, recurrence: null });
+    setRepeatSheetMode('none');
+  }, [setValue, updateDraftValues]);
+
+  const handlePressRepeatChip = useCallback(() => {
+    setRepeatSheetOrigin('edit');
+
+    if (recurrence?.preset === 'custom') {
+      setRepeatSheetMode('custom');
+      return;
+    }
+
+    setRepeatSheetMode('preset');
+  }, [recurrence]);
+
+  const handleCloseRepeatPresetSheet = useCallback(() => {
+    setRepeatSheetMode('none');
+
+    if (repeatSheetOrigin === 'new' && recurrence == null) {
+      setValue('repeatEnabled', false, { shouldDirty: true });
+      updateDraftValues({ repeatEnabled: false });
+    }
+  }, [recurrence, repeatSheetOrigin, setValue, updateDraftValues]);
+
+  const handleCloseRepeatCustomSheet = useCallback(() => {
+    setRepeatSheetMode('none');
+
+    if (repeatSheetOrigin === 'new' && recurrence == null) {
+      setValue('repeatEnabled', false, { shouldDirty: true });
+      updateDraftValues({ repeatEnabled: false });
+    }
+  }, [recurrence, repeatSheetOrigin, setValue, updateDraftValues]);
+
+  const handleDoneRepeatPreset = useCallback(
+    (preset: Exclude<RecurrencePreset, 'custom'>) => {
+      saveRecurrence(createPresetRecurrence(preset, scheduleDate));
+    },
+    [saveRecurrence, scheduleDate],
+  );
+
+  const handleOpenRepeatCustomSheet = useCallback(() => {
+    setRepeatSheetMode('custom');
+  }, []);
+
+  const handleDoneRepeatCustom = useCallback(
+    (nextRecurrence: RecurrenceValue) => {
+      saveRecurrence(nextRecurrence);
+    },
+    [saveRecurrence],
+  );
 
   // const handleToggleReminder = useCallback(() => {
   //   const nextReminderEnabled = !reminderEnabled;
@@ -381,6 +475,7 @@ export function PinCardCreateScreen() {
             timeFilled={timeFilled}
             timeValue={timeValue}
             repeatEnabled={repeatEnabled}
+            recurrence={recurrence}
             // reminderEnabled={reminderEnabled}
             location={location}
             showTitleError={shouldShowTitleError}
@@ -392,6 +487,8 @@ export function PinCardCreateScreen() {
             onOpenPersonalTags={() => setTagSheetTab('personal')}
             onOpenDateTime={handleOpenDateTimeSheet}
             onToggleRepeat={handleToggleRepeat}
+            onPressRepeatChip={handlePressRepeatChip}
+            onRemoveRepeat={handleRemoveRepeat}
             // onToggleReminder={handleToggleReminder}
           />
         </ScrollView>
@@ -429,9 +526,36 @@ export function PinCardCreateScreen() {
           onOpenTime={handleOpenTimeFromGuide}
           onKeep={handleKeepDateOnly}
         />
+        <RepeatPresetBottomSheet
+          visible={repeatSheetMode === 'preset'}
+          value={recurrence}
+          onClose={handleCloseRepeatPresetSheet}
+          onOpenCustom={handleOpenRepeatCustomSheet}
+          onDone={handleDoneRepeatPreset}
+        />
+        <RepeatCustomBottomSheet
+          visible={repeatSheetMode === 'custom'}
+          value={recurrence ?? createDefaultCustomRecurrence(scheduleDate)}
+          scheduleDate={scheduleDate}
+          onClose={handleCloseRepeatCustomSheet}
+          onDone={handleDoneRepeatCustom}
+        />
       </View>
     </ScreenLayout>
   );
+}
+
+function getScheduleDate(dateMode: PinCardFormValues['dateMode'], dateStart: string) {
+  if (dateMode === 'single' || dateMode === 'range') {
+    return dateStart;
+  }
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  return `${year}.${month}.${day}`;
 }
 
 const styles = StyleSheet.create({

@@ -11,6 +11,7 @@ import { Tag } from '@/components/ui/Tag';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
 import { getConditionTagById, type PinCardItem } from '@/state/pin-card/model';
+import { formatRecurrenceSummary } from '@/state/pin-card/recurrence';
 import { usePinCardStore } from '@/state/pin-card/use-pin-card-store';
 
 const SCREEN_MAX_WIDTH = 393;
@@ -88,10 +89,10 @@ function ViewFormCard({ card }: { card: PinCardItem }) {
     });
   }
 
-  if (card.repeatEnabled) {
+  if (card.repeatEnabled && card.recurrence != null) {
     rows.push({
       key: 'repeat',
-      node: <ViewFormRow label="반복" value="2주마다 (월, 수) · 10회 반복" />,
+      node: <ViewFormRow label="반복" value={formatRecurrenceSummary(card.recurrence)} />,
     });
   }
 

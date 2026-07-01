@@ -11,8 +11,10 @@ import {
   type DateMode,
   type PersonalTagOption,
   type PinCardFormValues,
+  type RecurrenceValue,
   type TimeFocus,
 } from '@/state/pin-card/model';
+import { formatRecurrenceChipSegments } from '@/state/pin-card/recurrence';
 
 const CONTENT_MAX_WIDTH = 353;
 const BOX_PADDING = spacing[4];
@@ -34,6 +36,7 @@ export function PinCardForm({
   timeFilled,
   timeValue,
   repeatEnabled,
+  recurrence,
   // reminderEnabled,
   location,
   showTitleError,
@@ -45,6 +48,8 @@ export function PinCardForm({
   onOpenPersonalTags,
   onOpenDateTime,
   onToggleRepeat,
+  onPressRepeatChip,
+  onRemoveRepeat,
   // onToggleReminder,
 }: {
   control: Control<PinCardFormValues>;
@@ -56,6 +61,7 @@ export function PinCardForm({
   timeFilled: boolean;
   timeValue: readonly [string, string];
   repeatEnabled: boolean;
+  recurrence: RecurrenceValue | null;
   // reminderEnabled: boolean;
   location: string;
   showTitleError: boolean;
@@ -67,6 +73,8 @@ export function PinCardForm({
   onOpenPersonalTags: () => void;
   onOpenDateTime: (focus: TimeFocus) => void;
   onToggleRepeat: () => void;
+  onPressRepeatChip: () => void;
+  onRemoveRepeat: () => void;
   // onToggleReminder: () => void;
 }) {
   return (
@@ -193,7 +201,13 @@ export function PinCardForm({
                 onPress={onToggleRepeat}
               />
             </FormRow>
-            {repeatEnabled ? <RepeatSummaryChip onRemove={onToggleRepeat} /> : null}
+            {repeatEnabled && recurrence != null ? (
+              <RepeatSummaryChip
+                recurrence={recurrence}
+                onPress={onPressRepeatChip}
+                onRemove={onRemoveRepeat}
+              />
+            ) : null}
           </FormBox>
 
           <FormBox>
@@ -387,24 +401,38 @@ function RangeValue({
   );
 }
 
-function RepeatSummaryChip({ onRemove }: { onRemove: () => void }) {
+function RepeatSummaryChip({
+  recurrence,
+  onPress,
+  onRemove,
+}: {
+  recurrence: RecurrenceValue;
+  onPress: () => void;
+  onRemove: () => void;
+}) {
+  const segments = formatRecurrenceChipSegments(recurrence);
+
   return (
     <View style={styles.chipRow}>
       <View style={styles.summaryChip}>
-        <View style={styles.summaryChipTextGroup}>
-          <Typography variant="bodyS" color={colors.gray[600]}>
-            2주마다
-          </Typography>
-          <Typography variant="bodyS" color={colors.gray[600]}>
-            (월, 수)
-          </Typography>
-          <Typography variant="bodyS" color={colors.gray[300]}>
-            ∙
-          </Typography>
-          <Typography variant="bodyS" color={colors.gray[600]}>
-            10회 반복
-          </Typography>
-        </View>
+        <Pressable
+          accessibilityLabel="반복 설정 수정"
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.summaryChipPressable, pressed && styles.pressed]}
+          onPress={onPress}
+        >
+          <View style={styles.summaryChipTextGroup}>
+            {segments.map((segment, index) => (
+              <Typography
+                key={`${segment.text}-${index}`}
+                variant="bodyS"
+                color={segment.muted ? colors.gray[300] : colors.gray[600]}
+              >
+                {segment.text}
+              </Typography>
+            ))}
+          </View>
+        </Pressable>
         <View style={styles.chipDivider} />
         <ChipCloseIcon accessibilityLabel="반복 설정 삭제" onPress={onRemove} />
       </View>
@@ -661,10 +689,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[3],
-    paddingHorizontal: spacing[3],
+    paddingRight: spacing[3],
     paddingVertical: spacing[2] - 2,
     borderRadius: radius.xs,
     backgroundColor: colors.gray[50],
+  },
+  summaryChipPressable: {
+    flexShrink: 1,
+    paddingLeft: spacing[3],
   },
   summaryChipTextGroup: {
     flexDirection: 'row',
