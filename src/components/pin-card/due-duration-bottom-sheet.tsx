@@ -1,50 +1,42 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Card } from '@/components/ui/Card';
+import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 import { WEEKDAY_LABELS } from '@/state/pin-card/data';
 import { getCalendarMonth, type CalendarCell } from '@/state/pin-card/model';
 import {
+  addDurationMinutes,
   compareDueDateValues,
+  createDefaultDurationDraft,
+  DURATION_INCREMENT_BUTTONS,
   formatDueDateForStorage,
+  formatDurationInline,
   type DueDurationDraft,
+  UNKNOWN_DURATION_LABEL,
 } from '@/state/pin-card/queue';
 
 const DATE_CELL_SIZE = spacing[8];
 const SHEET_HEADER_MAX_WIDTH = 369;
 const DATE_CELL_RADIUS = DATE_CELL_SIZE / 2;
-const DURATION_HOURS = Array.from({ length: 25 }, (_, index) => String(index));
-const DURATION_MINUTES = [
-  '0',
-  '5',
-  '10',
-  '15',
-  '20',
-  '25',
-  '30',
-  '35',
-  '40',
-  '45',
-  '50',
-  '55',
-] as const;
-const DRUM_ITEM_HEIGHT = 32;
-const DRUM_PADDING = 2;
 const TODAY_DOT_SIZE = 4;
+const DURATION_BUTTON_HEIGHT = spacing[10];
 
 export function DueDurationBottomSheet({
   visible,
   value,
   onClose,
   onDone,
+  onDurationUnknown,
 }: {
   visible: boolean;
   value: DueDurationDraft;
   onClose: () => void;
   onDone: (draft: DueDurationDraft) => void;
+  onDurationUnknown?: () => void;
 }) {
   const [draft, setDraft] = useState<DueDurationDraft>(value);
   const [calendarBaseDate, setCalendarBaseDate] = useState(() => new Date());
@@ -60,9 +52,10 @@ export function DueDurationBottomSheet({
       dueDate: value.dueDate,
       durationHours: value.durationHours,
       durationMinutes: value.durationMinutes,
+      durationUnknown: value.durationUnknown,
     });
     setCalendarBaseDate(getInitialCalendarBaseDate(value.dueDate));
-  }, [value.dueDate, value.durationHours, value.durationMinutes, visible]);
+  }, [value.dueDate, value.durationHours, value.durationMinutes, value.durationUnknown, visible]);
 
   const handleSelectDate = useCallback((dateValue: string) => {
     if (dateValue.length === 0) {
@@ -72,13 +65,40 @@ export function DueDurationBottomSheet({
     setDraft((prev) => ({ ...prev, dueDate: dateValue }));
   }, []);
 
-  const handleSelectDurationPart = useCallback((part: 'hour' | 'minute', nextValue: string) => {
+  const handleAddDuration = useCallback((minutes: number) => {
+    setDraft((prev) => {
+      const base = prev.durationUnknown
+        ? createDefaultDurationDraft()
+        : {
+            durationHours: prev.durationHours,
+            durationMinutes: prev.durationMinutes,
+            durationUnknown: false,
+          };
+      const nextDuration = addDurationMinutes(base.durationHours, base.durationMinutes, minutes);
+
+      return {
+        ...prev,
+        ...nextDuration,
+        durationUnknown: false,
+      };
+    });
+  }, []);
+
+  const handleResetDuration = useCallback(() => {
     setDraft((prev) => ({
       ...prev,
-      durationHours: part === 'hour' ? Number(nextValue) : prev.durationHours,
-      durationMinutes: part === 'minute' ? Number(nextValue) : prev.durationMinutes,
+      ...createDefaultDurationDraft(),
     }));
   }, []);
+
+  const handleDurationUnknown = useCallback(() => {
+    setDraft((prev) => ({
+      ...prev,
+      ...createDefaultDurationDraft(),
+      durationUnknown: true,
+    }));
+    onDurationUnknown?.();
+  }, [onDurationUnknown]);
 
   const handleMoveMonth = useCallback((offset: number) => {
     setCalendarBaseDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + offset, 1));
@@ -87,6 +107,15 @@ export function DueDurationBottomSheet({
   const handleDone = useCallback(() => {
     onDone(draft);
   }, [draft, onDone]);
+
+  const durationSummary = draft.durationUnknown
+    ? UNKNOWN_DURATION_LABEL
+    : formatDurationInline(draft.durationHours, draft.durationMinutes);
+  const durationSummaryColor = draft.durationUnknown
+    ? colors.gray[600]
+    : draft.durationHours === 0 && draft.durationMinutes === 0
+      ? colors.gray[400]
+      : colors.gray[800];
 
   return (
     <BottomSheet visible={visible} avoidKeyboard contentStyle={styles.sheet} onClose={onClose}>
@@ -181,16 +210,59 @@ export function DueDurationBottomSheet({
         </Card>
 
         <Card variant="solid" accessibilityRole="none" style={styles.durationPanel}>
-          <View style={styles.durationHeader}>
-            <Typography variant="bodyM" color={colors.gray[800]}>
-              약
+          <View style={styles.durationSummaryRow}>
+            <Typography variant="bodyM" color={colors.gray[600]}>
+              소요 시간
             </Typography>
+            <View style={styles.durationSummaryValue}>
+              {!draft.durationUnknown ? (
+                <Typography variant="bodyM" color={colors.gray[500]}>
+                  약
+                </Typography>
+              ) : null}
+              <View style={styles.durationSummaryField}>
+                <Typography variant="bodyM" color={durationSummaryColor} numberOfLines={1}>
+                  {durationSummary}
+                </Typography>
+              </View>
+              <Pressable
+                accessibilityLabel="소요시간 초기화"
+                accessibilityRole="button"
+                hitSlop={8}
+                style={({ pressed }) => [styles.resetButton, pressed && styles.pressed]}
+                onPress={handleResetDuration}
+              >
+                <Icon name="refresh" size={24} color={colors.gray[600]} />
+              </Pressable>
+            </View>
           </View>
-          <DrumDurationPicker
-            hours={draft.durationHours}
-            minutes={draft.durationMinutes}
-            onSelectPart={handleSelectDurationPart}
-          />
+
+          <View style={styles.durationButtonGrid}>
+            {DURATION_INCREMENT_BUTTONS.map((button) => (
+              <Pressable
+                key={button.label}
+                accessibilityLabel={`${button.label} 추가`}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.durationButton, pressed && styles.pressed]}
+                onPress={() => handleAddDuration(button.minutes)}
+              >
+                <Typography variant="bodyM" color={colors.gray[800]} align="center">
+                  {button.label}
+                </Typography>
+              </Pressable>
+            ))}
+          </View>
+
+          <Pressable
+            accessibilityLabel="소요시간 모르겠어요"
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.unknownButton, pressed && styles.pressed]}
+            onPress={handleDurationUnknown}
+          >
+            <Typography variant="bodyS" color={colors.gray[500]}>
+              모르겠어요
+            </Typography>
+          </Pressable>
         </Card>
       </View>
     </BottomSheet>
@@ -210,159 +282,37 @@ function DueDateCell({
   isToday: boolean;
   onSelect: (value: string) => void;
 }) {
+  const isDisabled = cell.value.length === 0 || isPast;
   const textColor = isSelected ? colors.gray.white : isPast ? colors.gray[400] : colors.gray[700];
 
   return (
     <Pressable
       accessibilityLabel={cell.value ? `${cell.value} 선택` : '빈 날짜'}
       accessibilityRole="button"
-      accessibilityState={{ selected: isSelected }}
-      disabled={cell.value.length === 0}
-      style={({ pressed }) => [styles.dateCell, pressed && styles.pressed]}
+      accessibilityState={{ selected: isSelected, disabled: isDisabled }}
+      disabled={isDisabled}
+      style={({ pressed }) => [
+        styles.dateCell,
+        pressed && !isDisabled && styles.pressed,
+        isPast && styles.pastDateCell,
+      ]}
       onPress={() => onSelect(cell.value)}
     >
       {isSelected ? (
         <View style={[styles.dateCircle, styles.dateCircleSelected]}>
-          <Typography
-            variant="bodyM"
-            color={textColor}
-            align="center"
-            style={isPast && styles.pastDate}
-          >
+          <Typography variant="bodyM" color={textColor} align="center">
             {cell.label}
           </Typography>
         </View>
       ) : (
         <View style={styles.dateCircle}>
-          <Typography
-            variant="bodyM"
-            color={textColor}
-            align="center"
-            style={isPast && styles.pastDate}
-          >
+          <Typography variant="bodyM" color={textColor} align="center">
             {cell.label}
           </Typography>
           {isToday ? <View style={styles.todayDot} /> : null}
         </View>
       )}
     </Pressable>
-  );
-}
-
-function DrumDurationPicker({
-  hours,
-  minutes,
-  onSelectPart,
-}: {
-  hours: number;
-  minutes: number;
-  onSelectPart: (part: 'hour' | 'minute', nextValue: string) => void;
-}) {
-  const hourValue = String(hours);
-  const minuteValue = String(minutes);
-  const hourIndex = DURATION_HOURS.indexOf(hourValue) >= 0 ? DURATION_HOURS.indexOf(hourValue) : 0;
-  const minuteItems = DURATION_MINUTES as unknown as string[];
-  const minuteIndex = minuteItems.indexOf(minuteValue) >= 0 ? minuteItems.indexOf(minuteValue) : 0;
-
-  return (
-    <View style={styles.drumPicker}>
-      <View style={styles.drumHighlight} pointerEvents="none" />
-      <DrumColumn
-        items={DURATION_HOURS}
-        selectedIndex={hourIndex}
-        suffix="시간"
-        onSelect={(val) => onSelectPart('hour', val)}
-      />
-      <DrumColumn
-        items={minuteItems}
-        selectedIndex={minuteIndex}
-        suffix="분"
-        onSelect={(val) => onSelectPart('minute', val)}
-      />
-    </View>
-  );
-}
-
-function DrumColumn({
-  items,
-  selectedIndex,
-  suffix,
-  onSelect,
-}: {
-  items: string[];
-  selectedIndex: number;
-  suffix: string;
-  onSelect: (value: string) => void;
-}) {
-  const scrollRef = useRef<ScrollView>(null);
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ y: selectedIndex * DRUM_ITEM_HEIGHT, animated: false });
-  }, [selectedIndex]);
-
-  const handleMomentumScrollEnd = useCallback(
-    (e: { nativeEvent: { contentOffset: { y: number } } }) => {
-      const index = Math.round(e.nativeEvent.contentOffset.y / DRUM_ITEM_HEIGHT);
-      const clamped = Math.max(0, Math.min(items.length - 1, index));
-
-      if (items[clamped] !== undefined) {
-        onSelect(items[clamped]);
-      }
-    },
-    [items, onSelect],
-  );
-
-  const handleItemPress = useCallback(
-    (actualIndex: number) => {
-      const clamped = Math.max(0, Math.min(items.length - 1, actualIndex));
-      scrollRef.current?.scrollTo({ y: clamped * DRUM_ITEM_HEIGHT, animated: true });
-      onSelect(items[clamped]);
-    },
-    [items, onSelect],
-  );
-
-  const paddedItems = [...Array(DRUM_PADDING).fill(''), ...items, ...Array(DRUM_PADDING).fill('')];
-
-  return (
-    <View style={styles.drumColumnGroup}>
-      <ScrollView
-        ref={scrollRef}
-        style={styles.drumColumn}
-        showsVerticalScrollIndicator={false}
-        snapToInterval={DRUM_ITEM_HEIGHT}
-        decelerationRate="fast"
-        scrollEventThrottle={16}
-        onMomentumScrollEnd={handleMomentumScrollEnd}
-      >
-        {paddedItems.map((item, i) => {
-          const actualIndex = i - DRUM_PADDING;
-          const isActual = actualIndex >= 0 && actualIndex < items.length;
-          const dist = Math.abs(actualIndex - selectedIndex);
-          const opacity = !isActual ? 0 : dist === 0 ? 1 : dist === 1 ? 0.45 : 0.18;
-
-          return (
-            <Pressable
-              key={i}
-              style={styles.drumItem}
-              disabled={!isActual}
-              onPress={isActual ? () => handleItemPress(actualIndex) : undefined}
-              accessibilityLabel={isActual ? `${item}${suffix} 선택` : undefined}
-              accessibilityRole={isActual ? 'button' : undefined}
-              accessibilityState={isActual ? { selected: dist === 0 } : undefined}
-            >
-              <Typography
-                variant="bodyM"
-                color={colors.gray[900]}
-                align="center"
-                style={{ opacity }}
-              >
-                {isActual ? `${item}${suffix}` : ''}
-              </Typography>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
-    </View>
   );
 }
 
@@ -449,6 +399,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'visible',
   },
+  pastDateCell: {
+    opacity: 0.5,
+  },
   dateCircle: {
     width: DATE_CELL_SIZE,
     height: DATE_CELL_SIZE,
@@ -458,9 +411,6 @@ const styles = StyleSheet.create({
   },
   dateCircleSelected: {
     backgroundColor: colors.primary,
-  },
-  pastDate: {
-    opacity: 0.5,
   },
   todayDot: {
     position: 'absolute',
@@ -472,44 +422,58 @@ const styles = StyleSheet.create({
   },
   durationPanel: {
     width: '100%',
-    gap: spacing[2],
-    padding: spacing[4],
+    gap: spacing[3],
+    padding: spacing[3],
     borderWidth: 0,
     backgroundColor: colors.alpha.white50,
   },
-  durationHeader: {
-    paddingHorizontal: spacing[2],
-  },
-  drumPicker: {
-    width: '100%',
-    height: DRUM_ITEM_HEIGHT * (DRUM_PADDING * 2 + 1),
+  durationSummaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing[3],
+    justifyContent: 'space-between',
+    gap: spacing[2],
   },
-  drumHighlight: {
-    position: 'absolute',
-    left: spacing[4],
-    right: spacing[4],
-    top: DRUM_ITEM_HEIGHT * DRUM_PADDING,
-    height: DRUM_ITEM_HEIGHT,
-    borderRadius: radius['2xs'],
+  durationSummaryValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: spacing[1],
+  },
+  durationSummaryField: {
+    minHeight: spacing[8],
+    justifyContent: 'center',
+    paddingHorizontal: spacing[2],
+    borderRadius: radius.xs,
     backgroundColor: colors.alpha.white50,
   },
-  drumColumnGroup: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  drumColumn: {
-    width: '100%',
-    maxWidth: 120,
-    height: DRUM_ITEM_HEIGHT * (DRUM_PADDING * 2 + 1),
-  },
-  drumItem: {
-    height: DRUM_ITEM_HEIGHT,
+  resetButton: {
+    width: spacing[8],
+    height: spacing[8],
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radius.xs,
+    backgroundColor: colors.alpha.white50,
+  },
+  durationButtonGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing[1],
+  },
+  durationButton: {
+    width: '31.5%',
+    minHeight: DURATION_BUTTON_HEIGHT,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.gray.white,
+    backgroundColor: colors.alpha.white50,
+  },
+  unknownButton: {
+    alignSelf: 'center',
+    minHeight: spacing[6],
+    justifyContent: 'center',
+    paddingHorizontal: spacing[2],
   },
   pressed: {
     opacity: 0.72,
