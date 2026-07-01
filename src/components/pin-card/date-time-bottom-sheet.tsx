@@ -15,6 +15,7 @@ import {
 } from '@/state/pin-card/model';
 
 const DATE_CELL_SIZE = spacing[8];
+const DATE_CELL_RADIUS = DATE_CELL_SIZE / 2;
 const TIME_HOURS = Array.from({ length: 24 }, (_, index) => String(index).padStart(2, '0'));
 const TIME_MINUTES = [
   '00',
@@ -64,7 +65,7 @@ export function DateTimeBottomSheet({
       });
       setActiveTimeField(focus);
       setIsWheelVisible(false);
-      setCalendarBaseDate(new Date());
+      setCalendarBaseDate(getInitialCalendarBaseDate(value.dateStart));
       setShowTimeOrderError(false);
     }
   }, [
@@ -180,7 +181,7 @@ export function DateTimeBottomSheet({
                 ‹
               </Typography>
             </Pressable>
-            <Typography variant="bodyM" color={colors.gray[800]} align="center">
+            <Typography variant="titleS" color={colors.gray[900]} align="center">
               {calendar.title}
             </Typography>
             <Pressable
@@ -209,43 +210,17 @@ export function DateTimeBottomSheet({
             ))}
           </View>
           <View style={styles.dateGrid}>
-            {calendar.cells.map((cell) => {
-              const selected =
-                cell.value.length > 0 &&
-                (cell.value === draft.dateStart || cell.value === draft.dateEnd);
-              const inRange = isDateInDraftRange(cell.value, draft);
-
-              return (
-                <Pressable
-                  key={cell.key}
-                  accessibilityLabel={cell.value ? `${cell.value} 선택` : '빈 날짜'}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                  disabled={cell.value.length === 0}
-                  style={({ pressed }) => [
-                    styles.dateCell,
-                    inRange && styles.dateCellInRange,
-                    selected && styles.dateCellSelected,
-                    pressed && styles.pressed,
-                  ]}
-                  onPress={() => handleSelectDate(cell.value)}
-                >
-                  <Typography
-                    variant="caption"
-                    color={
-                      selected
-                        ? colors.gray.white
-                        : cell.isToday
-                          ? colors.primary
-                          : colors.gray[700]
-                    }
-                    align="center"
-                  >
-                    {cell.label}
-                  </Typography>
-                </Pressable>
-              );
-            })}
+            {calendar.cells.map((cell, index) => (
+              <DateGridCell
+                key={cell.key}
+                cell={cell}
+                column={index % 7}
+                draft={draft}
+                previousValue={calendar.cells[index - 1]?.value}
+                nextValue={calendar.cells[index + 1]?.value}
+                onSelect={handleSelectDate}
+              />
+            ))}
           </View>
         </Card>
 
@@ -304,6 +279,85 @@ export function DateTimeBottomSheet({
         </Card>
       </View>
     </BottomSheet>
+  );
+}
+
+function DateGridCell({
+  cell,
+  column,
+  draft,
+  previousValue,
+  nextValue,
+  onSelect,
+}: {
+  cell: { label: string; value: string };
+  column: number;
+  draft: DateTimeDraft;
+  previousValue?: string;
+  nextValue?: string;
+  onSelect: (value: string) => void;
+}) {
+  const isRange = draft.dateMode === 'range' && draft.dateEnd.length > 0;
+  const isRangeStart = isRange && cell.value === draft.dateStart;
+  const isRangeEnd = isRange && cell.value === draft.dateEnd;
+  const isSingle = draft.dateMode === 'single' && cell.value === draft.dateStart;
+  const isRangeMiddle = isRange && isDateInDraftRange(cell.value, draft);
+  const isEndpoint = isRangeStart || isRangeEnd || isSingle;
+  const inRangeBand = isRangeStart || isRangeEnd || isRangeMiddle;
+
+  const hasPreviousInRow = column > 0 && isDateVisibleRangeCell(previousValue, draft);
+  const hasNextInRow = column < 6 && isDateVisibleRangeCell(nextValue, draft);
+  const continuesFromPreviousWeek =
+    column === 0 &&
+    cell.value.length > 0 &&
+    cell.value > draft.dateStart &&
+    cell.value <= draft.dateEnd;
+  const continuesToNextWeek =
+    column === 6 &&
+    cell.value.length > 0 &&
+    cell.value < draft.dateEnd &&
+    cell.value >= draft.dateStart;
+
+  const showTrackLeft =
+    inRangeBand && (isRangeMiddle || isRangeEnd) && (hasPreviousInRow || continuesFromPreviousWeek);
+  const showTrackRight =
+    inRangeBand && (isRangeMiddle || isRangeStart) && (hasNextInRow || continuesToNextWeek);
+
+  return (
+    <Pressable
+      accessibilityLabel={cell.value ? `${cell.value} 선택` : '빈 날짜'}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isEndpoint }}
+      disabled={cell.value.length === 0}
+      style={({ pressed }) => [styles.dateCell, pressed && styles.pressed]}
+      onPress={() => onSelect(cell.value)}
+    >
+      {showTrackLeft || showTrackRight ? (
+        <View
+          style={[
+            styles.dateRangeTrack,
+            showTrackLeft && showTrackRight
+              ? styles.dateRangeTrackFull
+              : showTrackLeft
+                ? styles.dateRangeTrackLeft
+                : styles.dateRangeTrackRight,
+          ]}
+        />
+      ) : null}
+      {isEndpoint ? (
+        <View style={[styles.dateCircle, styles.dateCircleSelected]}>
+          <Typography variant="bodyM" color={colors.gray.white} align="center">
+            {cell.label}
+          </Typography>
+        </View>
+      ) : (
+        <View style={styles.dateCircle}>
+          <Typography variant="bodyM" color={colors.gray[700]} align="center">
+            {cell.label}
+          </Typography>
+        </View>
+      )}
+    </Pressable>
   );
 }
 
@@ -468,6 +522,24 @@ function isInvalidSameDayTimeRange(draft: DateTimeDraft) {
   return draft.timeStart > draft.timeEnd;
 }
 
+function isDateVisibleRangeCell(value: string | undefined, draft: DateTimeDraft) {
+  if (value == null || value.length === 0 || draft.dateMode !== 'range') {
+    return false;
+  }
+
+  return value >= draft.dateStart && value <= draft.dateEnd;
+}
+
+function getInitialCalendarBaseDate(dateValue: string) {
+  const [year, month] = dateValue.split('.').map(Number);
+
+  if (!Number.isFinite(year) || !Number.isFinite(month) || year < 1900 || month < 1 || month > 12) {
+    return new Date();
+  }
+
+  return new Date(year, month - 1, 1);
+}
+
 const styles = StyleSheet.create({
   dateTimeSheet: {
     gap: spacing[4],
@@ -539,12 +611,35 @@ const styles = StyleSheet.create({
     height: DATE_CELL_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.full,
+    overflow: 'visible',
   },
-  dateCellInRange: {
+  dateRangeTrack: {
+    position: 'absolute',
+    top: 0,
+    height: DATE_CELL_SIZE,
     backgroundColor: colors.alpha.primary20,
   },
-  dateCellSelected: {
+  dateRangeTrackFull: {
+    left: 0,
+    right: 0,
+  },
+  dateRangeTrackLeft: {
+    left: 0,
+    right: '50%',
+  },
+  dateRangeTrackRight: {
+    left: '50%',
+    right: 0,
+  },
+  dateCircle: {
+    zIndex: 1,
+    width: DATE_CELL_SIZE,
+    height: DATE_CELL_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: DATE_CELL_RADIUS,
+  },
+  dateCircleSelected: {
     backgroundColor: colors.primary,
   },
   timePanel: {
