@@ -3,6 +3,7 @@ import { Controller, type Control } from 'react-hook-form';
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Card } from '@/components/ui/Card';
+import { Icon } from '@/components/ui/Icon';
 import { Tag } from '@/components/ui/Tag';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
@@ -16,6 +17,13 @@ import {
   type RecurrenceValue,
   type TimeFocus,
 } from '@/state/pin-card/model';
+import {
+  formatDueCountdown,
+  formatDueDateDisplay,
+  formatDurationDisplay,
+  hasDueDate,
+  hasQueueDuration,
+} from '@/state/pin-card/queue';
 import { formatRecurrenceChipSegments } from '@/state/pin-card/recurrence';
 
 const CONTENT_MAX_WIDTH = 353;
@@ -42,11 +50,20 @@ export function PinCardForm({
   showTitleError,
   showDateError,
   showTimeError,
+  showDueError = false,
+  showDurationError = false,
+  dueDate = '',
+  durationHours = 0,
+  durationMinutes = 0,
+  recommendationAcknowledged = false,
+  recommendationLabel,
   tagFeedback,
   onChangeTab,
   onOpenConditionTag,
   onOpenPersonalTags,
   onOpenDateTime,
+  onOpenDueDuration,
+  onOpenRecommendation,
   onOpenLocation,
   onToggleRepeat,
   onPressRepeatChip,
@@ -68,11 +85,20 @@ export function PinCardForm({
   showTitleError: boolean;
   showDateError: boolean;
   showTimeError: boolean;
+  showDueError?: boolean;
+  showDurationError?: boolean;
+  dueDate?: string;
+  durationHours?: number;
+  durationMinutes?: number;
+  recommendationAcknowledged?: boolean;
+  recommendationLabel?: string;
   tagFeedback: 'none' | 'success' | 'error';
   onChangeTab: (tab: CardTab) => void;
   onOpenConditionTag: () => void;
   onOpenPersonalTags: () => void;
   onOpenDateTime: (focus: TimeFocus) => void;
+  onOpenDueDuration?: () => void;
+  onOpenRecommendation?: () => void;
   onOpenLocation: () => void;
   onToggleRepeat: () => void;
   onPressRepeatChip: () => void;
@@ -157,62 +183,119 @@ export function PinCardForm({
         </View>
 
         <View style={styles.formStack}>
-          <FormBox>
-            <Controller
-              control={control}
-              name="dateMode"
-              rules={{
-                validate: (value) => value !== 'empty',
-              }}
-              render={() => (
-                <FormRow required={dateMode === 'empty'} label="날짜">
+          {activeTab === 'pin' ? (
+            <FormBox>
+              <Controller
+                control={control}
+                name="dateMode"
+                rules={{
+                  validate: (value) => value !== 'empty',
+                }}
+                render={() => (
+                  <FormRow required={dateMode === 'empty'} label="날짜">
+                    <Pressable
+                      accessibilityLabel="날짜 선택"
+                      accessibilityRole="button"
+                      style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
+                      onPress={() => onOpenDateTime('start')}
+                    >
+                      <DateValue mode={dateMode} value={dateValue} error={showDateError} />
+                    </Pressable>
+                  </FormRow>
+                )}
+              />
+              <Divider />
+              <Controller
+                control={control}
+                name="timeFilled"
+                rules={{
+                  validate: (value) => value,
+                }}
+                render={() => (
+                  <FormRow required={!timeFilled} label="시간">
+                    <Pressable
+                      accessibilityLabel="시간 선택"
+                      accessibilityRole="button"
+                      style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
+                      onPress={() => onOpenDateTime('start')}
+                    >
+                      <RangeValue value={timeValue} filled={timeFilled} error={showTimeError} />
+                    </Pressable>
+                  </FormRow>
+                )}
+              />
+              <Divider />
+              <FormRow label="반복">
+                <ToggleSwitch
+                  value={repeatEnabled}
+                  accessibilityLabel="반복 설정"
+                  onPress={onToggleRepeat}
+                />
+              </FormRow>
+              {recurrence != null ? (
+                <RepeatSummaryChip
+                  recurrence={recurrence}
+                  onPress={onPressRepeatChip}
+                  onRemove={onRemoveRepeat}
+                />
+              ) : null}
+            </FormBox>
+          ) : (
+            <>
+              <FormBox>
+                <FormRow required={!hasDueDate(dueDate)} label="마감일">
                   <Pressable
-                    accessibilityLabel="날짜 선택"
+                    accessibilityLabel="마감일 선택"
                     accessibilityRole="button"
                     style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
-                    onPress={() => onOpenDateTime('start')}
+                    onPress={onOpenDueDuration}
                   >
-                    <DateValue mode={dateMode} value={dateValue} error={showDateError} />
+                    <DueDateValue dueDate={dueDate} error={showDueError} />
                   </Pressable>
                 </FormRow>
-              )}
-            />
-            <Divider />
-            <Controller
-              control={control}
-              name="timeFilled"
-              rules={{
-                validate: (value) => value,
-              }}
-              render={() => (
-                <FormRow required={!timeFilled} label="시간">
+                <Divider />
+                <FormRow
+                  required={!hasQueueDuration(durationHours, durationMinutes)}
+                  label="소요시간"
+                >
                   <Pressable
-                    accessibilityLabel="시간 선택"
+                    accessibilityLabel="소요시간 선택"
                     accessibilityRole="button"
                     style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
-                    onPress={() => onOpenDateTime('start')}
+                    onPress={onOpenDueDuration}
                   >
-                    <RangeValue value={timeValue} filled={timeFilled} error={showTimeError} />
+                    <DurationValue
+                      hours={durationHours}
+                      minutes={durationMinutes}
+                      error={showDurationError}
+                    />
                   </Pressable>
                 </FormRow>
-              )}
-            />
-            <Divider />
-            <FormRow label="반복">
-              <ToggleSwitch
-                value={repeatEnabled}
-                accessibilityLabel="반복 설정"
-                onPress={onToggleRepeat}
-              />
-            </FormRow>
-            {recurrence != null ? (
-              <RepeatSummaryChip
-                recurrence={recurrence}
-                onPress={onPressRepeatChip}
-                onRemove={onRemoveRepeat}
-              />
-            ) : null}
-          </FormBox>
+              </FormBox>
+
+              <FormBox>
+                <FormRow label="추천 시간">
+                  <Pressable
+                    accessibilityLabel="추천 시간 확인하기"
+                    accessibilityRole="button"
+                    style={({ pressed }) => [styles.recommendationRow, pressed && styles.pressed]}
+                    onPress={onOpenRecommendation}
+                  >
+                    {recommendationAcknowledged && recommendationLabel != null ? (
+                      <Typography variant="bodyM" color={colors.gray[600]} numberOfLines={1}>
+                        {recommendationLabel}
+                      </Typography>
+                    ) : (
+                      <Typography variant="bodyM" color={colors.primary}>
+                        확인하기
+                      </Typography>
+                    )}
+                    <Icon name="arrowRight" size={24} color={colors.gray[600]} />
+                  </Pressable>
+                </FormRow>
+              </FormBox>
+            </>
+          )}
 
           <FormBox>
             <Controller
@@ -498,6 +581,47 @@ function FormRow({
   );
 }
 
+function DueDateValue({ dueDate, error }: { dueDate: string; error: boolean }) {
+  const filled = hasDueDate(dueDate);
+  const dateText = formatDueDateDisplay(dueDate);
+  const countdown = formatDueCountdown(dueDate);
+  const dateColor = error ? colors.secondary : filled ? colors.gray[600] : colors.gray[400];
+  const countdownColor = error ? colors.secondary : colors.gray[400];
+
+  return (
+    <View style={styles.queueDueValue}>
+      <Typography variant="bodyM" color={dateColor} numberOfLines={1}>
+        {dateText}
+      </Typography>
+      <Typography variant="bodyM" color={dateColor}>
+        까지
+      </Typography>
+      <View style={styles.queueVerticalDivider} />
+      <Typography variant="bodyM" color={countdownColor}>
+        {countdown}
+      </Typography>
+    </View>
+  );
+}
+
+function DurationValue({
+  hours,
+  minutes,
+  error,
+}: {
+  hours: number;
+  minutes: number;
+  error: boolean;
+}) {
+  const textColor = error ? colors.secondary : colors.gray[600];
+
+  return (
+    <Typography variant="bodyM" color={textColor} numberOfLines={1}>
+      {formatDurationDisplay(hours, minutes)}
+    </Typography>
+  );
+}
+
 function DateValue({
   mode,
   value,
@@ -778,6 +902,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     gap: spacing[2],
+  },
+  queueDueValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: spacing[1],
+  },
+  queueVerticalDivider: {
+    width: 1,
+    height: spacing[4],
+    backgroundColor: colors.gray[200],
+  },
+  recommendationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: spacing[1],
   },
   valueInput: {
     ...typography.bodyM,
