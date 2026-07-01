@@ -17,7 +17,7 @@ module.exports = {
     userInterfaceStyle: 'light',
     scheme: 'unplan',
     ios: {
-      supportsTablet: true,
+      supportsTablet: false,
       bundleIdentifier: 'com.unplan.app',
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
