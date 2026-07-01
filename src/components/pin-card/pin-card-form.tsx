@@ -3,7 +3,6 @@ import { Controller, type Control } from 'react-hook-form';
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Card } from '@/components/ui/Card';
-import { Icon } from '@/components/ui/Icon';
 import { Tag } from '@/components/ui/Tag';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
@@ -20,9 +19,10 @@ import {
 import {
   formatDueCountdown,
   formatDueDateDisplay,
-  formatDurationDisplay,
+  formatDurationInline,
   hasDueDate,
-  hasQueueDuration,
+  hasQueueDurationOrUnknown,
+  UNKNOWN_DURATION_LABEL,
 } from '@/state/pin-card/queue';
 import { formatRecurrenceChipSegments } from '@/state/pin-card/recurrence';
 
@@ -55,15 +55,13 @@ export function PinCardForm({
   dueDate = '',
   durationHours = 0,
   durationMinutes = 0,
-  recommendationAcknowledged = false,
-  recommendationLabel,
+  durationUnknown = false,
   tagFeedback,
   onChangeTab,
   onOpenConditionTag,
   onOpenPersonalTags,
   onOpenDateTime,
   onOpenDueDuration,
-  onOpenRecommendation,
   onOpenLocation,
   onToggleRepeat,
   onPressRepeatChip,
@@ -90,15 +88,13 @@ export function PinCardForm({
   dueDate?: string;
   durationHours?: number;
   durationMinutes?: number;
-  recommendationAcknowledged?: boolean;
-  recommendationLabel?: string;
+  durationUnknown?: boolean;
   tagFeedback: 'none' | 'success' | 'error';
   onChangeTab: (tab: CardTab) => void;
   onOpenConditionTag: () => void;
   onOpenPersonalTags: () => void;
   onOpenDateTime: (focus: TimeFocus) => void;
   onOpenDueDuration?: () => void;
-  onOpenRecommendation?: () => void;
   onOpenLocation: () => void;
   onToggleRepeat: () => void;
   onPressRepeatChip: () => void;
@@ -241,60 +237,39 @@ export function PinCardForm({
               ) : null}
             </FormBox>
           ) : (
-            <>
-              <FormBox>
-                <FormRow required={!hasDueDate(dueDate)} label="마감일">
-                  <Pressable
-                    accessibilityLabel="마감일 선택"
-                    accessibilityRole="button"
-                    style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
-                    onPress={onOpenDueDuration}
-                  >
-                    <DueDateValue dueDate={dueDate} error={showDueError} />
-                  </Pressable>
-                </FormRow>
-                <Divider />
-                <FormRow
-                  required={!hasQueueDuration(durationHours, durationMinutes)}
-                  label="소요시간"
+            <FormBox>
+              <FormRow required={!hasDueDate(dueDate)} label="마감일">
+                <Pressable
+                  accessibilityLabel="마감일 선택"
+                  accessibilityRole="button"
+                  style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
+                  onPress={onOpenDueDuration}
                 >
-                  <Pressable
-                    accessibilityLabel="소요시간 선택"
-                    accessibilityRole="button"
-                    style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
-                    onPress={onOpenDueDuration}
-                  >
-                    <DurationValue
-                      hours={durationHours}
-                      minutes={durationMinutes}
-                      error={showDurationError}
-                    />
-                  </Pressable>
-                </FormRow>
-              </FormBox>
-
-              <FormBox>
-                <FormRow label="추천 시간">
-                  <Pressable
-                    accessibilityLabel="추천 시간 확인하기"
-                    accessibilityRole="button"
-                    style={({ pressed }) => [styles.recommendationRow, pressed && styles.pressed]}
-                    onPress={onOpenRecommendation}
-                  >
-                    {recommendationAcknowledged && recommendationLabel != null ? (
-                      <Typography variant="bodyM" color={colors.gray[600]} numberOfLines={1}>
-                        {recommendationLabel}
-                      </Typography>
-                    ) : (
-                      <Typography variant="bodyM" color={colors.primary}>
-                        확인하기
-                      </Typography>
-                    )}
-                    <Icon name="arrowRight" size={24} color={colors.gray[600]} />
-                  </Pressable>
-                </FormRow>
-              </FormBox>
-            </>
+                  <DueDateValue dueDate={dueDate} error={showDueError} />
+                </Pressable>
+              </FormRow>
+              <Divider />
+              <FormRow
+                required={
+                  !hasQueueDurationOrUnknown(durationHours, durationMinutes, durationUnknown)
+                }
+                label="소요시간"
+              >
+                <Pressable
+                  accessibilityLabel="소요시간 선택"
+                  accessibilityRole="button"
+                  style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
+                  onPress={onOpenDueDuration}
+                >
+                  <DurationValue
+                    hours={durationHours}
+                    minutes={durationMinutes}
+                    durationUnknown={durationUnknown}
+                    error={showDurationError}
+                  />
+                </Pressable>
+              </FormRow>
+            </FormBox>
           )}
 
           <FormBox>
@@ -607,18 +582,41 @@ function DueDateValue({ dueDate, error }: { dueDate: string; error: boolean }) {
 function DurationValue({
   hours,
   minutes,
+  durationUnknown,
   error,
 }: {
   hours: number;
   minutes: number;
+  durationUnknown: boolean;
   error: boolean;
 }) {
-  const textColor = error ? colors.secondary : colors.gray[600];
+  if (durationUnknown) {
+    return (
+      <Typography
+        variant="bodyM"
+        color={error ? colors.secondary : colors.gray[600]}
+        numberOfLines={1}
+      >
+        {UNKNOWN_DURATION_LABEL}
+      </Typography>
+    );
+  }
+
+  const filled = hours > 0 || minutes > 0;
+  const textColor = error ? colors.secondary : filled ? colors.gray[600] : colors.gray[400];
 
   return (
-    <Typography variant="bodyM" color={textColor} numberOfLines={1}>
-      {formatDurationDisplay(hours, minutes)}
-    </Typography>
+    <View style={styles.durationValue}>
+      <Typography variant="bodyM" color={textColor}>
+        약
+      </Typography>
+      <Typography variant="bodyM" color={textColor} numberOfLines={1}>
+        {formatDurationInline(hours, minutes)}
+      </Typography>
+      <Typography variant="bodyM" color={textColor}>
+        소요
+      </Typography>
+    </View>
   );
 }
 
@@ -909,16 +907,16 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     gap: spacing[1],
   },
-  queueVerticalDivider: {
-    width: 1,
-    height: spacing[4],
-    backgroundColor: colors.gray[200],
-  },
-  recommendationRow: {
+  durationValue: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
     gap: spacing[1],
+  },
+  queueVerticalDivider: {
+    width: 1,
+    height: spacing[4],
+    backgroundColor: colors.gray[200],
   },
   valueInput: {
     ...typography.bodyM,
