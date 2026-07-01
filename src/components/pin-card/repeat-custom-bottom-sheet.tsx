@@ -22,6 +22,7 @@ const DRUM_ITEM_HEIGHT = 32;
 const DRUM_PADDING = 2;
 const DRUM_VISIBLE_HEIGHT = DRUM_ITEM_HEIGHT * (DRUM_PADDING * 2 + 1);
 const WHEEL_WIDTH = 329;
+const SCROLL_MAX_HEIGHT = 520;
 
 type OpenMenu = 'none' | 'freq' | 'end';
 type ActivePicker = 'none' | 'interval' | 'count';
@@ -603,7 +604,7 @@ const styles = StyleSheet.create({
   },
   scroll: {
     width: '100%',
-    maxHeight: 520,
+    maxHeight: SCROLL_MAX_HEIGHT,
   },
   content: {
     width: '100%',

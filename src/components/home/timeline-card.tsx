@@ -13,6 +13,7 @@ const HOME_CARD_CONTENT_GAP = 10;
 const HOME_TIMELINE_ROW_WIDTH = 273;
 const HOME_TIMELINE_TIME_WIDTH = 43;
 const HOME_TIMELINE_ROW_GAP = 9;
+const HOME_TIMELINE_TICK_GAP = 2;
 const HOME_TIMELINE_CARD_WIDTH = 221;
 
 interface TimelineCardProps {
@@ -169,7 +170,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    gap: 2,
+    gap: HOME_TIMELINE_TICK_GAP,
     paddingTop: spacing[2],
   },
   tick: {

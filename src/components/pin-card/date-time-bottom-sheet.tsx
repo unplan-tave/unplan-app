@@ -15,6 +15,7 @@ import {
 } from '@/state/pin-card/model';
 
 const DATE_CELL_SIZE = spacing[8];
+const SHEET_HEADER_MAX_WIDTH = 369;
 const DATE_CELL_RADIUS = DATE_CELL_SIZE / 2;
 const TIME_HOURS = Array.from({ length: 24 }, (_, index) => String(index).padStart(2, '0'));
 const TIME_MINUTES = [
@@ -549,7 +550,7 @@ const styles = StyleSheet.create({
   },
   sheetHeader: {
     width: '100%',
-    maxWidth: 369,
+    maxWidth: SHEET_HEADER_MAX_WIDTH,
     minHeight: spacing[6],
     flexDirection: 'row',
     alignItems: 'center',

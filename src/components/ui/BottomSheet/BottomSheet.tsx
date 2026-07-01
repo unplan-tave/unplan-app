@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 
 import { Typography } from '@/components/ui/Typography';
-import { colors } from '@/constants/theme';
+import { colors, radius, spacing } from '@/constants/theme';
 
 import { type BottomSheetProps } from './bottomSheet.types';
 import { BottomSheetHandle } from './BottomSheetHandle';
@@ -157,7 +157,7 @@ export function BottomSheet({
   );
 }
 
-const SHEET_RADIUS = 36;
+const SHEET_RADIUS = radius.sheet;
 
 const styles = StyleSheet.create({
   overlay: {
@@ -188,10 +188,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.alpha.white50,
   },
   sheetContent: {
-    gap: 16,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 60,
+    gap: spacing[4],
+    paddingHorizontal: spacing[5],
+    paddingTop: spacing[3],
+    paddingBottom: spacing[16] - spacing[1],
   },
   sheetFallback: {
     backgroundColor: colors.alpha.white50,

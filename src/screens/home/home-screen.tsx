@@ -24,6 +24,15 @@ import { usePinCardStore } from '@/state/pin-card/use-pin-card-store';
 
 const WEEKDAY_LABELS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 const EMPTY_HOME_CARD_HEIGHT = 108;
+const HOME_STATUS_COLUMN_WIDTH = 112;
+const HOME_DIVIDER_WIDTH = 107;
+const HOME_MESSAGE_BOX_WIDTH = 226;
+const HOME_TIMELINE_LEFT = 108;
+const HOME_TIMELINE_WIDTH = 273;
+const HOME_TIMELINE_LINE_LEFT = 43;
+const HOME_TIMELINE_LINE_BOTTOM = 240;
+const HOME_CURRENT_TIME_LEFT = 104;
+const HOME_CURRENT_TIME_BADGE_HEIGHT = 22;
 const HOME_TIMELINE_GAP = spacing[2];
 const CURRENT_TIME_GAP_FROM_ADD_CARD = spacing[10];
 const HOME_TIMELINE_CARD_LIST_TOP = 106.69;
@@ -311,7 +320,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[3],
   },
   statusColumn: {
-    width: 112,
+    width: HOME_STATUS_COLUMN_WIDTH,
   },
   viewBadge: {
     alignSelf: 'flex-start',
@@ -329,7 +338,7 @@ const styles = StyleSheet.create({
     gap: spacing[1],
   },
   divider: {
-    width: 107,
+    width: HOME_DIVIDER_WIDTH,
     height: 1,
     marginTop: spacing[1],
     backgroundColor: colors.alpha.white50,
@@ -339,7 +348,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing[3],
   },
   messageBox: {
-    width: 226,
+    width: HOME_MESSAGE_BOX_WIDTH,
     alignItems: 'flex-end',
   },
   message: {
@@ -348,29 +357,29 @@ const styles = StyleSheet.create({
   timeline: {
     position: 'absolute',
     top: HOME_TIMELINE_CARD_LIST_TOP,
-    left: 108,
-    width: 273,
+    left: HOME_TIMELINE_LEFT,
+    width: HOME_TIMELINE_WIDTH,
     gap: spacing[2],
   },
   timelineLine: {
     position: 'absolute',
     top: -HOME_TIMELINE_CARD_LIST_TOP,
-    bottom: -240,
-    left: 43,
+    bottom: -HOME_TIMELINE_LINE_BOTTOM,
+    left: HOME_TIMELINE_LINE_LEFT,
     width: 1,
     backgroundColor: colors.alpha.black12,
   },
   currentTime: {
     position: 'absolute',
     top: CURRENT_TIME_TOP,
-    left: 104,
+    left: HOME_CURRENT_TIME_LEFT,
     right: -spacing[3],
     flexDirection: 'row',
     alignItems: 'center',
     zIndex: 4,
   },
   currentTimeBadge: {
-    minHeight: 22,
+    minHeight: HOME_CURRENT_TIME_BADGE_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing[1],

@@ -39,7 +39,6 @@ export function PinCardForm({
   timeValue,
   repeatEnabled,
   recurrence,
-  // reminderEnabled,
   showTitleError,
   showDateError,
   showTimeError,
@@ -55,7 +54,6 @@ export function PinCardForm({
   onMemoFocus,
   onMemoBlur,
   onMemoReachLimit,
-  // onToggleReminder,
 }: {
   control: Control<PinCardFormValues>;
   activeTab: CardTab;
@@ -67,7 +65,6 @@ export function PinCardForm({
   timeValue: readonly [string, string];
   repeatEnabled: boolean;
   recurrence: RecurrenceValue | null;
-  // reminderEnabled: boolean;
   showTitleError: boolean;
   showDateError: boolean;
   showTimeError: boolean;
@@ -83,7 +80,6 @@ export function PinCardForm({
   onMemoFocus?: () => void;
   onMemoBlur?: () => void;
   onMemoReachLimit?: () => void;
-  // onToggleReminder: () => void;
 }) {
   return (
     <>

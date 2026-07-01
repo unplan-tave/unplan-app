@@ -105,7 +105,6 @@ export function PinCardCreateScreen() {
   const timeEnd = watch('timeEnd');
   const repeatEnabled = watch('repeatEnabled');
   const recurrence = watch('recurrence');
-  // const reminderEnabled = watch('reminderEnabled');
   const location = watch('location');
   const locationDetail = watch('locationDetail');
   const memo = watch('memo');
@@ -153,7 +152,6 @@ export function PinCardCreateScreen() {
       memo,
       repeatEnabled,
       recurrence,
-      // reminderEnabled,
     });
   }, [
     conditionTagId,
@@ -164,7 +162,6 @@ export function PinCardCreateScreen() {
     locationDetail,
     memo,
     personalTagIds,
-    // reminderEnabled,
     repeatEnabled,
     recurrence,
     timeEnd,

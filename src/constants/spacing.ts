@@ -29,6 +29,7 @@ export const radius = {
   modal: 13,
   xxl: 15, // SearchBar
   '2xl': 16, // Modal card
+  sheet: 36, // BottomSheet top corner
   nav: 65,
   full: 9999,
 } as const;
