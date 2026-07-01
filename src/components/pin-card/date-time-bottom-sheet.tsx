@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { BottomSheet } from '@/components/ui/BottomSheet';
@@ -16,7 +16,22 @@ import {
 
 const DATE_CELL_SIZE = spacing[8];
 const TIME_HOURS = Array.from({ length: 24 }, (_, index) => String(index).padStart(2, '0'));
-const TIME_MINUTES = ['00', '10', '20', '30', '40', '50'] as const;
+const TIME_MINUTES = [
+  '00',
+  '05',
+  '10',
+  '15',
+  '20',
+  '25',
+  '30',
+  '35',
+  '40',
+  '45',
+  '50',
+  '55',
+] as const;
+const DRUM_ITEM_HEIGHT = 32;
+const DRUM_PADDING = 2;
 
 export function DateTimeBottomSheet({
   visible,
@@ -33,6 +48,7 @@ export function DateTimeBottomSheet({
 }) {
   const [draft, setDraft] = useState<DateTimeDraft>(value);
   const [activeTimeField, setActiveTimeField] = useState<TimeFocus>(focus);
+  const [isWheelVisible, setIsWheelVisible] = useState(false);
   const [calendarBaseDate, setCalendarBaseDate] = useState(() => new Date());
   const [showTimeOrderError, setShowTimeOrderError] = useState(false);
   const calendar = getCalendarMonth(calendarBaseDate);
@@ -47,6 +63,7 @@ export function DateTimeBottomSheet({
         timeEnd: value.timeEnd,
       });
       setActiveTimeField(focus);
+      setIsWheelVisible(false);
       setCalendarBaseDate(new Date());
       setShowTimeOrderError(false);
     }
@@ -82,22 +99,12 @@ export function DateTimeBottomSheet({
     });
   }, []);
 
-  const handleSelectTime = useCallback(
-    (timeValue: string) => {
-      setDraft((prev) => ({
-        ...prev,
-        [activeTimeField === 'start' ? 'timeStart' : 'timeEnd']: timeValue,
-      }));
-      setShowTimeOrderError(false);
-    },
-    [activeTimeField],
-  );
-
   const handleSelectTimePart = useCallback(
     (part: 'hour' | 'minute', nextValue: string) => {
       setDraft((prev) => {
         const fieldKey = activeTimeField === 'start' ? 'timeStart' : 'timeEnd';
-        const currentTime = prev[fieldKey] || DEFAULT_TIME_RANGE[0];
+        const fallback = fieldKey === 'timeEnd' ? prev.timeStart : DEFAULT_TIME_RANGE[0];
+        const currentTime = prev[fieldKey] || fallback || DEFAULT_TIME_RANGE[0];
         const [hour, minute] = currentTime.split(':');
 
         return {
@@ -246,11 +253,12 @@ export function DateTimeBottomSheet({
           <TimeDraftRow
             label="시작 시간"
             value={draft.timeStart}
-            selected={activeTimeField === 'start'}
+            selected={isWheelVisible && activeTimeField === 'start'}
             filled={draft.timeStart.length > 0}
             error={showTimeOrderError}
             onPress={() => {
               setActiveTimeField('start');
+              setIsWheelVisible(true);
               setShowTimeOrderError(false);
             }}
           />
@@ -258,11 +266,15 @@ export function DateTimeBottomSheet({
           <TimeDraftRow
             label="종료 시간"
             value={draft.timeEnd}
-            selected={activeTimeField === 'end'}
+            selected={isWheelVisible && activeTimeField === 'end'}
             filled={draft.timeEnd.length > 0}
             error={showTimeOrderError}
             onPress={() => {
+              if (draft.timeEnd.length === 0 && draft.timeStart.length > 0) {
+                setDraft((prev) => ({ ...prev, timeEnd: prev.timeStart }));
+              }
               setActiveTimeField('end');
+              setIsWheelVisible(true);
               setShowTimeOrderError(false);
             }}
           />
@@ -283,11 +295,12 @@ export function DateTimeBottomSheet({
               </Pressable>
             </View>
           ) : null}
-          <TimeWheel
-            value={activeTimeField === 'start' ? draft.timeStart : draft.timeEnd}
-            onSelectPart={handleSelectTimePart}
-            onSelectPreset={handleSelectTime}
-          />
+          {isWheelVisible ? (
+            <DrumTimePicker
+              value={activeTimeField === 'start' ? draft.timeStart : draft.timeEnd}
+              onSelectPart={handleSelectTimePart}
+            />
+          ) : null}
         </Card>
       </View>
     </BottomSheet>
@@ -326,119 +339,124 @@ function TimeDraftRow({
       </Typography>
       <Typography
         variant="bodyM"
-        color={error ? colors.secondary : selected && filled ? colors.primary : colors.gray[400]}
+        color={
+          error
+            ? colors.secondary
+            : filled && selected
+              ? colors.primary
+              : filled
+                ? colors.gray[600]
+                : colors.gray[300]
+        }
       >
-        {value.length > 0 ? value : DEFAULT_TIME_RANGE[0]}
+        {filled ? value : '--:--'}
       </Typography>
     </Pressable>
   );
 }
 
-function TimeWheel({
+function DrumTimePicker({
   value,
   onSelectPart,
-  onSelectPreset,
 }: {
   value: string;
   onSelectPart: (part: 'hour' | 'minute', nextValue: string) => void;
-  onSelectPreset: (timeValue: string) => void;
 }) {
   const [selectedHour, selectedMinute] = (value || DEFAULT_TIME_RANGE[0]).split(':');
+  const hourIndex = TIME_HOURS.indexOf(selectedHour) >= 0 ? TIME_HOURS.indexOf(selectedHour) : 0;
+  const minuteItems = TIME_MINUTES as unknown as string[];
+  const minuteIndex =
+    minuteItems.indexOf(selectedMinute) >= 0 ? minuteItems.indexOf(selectedMinute) : 0;
 
   return (
-    <View style={styles.timeWheel}>
-      <ScrollView
-        style={styles.wheelColumn}
-        contentContainerStyle={styles.wheelContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {TIME_HOURS.map((hour) => (
-          <WheelOption
-            key={hour}
-            label={hour}
-            selected={hour === selectedHour}
-            onPress={() => onSelectPart('hour', hour)}
-          />
-        ))}
-      </ScrollView>
-      <Typography
-        variant="bodyM"
-        color={colors.gray[500]}
-        align="center"
-        style={styles.timeSeparator}
-      >
+    <View style={styles.drumPicker}>
+      <View style={styles.drumHighlight} pointerEvents="none" />
+      <DrumColumn
+        items={TIME_HOURS}
+        selectedIndex={hourIndex}
+        onSelect={(val) => onSelectPart('hour', val)}
+      />
+      <Typography variant="bodyM" color={colors.gray[900]} align="center">
         :
       </Typography>
-      <ScrollView
-        style={styles.wheelColumn}
-        contentContainerStyle={styles.wheelContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {TIME_MINUTES.map((minute) => (
-          <WheelOption
-            key={minute}
-            label={minute}
-            selected={minute === selectedMinute}
-            onPress={() => onSelectPart('minute', minute)}
-          />
-        ))}
-      </ScrollView>
-      <View style={styles.quickTimes}>
-        {['00:00', '09:00', '12:00', '15:00'].map((time) => (
-          <Pressable
-            key={time}
-            accessibilityLabel={`${time} 빠른 선택`}
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.quickTime,
-              time === value && styles.quickTimeSelected,
-              pressed && styles.pressed,
-            ]}
-            onPress={() => onSelectPreset(time)}
-          >
-            <Typography
-              variant="caption"
-              color={time === value ? colors.primary : colors.gray[600]}
-              align="center"
-            >
-              {time}
-            </Typography>
-          </Pressable>
-        ))}
-      </View>
+      <DrumColumn
+        items={minuteItems}
+        selectedIndex={minuteIndex}
+        onSelect={(val) => onSelectPart('minute', val)}
+      />
     </View>
   );
 }
 
-function WheelOption({
-  label,
-  selected,
-  onPress,
+function DrumColumn({
+  items,
+  selectedIndex,
+  onSelect,
 }: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
+  items: string[];
+  selectedIndex: number;
+  onSelect: (value: string) => void;
 }) {
+  const scrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: selectedIndex * DRUM_ITEM_HEIGHT, animated: false });
+  }, [selectedIndex]);
+
+  const handleMomentumScrollEnd = useCallback(
+    (e: { nativeEvent: { contentOffset: { y: number } } }) => {
+      const index = Math.round(e.nativeEvent.contentOffset.y / DRUM_ITEM_HEIGHT);
+      const clamped = Math.max(0, Math.min(items.length - 1, index));
+      if (items[clamped] !== undefined) {
+        onSelect(items[clamped]);
+      }
+    },
+    [items, onSelect],
+  );
+
+  const handleItemPress = useCallback(
+    (actualIndex: number) => {
+      const clamped = Math.max(0, Math.min(items.length - 1, actualIndex));
+      scrollRef.current?.scrollTo({ y: clamped * DRUM_ITEM_HEIGHT, animated: true });
+      onSelect(items[clamped]);
+    },
+    [items, onSelect],
+  );
+
+  const paddedItems = [...Array(DRUM_PADDING).fill(''), ...items, ...Array(DRUM_PADDING).fill('')];
+
   return (
-    <Pressable
-      accessibilityLabel={`${label} 선택`}
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      style={({ pressed }) => [
-        styles.wheelOption,
-        selected && styles.wheelOptionSelected,
-        pressed && styles.pressed,
-      ]}
-      onPress={onPress}
+    <ScrollView
+      ref={scrollRef}
+      style={styles.drumColumn}
+      showsVerticalScrollIndicator={false}
+      snapToInterval={DRUM_ITEM_HEIGHT}
+      decelerationRate="fast"
+      scrollEventThrottle={16}
+      onMomentumScrollEnd={handleMomentumScrollEnd}
     >
-      <Typography
-        variant="bodyS"
-        color={selected ? colors.primary : colors.gray[500]}
-        align="center"
-      >
-        {label}
-      </Typography>
-    </Pressable>
+      {paddedItems.map((item, i) => {
+        const actualIndex = i - DRUM_PADDING;
+        const isActual = actualIndex >= 0 && actualIndex < items.length;
+        const dist = Math.abs(actualIndex - selectedIndex);
+        const opacity = !isActual ? 0 : dist === 0 ? 1 : dist === 1 ? 0.45 : 0.18;
+        return (
+          <Pressable
+            key={i}
+            style={styles.drumItem}
+            disabled={!isActual}
+            onPress={isActual ? () => handleItemPress(actualIndex) : undefined}
+            accessibilityLabel={isActual ? `${item} 선택` : undefined}
+            accessibilityRole={isActual ? 'button' : undefined}
+            accessibilityState={isActual ? { selected: dist === 0 } : undefined}
+          >
+            <Typography variant="bodyM" color={colors.gray[900]} align="center" style={{ opacity }}>
+              {item}
+            </Typography>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
   );
 }
 
@@ -568,49 +586,32 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     backgroundColor: colors.secondary,
   },
-  timeWheel: {
-    minHeight: 136,
+  drumPicker: {
+    width: '100%',
+    height: DRUM_ITEM_HEIGHT * (DRUM_PADDING * 2 + 1),
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[2],
-    paddingTop: spacing[2],
+    justifyContent: 'center',
+    gap: spacing[3],
+    marginTop: spacing[1],
   },
-  wheelColumn: {
-    width: 64,
-    maxHeight: 132,
-    borderRadius: radius.md,
-    backgroundColor: colors.gray.white,
+  drumHighlight: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: DRUM_ITEM_HEIGHT * DRUM_PADDING,
+    height: DRUM_ITEM_HEIGHT,
+    borderRadius: radius['2xs'],
+    backgroundColor: colors.alpha.white50,
   },
-  wheelContent: {
-    paddingVertical: spacing[2],
+  drumColumn: {
+    width: 40,
+    height: DRUM_ITEM_HEIGHT * (DRUM_PADDING * 2 + 1),
   },
-  wheelOption: {
-    minHeight: spacing[8],
+  drumItem: {
+    height: DRUM_ITEM_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  wheelOptionSelected: {
-    backgroundColor: colors.alpha.primary20,
-  },
-  timeSeparator: {
-    width: spacing[2],
-  },
-  quickTimes: {
-    flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing[2],
-  },
-  quickTime: {
-    minWidth: 54,
-    minHeight: spacing[8],
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.sm,
-    backgroundColor: colors.gray.white,
-  },
-  quickTimeSelected: {
-    backgroundColor: colors.alpha.primary20,
   },
   divider: {
     width: '100%',
