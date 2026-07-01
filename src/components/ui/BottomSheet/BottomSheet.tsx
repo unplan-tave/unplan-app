@@ -6,8 +6,9 @@ import { colors } from '@/constants/theme';
 import { type BottomSheetProps } from './bottomSheet.types';
 import { BottomSheetHandle } from './BottomSheetHandle';
 
-// expo-blur requires a Development Build (not supported in Expo Go).
-// When available, BlurView provides the native frosted-glass effect (blur 4.5px per Figma).
+// 뒤 콘텐츠가 살짝 비치도록 중간 강도. (native scale 1–100, Figma 4.5px보다 약간 강함)
+const SHEET_BLUR_INTENSITY = 24;
+
 let BlurView: React.ComponentType<{
   intensity: number;
   tint: string;
@@ -32,7 +33,8 @@ export function BottomSheet({
   transparent = true,
   ...props
 }: BottomSheetProps) {
-  const innerStyle = [styles.sheetInner, contentStyle];
+  const innerStyle = styles.sheetInner;
+  const contentAreaStyle = [styles.sheetContent, contentStyle];
 
   const sheetContent = (
     <>
@@ -68,13 +70,20 @@ export function BottomSheet({
         />
         {/* Border wrapper: white stroke visible at rounded corners — NO overflow:hidden */}
         <View style={styles.sheetBorder}>
-          {BlurView != null ? (
-            <BlurView intensity={18} tint="light" style={innerStyle}>
-              {sheetContent}
-            </BlurView>
-          ) : (
-            <View style={[innerStyle, styles.sheetFallback]}>{sheetContent}</View>
-          )}
+          <View style={innerStyle}>
+            {BlurView != null ? (
+              <BlurView
+                intensity={SHEET_BLUR_INTENSITY}
+                tint="extraLight"
+                style={styles.sheetBlurLayer}
+              />
+            ) : null}
+            <View
+              pointerEvents="none"
+              style={[styles.sheetGlassLayer, BlurView == null && styles.sheetFallback]}
+            />
+            <View style={contentAreaStyle}>{sheetContent}</View>
+          </View>
         </View>
       </View>
     </RNModal>
@@ -97,17 +106,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.gray.white,
   },
-  // Inner content area: clips blur/content to the same radius.
+  // Inner shell: clips blur/glass layers to the sheet radius.
   sheetInner: {
+    position: 'relative',
     overflow: 'hidden',
     borderTopLeftRadius: SHEET_RADIUS,
     borderTopRightRadius: SHEET_RADIUS,
+  },
+  sheetBlurLayer: {
+    ...StyleSheet.absoluteFill,
+  },
+  sheetGlassLayer: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: colors.alpha.white50,
+  },
+  sheetContent: {
     gap: 16,
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 60,
   },
   sheetFallback: {
-    backgroundColor: colors.alpha.white88,
+    backgroundColor: colors.alpha.white50,
   },
 });
