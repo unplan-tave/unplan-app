@@ -6,10 +6,12 @@ import { Keyboard, type KeyboardEvent, Platform, ScrollView, StyleSheet, View } 
 
 import { DateOnlyGuideModal } from '@/components/pin-card/date-only-guide-modal';
 import { DateTimeBottomSheet } from '@/components/pin-card/date-time-bottom-sheet';
+import { DueDurationBottomSheet } from '@/components/pin-card/due-duration-bottom-sheet';
 import { LocationBottomSheet } from '@/components/pin-card/location-bottom-sheet';
 import { PinCardCreateHeader } from '@/components/pin-card/pin-card-create-header';
 import { PinCardForm } from '@/components/pin-card/pin-card-form';
 import { PinCardToast } from '@/components/pin-card/pin-card-required-toast';
+import { RecommendTimeModal } from '@/components/pin-card/recommend-time-modal';
 import { RepeatCustomBottomSheet } from '@/components/pin-card/repeat-custom-bottom-sheet';
 import { RepeatPresetBottomSheet } from '@/components/pin-card/repeat-preset-bottom-sheet';
 import { TagPickerSheet, type TagTab } from '@/components/pin-card/tag-picker-sheet';
@@ -30,6 +32,14 @@ import {
   type TimeFocus,
 } from '@/state/pin-card/model';
 import {
+  type DueDurationDraft,
+  getMockRecommendationLabel,
+  hasDueDate,
+  hasQueueDuration,
+  isDueDateInPast,
+  isQueueFormComplete,
+} from '@/state/pin-card/queue';
+import {
   cloneRecurrenceValue,
   createDefaultCustomRecurrence,
   createPresetRecurrence,
@@ -37,6 +47,11 @@ import {
   type RecurrenceValue,
 } from '@/state/pin-card/recurrence';
 import { usePinCardStore } from '@/state/pin-card/use-pin-card-store';
+
+type ToastState = {
+  message: string;
+  variant: 'warning' | 'confirm';
+} | null;
 
 type RepeatSheetMode = 'none' | 'preset' | 'custom';
 type RepeatSheetOrigin = 'new' | 'edit';
@@ -47,11 +62,12 @@ const CONTENT_TOP = 100;
 const FORM_GAP = spacing[6];
 
 export function PinCardCreateScreen() {
-  const { cardId } = useLocalSearchParams<{ cardId?: string }>();
+  const { cardId, type } = useLocalSearchParams<{ cardId?: string; type?: 'queue' }>();
+  const initialCardType: CardTab = type === 'queue' ? 'queue' : 'pin';
   const initialValues = useMemo(() => createDefaultPinCardFormValues(), []);
-  const [activeTab, setActiveTab] = useState<CardTab>('pin');
+  const [activeTab, setActiveTab] = useState<CardTab>(initialCardType);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState>(null);
   const [showTagFeedback, setShowTagFeedback] = useState(false);
   const [showTagErrorFeedback, setShowTagErrorFeedback] = useState(false);
   const [tagSheetTab, setTagSheetTab] = useState<TagTab | null>(null);
@@ -59,6 +75,8 @@ export function PinCardCreateScreen() {
     initialValues.conditionTagId,
   );
   const [isDateTimeSheetVisible, setIsDateTimeSheetVisible] = useState(false);
+  const [isDueDurationSheetVisible, setIsDueDurationSheetVisible] = useState(false);
+  const [isRecommendModalVisible, setIsRecommendModalVisible] = useState(false);
   const [dateTimeFocus, setDateTimeFocus] = useState<TimeFocus>('start');
   const [dateOnlyGuideVisible, setDateOnlyGuideVisible] = useState(false);
   const [repeatSheetMode, setRepeatSheetMode] = useState<RepeatSheetMode>('none');
@@ -108,6 +126,10 @@ export function PinCardCreateScreen() {
   const location = watch('location');
   const locationDetail = watch('locationDetail');
   const memo = watch('memo');
+  const dueDate = watch('dueDate');
+  const durationHours = watch('durationHours');
+  const durationMinutes = watch('durationMinutes');
+  const recommendationAcknowledged = watch('recommendationAcknowledged');
   const primaryTag = getConditionTagById(conditionTagId);
   const selectedPersonalTags = personalTags.filter((tag) => personalTagIds.includes(tag.id));
   const previousTitleRef = useRef(title);
@@ -116,14 +138,30 @@ export function PinCardCreateScreen() {
   const isTitleMissing = title.trim().length === 0;
   const isDateMissing = dateMode === 'empty';
   const isTimeMissing = !timeFilled;
-  const isRequiredComplete = !isTitleMissing && !isDateMissing && !isTimeMissing;
+  const isDueMissing = !hasDueDate(dueDate);
+  const isDurationMissing = !hasQueueDuration(durationHours, durationMinutes);
+  const isPinRequiredComplete = !isTitleMissing && !isDateMissing && !isTimeMissing;
+  const isQueueRequiredComplete = isQueueFormComplete({
+    title,
+    dueDate,
+    durationHours,
+    durationMinutes,
+  });
+  const isRequiredComplete =
+    activeTab === 'queue' ? isQueueRequiredComplete : isPinRequiredComplete;
   const shouldShowTitleError = hasSubmitted && (Boolean(errors.title) || isTitleMissing);
-  const shouldShowDateError = hasSubmitted && (Boolean(errors.dateMode) || isDateMissing);
-  const shouldShowTimeError = hasSubmitted && (Boolean(errors.timeFilled) || isTimeMissing);
+  const shouldShowDateError =
+    activeTab === 'pin' && hasSubmitted && (Boolean(errors.dateMode) || isDateMissing);
+  const shouldShowTimeError =
+    activeTab === 'pin' && hasSubmitted && (Boolean(errors.timeFilled) || isTimeMissing);
+  const shouldShowDueError = activeTab === 'queue' && hasSubmitted && isDueMissing;
+  const shouldShowDurationError = activeTab === 'queue' && hasSubmitted && isDurationMissing;
+  const recommendationLabel = recommendationAcknowledged ? getMockRecommendationLabel() : undefined;
   const tagFeedback = showTagErrorFeedback ? 'error' : showTagFeedback ? 'success' : 'none';
 
   useEffect(() => {
-    const nextDraft = cardId == null ? beginCreate(initialValues, 'pin') : beginEdit(cardId);
+    const nextDraft =
+      cardId == null ? beginCreate(initialValues, initialCardType) : beginEdit(cardId);
 
     if (nextDraft == null) {
       router.back();
@@ -134,7 +172,7 @@ export function PinCardCreateScreen() {
     setTagSheetSelectedId(nextDraft.values.conditionTagId);
     previousTitleRef.current = nextDraft.values.title;
     reset(nextDraft.values);
-  }, [beginCreate, beginEdit, cardId, initialValues, reset]);
+  }, [beginCreate, beginEdit, cardId, initialCardType, initialValues, reset]);
 
   useEffect(() => {
     updateDraftValues({
@@ -152,16 +190,24 @@ export function PinCardCreateScreen() {
       memo,
       repeatEnabled,
       recurrence,
+      dueDate,
+      durationHours,
+      durationMinutes,
+      recommendationAcknowledged,
     });
   }, [
     conditionTagId,
     dateEnd,
     dateMode,
     dateStart,
+    dueDate,
+    durationHours,
+    durationMinutes,
     location,
     locationDetail,
     memo,
     personalTagIds,
+    recommendationAcknowledged,
     repeatEnabled,
     recurrence,
     timeEnd,
@@ -172,16 +218,16 @@ export function PinCardCreateScreen() {
   ]);
 
   useEffect(() => {
-    if (toastMessage == null) {
+    if (toast == null) {
       return;
     }
 
     const timeoutId = setTimeout(() => {
-      setToastMessage(null);
+      setToast(null);
     }, 3_000);
 
     return () => clearTimeout(timeoutId);
-  }, [toastMessage]);
+  }, [toast]);
 
   useEffect(() => {
     if (title === previousTitleRef.current) {
@@ -259,7 +305,7 @@ export function PinCardCreateScreen() {
 
   const handleInvalidSubmit = useCallback(() => {
     setHasSubmitted(true);
-    setToastMessage('아직 입력되지 않은 필수 정보가 있어요!');
+    setToast({ message: '아직 입력되지 않은 필수 정보가 있어요!', variant: 'warning' });
   }, []);
 
   const handleOpenDateTimeSheet = useCallback((focus: TimeFocus = 'start') => {
@@ -302,12 +348,66 @@ export function PinCardCreateScreen() {
       });
       setIsDateTimeSheetVisible(false);
 
-      if (draft.dateMode !== 'empty' && !nextTimeFilled) {
+      if (activeTab === 'pin' && draft.dateMode !== 'empty' && !nextTimeFilled) {
         setDateOnlyGuideVisible(true);
       }
     },
+    [activeTab, hasSubmitted, setValue, updateDraftValues],
+  );
+
+  const handleSaveDueDuration = useCallback(
+    (draft: DueDurationDraft) => {
+      setValue('dueDate', draft.dueDate, {
+        shouldDirty: true,
+        shouldValidate: hasSubmitted,
+      });
+      setValue('durationHours', draft.durationHours, {
+        shouldDirty: true,
+        shouldValidate: hasSubmitted,
+      });
+      setValue('durationMinutes', draft.durationMinutes, {
+        shouldDirty: true,
+        shouldValidate: hasSubmitted,
+      });
+      updateDraftValues({
+        dueDate: draft.dueDate,
+        durationHours: draft.durationHours,
+        durationMinutes: draft.durationMinutes,
+      });
+      setIsDueDurationSheetVisible(false);
+    },
     [hasSubmitted, setValue, updateDraftValues],
   );
+
+  const handleOpenDueDurationSheet = useCallback(() => {
+    setIsDueDurationSheetVisible(true);
+  }, []);
+
+  const canShowRecommendation = useCallback(() => {
+    return (
+      hasDueDate(dueDate) &&
+      hasQueueDuration(durationHours, durationMinutes) &&
+      !isDueDateInPast(dueDate)
+    );
+  }, [dueDate, durationHours, durationMinutes]);
+
+  const handleOpenRecommendation = useCallback(() => {
+    if (!canShowRecommendation()) {
+      setToast({
+        message: '시간대 추천이 어려울 수 있어요!',
+        variant: 'confirm',
+      });
+      return;
+    }
+
+    setIsRecommendModalVisible(true);
+  }, [canShowRecommendation]);
+
+  const handleConfirmRecommendation = useCallback(() => {
+    setValue('recommendationAcknowledged', true, { shouldDirty: true });
+    updateDraftValues({ recommendationAcknowledged: true });
+    setIsRecommendModalVisible(false);
+  }, [setValue, updateDraftValues]);
 
   const scheduleDate = getScheduleDate(dateMode, dateStart);
 
@@ -481,7 +581,7 @@ export function PinCardCreateScreen() {
   }, []);
 
   const handleMemoReachLimit = useCallback(() => {
-    setToastMessage(`${MEMO_MAX_LENGTH}자까지만 입력 가능해요!`);
+    setToast({ message: `${MEMO_MAX_LENGTH}자까지만 입력 가능해요!`, variant: 'warning' });
   }, []);
 
   useEffect(() => {
@@ -554,11 +654,20 @@ export function PinCardCreateScreen() {
             showTitleError={shouldShowTitleError}
             showDateError={shouldShowDateError}
             showTimeError={shouldShowTimeError}
+            showDueError={shouldShowDueError}
+            showDurationError={shouldShowDurationError}
+            dueDate={dueDate}
+            durationHours={durationHours}
+            durationMinutes={durationMinutes}
+            recommendationAcknowledged={recommendationAcknowledged}
+            recommendationLabel={recommendationLabel}
             tagFeedback={tagFeedback}
             onChangeTab={handleChangeTab}
             onOpenConditionTag={() => setTagSheetTab('condition')}
             onOpenPersonalTags={() => setTagSheetTab('personal')}
             onOpenDateTime={handleOpenDateTimeSheet}
+            onOpenDueDuration={handleOpenDueDurationSheet}
+            onOpenRecommendation={handleOpenRecommendation}
             onOpenLocation={handleOpenLocationSheet}
             onToggleRepeat={handleToggleRepeat}
             onPressRepeatChip={handlePressRepeatChip}
@@ -597,10 +706,25 @@ export function PinCardCreateScreen() {
           onDone={handleSaveDateTime}
         />
         <DateOnlyGuideModal
-          visible={dateOnlyGuideVisible}
+          visible={dateOnlyGuideVisible && activeTab === 'pin'}
           onChangeToQueue={handleChangeToQueueCard}
           onOpenTime={handleOpenTimeFromGuide}
           onKeep={handleKeepDateOnly}
+        />
+        <DueDurationBottomSheet
+          visible={isDueDurationSheetVisible}
+          value={{
+            dueDate,
+            durationHours,
+            durationMinutes,
+          }}
+          onClose={() => setIsDueDurationSheetVisible(false)}
+          onDone={handleSaveDueDuration}
+        />
+        <RecommendTimeModal
+          visible={isRecommendModalVisible}
+          onClose={() => setIsRecommendModalVisible(false)}
+          onConfirm={handleConfirmRecommendation}
         />
         <RepeatPresetBottomSheet
           visible={repeatSheetMode === 'preset'}
@@ -625,11 +749,13 @@ export function PinCardCreateScreen() {
           onDeleteAllSearches={deleteAllLocationRecentSearches}
         />
       </View>
-      {toastMessage != null ? (
+      {toast != null ? (
         <PinCardToast
           bottomOffset={toastBottomOffset}
-          message={toastMessage}
-          onClose={() => setToastMessage(null)}
+          message={toast.message}
+          variant={toast.variant}
+          onClose={() => setToast(null)}
+          onConfirm={() => setToast(null)}
         />
       ) : null}
     </ScreenLayout>
