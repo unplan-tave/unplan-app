@@ -11,7 +11,7 @@ import {
   isValidLocationSearchLabel,
   LOCATION_SEARCH_MAX_LENGTH,
   normalizeLocationSearchLabel,
-} from '@/state/pin-card/location';
+} from '@/state/card/location';
 
 interface LocationBottomSheetProps {
   visible: boolean;

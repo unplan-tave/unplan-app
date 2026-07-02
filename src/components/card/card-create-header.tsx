@@ -4,12 +4,12 @@ import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
 
-import type { CardTab } from '@/state/pin-card/model';
+import type { CardTab } from '@/state/card/model';
 
 const HEADER_TOP_PADDING = spacing[16];
 const HEADER_HEIGHT = spacing[6];
 
-export function PinCardCreateHeader({
+export function CardCreateHeader({
   variant = 'edit',
   cardType = 'pin',
   doneEnabled,

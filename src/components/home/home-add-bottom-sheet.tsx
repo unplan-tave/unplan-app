@@ -3,23 +3,19 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import {
-  type ConditionTagOption,
-  type PersonalTagOption,
-  type PinCardItem,
-} from '@/state/pin-card/model';
+import { type ConditionTagOption, type PersonalTagOption, type CardItem } from '@/state/card/model';
 import {
   formatDueCountdown,
   formatDueDateDisplay,
   formatDurationInline,
   hasDueDate,
   UNKNOWN_DURATION_LABEL,
-} from '@/state/pin-card/queue';
+} from '@/state/card/queue';
 
 import { TimelineCard } from './timeline-card';
 
 export interface RecommendationItem {
-  card: PinCardItem;
+  card: CardItem;
   conditionTag: ConditionTagOption;
   personalTags: PersonalTagOption[];
 }
@@ -122,7 +118,7 @@ export function HomeAddBottomSheet({
   );
 }
 
-function getQueueRecommendationRange(card: PinCardItem) {
+function getQueueRecommendationRange(card: CardItem) {
   const dueLabel = hasDueDate(card.dueDate)
     ? `${formatDueDateDisplay(card.dueDate)} ${formatDueCountdown(card.dueDate)}`
     : '마감일 미정';

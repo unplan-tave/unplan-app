@@ -5,48 +5,48 @@ import { mmkvStorage } from '@/lib/storage/mmkv-storage';
 
 import { addLocationRecentSearch, removeLocationRecentSearch } from './location';
 import {
-  clonePinCardFormValues,
+  cloneCardFormValues,
   canCreatePersonalTag,
-  createPinCardDraft,
-  createPinCardEditDraft,
-  createPinCardItem,
+  createCardDraft,
+  createCardEditDraft,
+  createCardItem,
   createPersonalTag,
   type CardTab,
-  type PinCardDraft,
-  type PinCardFormValues,
-  type PinCardItem,
+  type CardDraft,
+  type CardFormValues,
+  type CardItem,
   type PersonalTagOption,
   sortPersonalTags,
-  updatePinCardItem,
+  updateCardItem,
 } from './model';
 
-interface PinCardStoreState {
-  cards: PinCardItem[];
-  draft: PinCardDraft | null;
+interface CardStoreState {
+  cards: CardItem[];
+  draft: CardDraft | null;
   personalTags: PersonalTagOption[];
   locationRecentSearches: string[];
-  createCard: (cardType: CardTab, values: PinCardFormValues) => PinCardItem;
+  createCard: (cardType: CardTab, values: CardFormValues) => CardItem;
   createPersonalTag: (label: string) => PersonalTagOption | null;
   addLocationRecentSearch: (label: string) => void;
   deleteLocationRecentSearch: (label: string) => void;
   deleteAllLocationRecentSearches: () => void;
-  beginCreate: (values: PinCardFormValues, cardType?: CardTab) => PinCardDraft;
-  beginEdit: (cardId: string) => PinCardDraft | null;
-  updateDraftValues: (values: Partial<PinCardFormValues>) => void;
+  beginCreate: (values: CardFormValues, cardType?: CardTab) => CardDraft;
+  beginEdit: (cardId: string) => CardDraft | null;
+  updateDraftValues: (values: Partial<CardFormValues>) => void;
   changeDraftCardType: (cardType: CardTab) => void;
-  saveDraft: (values?: PinCardFormValues) => PinCardItem | null;
-  patchCard: (cardId: string, patch: Partial<PinCardFormValues>) => void;
+  saveDraft: (values?: CardFormValues) => CardItem | null;
+  patchCard: (cardId: string, patch: Partial<CardFormValues>) => void;
   deleteCard: (cardId: string) => void;
   discardDraft: () => void;
 }
 
-const pinCardStorage = createJSONStorage(() => ({
+const cardStorage = createJSONStorage(() => ({
   getItem: (name: string) => mmkvStorage.get(name) ?? null,
   setItem: (name: string, value: string) => mmkvStorage.set(name, value),
   removeItem: (name: string) => mmkvStorage.remove(name),
 }));
 
-export const usePinCardStore = create<PinCardStoreState>()(
+export const useCardStore = create<CardStoreState>()(
   persist(
     (set, get) => ({
       cards: [],
@@ -54,7 +54,7 @@ export const usePinCardStore = create<PinCardStoreState>()(
       personalTags: [],
       locationRecentSearches: [],
       createCard: (cardType, values) => {
-        const card = createPinCardItem(cardType, values);
+        const card = createCardItem(cardType, values);
 
         set((state) => ({
           cards: [card, ...state.cards],
@@ -91,7 +91,7 @@ export const usePinCardStore = create<PinCardStoreState>()(
         set({ locationRecentSearches: [] });
       },
       beginCreate: (values, cardType = 'pin') => {
-        const draft = createPinCardDraft(cardType, values);
+        const draft = createCardDraft(cardType, values);
 
         set({ draft });
 
@@ -105,7 +105,7 @@ export const usePinCardStore = create<PinCardStoreState>()(
           return null;
         }
 
-        const draft = createPinCardEditDraft({
+        const draft = createCardEditDraft({
           ...card,
           recurrence: card.recurrence ?? null,
           locationDetail: card.locationDetail ?? '',
@@ -153,7 +153,7 @@ export const usePinCardStore = create<PinCardStoreState>()(
           return null;
         }
 
-        const nextValues = values == null ? draft.values : clonePinCardFormValues(values);
+        const nextValues = values == null ? draft.values : cloneCardFormValues(values);
 
         if (draft.mode === 'edit' && draft.editingCardId != null) {
           const currentCard = get().cards.find((card) => card.id === draft.editingCardId);
@@ -162,7 +162,7 @@ export const usePinCardStore = create<PinCardStoreState>()(
             return null;
           }
 
-          const updatedCard = updatePinCardItem(currentCard, draft.cardType, nextValues);
+          const updatedCard = updateCardItem(currentCard, draft.cardType, nextValues);
 
           set((state) => ({
             cards: state.cards.map((card) => (card.id === updatedCard.id ? updatedCard : card)),
@@ -172,7 +172,7 @@ export const usePinCardStore = create<PinCardStoreState>()(
           return updatedCard;
         }
 
-        const createdCard = createPinCardItem(draft.cardType, nextValues);
+        const createdCard = createCardItem(draft.cardType, nextValues);
 
         set((state) => ({
           cards: [createdCard, ...state.cards],
@@ -188,8 +188,8 @@ export const usePinCardStore = create<PinCardStoreState>()(
               return card;
             }
 
-            return updatePinCardItem(card, card.cardType, {
-              ...clonePinCardFormValues(card),
+            return updateCardItem(card, card.cardType, {
+              ...cloneCardFormValues(card),
               ...patch,
             });
           }),
@@ -206,8 +206,8 @@ export const usePinCardStore = create<PinCardStoreState>()(
       },
     }),
     {
-      name: 'pin-card-store',
-      storage: pinCardStorage,
+      name: 'card-store',
+      storage: cardStorage,
       partialize: (state) => ({
         cards: state.cards,
         personalTags: state.personalTags,

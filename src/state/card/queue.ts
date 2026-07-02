@@ -1,4 +1,4 @@
-import type { PinCardFormValues } from './model';
+import type { CardFormValues } from './model';
 
 export const UNKNOWN_DURATION_LABEL = '시간 미정';
 
@@ -128,7 +128,7 @@ export function hasDueDate(dueDate: string): boolean {
 
 export function isQueueFormComplete(
   values: Pick<
-    PinCardFormValues,
+    CardFormValues,
     'title' | 'dueDate' | 'durationHours' | 'durationMinutes' | 'durationUnknown'
   >,
 ): boolean {
