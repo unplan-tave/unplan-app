@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Keyboard, type KeyboardEvent, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { Keyboard, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
 import { CardCreateHeader } from '@/components/features/card/card-create-header';
 import { CardToast } from '@/components/features/card/card-toast';
@@ -13,45 +13,29 @@ import { DueDurationSheet } from '@/components/features/card/sheets/due-duration
 import { LocationSheet } from '@/components/features/card/sheets/location-sheet';
 import { RepeatCustomSheet } from '@/components/features/card/sheets/repeat-custom-sheet';
 import { RepeatPresetSheet } from '@/components/features/card/sheets/repeat-preset-sheet';
-import { TagPickerSheet, type TagTab } from '@/components/features/card/sheets/tag-picker-sheet';
+import { TagPickerSheet } from '@/components/features/card/sheets/tag-picker-sheet';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
-import { MEMO_MAX_LENGTH } from '@/state/card/model';
+import { useKeyboardHeight } from '@/hooks/use-keyboard-height';
 import {
+  type CardFormValues,
   type CardTab,
-  type ConditionTagId,
   createDefaultCardFormValues,
-  type DateTimeDraft,
   getConditionTagById,
   getDateValue,
   getSuggestedConditionTag,
   getTimeValue,
-  hasCompleteTime,
-  type CardFormValues,
-  type TimeFocus,
+  MEMO_MAX_LENGTH,
 } from '@/state/card/model';
-import {
-  type DueDurationDraft,
-  hasDueDate,
-  hasQueueDurationOrUnknown,
-  isQueueFormComplete,
-} from '@/state/card/queue';
-import {
-  cloneRecurrenceValue,
-  createDefaultCustomRecurrence,
-  createPresetRecurrence,
-  type RecurrencePreset,
-  type RecurrenceValue,
-} from '@/state/card/recurrence';
-import { useCardStore } from '@/state/card/use-card-store';
+import { hasDueDate, hasQueueDurationOrUnknown, isQueueFormComplete } from '@/state/card/queue';
+
+import { useCardPageData, useCardInit } from './hooks/use-card-page-data';
+import { useCardSheets } from './hooks/use-card-sheets';
 
 type ToastState = {
   message: string;
   variant: 'warning' | 'confirm';
 } | null;
-
-type RepeatSheetMode = 'none' | 'preset' | 'custom';
-type RepeatSheetOrigin = 'new' | 'edit';
 
 const SCREEN_MAX_WIDTH = 393;
 const CONTENT_MAX_WIDTH = 353;
@@ -62,41 +46,19 @@ export function CardCreateScreen() {
   const { cardId, type } = useLocalSearchParams<{ cardId?: string; type?: 'queue' }>();
   const initialCardType: CardTab = type === 'queue' ? 'queue' : 'pin';
   const initialValues = useMemo(() => createDefaultCardFormValues(), []);
+
   const [activeTab, setActiveTab] = useState<CardTab>(initialCardType);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
   const [showTagFeedback, setShowTagFeedback] = useState(false);
   const [showTagErrorFeedback, setShowTagErrorFeedback] = useState(false);
-  const [tagSheetTab, setTagSheetTab] = useState<TagTab | null>(null);
-  const [tagSheetSelectedId, setTagSheetSelectedId] = useState<ConditionTagId | null>(
-    initialValues.conditionTagId,
-  );
-  const [isDateTimeSheetVisible, setIsDateTimeSheetVisible] = useState(false);
-  const [isDueDurationSheetVisible, setIsDueDurationSheetVisible] = useState(false);
-  const [dateTimeFocus, setDateTimeFocus] = useState<TimeFocus>('start');
-  const [dateOnlyGuideVisible, setDateOnlyGuideVisible] = useState(false);
-  const [repeatSheetMode, setRepeatSheetMode] = useState<RepeatSheetMode>('none');
-  const [repeatSheetOrigin, setRepeatSheetOrigin] = useState<RepeatSheetOrigin>('new');
-  const [isLocationSheetVisible, setIsLocationSheetVisible] = useState(false);
-  const beginCreate = useCardStore((store) => store.beginCreate);
-  const beginEdit = useCardStore((store) => store.beginEdit);
-  const updateDraftValues = useCardStore((store) => store.updateDraftValues);
-  const changeDraftCardType = useCardStore((store) => store.changeDraftCardType);
-  const personalTags = useCardStore((store) => store.personalTags);
-  const createPersonalTag = useCardStore((store) => store.createPersonalTag);
-  const locationRecentSearches = useCardStore((store) => store.locationRecentSearches);
-  const addLocationRecentSearch = useCardStore((store) => store.addLocationRecentSearch);
-  const deleteLocationRecentSearch = useCardStore((store) => store.deleteLocationRecentSearch);
-  const deleteAllLocationRecentSearches = useCardStore(
-    (store) => store.deleteAllLocationRecentSearches,
-  );
-  const saveDraft = useCardStore((store) => store.saveDraft);
-  const deleteCard = useCardStore((store) => store.deleteCard);
-  const discardDraft = useCardStore((store) => store.discardDraft);
-  const draftMode = useCardStore((store) => store.draft?.mode ?? 'create');
+
   const scrollRef = useRef<ScrollView>(null);
   const isMemoFocusedRef = useRef(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const previousTitleRef = useRef('');
+
+  const keyboardHeight = useKeyboardHeight();
+
   const {
     control,
     handleSubmit,
@@ -104,10 +66,8 @@ export function CardCreateScreen() {
     setValue,
     watch,
     formState: { errors },
-  } = useForm<CardFormValues>({
-    mode: 'onSubmit',
-    defaultValues: initialValues,
-  });
+  } = useForm<CardFormValues>({ mode: 'onSubmit', defaultValues: initialValues });
+
   const title = watch('title') ?? '';
   const conditionTagId = watch('conditionTagId');
   const personalTagIds = watch('personalTagIds');
@@ -126,9 +86,40 @@ export function CardCreateScreen() {
   const durationHours = watch('durationHours');
   const durationMinutes = watch('durationMinutes');
   const durationUnknown = watch('durationUnknown');
+
+  const {
+    updateDraftValues,
+    changeDraftCardType,
+    personalTags,
+    createPersonalTag,
+    locationRecentSearches,
+    addLocationRecentSearch,
+    deleteLocationRecentSearch,
+    deleteAllLocationRecentSearches,
+    saveDraft,
+    deleteCard,
+    discardDraft,
+    draftMode,
+  } = useCardPageData();
+
+  const sheets = useCardSheets({
+    setValue,
+    updateDraftValues,
+    changeDraftCardType,
+    addLocationRecentSearch,
+    hasSubmitted,
+    activeTab,
+    conditionTagId,
+    repeatEnabled,
+    recurrence,
+    dateMode,
+    dateStart,
+  });
+
+  // ── derived ──
+
   const primaryTag = getConditionTagById(conditionTagId);
   const selectedPersonalTags = personalTags.filter((tag) => personalTagIds.includes(tag.id));
-  const previousTitleRef = useRef(title);
   const dateValue = getDateValue(dateMode, dateStart, dateEnd);
   const timeValue = getTimeValue(timeFilled, timeStart, timeEnd);
   const isTitleMissing = title.trim().length === 0;
@@ -158,21 +149,28 @@ export function CardCreateScreen() {
   const shouldShowDueError = activeTab === 'queue' && hasSubmitted && isDueMissing;
   const shouldShowDurationError = activeTab === 'queue' && hasSubmitted && isDurationMissing;
   const tagFeedback = showTagErrorFeedback ? 'error' : showTagFeedback ? 'success' : 'none';
+  const toastBottomOffset = keyboardHeight > 0 ? keyboardHeight + spacing[3] : 70.5;
 
-  useEffect(() => {
-    const nextDraft =
-      cardId == null ? beginCreate(initialValues, initialCardType) : beginEdit(cardId);
+  // ── init ──
 
-    if (nextDraft == null) {
-      router.back();
-      return;
-    }
+  const handleInit = useCallback(
+    (cardType: CardTab, values: CardFormValues) => {
+      setActiveTab(cardType);
+      sheets.syncTagSheetSelectedId(values.conditionTagId);
+      previousTitleRef.current = values.title;
+    },
+    [sheets],
+  );
 
-    setActiveTab(nextDraft.cardType);
-    setTagSheetSelectedId(nextDraft.values.conditionTagId);
-    previousTitleRef.current = nextDraft.values.title;
-    reset(nextDraft.values);
-  }, [beginCreate, beginEdit, cardId, initialCardType, initialValues, reset]);
+  useCardInit({
+    cardId,
+    initialCardType,
+    initialValues,
+    reset,
+    onInit: handleInit,
+  });
+
+  // ── draft sync ──
 
   useEffect(() => {
     updateDraftValues({
@@ -217,23 +215,18 @@ export function CardCreateScreen() {
     updateDraftValues,
   ]);
 
+  // ── toast auto-dismiss ──
+
   useEffect(() => {
-    if (toast == null) {
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      setToast(null);
-    }, 3_000);
-
-    return () => clearTimeout(timeoutId);
+    if (toast == null) return;
+    const id = setTimeout(() => setToast(null), 3_000);
+    return () => clearTimeout(id);
   }, [toast]);
 
-  useEffect(() => {
-    if (title === previousTitleRef.current) {
-      return;
-    }
+  // ── tag auto-suggest ──
 
+  useEffect(() => {
+    if (title === previousTitleRef.current) return;
     previousTitleRef.current = title;
 
     if (title.trim().length === 0) {
@@ -241,7 +234,7 @@ export function CardCreateScreen() {
       setShowTagErrorFeedback(false);
       setValue('conditionTagId', 'daily', { shouldDirty: true });
       updateDraftValues({ conditionTagId: 'daily' });
-      setTagSheetSelectedId('daily');
+      sheets.syncTagSheetSelectedId('daily');
       return;
     }
 
@@ -250,45 +243,50 @@ export function CardCreateScreen() {
     if (nextTag == null) {
       setValue('conditionTagId', 'daily', { shouldDirty: true });
       updateDraftValues({ conditionTagId: 'daily' });
-      setTagSheetSelectedId('daily');
+      sheets.syncTagSheetSelectedId('daily');
       setShowTagFeedback(false);
       setShowTagErrorFeedback(true);
-      setTagSheetTab('condition');
       return;
     }
 
     if (conditionTagId !== nextTag.id) {
       setValue('conditionTagId', nextTag.id, { shouldDirty: true });
       updateDraftValues({ conditionTagId: nextTag.id });
-      setTagSheetSelectedId(nextTag.id);
+      sheets.syncTagSheetSelectedId(nextTag.id);
       setShowTagErrorFeedback(false);
       setShowTagFeedback(true);
     }
-  }, [conditionTagId, setValue, title, updateDraftValues]);
+  }, [conditionTagId, setValue, title, updateDraftValues, sheets]);
+
+  // ── tag feedback auto-dismiss ──
 
   useEffect(() => {
-    if (!showTagFeedback) {
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      setShowTagFeedback(false);
-    }, 3_000);
-
-    return () => clearTimeout(timeoutId);
+    if (!showTagFeedback) return;
+    const id = setTimeout(() => setShowTagFeedback(false), 3_000);
+    return () => clearTimeout(id);
   }, [showTagFeedback]);
 
   useEffect(() => {
-    if (!showTagErrorFeedback) {
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      setShowTagErrorFeedback(false);
-    }, 3_000);
-
-    return () => clearTimeout(timeoutId);
+    if (!showTagErrorFeedback) return;
+    const id = setTimeout(() => setShowTagErrorFeedback(false), 3_000);
+    return () => clearTimeout(id);
   }, [showTagErrorFeedback]);
+
+  // ── memo scroll on keyboard ──
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+
+    const sub = Keyboard.addListener(showEvent, (e) => {
+      if (!isMemoFocusedRef.current) return;
+      const delay = Platform.OS === 'ios' ? (e.duration ?? 250) : 100;
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), delay);
+    });
+
+    return () => sub.remove();
+  }, []);
+
+  // ── screen handlers ──
 
   const handleClose = useCallback(() => {
     discardDraft();
@@ -298,12 +296,10 @@ export function CardCreateScreen() {
   const handleValidSubmit = useCallback(
     (values: CardFormValues) => {
       const saved = saveDraft(values);
-
       if (saved != null) {
         router.replace(`/card/view?cardId=${saved.id}`);
         return;
       }
-
       router.back();
     },
     [saveDraft],
@@ -314,224 +310,9 @@ export function CardCreateScreen() {
     setToast({ message: '아직 입력되지 않은 필수 정보가 있어요!', variant: 'warning' });
   }, []);
 
-  const handleOpenDateTimeSheet = useCallback((focus: TimeFocus = 'start') => {
-    setDateTimeFocus(focus);
-    setIsDateTimeSheetVisible(true);
-  }, []);
-
-  const handleConfirmPersonalTags = useCallback(
-    (nextPersonalTagIds: string[]) => {
-      setValue('personalTagIds', nextPersonalTagIds, { shouldDirty: true });
-      updateDraftValues({ personalTagIds: nextPersonalTagIds });
-      setTagSheetTab(null);
-    },
-    [setValue, updateDraftValues],
-  );
-
-  const handleSaveDateTime = useCallback(
-    (draft: DateTimeDraft) => {
-      const nextTimeFilled = hasCompleteTime(draft);
-
-      setValue('dateMode', draft.dateMode, {
-        shouldDirty: true,
-        shouldValidate: hasSubmitted,
-      });
-      setValue('dateStart', draft.dateStart, { shouldDirty: true });
-      setValue('dateEnd', draft.dateEnd, { shouldDirty: true });
-      setValue('timeFilled', nextTimeFilled, {
-        shouldDirty: true,
-        shouldValidate: hasSubmitted,
-      });
-      setValue('timeStart', draft.timeStart, { shouldDirty: true });
-      setValue('timeEnd', draft.timeEnd, { shouldDirty: true });
-      updateDraftValues({
-        dateMode: draft.dateMode,
-        dateStart: draft.dateStart,
-        dateEnd: draft.dateEnd,
-        timeFilled: nextTimeFilled,
-        timeStart: draft.timeStart,
-        timeEnd: draft.timeEnd,
-      });
-      setIsDateTimeSheetVisible(false);
-
-      if (activeTab === 'pin' && draft.dateMode !== 'empty' && !nextTimeFilled) {
-        setDateOnlyGuideVisible(true);
-      }
-    },
-    [activeTab, hasSubmitted, setValue, updateDraftValues],
-  );
-
-  const handleSaveDueDuration = useCallback(
-    (draft: DueDurationDraft) => {
-      setValue('dueDate', draft.dueDate, {
-        shouldDirty: true,
-        shouldValidate: hasSubmitted,
-      });
-      setValue('durationHours', draft.durationHours, {
-        shouldDirty: true,
-        shouldValidate: hasSubmitted,
-      });
-      setValue('durationMinutes', draft.durationMinutes, {
-        shouldDirty: true,
-        shouldValidate: hasSubmitted,
-      });
-      setValue('durationUnknown', draft.durationUnknown, {
-        shouldDirty: true,
-        shouldValidate: hasSubmitted,
-      });
-      updateDraftValues({
-        dueDate: draft.dueDate,
-        durationHours: draft.durationHours,
-        durationMinutes: draft.durationMinutes,
-        durationUnknown: draft.durationUnknown,
-      });
-      setIsDueDurationSheetVisible(false);
-    },
-    [hasSubmitted, setValue, updateDraftValues],
-  );
-
-  const handleOpenDueDurationSheet = useCallback(() => {
-    Keyboard.dismiss();
-    setIsDueDurationSheetVisible(true);
-  }, []);
-
   const handleDurationUnknown = useCallback(() => {
-    setToast({
-      message: '시간대 추천이 어려울 수 있어요!',
-      variant: 'confirm',
-    });
+    setToast({ message: '시간대 추천이 어려울 수 있어요!', variant: 'confirm' });
   }, []);
-
-  const scheduleDate = getScheduleDate(dateMode, dateStart);
-
-  const saveRecurrence = useCallback(
-    (nextRecurrence: RecurrenceValue) => {
-      const nextValue = cloneRecurrenceValue(nextRecurrence);
-
-      setValue('repeatEnabled', true, { shouldDirty: true });
-      setValue('recurrence', nextValue, { shouldDirty: true });
-      updateDraftValues({ repeatEnabled: true, recurrence: nextValue });
-      setRepeatSheetMode('none');
-    },
-    [setValue, updateDraftValues],
-  );
-
-  const handleToggleRepeat = useCallback(() => {
-    if (repeatEnabled) {
-      setValue('repeatEnabled', false, { shouldDirty: true });
-      updateDraftValues({ repeatEnabled: false });
-      return;
-    }
-
-    setValue('repeatEnabled', true, { shouldDirty: true });
-    updateDraftValues({ repeatEnabled: true });
-
-    if (recurrence != null) {
-      return;
-    }
-
-    setRepeatSheetOrigin('new');
-    setRepeatSheetMode('preset');
-  }, [recurrence, repeatEnabled, setValue, updateDraftValues]);
-
-  const handleRemoveRepeat = useCallback(() => {
-    setValue('repeatEnabled', false, { shouldDirty: true });
-    setValue('recurrence', null, { shouldDirty: true });
-    updateDraftValues({ repeatEnabled: false, recurrence: null });
-    setRepeatSheetMode('none');
-  }, [setValue, updateDraftValues]);
-
-  const handlePressRepeatChip = useCallback(() => {
-    setRepeatSheetOrigin('edit');
-    setRepeatSheetMode('custom');
-  }, []);
-
-  const handleCloseRepeatPresetSheet = useCallback(() => {
-    setRepeatSheetMode('none');
-
-    if (repeatSheetOrigin === 'new' && recurrence == null) {
-      setValue('repeatEnabled', false, { shouldDirty: true });
-      updateDraftValues({ repeatEnabled: false });
-    }
-  }, [recurrence, repeatSheetOrigin, setValue, updateDraftValues]);
-
-  const handleCloseRepeatCustomSheet = useCallback(() => {
-    setRepeatSheetMode('none');
-
-    if (repeatSheetOrigin === 'new' && recurrence == null) {
-      setValue('repeatEnabled', false, { shouldDirty: true });
-      updateDraftValues({ repeatEnabled: false });
-    }
-  }, [recurrence, repeatSheetOrigin, setValue, updateDraftValues]);
-
-  const handleDoneRepeatPreset = useCallback(
-    (preset: Exclude<RecurrencePreset, 'custom'>) => {
-      saveRecurrence(createPresetRecurrence(preset, scheduleDate));
-    },
-    [saveRecurrence, scheduleDate],
-  );
-
-  const handleOpenRepeatCustomSheet = useCallback(() => {
-    setRepeatSheetMode('custom');
-  }, []);
-
-  const handleDoneRepeatCustom = useCallback(
-    (nextRecurrence: RecurrenceValue) => {
-      saveRecurrence(nextRecurrence);
-    },
-    [saveRecurrence],
-  );
-
-  const handleOpenLocationSheet = useCallback(() => {
-    setIsLocationSheetVisible(true);
-  }, []);
-
-  const handleSelectLocation = useCallback(
-    (nextLocation: string) => {
-      setValue('location', nextLocation, { shouldDirty: true });
-      setValue('locationDetail', '', { shouldDirty: true });
-      updateDraftValues({ location: nextLocation, locationDetail: '' });
-      addLocationRecentSearch(nextLocation);
-      setIsLocationSheetVisible(false);
-    },
-    [addLocationRecentSearch, setValue, updateDraftValues],
-  );
-
-  const handleSelectConditionTag = useCallback((tagId: ConditionTagId) => {
-    setTagSheetSelectedId((prev) => (prev === tagId ? null : tagId));
-  }, []);
-
-  const handleConfirmConditionTag = useCallback(() => {
-    if (tagSheetSelectedId == null) {
-      return;
-    }
-
-    setValue('conditionTagId', tagSheetSelectedId, { shouldDirty: true });
-    updateDraftValues({ conditionTagId: tagSheetSelectedId });
-    setTagSheetTab(null);
-    setShowTagErrorFeedback(false);
-  }, [setValue, tagSheetSelectedId, updateDraftValues]);
-
-  const handleCloseConditionTagSheet = useCallback(() => {
-    setTagSheetSelectedId(conditionTagId);
-    setTagSheetTab(null);
-  }, [conditionTagId]);
-
-  const handleOpenTimeFromGuide = useCallback(() => {
-    setDateOnlyGuideVisible(false);
-    setDateTimeFocus('start');
-    setIsDateTimeSheetVisible(true);
-  }, []);
-
-  const handleKeepDateOnly = useCallback(() => {
-    setDateOnlyGuideVisible(false);
-  }, []);
-
-  const handleChangeToQueueCard = useCallback(() => {
-    setActiveTab('queue');
-    changeDraftCardType('queue');
-    setDateOnlyGuideVisible(false);
-  }, [changeDraftCardType]);
 
   const handleChangeTab = useCallback(
     (tab: CardTab) => {
@@ -542,10 +323,7 @@ export function CardCreateScreen() {
   );
 
   const handleDelete = useCallback(() => {
-    if (cardId == null) {
-      return;
-    }
-
+    if (cardId == null) return;
     deleteCard(cardId);
     router.back();
   }, [cardId, deleteCard]);
@@ -555,7 +333,6 @@ export function CardCreateScreen() {
       handleInvalidSubmit();
       return;
     }
-
     void handleSubmit(handleValidSubmit, handleInvalidSubmit)();
   }, [handleInvalidSubmit, handleSubmit, handleValidSubmit, isRequiredComplete]);
 
@@ -577,36 +354,6 @@ export function CardCreateScreen() {
   const handleMemoReachLimit = useCallback(() => {
     setToast({ message: `${MEMO_MAX_LENGTH}자까지만 입력 가능해요!`, variant: 'warning' });
   }, []);
-
-  useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-
-    const handleKeyboardShow = (event: KeyboardEvent) => {
-      setKeyboardHeight(event.endCoordinates.height);
-
-      if (!isMemoFocusedRef.current) {
-        return;
-      }
-
-      const delay = Platform.OS === 'ios' ? (event.duration ?? 250) : 100;
-      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), delay);
-    };
-
-    const handleKeyboardHide = () => {
-      setKeyboardHeight(0);
-    };
-
-    const showSubscription = Keyboard.addListener(showEvent, handleKeyboardShow);
-    const hideSubscription = Keyboard.addListener(hideEvent, handleKeyboardHide);
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
-
-  const toastBottomOffset = keyboardHeight > 0 ? keyboardHeight + spacing[3] : 70.5;
 
   return (
     <ScreenLayout
@@ -655,14 +402,14 @@ export function CardCreateScreen() {
             durationUnknown={durationUnknown}
             tagFeedback={tagFeedback}
             onChangeTab={handleChangeTab}
-            onOpenConditionTag={() => setTagSheetTab('condition')}
-            onOpenPersonalTags={() => setTagSheetTab('personal')}
-            onOpenDateTime={handleOpenDateTimeSheet}
-            onOpenDueDuration={handleOpenDueDurationSheet}
-            onOpenLocation={handleOpenLocationSheet}
-            onToggleRepeat={handleToggleRepeat}
-            onPressRepeatChip={handlePressRepeatChip}
-            onRemoveRepeat={handleRemoveRepeat}
+            onOpenConditionTag={sheets.openConditionTagSheet}
+            onOpenPersonalTags={sheets.openPersonalTagSheet}
+            onOpenDateTime={sheets.openDateTimeSheet}
+            onOpenDueDuration={sheets.openDueDurationSheet}
+            onOpenLocation={sheets.openLocationSheet}
+            onToggleRepeat={sheets.toggleRepeat}
+            onPressRepeatChip={sheets.pressRepeatChip}
+            onRemoveRepeat={sheets.removeRepeat}
             onMemoBlur={handleMemoBlur}
             onMemoFocus={handleMemoFocus}
             onMemoReachLimit={handleMemoReachLimit}
@@ -670,68 +417,57 @@ export function CardCreateScreen() {
         </ScrollView>
 
         <TagPickerSheet
-          visible={tagSheetTab !== null}
-          activeTab={tagSheetTab ?? 'condition'}
-          selectedConditionTagId={tagSheetSelectedId}
+          visible={sheets.tagSheetTab !== null}
+          activeTab={sheets.tagSheetTab ?? 'condition'}
+          selectedConditionTagId={sheets.tagSheetSelectedId}
           personalTags={personalTags}
           selectedPersonalTagIds={personalTagIds}
-          onSwitchTab={setTagSheetTab}
-          onClose={handleCloseConditionTagSheet}
-          onSelectConditionTag={handleSelectConditionTag}
-          onDoneConditionTag={handleConfirmConditionTag}
+          onSwitchTab={sheets.switchTagTab}
+          onClose={sheets.closeTagSheet}
+          onSelectConditionTag={sheets.selectConditionTag}
+          onDoneConditionTag={sheets.confirmConditionTag}
           onCreatePersonalTag={createPersonalTag}
-          onDonePersonalTags={handleConfirmPersonalTags}
+          onDonePersonalTags={sheets.confirmPersonalTags}
         />
         <DateTimeSheet
-          visible={isDateTimeSheetVisible}
-          focus={dateTimeFocus}
-          value={{
-            dateMode,
-            dateStart,
-            dateEnd,
-            timeStart,
-            timeEnd,
-          }}
-          onClose={() => setIsDateTimeSheetVisible(false)}
-          onDone={handleSaveDateTime}
+          visible={sheets.isDateTimeVisible}
+          focus={sheets.dateTimeFocus}
+          value={{ dateMode, dateStart, dateEnd, timeStart, timeEnd }}
+          onClose={sheets.closeSheet}
+          onDone={sheets.saveDateTime}
         />
         <DateOnlyGuideModal
-          visible={dateOnlyGuideVisible && activeTab === 'pin'}
-          onChangeToQueue={handleChangeToQueueCard}
-          onOpenTime={handleOpenTimeFromGuide}
-          onKeep={handleKeepDateOnly}
+          visible={sheets.isDateOnlyGuideVisible && activeTab === 'pin'}
+          onChangeToQueue={sheets.changeToQueueCard}
+          onOpenTime={sheets.openTimeFromGuide}
+          onKeep={sheets.keepDateOnly}
         />
         <DueDurationSheet
-          visible={isDueDurationSheetVisible}
-          value={{
-            dueDate,
-            durationHours,
-            durationMinutes,
-            durationUnknown,
-          }}
-          onClose={() => setIsDueDurationSheetVisible(false)}
-          onDone={handleSaveDueDuration}
+          visible={sheets.isDueDurationVisible}
+          value={{ dueDate, durationHours, durationMinutes, durationUnknown }}
+          onClose={sheets.closeSheet}
+          onDone={sheets.saveDueDuration}
           onDurationUnknown={handleDurationUnknown}
         />
         <RepeatPresetSheet
-          visible={repeatSheetMode === 'preset'}
+          visible={sheets.repeatSheetMode === 'preset'}
           value={recurrence}
-          onClose={handleCloseRepeatPresetSheet}
-          onOpenCustom={handleOpenRepeatCustomSheet}
-          onDone={handleDoneRepeatPreset}
+          onClose={sheets.closeRepeatSheet}
+          onOpenCustom={sheets.openRepeatCustomSheet}
+          onDone={sheets.doneRepeatPreset}
         />
         <RepeatCustomSheet
-          visible={repeatSheetMode === 'custom'}
-          value={recurrence ?? createDefaultCustomRecurrence(scheduleDate)}
-          scheduleDate={scheduleDate}
-          onClose={handleCloseRepeatCustomSheet}
-          onDone={handleDoneRepeatCustom}
+          visible={sheets.repeatSheetMode === 'custom'}
+          value={sheets.repeatCustomDefaultValue}
+          scheduleDate={sheets.scheduleDate}
+          onClose={sheets.closeRepeatSheet}
+          onDone={sheets.doneRepeatCustom}
         />
         <LocationSheet
-          visible={isLocationSheetVisible}
+          visible={sheets.isLocationVisible}
           recentSearches={locationRecentSearches}
-          onClose={() => setIsLocationSheetVisible(false)}
-          onSelect={handleSelectLocation}
+          onClose={sheets.closeSheet}
+          onSelect={sheets.selectLocation}
           onDeleteSearch={deleteLocationRecentSearch}
           onDeleteAllSearches={deleteAllLocationRecentSearches}
         />
@@ -747,19 +483,6 @@ export function CardCreateScreen() {
       ) : null}
     </ScreenLayout>
   );
-}
-
-function getScheduleDate(dateMode: CardFormValues['dateMode'], dateStart: string) {
-  if (dateMode === 'single' || dateMode === 'range') {
-    return dateStart;
-  }
-
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-
-  return `${year}.${month}.${day}`;
 }
 
 const styles = StyleSheet.create({
