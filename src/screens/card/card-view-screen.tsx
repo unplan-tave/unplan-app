@@ -3,12 +3,12 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { CardCreateHeader } from '@/components/card/card-create-header';
-import { CardToast } from '@/components/card/card-toast';
-import { CardViewHeader } from '@/components/card/card-view-header';
-import { PinViewBody } from '@/components/card/pin-view-body';
-import { QueueCardViewBody } from '@/components/card/queue-card-view-body';
-import { RecommendTimeModal } from '@/components/card/recommend-time-modal';
+import { CardCreateHeader } from '@/components/features/card/card-create-header';
+import { CardToast } from '@/components/features/card/card-toast';
+import { RecommendTimeModal } from '@/components/features/card/modals/recommend-time-modal';
+import { CardViewHeader } from '@/components/features/card/view/card-view-header';
+import { PinViewBody } from '@/components/features/card/view/pin-view-body';
+import { QueueViewBody } from '@/components/features/card/view/queue-view-body';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
 import { getConditionTagById } from '@/state/card/model';
@@ -103,7 +103,7 @@ export function CardViewScreen() {
           />
 
           {card.cardType === 'queue' ? (
-            <QueueCardViewBody card={card} onOpenRecommendModal={handleOpenRecommendModal} />
+            <QueueViewBody card={card} onOpenRecommendModal={handleOpenRecommendModal} />
           ) : (
             <PinViewBody card={card} />
           )}

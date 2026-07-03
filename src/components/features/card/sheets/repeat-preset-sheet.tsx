@@ -24,7 +24,7 @@ interface RepeatPresetBottomSheetProps {
   onDone: (preset: Exclude<RecurrencePreset, 'custom'>) => void;
 }
 
-export function RepeatPresetBottomSheet({
+export function RepeatPresetSheet({
   visible,
   value,
   onClose,

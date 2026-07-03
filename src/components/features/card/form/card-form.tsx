@@ -1,8 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { CardFormHeader } from '@/components/card/card-form-header';
-import { PinFormBody } from '@/components/card/pin-form-body';
-import { QueueCardFormBody } from '@/components/card/queue-card-form-body';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 import {
@@ -14,6 +11,10 @@ import {
   type RecurrenceValue,
   type TimeFocus,
 } from '@/state/card/model';
+
+import { CardFormHeader } from './card-form-header';
+import { PinFormBody } from './pin-form-body';
+import { QueueFormBody } from './queue-form-body';
 
 import type { Control } from 'react-hook-form';
 
@@ -132,7 +133,7 @@ export function CardForm({
             onMemoReachLimit={onMemoReachLimit}
           />
         ) : (
-          <QueueCardFormBody
+          <QueueFormBody
             control={control}
             dueDate={dueDate}
             durationHours={durationHours}

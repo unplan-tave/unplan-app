@@ -4,16 +4,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Keyboard, type KeyboardEvent, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
-import { CardCreateHeader } from '@/components/card/card-create-header';
-import { CardForm } from '@/components/card/card-form';
-import { CardToast } from '@/components/card/card-toast';
-import { DateOnlyGuideModal } from '@/components/card/date-only-guide-modal';
-import { DateTimeBottomSheet } from '@/components/card/date-time-bottom-sheet';
-import { DueDurationBottomSheet } from '@/components/card/due-duration-bottom-sheet';
-import { LocationBottomSheet } from '@/components/card/location-bottom-sheet';
-import { RepeatCustomBottomSheet } from '@/components/card/repeat-custom-bottom-sheet';
-import { RepeatPresetBottomSheet } from '@/components/card/repeat-preset-bottom-sheet';
-import { TagPickerSheet, type TagTab } from '@/components/card/tag-picker-sheet';
+import { CardCreateHeader } from '@/components/features/card/card-create-header';
+import { CardToast } from '@/components/features/card/card-toast';
+import { CardForm } from '@/components/features/card/form/card-form';
+import { DateOnlyGuideModal } from '@/components/features/card/modals/date-only-guide-modal';
+import { DateTimeSheet } from '@/components/features/card/sheets/date-time-sheet';
+import { DueDurationSheet } from '@/components/features/card/sheets/due-duration-sheet';
+import { LocationSheet } from '@/components/features/card/sheets/location-sheet';
+import { RepeatCustomSheet } from '@/components/features/card/sheets/repeat-custom-sheet';
+import { RepeatPresetSheet } from '@/components/features/card/sheets/repeat-preset-sheet';
+import { TagPickerSheet, type TagTab } from '@/components/features/card/sheets/tag-picker-sheet';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
 import { MEMO_MAX_LENGTH } from '@/state/card/model';
@@ -682,7 +682,7 @@ export function CardCreateScreen() {
           onCreatePersonalTag={createPersonalTag}
           onDonePersonalTags={handleConfirmPersonalTags}
         />
-        <DateTimeBottomSheet
+        <DateTimeSheet
           visible={isDateTimeSheetVisible}
           focus={dateTimeFocus}
           value={{
@@ -701,7 +701,7 @@ export function CardCreateScreen() {
           onOpenTime={handleOpenTimeFromGuide}
           onKeep={handleKeepDateOnly}
         />
-        <DueDurationBottomSheet
+        <DueDurationSheet
           visible={isDueDurationSheetVisible}
           value={{
             dueDate,
@@ -713,21 +713,21 @@ export function CardCreateScreen() {
           onDone={handleSaveDueDuration}
           onDurationUnknown={handleDurationUnknown}
         />
-        <RepeatPresetBottomSheet
+        <RepeatPresetSheet
           visible={repeatSheetMode === 'preset'}
           value={recurrence}
           onClose={handleCloseRepeatPresetSheet}
           onOpenCustom={handleOpenRepeatCustomSheet}
           onDone={handleDoneRepeatPreset}
         />
-        <RepeatCustomBottomSheet
+        <RepeatCustomSheet
           visible={repeatSheetMode === 'custom'}
           value={recurrence ?? createDefaultCustomRecurrence(scheduleDate)}
           scheduleDate={scheduleDate}
           onClose={handleCloseRepeatCustomSheet}
           onDone={handleDoneRepeatCustom}
         />
-        <LocationBottomSheet
+        <LocationSheet
           visible={isLocationSheetVisible}
           recentSearches={locationRecentSearches}
           onClose={() => setIsLocationSheetVisible(false)}

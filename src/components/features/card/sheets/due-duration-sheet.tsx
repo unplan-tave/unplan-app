@@ -24,7 +24,7 @@ const DATE_CELL_RADIUS = DATE_CELL_SIZE / 2;
 const TODAY_DOT_SIZE = 4;
 const DURATION_BUTTON_HEIGHT = spacing[10];
 
-export function DueDurationBottomSheet({
+export function DueDurationSheet({
   visible,
   value,
   onClose,
