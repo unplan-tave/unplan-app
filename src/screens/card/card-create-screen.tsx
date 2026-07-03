@@ -108,7 +108,7 @@ export function CardCreateScreen() {
     mode: 'onSubmit',
     defaultValues: initialValues,
   });
-  const title = watch('title');
+  const title = watch('title') ?? '';
   const conditionTagId = watch('conditionTagId');
   const personalTagIds = watch('personalTagIds');
   const dateMode = watch('dateMode');

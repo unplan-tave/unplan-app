@@ -56,7 +56,7 @@ export function PinViewBody({ card }: { card: CardItem }) {
     });
   }
 
-  if (card.location.trim().length > 0) {
+  if ((card.location ?? '').trim().length > 0) {
     sections.push({
       key: 'location',
       node: (
@@ -74,7 +74,7 @@ export function PinViewBody({ card }: { card: CardItem }) {
     });
   }
 
-  if (card.memo.trim().length > 0) {
+  if ((card.memo ?? '').trim().length > 0) {
     sections.push({
       key: 'memo',
       node: (
@@ -188,7 +188,7 @@ function ViewLocationRow({
   location: string;
   locationDetail: string;
 }) {
-  const hasDetail = locationDetail.trim().length > 0;
+  const hasDetail = (locationDetail ?? '').trim().length > 0;
 
   return (
     <View style={styles.formRow}>

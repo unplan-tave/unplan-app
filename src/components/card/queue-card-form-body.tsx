@@ -128,7 +128,8 @@ function MemoField({
       control={control}
       name="memo"
       render={({ field: { onChange, value, onBlur: fieldOnBlur } }) => {
-        const hasMemo = value.trim().length > 0;
+        const memoValue = value ?? '';
+        const hasMemo = memoValue.trim().length > 0;
         const showFilledLayout = hasMemo || isExpanded;
 
         const revertToDefault = () => {
@@ -141,7 +142,7 @@ function MemoField({
         };
 
         const handleBlur = () => {
-          if (value.trim().length === 0) {
+          if (memoValue.trim().length === 0) {
             onChange('');
           }
           setIsFocused(false);
@@ -150,7 +151,7 @@ function MemoField({
         };
 
         const handleChangeText = (nextValue: string) => {
-          const wasUnderLimit = value.length < MEMO_MAX_LENGTH;
+          const wasUnderLimit = memoValue.length < MEMO_MAX_LENGTH;
           const cappedValue = nextValue.slice(0, MEMO_MAX_LENGTH);
           onChange(cappedValue);
 
@@ -160,7 +161,7 @@ function MemoField({
         };
 
         const handleEnterOnEmpty = () => {
-          if (value.trim().length === 0) {
+          if (memoValue.trim().length === 0) {
             revertToDefault();
           }
         };
@@ -221,7 +222,7 @@ function LocationField({
   control: Control<CardFormValues>;
   onOpenLocation: () => void;
 }) {
-  const hasLocation = location.trim().length > 0;
+  const hasLocation = (location ?? '').trim().length > 0;
 
   if (!hasLocation) {
     return (

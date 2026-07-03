@@ -217,7 +217,7 @@ export function getConditionTagDescription(tagId: ConditionTagId) {
   }
 }
 
-export function getSuggestedConditionTag(title: string) {
+export function getSuggestedConditionTag(title: string = '') {
   if (title.includes('아르바이트') || title.includes('청소') || title.includes('정리')) {
     return getConditionTagById('labor');
   }

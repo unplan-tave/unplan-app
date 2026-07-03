@@ -39,7 +39,7 @@ export function CardFormHeader({
           control={control}
           name="title"
           rules={{
-            validate: (value) => value.trim().length > 0,
+            validate: (value) => (value ?? '').trim().length > 0,
           }}
           render={({ field: { onChange, value } }) => (
             <TextInput
@@ -49,7 +49,7 @@ export function CardFormHeader({
               placeholderTextColor={showTitleError ? colors.secondary : colors.gray[400]}
               style={[
                 styles.titleInput,
-                value.trim().length > 0 && styles.titleInputFilled,
+                (value ?? '').trim().length > 0 && styles.titleInputFilled,
                 showTitleError && styles.titleInputError,
               ]}
               onChangeText={onChange}
