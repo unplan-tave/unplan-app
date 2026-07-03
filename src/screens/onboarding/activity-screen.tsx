@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { ActivityTimeRail } from '@/components/onboarding/activity-time-rail';
-import { OnboardingStepLayout } from '@/components/onboarding/onboarding-step-layout';
+import { ActivityTimeRail } from '@/components/features/onboarding/activity-time-rail';
+import { OnboardingStepLayout } from '@/components/features/onboarding/onboarding-step-layout';
 import { colors } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { onboardingRoutes } from '@/state/onboarding/routes';
