@@ -153,13 +153,14 @@ export function CardCreateScreen() {
 
   // ── init ──
 
+  const { syncTagSheetSelectedId } = sheets;
   const handleInit = useCallback(
     (cardType: CardTab, values: CardFormValues) => {
       setActiveTab(cardType);
-      sheets.syncTagSheetSelectedId(values.conditionTagId);
+      syncTagSheetSelectedId(values.conditionTagId);
       previousTitleRef.current = values.title;
     },
-    [sheets],
+    [syncTagSheetSelectedId],
   );
 
   useCardInit({
