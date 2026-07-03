@@ -2,8 +2,8 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet } from 'react-native';
 
-import { OnboardingOptionGrid } from '@/components/onboarding/onboarding-option-grid';
-import { OnboardingStepLayout } from '@/components/onboarding/onboarding-step-layout';
+import { OnboardingOptionGrid } from '@/components/features/onboarding/onboarding-option-grid';
+import { OnboardingStepLayout } from '@/components/features/onboarding/onboarding-step-layout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, fontFamilyWeight } from '@/constants/theme';
 import { t } from '@/lib/i18n';

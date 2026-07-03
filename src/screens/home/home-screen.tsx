@@ -8,9 +8,9 @@ import { TimelineCard } from '@/components/domain/timeline-card';
 import {
   HomeAddBottomSheet,
   type RecommendationItem,
-} from '@/components/home/home-add-bottom-sheet';
-import { HomeBackground } from '@/components/home/home-background';
-import { HomeBottomNav } from '@/components/home/home-bottom-nav';
+} from '@/components/features/home/home-add-bottom-sheet';
+import { HomeBackground } from '@/components/features/home/home-background';
+import { HomeBottomNav } from '@/components/features/home/home-bottom-nav';
 import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';

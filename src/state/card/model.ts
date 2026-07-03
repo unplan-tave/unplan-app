@@ -340,6 +340,14 @@ export function isDateInDraftRange(value: string, draft: DateTimeDraft) {
   return value > draft.dateStart && value < draft.dateEnd;
 }
 
+export function getScheduleDate(dateMode: DateMode, dateStart: string): string {
+  if (dateMode === 'single' || dateMode === 'range') {
+    return dateStart;
+  }
+
+  return formatDateValue(new Date());
+}
+
 function formatDateValue(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');

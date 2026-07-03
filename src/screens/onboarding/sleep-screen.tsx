@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { OnboardingStepLayout } from '@/components/onboarding/onboarding-step-layout';
-import { SleepConditionCircle } from '@/components/onboarding/sleep-condition-circle';
+import { OnboardingStepLayout } from '@/components/features/onboarding/onboarding-step-layout';
+import { SleepConditionCircle } from '@/components/features/onboarding/sleep-condition-circle';
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
 import { t } from '@/lib/i18n';
