@@ -10,7 +10,7 @@ export type ConditionTagId = 'urgent' | 'core' | 'brain' | 'daily' | 'labor' | '
 
 export const MEMO_MAX_LENGTH = 2000;
 
-export interface PinCardFormValues {
+export interface CardFormValues {
   title: string;
   conditionTagId: ConditionTagId;
   personalTagIds: string[];
@@ -33,18 +33,18 @@ export interface PinCardFormValues {
   recommendationAcknowledged: boolean;
 }
 
-export interface PinCardItem extends PinCardFormValues {
+export interface CardItem extends CardFormValues {
   id: string;
   cardType: CardTab;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface PinCardDraft {
+export interface CardDraft {
   mode: 'create' | 'edit';
   editingCardId: string | null;
   cardType: CardTab;
-  values: PinCardFormValues;
+  values: CardFormValues;
 }
 
 export interface DateTimeDraft {
@@ -74,7 +74,7 @@ export interface CalendarCell {
   isToday: boolean;
 }
 
-export function createDefaultPinCardFormValues(): PinCardFormValues {
+export function createDefaultCardFormValues(): CardFormValues {
   return {
     title: '',
     conditionTagId: 'daily',
@@ -99,15 +99,15 @@ export function createDefaultPinCardFormValues(): PinCardFormValues {
   };
 }
 
-export function createPinCardItem(
+export function createCardItem(
   cardType: CardTab,
-  values: PinCardFormValues,
-  id = createPinCardId(),
-): PinCardItem {
+  values: CardFormValues,
+  id = createCardId(),
+): CardItem {
   const now = new Date().toISOString();
 
   return {
-    ...clonePinCardFormValues(values),
+    ...cloneCardFormValues(values),
     id,
     cardType,
     createdAt: now,
@@ -115,38 +115,38 @@ export function createPinCardItem(
   };
 }
 
-export function updatePinCardItem(
-  card: PinCardItem,
+export function updateCardItem(
+  card: CardItem,
   cardType: CardTab,
-  values: PinCardFormValues,
-): PinCardItem {
+  values: CardFormValues,
+): CardItem {
   return {
     ...card,
-    ...clonePinCardFormValues(values),
+    ...cloneCardFormValues(values),
     cardType,
     updatedAt: new Date().toISOString(),
   };
 }
 
-export function createPinCardDraft(cardType: CardTab, values: PinCardFormValues): PinCardDraft {
+export function createCardDraft(cardType: CardTab, values: CardFormValues): CardDraft {
   return {
     mode: 'create',
     editingCardId: null,
     cardType,
-    values: clonePinCardFormValues(values),
+    values: cloneCardFormValues(values),
   };
 }
 
-export function createPinCardEditDraft(card: PinCardItem): PinCardDraft {
+export function createCardEditDraft(card: CardItem): CardDraft {
   return {
     mode: 'edit',
     editingCardId: card.id,
     cardType: card.cardType,
-    values: clonePinCardFormValues(card),
+    values: cloneCardFormValues(card),
   };
 }
 
-export function clonePinCardFormValues(values: PinCardFormValues): PinCardFormValues {
+export function cloneCardFormValues(values: CardFormValues): CardFormValues {
   return {
     title: values.title,
     conditionTagId: values.conditionTagId,
@@ -174,7 +174,7 @@ export function clonePinCardFormValues(values: PinCardFormValues): PinCardFormVa
   };
 }
 
-function createPinCardId() {
+function createCardId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
@@ -217,7 +217,7 @@ export function getConditionTagDescription(tagId: ConditionTagId) {
   }
 }
 
-export function getSuggestedConditionTag(title: string) {
+export function getSuggestedConditionTag(title: string = '') {
   if (title.includes('아르바이트') || title.includes('청소') || title.includes('정리')) {
     return getConditionTagById('labor');
   }

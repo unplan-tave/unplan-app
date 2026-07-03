@@ -15,13 +15,9 @@ import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import {
-  getConditionTagById,
-  type PinCardFormValues,
-  type PinCardItem,
-} from '@/state/pin-card/model';
-import { getMockRecommendationTimeRange } from '@/state/pin-card/queue';
-import { usePinCardStore } from '@/state/pin-card/use-pin-card-store';
+import { getConditionTagById, type CardFormValues, type CardItem } from '@/state/card/model';
+import { getMockRecommendationTimeRange } from '@/state/card/queue';
+import { useCardStore } from '@/state/card/use-card-store';
 
 const WEEKDAY_LABELS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 const EMPTY_HOME_CARD_HEIGHT = 108;
@@ -45,17 +41,17 @@ export function HomeScreen() {
   const [now, setNow] = useState(() => new Date());
   const [isAddSheetVisible, setIsAddSheetVisible] = useState(false);
   const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
-  const pinCards = usePinCardStore((store) => store.cards);
-  const createPinCard = usePinCardStore((store) => store.createCard);
-  const personalTags = usePinCardStore((store) => store.personalTags);
+  const cards = useCardStore((store) => store.cards);
+  const createCard = useCardStore((store) => store.createCard);
+  const personalTags = useCardStore((store) => store.personalTags);
   const homeDate = useMemo(() => getHomeDateLabel(now), [now]);
   const currentTimeLabel = useMemo(() => formatTimeLabel(now), [now]);
   const timelineCards = useMemo(
-    () => pinCards.filter((card) => card.cardType === 'pin').slice(0, 3),
-    [pinCards],
+    () => cards.filter((card) => card.cardType === 'pin').slice(0, 3),
+    [cards],
   );
   const recommendations = useMemo<RecommendationItem[]>(() => {
-    const queueCards = pinCards.filter(
+    const queueCards = cards.filter(
       (card) => card.cardType === 'queue' && !dismissedCardIds.includes(card.id),
     );
 
@@ -64,7 +60,7 @@ export function HomeScreen() {
       conditionTag: getConditionTagById(card.conditionTagId),
       personalTags: personalTags.filter((tag) => card.personalTagIds.includes(tag.id)),
     }));
-  }, [pinCards, dismissedCardIds, personalTags]);
+  }, [cards, dismissedCardIds, personalTags]);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -74,9 +70,9 @@ export function HomeScreen() {
     return () => clearInterval(intervalId);
   }, []);
 
-  const handleCreatePinCard = useCallback(() => {
+  const handleCreateCard = useCallback(() => {
     setIsAddSheetVisible(false);
-    router.push('/pin-card/card-detail');
+    router.push('/card/card-detail');
   }, []);
 
   const handleOpenAddSheet = useCallback(() => {
@@ -93,7 +89,7 @@ export function HomeScreen() {
 
   const handleAddRecommendation = useCallback(
     (cardId: string) => {
-      const queueCard = pinCards.find((card) => card.id === cardId);
+      const queueCard = cards.find((card) => card.id === cardId);
 
       if (queueCard == null) {
         return;
@@ -101,7 +97,7 @@ export function HomeScreen() {
 
       const today = getTodayString();
       const [recommendedStart, recommendedEnd] = getMockRecommendationTimeRange();
-      const values: PinCardFormValues = {
+      const values: CardFormValues = {
         title: queueCard.title,
         conditionTagId: queueCard.conditionTagId,
         personalTagIds: queueCard.personalTagIds,
@@ -124,11 +120,11 @@ export function HomeScreen() {
         recommendationAcknowledged: queueCard.recommendationAcknowledged ?? false,
       };
 
-      createPinCard('pin', values);
+      createCard('pin', values);
       setDismissedCardIds((prev) => [...prev, cardId]);
       setIsAddSheetVisible(false);
     },
-    [pinCards, createPinCard],
+    [cards, createCard],
   );
 
   const handleViewQueue = useCallback(() => {
@@ -191,7 +187,7 @@ export function HomeScreen() {
                       variant: 'personal' as const,
                     })),
                   ]}
-                  onPress={() => router.push(`/pin-card/view?cardId=${card.id}`)}
+                  onPress={() => router.push(`/card/view?cardId=${card.id}`)}
                 />
               );
             })
@@ -201,7 +197,7 @@ export function HomeScreen() {
             title="일정을 추가해 볼까요?"
             range="00:00 - 00:00"
             tags={[{ label: '일상 작업', variant: 'condition', condition: 'daily' }]}
-            onPress={handleCreatePinCard}
+            onPress={handleCreateCard}
           />
         </View>
 
@@ -259,7 +255,7 @@ export function HomeScreen() {
         visible={isAddSheetVisible}
         recommendations={recommendations}
         onClose={handleCloseAddSheet}
-        onCreatePress={handleCreatePinCard}
+        onCreatePress={handleCreateCard}
         onDismissRecommendation={handleDismissRecommendation}
         onRecommendationAddPress={handleAddRecommendation}
         onViewQueuePress={handleViewQueue}
@@ -293,11 +289,11 @@ function getTodayString() {
   return `${now.getFullYear()}.${padTimeUnit(now.getMonth() + 1)}.${padTimeUnit(now.getDate())}`;
 }
 
-function getTimelineTime(card: PinCardItem) {
+function getTimelineTime(card: CardItem) {
   return card.timeStart || '00:00';
 }
 
-function getTimelineRange(card: PinCardItem) {
+function getTimelineRange(card: CardItem) {
   if (!card.timeFilled) {
     return '00:00 - 00:00';
   }

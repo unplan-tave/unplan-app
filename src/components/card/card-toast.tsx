@@ -8,7 +8,7 @@ const TOAST_MAX_WIDTH = 353;
 const TOAST_ICON_SIZE = spacing[6];
 const TOAST_CONTENT_GAP = 10;
 
-export function PinCardToast({
+export function CardToast({
   message,
   bottomOffset = 70.5,
   variant = 'warning',

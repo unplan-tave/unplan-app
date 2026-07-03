@@ -4,46 +4,46 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Keyboard, type KeyboardEvent, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
-import { DateOnlyGuideModal } from '@/components/pin-card/date-only-guide-modal';
-import { DateTimeBottomSheet } from '@/components/pin-card/date-time-bottom-sheet';
-import { DueDurationBottomSheet } from '@/components/pin-card/due-duration-bottom-sheet';
-import { LocationBottomSheet } from '@/components/pin-card/location-bottom-sheet';
-import { PinCardCreateHeader } from '@/components/pin-card/pin-card-create-header';
-import { PinCardForm } from '@/components/pin-card/pin-card-form';
-import { PinCardToast } from '@/components/pin-card/pin-card-required-toast';
-import { RepeatCustomBottomSheet } from '@/components/pin-card/repeat-custom-bottom-sheet';
-import { RepeatPresetBottomSheet } from '@/components/pin-card/repeat-preset-bottom-sheet';
-import { TagPickerSheet, type TagTab } from '@/components/pin-card/tag-picker-sheet';
+import { CardCreateHeader } from '@/components/card/card-create-header';
+import { CardForm } from '@/components/card/card-form';
+import { CardToast } from '@/components/card/card-toast';
+import { DateOnlyGuideModal } from '@/components/card/date-only-guide-modal';
+import { DateTimeBottomSheet } from '@/components/card/date-time-bottom-sheet';
+import { DueDurationBottomSheet } from '@/components/card/due-duration-bottom-sheet';
+import { LocationBottomSheet } from '@/components/card/location-bottom-sheet';
+import { RepeatCustomBottomSheet } from '@/components/card/repeat-custom-bottom-sheet';
+import { RepeatPresetBottomSheet } from '@/components/card/repeat-preset-bottom-sheet';
+import { TagPickerSheet, type TagTab } from '@/components/card/tag-picker-sheet';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
-import { MEMO_MAX_LENGTH } from '@/state/pin-card/model';
+import { MEMO_MAX_LENGTH } from '@/state/card/model';
 import {
   type CardTab,
   type ConditionTagId,
-  createDefaultPinCardFormValues,
+  createDefaultCardFormValues,
   type DateTimeDraft,
   getConditionTagById,
   getDateValue,
   getSuggestedConditionTag,
   getTimeValue,
   hasCompleteTime,
-  type PinCardFormValues,
+  type CardFormValues,
   type TimeFocus,
-} from '@/state/pin-card/model';
+} from '@/state/card/model';
 import {
   type DueDurationDraft,
   hasDueDate,
   hasQueueDurationOrUnknown,
   isQueueFormComplete,
-} from '@/state/pin-card/queue';
+} from '@/state/card/queue';
 import {
   cloneRecurrenceValue,
   createDefaultCustomRecurrence,
   createPresetRecurrence,
   type RecurrencePreset,
   type RecurrenceValue,
-} from '@/state/pin-card/recurrence';
-import { usePinCardStore } from '@/state/pin-card/use-pin-card-store';
+} from '@/state/card/recurrence';
+import { useCardStore } from '@/state/card/use-card-store';
 
 type ToastState = {
   message: string;
@@ -58,10 +58,10 @@ const CONTENT_MAX_WIDTH = 353;
 const CONTENT_TOP = 100;
 const FORM_GAP = spacing[6];
 
-export function PinCardCreateScreen() {
+export function CardCreateScreen() {
   const { cardId, type } = useLocalSearchParams<{ cardId?: string; type?: 'queue' }>();
   const initialCardType: CardTab = type === 'queue' ? 'queue' : 'pin';
-  const initialValues = useMemo(() => createDefaultPinCardFormValues(), []);
+  const initialValues = useMemo(() => createDefaultCardFormValues(), []);
   const [activeTab, setActiveTab] = useState<CardTab>(initialCardType);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
@@ -78,22 +78,22 @@ export function PinCardCreateScreen() {
   const [repeatSheetMode, setRepeatSheetMode] = useState<RepeatSheetMode>('none');
   const [repeatSheetOrigin, setRepeatSheetOrigin] = useState<RepeatSheetOrigin>('new');
   const [isLocationSheetVisible, setIsLocationSheetVisible] = useState(false);
-  const beginCreate = usePinCardStore((store) => store.beginCreate);
-  const beginEdit = usePinCardStore((store) => store.beginEdit);
-  const updateDraftValues = usePinCardStore((store) => store.updateDraftValues);
-  const changeDraftCardType = usePinCardStore((store) => store.changeDraftCardType);
-  const personalTags = usePinCardStore((store) => store.personalTags);
-  const createPersonalTag = usePinCardStore((store) => store.createPersonalTag);
-  const locationRecentSearches = usePinCardStore((store) => store.locationRecentSearches);
-  const addLocationRecentSearch = usePinCardStore((store) => store.addLocationRecentSearch);
-  const deleteLocationRecentSearch = usePinCardStore((store) => store.deleteLocationRecentSearch);
-  const deleteAllLocationRecentSearches = usePinCardStore(
+  const beginCreate = useCardStore((store) => store.beginCreate);
+  const beginEdit = useCardStore((store) => store.beginEdit);
+  const updateDraftValues = useCardStore((store) => store.updateDraftValues);
+  const changeDraftCardType = useCardStore((store) => store.changeDraftCardType);
+  const personalTags = useCardStore((store) => store.personalTags);
+  const createPersonalTag = useCardStore((store) => store.createPersonalTag);
+  const locationRecentSearches = useCardStore((store) => store.locationRecentSearches);
+  const addLocationRecentSearch = useCardStore((store) => store.addLocationRecentSearch);
+  const deleteLocationRecentSearch = useCardStore((store) => store.deleteLocationRecentSearch);
+  const deleteAllLocationRecentSearches = useCardStore(
     (store) => store.deleteAllLocationRecentSearches,
   );
-  const saveDraft = usePinCardStore((store) => store.saveDraft);
-  const deleteCard = usePinCardStore((store) => store.deleteCard);
-  const discardDraft = usePinCardStore((store) => store.discardDraft);
-  const draftMode = usePinCardStore((store) => store.draft?.mode ?? 'create');
+  const saveDraft = useCardStore((store) => store.saveDraft);
+  const deleteCard = useCardStore((store) => store.deleteCard);
+  const discardDraft = useCardStore((store) => store.discardDraft);
+  const draftMode = useCardStore((store) => store.draft?.mode ?? 'create');
   const scrollRef = useRef<ScrollView>(null);
   const isMemoFocusedRef = useRef(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -104,11 +104,11 @@ export function PinCardCreateScreen() {
     setValue,
     watch,
     formState: { errors },
-  } = useForm<PinCardFormValues>({
+  } = useForm<CardFormValues>({
     mode: 'onSubmit',
     defaultValues: initialValues,
   });
-  const title = watch('title');
+  const title = watch('title') ?? '';
   const conditionTagId = watch('conditionTagId');
   const personalTagIds = watch('personalTagIds');
   const dateMode = watch('dateMode');
@@ -296,11 +296,11 @@ export function PinCardCreateScreen() {
   }, [discardDraft]);
 
   const handleValidSubmit = useCallback(
-    (values: PinCardFormValues) => {
+    (values: CardFormValues) => {
       const saved = saveDraft(values);
 
       if (saved != null) {
-        router.replace(`/pin-card/view?cardId=${saved.id}`);
+        router.replace(`/card/view?cardId=${saved.id}`);
         return;
       }
 
@@ -616,7 +616,7 @@ export function PinCardCreateScreen() {
     >
       <StatusBar style="light" />
       <View style={styles.canvas}>
-        <PinCardCreateHeader
+        <CardCreateHeader
           deleteVisible={draftMode === 'edit'}
           doneEnabled={isRequiredComplete}
           onClose={handleClose}
@@ -633,7 +633,7 @@ export function PinCardCreateScreen() {
           showsVerticalScrollIndicator={false}
           style={styles.scroll}
         >
-          <PinCardForm
+          <CardForm
             control={control}
             activeTab={activeTab}
             primaryTag={primaryTag}
@@ -737,7 +737,7 @@ export function PinCardCreateScreen() {
         />
       </View>
       {toast != null ? (
-        <PinCardToast
+        <CardToast
           bottomOffset={toastBottomOffset}
           message={toast.message}
           variant={toast.variant}
@@ -749,7 +749,7 @@ export function PinCardCreateScreen() {
   );
 }
 
-function getScheduleDate(dateMode: PinCardFormValues['dateMode'], dateStart: string) {
+function getScheduleDate(dateMode: CardFormValues['dateMode'], dateStart: string) {
   if (dateMode === 'single' || dateMode === 'range') {
     return dateStart;
   }
