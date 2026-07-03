@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet, View } from 'react-native';
 
-import { SocialLoginButton } from '@/components/auth/social-login-button';
+import { SocialLoginButton } from '@/components/features/auth/social-login-button';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { HomeIndicator } from '@/components/ui/Footer';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
