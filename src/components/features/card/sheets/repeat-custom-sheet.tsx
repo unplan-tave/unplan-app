@@ -35,7 +35,7 @@ interface RepeatCustomBottomSheetProps {
   onDone: (value: RecurrenceValue) => void;
 }
 
-export function RepeatCustomBottomSheet({
+export function RepeatCustomSheet({
   visible,
   value,
   scheduleDate,

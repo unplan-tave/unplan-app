@@ -22,7 +22,7 @@ interface LocationBottomSheetProps {
   onDeleteAllSearches?: () => void;
 }
 
-export function LocationBottomSheet({
+export function LocationSheet({
   visible,
   recentSearches = [],
   onClose,

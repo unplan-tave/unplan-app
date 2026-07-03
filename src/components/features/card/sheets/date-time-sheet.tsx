@@ -35,7 +35,7 @@ const TIME_MINUTES = [
 const DRUM_ITEM_HEIGHT = 32;
 const DRUM_PADDING = 2;
 
-export function DateTimeBottomSheet({
+export function DateTimeSheet({
   visible,
   focus,
   value,

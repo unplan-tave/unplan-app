@@ -20,7 +20,7 @@ const FIELD_LABEL_WIDTH = 72;
 const FORM_GAP = spacing[6];
 const RECOMMEND_BUTTON_GAP = 10;
 
-export function QueueCardViewBody({
+export function QueueViewBody({
   card,
   onOpenRecommendModal,
 }: {

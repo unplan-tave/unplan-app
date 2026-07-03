@@ -20,7 +20,7 @@ const FIELD_LABEL_WIDTH = 72;
 const FIELD_MIN_VALUE_WIDTH = 248;
 const LABEL_GROUP_GAP = 2;
 
-export function QueueCardFormBody({
+export function QueueFormBody({
   control,
   dueDate = '',
   durationHours = 0,
