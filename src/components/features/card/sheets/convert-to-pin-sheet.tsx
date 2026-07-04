@@ -910,7 +910,10 @@ function DrumColumn({
     [items, onSelect],
   );
 
-  const padded = [...Array(DRUM_PADDING).fill(''), ...items, ...Array(DRUM_PADDING).fill('')];
+  const padded = useMemo(
+    () => [...Array(DRUM_PADDING).fill(''), ...items, ...Array(DRUM_PADDING).fill('')],
+    [items],
+  );
 
   return (
     <ScrollView
