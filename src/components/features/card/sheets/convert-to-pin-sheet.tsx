@@ -63,6 +63,7 @@ export function ConvertToPinBottomSheet({
   const [isTimeWheelVisible, setIsTimeWheelVisible] = useState(false);
   const handleShowCalendar = useCallback(() => setIsTimeWheelVisible(false), []);
   const isReSearchRef = useRef(false);
+  const useOneHourRef = useRef(false);
 
   const candidates = useMemo(() => getMockRecommendationCandidates(), []);
   const currentCandidate = candidates[candidateIndex] ?? candidates[0];
@@ -74,6 +75,7 @@ export function ConvertToPinBottomSheet({
     setCandidateIndex(0);
     setKeepOriginal(true);
     isReSearchRef.current = false;
+    useOneHourRef.current = false;
 
     if (card.durationUnknown ?? false) {
       setMode('error-no-duration');
@@ -93,7 +95,8 @@ export function ConvertToPinBottomSheet({
         isReSearchRef.current = false;
         setMode('error-14day');
       } else {
-        setMode('recommend');
+        // candidates.length === 0이면 7일 내 가용 시간대 없음 (실제 API 연동 시 분기 활성화)
+        setMode(candidates.length > 0 ? 'recommend' : 'error-7day');
       }
     }, 2700);
 
@@ -103,7 +106,7 @@ export function ConvertToPinBottomSheet({
       clearTimeout(t3);
       clearTimeout(t4);
     };
-  }, [visible, mode]);
+  }, [visible, mode, candidates]);
 
   const handleAccept = useCallback(() => {
     let candidate: RecommendationCandidate;
@@ -121,7 +124,11 @@ export function ConvertToPinBottomSheet({
       candidate = currentCandidate;
     }
 
-    onConvert(createQueueToPinValuesFromCandidate(card, candidate), keepOriginal);
+    const baseCard: CardItem = useOneHourRef.current
+      ? { ...card, durationUnknown: false, durationHours: 1, durationMinutes: 0 }
+      : card;
+
+    onConvert(createQueueToPinValuesFromCandidate(baseCard, candidate), keepOriginal);
   }, [
     mode,
     selectedDate,
@@ -146,6 +153,7 @@ export function ConvertToPinBottomSheet({
   }, [currentCandidate]);
 
   const handleUseOneHour = useCallback(() => {
+    useOneHourRef.current = true;
     setLoadingStep(0);
     setMode('loading');
   }, []);
