@@ -117,6 +117,7 @@ export function ConvertToPinBottomSheet({
         description: '',
       };
     } else {
+      if (currentCandidate == null) return;
       candidate = currentCandidate;
     }
 
@@ -133,6 +134,7 @@ export function ConvertToPinBottomSheet({
   ]);
 
   const handleSwitchToManual = useCallback(() => {
+    if (currentCandidate == null) return;
     const date = parseDueDateToDate(currentCandidate.date) ?? new Date();
     setCalendarBase(date);
     setSelectedDate(currentCandidate.date);
@@ -509,8 +511,8 @@ function ManualContent({
   onShowCalendar: () => void;
   onSelectTimePart: (part: 'hour' | 'minute', value: string) => void;
 }) {
-  const calendar = getCalendarMonth(calendarBase);
-  const todayStr = formatDueDateForStorage(new Date());
+  const calendar = useMemo(() => getCalendarMonth(calendarBase), [calendarBase]);
+  const todayStr = useMemo(() => formatDueDateForStorage(new Date()), []);
   const { isValid: isTimeValid } = useTimeRangeValidation(startTime, endTime);
 
   return (
