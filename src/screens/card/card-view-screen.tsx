@@ -5,13 +5,13 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { CardCreateHeader } from '@/components/features/card/card-create-header';
 import { CardToast } from '@/components/features/card/card-toast';
-import { RecommendTimeModal } from '@/components/features/card/modals/recommend-time-modal';
+import { ConvertToPinBottomSheet } from '@/components/features/card/sheets/convert-to-pin-sheet';
 import { CardViewHeader } from '@/components/features/card/view/card-view-header';
 import { PinViewBody } from '@/components/features/card/view/pin-view-body';
 import { QueueViewBody } from '@/components/features/card/view/queue-view-body';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
-import { getConditionTagById } from '@/state/card/model';
+import { type CardFormValues, getConditionTagById } from '@/state/card/model';
 import { useCardStore } from '@/state/card/use-card-store';
 
 const SCREEN_MAX_WIDTH = 393;
@@ -25,35 +25,48 @@ type ToastState = {
 } | null;
 
 export function CardViewScreen() {
-  const { cardId } = useLocalSearchParams<{ cardId: string }>();
+  const { cardId, toast: toastParam } = useLocalSearchParams<{ cardId: string; toast?: string }>();
   const card = useCardStore((store) => store.cards.find((c) => c.id === cardId));
   const personalTags = useCardStore((store) => store.personalTags);
-  const patchCard = useCardStore((store) => store.patchCard);
-  const [isRecommendModalVisible, setIsRecommendModalVisible] = useState(false);
-  const [toast, setToast] = useState<ToastState>(null);
+  const createCard = useCardStore((store) => store.createCard);
+  const convertQueueToPinCard = useCardStore((store) => store.convertQueueToPinCard);
+  const [isConvertSheetVisible, setIsConvertSheetVisible] = useState(false);
+  const [toast, setToast] = useState<ToastState>(() =>
+    toastParam === 'created' ? { message: '핀카드가 생성됐어요!', variant: 'confirm' } : null,
+  );
 
-  const handleBack = useCallback(() => router.back(), []);
+  const handleBack = useCallback(() => {
+    router.replace('/(tabs)');
+  }, []);
   const handleEdit = useCallback(() => {
     router.push(`/card/card-detail?cardId=${cardId}`);
   }, [cardId]);
 
-  const handleOpenRecommendModal = useCallback(() => {
-    setIsRecommendModalVisible(true);
+  const handleOpenConvertSheet = useCallback(() => {
+    setIsConvertSheetVisible(true);
   }, []);
 
-  const handleCloseRecommendModal = useCallback(() => {
-    setIsRecommendModalVisible(false);
-  }, []);
+  const handleConvert = useCallback(
+    (values: CardFormValues, keepOriginal: boolean) => {
+      if (cardId == null) return;
 
-  const handleConfirmRecommendation = useCallback(() => {
-    if (cardId == null) {
-      return;
-    }
+      setIsConvertSheetVisible(false);
 
-    patchCard(cardId, { recommendationAcknowledged: true });
-    setIsRecommendModalVisible(false);
-    setToast({ message: '추천 시간을 확인했어요!', variant: 'confirm' });
-  }, [cardId, patchCard]);
+      if (keepOriginal) {
+        const newCard = createCard('pin', values);
+        router.push(`/card/view?cardId=${newCard.id}&toast=created`);
+      } else {
+        convertQueueToPinCard(cardId, values);
+        setToast({ message: '핀카드로 전환됐어요!', variant: 'confirm' });
+      }
+    },
+    [cardId, createCard, convertQueueToPinCard],
+  );
+
+  const handleEditDuration = useCallback(() => {
+    setIsConvertSheetVisible(false);
+    router.push(`/card/card-detail?cardId=${cardId}`);
+  }, [cardId]);
 
   useEffect(() => {
     if (toast == null) {
@@ -69,7 +82,7 @@ export function CardViewScreen() {
 
   useEffect(() => {
     if (card == null) {
-      router.back();
+      router.replace('/(tabs)');
     }
   }, [card]);
 
@@ -103,29 +116,27 @@ export function CardViewScreen() {
           />
 
           {card.cardType === 'queue' ? (
-            <QueueViewBody card={card} onOpenRecommendModal={handleOpenRecommendModal} />
+            <QueueViewBody card={card} onOpenConvertSheet={handleOpenConvertSheet} />
           ) : (
             <PinViewBody card={card} />
           )}
         </ScrollView>
       </View>
 
-      {card.cardType === 'queue' ? (
-        <>
-          <RecommendTimeModal
-            visible={isRecommendModalVisible}
-            onClose={handleCloseRecommendModal}
-            onConfirm={handleConfirmRecommendation}
-          />
-          {toast != null ? (
-            <CardToast
-              message={toast.message}
-              variant={toast.variant}
-              onClose={() => setToast(null)}
-              onConfirm={() => setToast(null)}
-            />
-          ) : null}
-        </>
+      <ConvertToPinBottomSheet
+        visible={isConvertSheetVisible}
+        card={card}
+        onClose={() => setIsConvertSheetVisible(false)}
+        onConvert={handleConvert}
+        onEditDuration={handleEditDuration}
+      />
+      {toast != null ? (
+        <CardToast
+          message={toast.message}
+          variant={toast.variant}
+          onClose={() => setToast(null)}
+          onConfirm={() => setToast(null)}
+        />
       ) : null}
     </ScreenLayout>
   );

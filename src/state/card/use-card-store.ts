@@ -19,6 +19,7 @@ import {
   sortPersonalTags,
   updateCardItem,
 } from './model';
+import { createQueueToPinValues } from './queue';
 
 interface CardStoreState {
   cards: CardItem[];
@@ -36,6 +37,7 @@ interface CardStoreState {
   changeDraftCardType: (cardType: CardTab) => void;
   saveDraft: (values?: CardFormValues) => CardItem | null;
   patchCard: (cardId: string, patch: Partial<CardFormValues>) => void;
+  convertQueueToPinCard: (cardId: string, values?: CardFormValues) => CardItem | null;
   deleteCard: (cardId: string) => void;
   discardDraft: () => void;
 }
@@ -194,6 +196,26 @@ export const useCardStore = create<CardStoreState>()(
             });
           }),
         }));
+      },
+      convertQueueToPinCard: (cardId, values) => {
+        const currentCard = get().cards.find((card) => card.id === cardId);
+
+        if (currentCard == null || currentCard.cardType !== 'queue') {
+          return null;
+        }
+
+        const convertedCard = updateCardItem(
+          currentCard,
+          'pin',
+          values ?? createQueueToPinValues(currentCard),
+        );
+
+        set((state) => ({
+          cards: state.cards.map((card) => (card.id === cardId ? convertedCard : card)),
+          draft: state.draft?.editingCardId === cardId ? null : state.draft,
+        }));
+
+        return convertedCard;
       },
       deleteCard: (cardId) => {
         set((state) => ({

@@ -1,4 +1,4 @@
-import type { CardFormValues } from './model';
+import type { CardFormValues, CardItem } from './model';
 
 export const UNKNOWN_DURATION_LABEL = '시간 미정';
 
@@ -166,6 +166,90 @@ export function getMockRecommendationLabel(): string {
   return '오늘 오후 2:00 ~ 6:30';
 }
 
+export function getMockRecommendationDate(today = new Date()): string {
+  return formatDueDateForStorage(today);
+}
+
 export function getMockRecommendationTimeRange(): readonly [string, string] {
   return ['14:00', '18:30'] as const;
+}
+
+export function createQueueToPinValues(card: CardItem, today = new Date()): CardFormValues {
+  const [timeStart, timeEnd] = getMockRecommendationTimeRange();
+
+  return {
+    ...card,
+    dateMode: 'single',
+    dateStart: getMockRecommendationDate(today),
+    dateEnd: '',
+    timeFilled: true,
+    timeStart,
+    timeEnd,
+    recommendationAcknowledged: true,
+  };
+}
+
+export interface RecommendationCandidate {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  description: string;
+}
+
+export function getMockRecommendationCandidates(today = new Date()): RecommendationCandidate[] {
+  const todayStr = formatDueDateForStorage(today);
+  const day1Str = formatDueDateForStorage(
+    new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1),
+  );
+  const day2Str = formatDueDateForStorage(
+    new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2),
+  );
+
+  return [
+    {
+      id: '1',
+      date: todayStr,
+      startTime: '14:30',
+      endTime: '16:00',
+      description: '다음 일정 전까지 충분한 여유가 있으며,\n몰입하기 좋은 시간대예요.',
+    },
+    {
+      id: '2',
+      date: todayStr,
+      startTime: '17:00',
+      endTime: '19:30',
+      description: '저녁 전 집중력이 높아지는 시간대예요.',
+    },
+    {
+      id: '3',
+      date: day1Str,
+      startTime: '10:00',
+      endTime: '12:30',
+      description: '오전 집중 시간대로 능률이 가장 높아요.',
+    },
+    {
+      id: '4',
+      date: day2Str,
+      startTime: '15:00',
+      endTime: '17:00',
+      description: '오후 활동 에너지가 충분한 시간대예요.',
+    },
+  ];
+}
+
+export function createQueueToPinValuesFromCandidate(
+  card: CardItem,
+  candidate: RecommendationCandidate,
+): CardFormValues {
+  return {
+    ...card,
+    dateMode: 'single',
+    dateStart: candidate.date,
+    dateEnd: '',
+    timeFilled: true,
+    timeStart: candidate.startTime,
+    timeEnd: candidate.endTime,
+    recommendationAcknowledged: true,
+  };
 }

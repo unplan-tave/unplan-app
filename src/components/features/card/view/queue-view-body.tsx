@@ -9,7 +9,6 @@ import {
   formatDueCountdown,
   formatDueDateDisplay,
   formatDurationInline,
-  getMockRecommendationLabel,
   hasDueDate,
   hasQueueDurationOrUnknown,
   UNKNOWN_DURATION_LABEL,
@@ -22,10 +21,10 @@ const RECOMMEND_BUTTON_GAP = 10;
 
 export function QueueViewBody({
   card,
-  onOpenRecommendModal,
+  onOpenConvertSheet,
 }: {
   card: CardItem;
-  onOpenRecommendModal: () => void;
+  onOpenConvertSheet: () => void;
 }) {
   const sections: Array<{ key: string; node: React.ReactNode }> = [];
   const dueDurationRows: Array<{ key: string; node: React.ReactNode }> = [];
@@ -76,12 +75,7 @@ export function QueueViewBody({
         rows={[
           {
             key: 'recommend',
-            node: (
-              <ViewRecommendRow
-                acknowledged={card.recommendationAcknowledged ?? false}
-                onPressConfirm={onOpenRecommendModal}
-              />
-            ),
+            node: <ViewRecommendRow onPressConfirm={onOpenConvertSheet} />,
           },
         ]}
       />
@@ -201,13 +195,7 @@ function ViewDurationValue({
   );
 }
 
-function ViewRecommendRow({
-  acknowledged,
-  onPressConfirm,
-}: {
-  acknowledged: boolean;
-  onPressConfirm: () => void;
-}) {
+function ViewRecommendRow({ onPressConfirm }: { onPressConfirm: () => void }) {
   return (
     <View style={styles.formRow}>
       <View style={styles.labelGroup}>
@@ -215,23 +203,17 @@ function ViewRecommendRow({
           추천 시간
         </Typography>
       </View>
-      {acknowledged ? (
-        <Typography variant="bodyM" color={colors.gray[600]} numberOfLines={1}>
-          {getMockRecommendationLabel()}
+      <Pressable
+        accessibilityLabel="추천 시간 확인하기"
+        accessibilityRole="button"
+        style={({ pressed }) => [styles.recommendButton, pressed && styles.pressed]}
+        onPress={onPressConfirm}
+      >
+        <Typography variant="bodyM" color={colors.gray.white}>
+          확인하기
         </Typography>
-      ) : (
-        <Pressable
-          accessibilityLabel="추천 시간 확인하기"
-          accessibilityRole="button"
-          style={({ pressed }) => [styles.recommendButton, pressed && styles.pressed]}
-          onPress={onPressConfirm}
-        >
-          <Typography variant="bodyM" color={colors.gray.white}>
-            확인하기
-          </Typography>
-          <Icon name="arrowRight" size={24} color={colors.gray.white} />
-        </Pressable>
-      )}
+        <Icon name="arrowRight" size={24} color={colors.gray.white} />
+      </Pressable>
     </View>
   );
 }
