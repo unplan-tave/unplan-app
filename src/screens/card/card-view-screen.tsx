@@ -25,13 +25,15 @@ type ToastState = {
 } | null;
 
 export function CardViewScreen() {
-  const { cardId } = useLocalSearchParams<{ cardId: string }>();
+  const { cardId, toast: toastParam } = useLocalSearchParams<{ cardId: string; toast?: string }>();
   const card = useCardStore((store) => store.cards.find((c) => c.id === cardId));
   const personalTags = useCardStore((store) => store.personalTags);
   const createCard = useCardStore((store) => store.createCard);
   const convertQueueToPinCard = useCardStore((store) => store.convertQueueToPinCard);
   const [isConvertSheetVisible, setIsConvertSheetVisible] = useState(false);
-  const [toast, setToast] = useState<ToastState>(null);
+  const [toast, setToast] = useState<ToastState>(() =>
+    toastParam === 'created' ? { message: '핀카드가 생성됐어요!', variant: 'confirm' } : null,
+  );
 
   const handleBack = useCallback(() => {
     router.replace('/(tabs)');
@@ -52,8 +54,7 @@ export function CardViewScreen() {
 
       if (keepOriginal) {
         const newCard = createCard('pin', values);
-        setToast({ message: '핀카드가 생성됐어요!', variant: 'confirm' });
-        router.push(`/card/view?cardId=${newCard.id}`);
+        router.push(`/card/view?cardId=${newCard.id}&toast=created`);
       } else {
         convertQueueToPinCard(cardId, values);
         setToast({ message: '핀카드로 전환됐어요!', variant: 'confirm' });
