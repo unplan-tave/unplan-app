@@ -108,7 +108,8 @@ screen이 비대해지면 **상수 · 순수 로직 · 상태 · JSX**를 밖으
 ### 순수 함수
 
 - props/state를 읽지 않는 함수는 `state/<domain>/*`로 내린다.
-- `getScheduleDate`, `isQueueFormComplete`, `hasDueDate` 같은 것은 screen 하단에 두지 않는다. `*.test.ts`를 붙인다.
+- `getScheduleDate`, `isQueueFormComplete`, `hasDueDate` 같은 것은 screen 하단에 두지 않는다.
+- `*.test.ts`는 기능 작업이 끝난 뒤 한꺼번에 추가한다. (리팩터링·기능 PR마다 필수는 아님)
 
 ### 상태
 
@@ -164,6 +165,6 @@ type SheetKind = 'none' | 'dateTime' | 'due' | 'location' | 'tag';
 - [ ] useState 5개 넘으면 훅으로 묶었는가
 - [ ] 상호배타 UI를 union 타입으로 합쳤는가
 - [ ] 파생값을 useState에 저장하지 않는가
-- [ ] 순수 함수를 `state/<domain>`으로 내렸고 `*.test.ts`가 있는가
+- [ ] 순수 함수를 `state/<domain>`으로 내렸는가
 - [ ] 색·spacing·radius에 토큰을 썼는가
 - [ ] 죽은 코드(빈 스타일, 미사용 prop)를 지웠는가
