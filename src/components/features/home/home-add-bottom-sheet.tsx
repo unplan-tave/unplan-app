@@ -1,6 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { TimelineCard } from '@/components/domain/timeline-card';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
@@ -16,6 +15,8 @@ import {
   hasDueDate,
   UNKNOWN_DURATION_LABEL,
 } from '@/domains/card/queue';
+
+import { TimelineCard } from './timeline-card';
 
 export interface RecommendationItem {
   card: CardItem;
