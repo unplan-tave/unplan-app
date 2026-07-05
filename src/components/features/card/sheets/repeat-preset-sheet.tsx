@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { type RecurrencePreset, type RecurrenceValue } from '@/state/card/recurrence';
+import { type RecurrencePreset, type RecurrenceValue } from '@/domains/card/recurrence';
 
 const PRESET_OPTIONS: ReadonlyArray<{
   preset: Exclude<RecurrencePreset, 'custom'>;

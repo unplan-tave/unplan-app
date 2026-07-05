@@ -67,12 +67,10 @@ src/
 │   ├── ui/               # 전역 base primitive
 │   ├── domain/           # 여러 feature에서 재사용되는 도메인 표현
 │   └── features/         # 화면명/플로우명 기준 조합 컴포넌트
-├── domains/          # 목표 구조: 도메인 타입 + store + api wrapper + 순수 로직
+├── domains/          # 도메인 타입 + store + api wrapper + 순수 로직
 │   ├── auth/
-│   └── onboarding/
-├── state/            # 현재 코드에 남아 있는 기존 도메인 로직 위치
-│   ├── auth/             # 후속 PR에서 domains/auth로 이동
-│   └── onboarding/        # 후속 PR에서 domains/onboarding으로 이동
+│   ├── onboarding/
+│   └── card/
 ├── lib/              # 앱 전역 인프라 / 크로스컷팅
 │   ├── api/              # client, mutator, endpoints(생성), model(생성)
 │   ├── auth/             # google-sdk, kakao-sdk, token-storage
@@ -85,7 +83,7 @@ src/
 └── translations/     # ko.ts (번역 키-값)
 ```
 
-**구조 원칙(AGENTS.md / core.md):** `app`은 route/layout만, 화면은 `screens`, 재사용 primitive는 `components/ui`, 도메인 표현은 `components/domain`, 화면/플로우 조합은 `components/features/<screen-or-flow>`, 도메인 로직은 `domains/<domain>`, 인프라는 `lib`. 현재 코드의 `src/state`는 후속 PR에서 `src/domains`로 이동한다. 라우트 파일은 `export { XScreen as default } from '@/screens/...'` 형태의 1줄 재노출을 우선한다.
+**구조 원칙(AGENTS.md / core.md):** `app`은 route/layout만, 화면은 `screens`, 재사용 primitive는 `components/ui`, 도메인 표현은 `components/domain`, 화면/플로우 조합은 `components/features/<screen-or-flow>`, 도메인 로직은 `domains/<domain>`, 인프라는 `lib`. 라우트 파일은 `export { XScreen as default } from '@/screens/...'` 형태의 1줄 재노출을 우선한다.
 
 ---
 
@@ -106,16 +104,16 @@ src/
 
 ### 5.1 인증 (auth) — ✅ 동작
 - **`lib/auth/kakao-sdk.ts` / `google-sdk.ts`** — SDK 지연 초기화 + 설정 누락 시 graceful 경고/전용 에러 클래스(`KakaoSDKConfigError`, `GoogleSDKConfigError`).
-- **`state/auth/social-login.ts`** — `loginWithKakao()` / `loginWithGoogle()`. 카카오톡 미설치 시 카카오계정 로그인 폴백, 취소/네트워크/SDK/설정/알수없음으로 에러 정규화(`SocialLoginError`).
-- **`state/auth/api.ts`** — `submitSocialLogin()`이 `/auth/{provider}`로 토큰 전송, 응답 래퍼 unwrap.
-- **`state/auth/use-auth-store.ts`** — `setSession` / `hydrateSession` / `logout`. 토큰은 SecureStore에 저장.
+- **`domains/auth/social-login.ts`** — `loginWithKakao()` / `loginWithGoogle()`. 카카오톡 미설치 시 카카오계정 로그인 폴백, 취소/네트워크/SDK/설정/알수없음으로 에러 정규화(`SocialLoginError`).
+- **`domains/auth/api.ts`** — `submitSocialLogin()`이 `/auth/{provider}`로 토큰 전송, 응답 래퍼 unwrap.
+- **`domains/auth/use-auth-store.ts`** — `setSession` / `hydrateSession` / `logout`. 토큰은 SecureStore에 저장.
 - **`hooks/use-auth.ts`** — store 셀렉터 묶음.
 - **`lib/device/device-id.ts`** — UUID 디바이스 ID 생성·영속(SecureStore), 폴백 포함.
 
 ### 5.2 온보딩 (onboarding) — ✅ API 연동
-- **`state/onboarding/use-onboarding-store.ts`** — 회복 수단, 목표 수면시간, 집중/졸림/수면 시간대, 이동수단 선택과 제출 상태 관리. 서버 저장 성공 후 완료 플래그를 MMKV에 저장.
-- **`state/onboarding/api.ts`** — 프론트 모델을 생성 DTO로 변환하고 최초 온보딩 단일 저장 API를 호출.
-- **`state/onboarding/sleep-condition.ts`** — 수면 분(minute)을 risk/lack/good/excess로 분류(Figma 스펙 반영).
+- **`domains/onboarding/use-onboarding-store.ts`** — 회복 수단, 목표 수면시간, 집중/졸림/수면 시간대, 이동수단 선택과 제출 상태 관리. 서버 저장 성공 후 완료 플래그를 MMKV에 저장.
+- **`domains/onboarding/api.ts`** — 프론트 모델을 생성 DTO로 변환하고 최초 온보딩 단일 저장 API를 호출.
+- **`domains/onboarding/sleep-condition.ts`** — 수면 분(minute)을 risk/lack/good/excess로 분류(Figma 스펙 반영).
 
 ### 5.3 메인 탭 (home / schedule / settings) — 🟡 진행 중
 - 홈·일정은 플레이스홀더이며, 설정에는 로그아웃과 개발용 온보딩 초기화 기능이 연결됨.
@@ -127,7 +125,7 @@ src/
 - **클라이언트**: `lib/api/client.ts` — `Config.apiUrl` 기반 axios. 요청 인터셉터가 SecureStore의 access token을 Bearer로 주입. 응답 인터셉터에 **401 refresh-token 재시도 TODO**(미구현).
 - **Orval 자동생성**: `orval.config.ts`가 `OPENAPI_SPEC_URL`에서 스펙을 받아 `src/lib/api/endpoints`(태그별 React Query 훅)와 `src/lib/api/model`(타입)을 생성. 커스텀 mutator(`orval-mutator.ts`)로 공용 axios 인스턴스 재사용. 두 디렉터리는 ESLint ignore 대상.
 - 생성된 태그: `auth-controller`, `daily-memo`, `onboarding`, `setting-onboarding`, `schedule-crud`, `test-controller`.
-- 온보딩은 `state/onboarding/api.ts`, 인증은 `state/auth/api.ts`의 수기 래퍼를 통해 생성 함수를 사용함.
+- 온보딩은 `domains/onboarding/api.ts`, 인증은 `domains/auth/api.ts`의 수기 래퍼를 통해 생성 함수를 사용함.
 
 ---
 
@@ -184,7 +182,7 @@ src/
 ### 정리하면 좋은 점 (불필요 / 중복)
 1. **미사용 UI primitive 다수** — `Input`, `Modal`, `BottomSheet`, `Calendar`, `GNB`, `ConditionCard`, `RecommendCard`, `ProgressBar`, `ProgressSegment`, `StatusBar`, `TimeStepper`, `ViewModeButton`, `ChipGroup`, `AppIcon`, `Tag` 등이 화면에서 전혀 사용되지 않음. 디자인 선반영 의도라면 OK지만, 화면 구현이 임박하지 않았다면 드리프트/유지보수 부담. 살릴 것·뺄 것을 트래킹 권장.
 2. **Orval 생성 훅 활용 범위 제한** — 인증·온보딩은 수기 래퍼에서 생성 함수를 사용하지만, 나머지 도메인은 아직 화면과 연결되지 않음.
-3. **타입 중복/데드코드** — `state/auth/model.ts`의 `Schedule`, `ApiError` 인터페이스가 미사용. `ApiResponse`는 생성 모델과 개념 중복.
+3. **타입 중복/데드코드** — `domains/auth/model.ts`의 `Schedule`, `ApiError` 인터페이스가 미사용. `ApiResponse`는 생성 모델과 개념 중복.
 4. **미구현 TODO** — axios 401 refresh 재시도. 백엔드 계약 확정 시 처리 필요.
 5. **테스트 부재** — CI는 `npm test --if-present`를 돌리지만 테스트 프레임워크/스크립트가 전혀 없음(devDeps에도 없음). 검증 공백.
 6. **네이밍 잔재** — `package.json`의 `name: scheduler-app`, MMKV id `scheduler-app-storage`가 리브랜딩된 `Unplan`과 불일치.

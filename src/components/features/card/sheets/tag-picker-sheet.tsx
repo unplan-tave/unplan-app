@@ -5,7 +5,7 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
-import { CONDITION_TAG_OPTIONS } from '@/state/card/data';
+import { CONDITION_TAG_OPTIONS } from '@/domains/card/data';
 import {
   canCreatePersonalTag,
   getConditionTagDescription,
@@ -13,7 +13,7 @@ import {
   sortPersonalTags,
   type ConditionTagId,
   type PersonalTagOption,
-} from '@/state/card/model';
+} from '@/domains/card/model';
 
 export type TagTab = 'condition' | 'personal';
 

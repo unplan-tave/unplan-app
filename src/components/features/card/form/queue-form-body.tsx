@@ -5,7 +5,7 @@ import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Card } from '@/components/ui/Card';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
-import { MEMO_MAX_LENGTH, type CardFormValues } from '@/state/card/model';
+import { MEMO_MAX_LENGTH, type CardFormValues } from '@/domains/card/model';
 import {
   formatDueCountdown,
   formatDueDateDisplay,
@@ -13,7 +13,7 @@ import {
   hasDueDate,
   hasQueueDurationOrUnknown,
   UNKNOWN_DURATION_LABEL,
-} from '@/state/card/queue';
+} from '@/domains/card/queue';
 
 const BOX_PADDING = spacing[4];
 const FIELD_LABEL_WIDTH = 72;

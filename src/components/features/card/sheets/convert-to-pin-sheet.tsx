@@ -6,15 +6,15 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { isValidTimeRange, useTimeRangeValidation } from '@/hooks/use-time-range-validation';
-import { type CardFormValues, type CardItem, getCalendarMonth } from '@/state/card/model';
+import { type CardFormValues, type CardItem, getCalendarMonth } from '@/domains/card/model';
 import {
   createQueueToPinValuesFromCandidate,
   formatDueDateForStorage,
   getMockRecommendationCandidates,
   parseDueDateToDate,
   type RecommendationCandidate,
-} from '@/state/card/queue';
+} from '@/domains/card/queue';
+import { isValidTimeRange, useTimeRangeValidation } from '@/hooks/use-time-range-validation';
 
 const WEEKDAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 const TIME_HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));

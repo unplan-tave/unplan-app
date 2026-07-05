@@ -3,10 +3,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { colors } from '@/constants/theme';
+import { onboardingRoutes } from '@/domains/onboarding/routes';
+import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
 import { useAuth } from '@/hooks/use-auth';
 import { SplashScreen } from '@/screens/onboarding/splash-screen';
-import { onboardingRoutes } from '@/state/onboarding/routes';
-import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
 export default function IndexRoute() {
   const router = useRouter();

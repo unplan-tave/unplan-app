@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/state/auth/use-auth-store';
+import { useAuthStore } from '@/domains/auth/use-auth-store';
 
 export function useAuth() {
   const token = useAuthStore((state) => state.token);

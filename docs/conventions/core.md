@@ -34,7 +34,7 @@
 - `eslint.config.js`, `.prettierrc`, `tsconfig.json`처럼 도구가 강제하는 규칙이 문서보다 우선합니다.
 - `src/app`에는 Expo Router route/layout 파일만 둡니다.
 - 실제 화면 구현은 `src/screens/<domain>/*-screen.tsx`에 둡니다.
-- UI가 아닌 도메인 로직은 `src/domains/<domain>`에 둡니다. 현재 코드의 `src/state`는 후속 PR에서 `src/domains`로 이동합니다.
+- UI가 아닌 도메인 로직은 `src/domains/<domain>`에 둡니다.
 - 앱 전역 인프라와 외부 SDK wrapper는 `src/lib`에 둡니다.
 - 컴포넌트는 `components/ui`, `components/domain`, `components/features`로 나눕니다.
 - 새 컴포넌트는 기존 `components/ui` primitive를 먼저 기반으로 구현합니다.

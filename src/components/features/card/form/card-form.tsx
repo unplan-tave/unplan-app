@@ -10,7 +10,7 @@ import {
   type CardFormValues,
   type RecurrenceValue,
   type TimeFocus,
-} from '@/state/card/model';
+} from '@/domains/card/model';
 
 import { CardFormHeader } from './card-form-header';
 import { PinFormBody } from './pin-form-body';

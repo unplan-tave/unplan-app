@@ -6,10 +6,10 @@ import { OnboardingOptionGrid } from '@/components/features/onboarding/onboardin
 import { OnboardingStepLayout } from '@/components/features/onboarding/onboarding-step-layout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, fontFamilyWeight } from '@/constants/theme';
+import { type RecoveryOptionId } from '@/domains/onboarding/model';
+import { onboardingRoutes } from '@/domains/onboarding/routes';
+import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
 import { t } from '@/lib/i18n';
-import { type RecoveryOptionId } from '@/state/onboarding/model';
-import { onboardingRoutes } from '@/state/onboarding/routes';
-import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 import { type TranslationKey } from '@/translations/ko';
 
 const recoveryOptionDefinitions = [

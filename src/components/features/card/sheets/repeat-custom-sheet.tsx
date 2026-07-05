@@ -5,7 +5,7 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { getCalendarMonth } from '@/state/card/model';
+import { getCalendarMonth } from '@/domains/card/model';
 import {
   combineIntervalDigits,
   isDateOnOrAfterSchedule,
@@ -16,7 +16,7 @@ import {
   splitIntervalDigits,
   WEEKLY_DETAIL_DAYS,
   DIGIT_ITEMS,
-} from '@/state/card/recurrence';
+} from '@/domains/card/recurrence';
 
 const DRUM_ITEM_HEIGHT = 32;
 const DRUM_PADDING = 2;

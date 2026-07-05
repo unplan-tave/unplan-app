@@ -23,14 +23,14 @@ import {
   filterCardsForList,
   groupCardsByMonth,
   type CardListFilters,
-} from '@/state/card/list';
+} from '@/domains/card/list';
 import {
   getConditionTagById,
   type CardItem,
   type CardProgressStatus,
   type PersonalTagOption,
-} from '@/state/card/model';
-import { useCardStore } from '@/state/card/use-card-store';
+} from '@/domains/card/model';
+import { useCardStore } from '@/domains/card/use-card-store';
 
 const SCREEN_MAX_WIDTH = 393;
 const CONTENT_MAX_WIDTH = 353;

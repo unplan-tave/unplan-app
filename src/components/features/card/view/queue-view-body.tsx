@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { type CardItem } from '@/state/card/model';
+import { type CardItem } from '@/domains/card/model';
 import {
   formatDueCountdown,
   formatDueDateDisplay,
@@ -12,7 +12,7 @@ import {
   hasDueDate,
   hasQueueDurationOrUnknown,
   UNKNOWN_DURATION_LABEL,
-} from '@/state/card/queue';
+} from '@/domains/card/queue';
 
 const BOX_PADDING = spacing[4];
 const FIELD_LABEL_WIDTH = 72;

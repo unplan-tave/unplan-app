@@ -11,9 +11,9 @@ import { colors, radius, spacing } from '@/constants';
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.background.primary,
+    backgroundColor: colors.background,
     borderRadius: radius.lg,
-    padding: spacing[16],
+    padding: spacing[4],
   },
 });
 ```

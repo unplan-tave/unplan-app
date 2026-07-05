@@ -5,9 +5,9 @@ import { OnboardingStepLayout } from '@/components/features/onboarding/onboardin
 import { SleepConditionCircle } from '@/components/features/onboarding/sleep-condition-circle';
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
+import { onboardingRoutes } from '@/domains/onboarding/routes';
+import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
 import { t } from '@/lib/i18n';
-import { onboardingRoutes } from '@/state/onboarding/routes';
-import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
 export function SleepScreen() {
   const router = useRouter();

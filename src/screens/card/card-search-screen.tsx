@@ -7,8 +7,8 @@ import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
-import { canSubmitCardSearch, normalizeCardSearchQuery } from '@/state/card/search';
-import { useCardStore } from '@/state/card/use-card-store';
+import { canSubmitCardSearch, normalizeCardSearchQuery } from '@/domains/card/search';
+import { useCardStore } from '@/domains/card/use-card-store';
 
 const CONTENT_MAX_WIDTH = 353;
 

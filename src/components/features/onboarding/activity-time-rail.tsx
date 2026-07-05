@@ -4,9 +4,9 @@ import Svg, { RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius } from '@/constants/theme';
-import { getSelectedActivityHours } from '@/state/onboarding/activity-time-ranges';
+import { getSelectedActivityHours } from '@/domains/onboarding/activity-time-ranges';
 
-import type { TimeRange } from '@/state/onboarding/model';
+import type { TimeRange } from '@/domains/onboarding/model';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
 interface ActivityTimeRailProps {

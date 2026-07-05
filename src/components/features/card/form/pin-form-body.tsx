@@ -11,8 +11,8 @@ import {
   type CardFormValues,
   type RecurrenceValue,
   type TimeFocus,
-} from '@/state/card/model';
-import { formatRecurrenceChipSegments } from '@/state/card/recurrence';
+} from '@/domains/card/model';
+import { formatRecurrenceChipSegments } from '@/domains/card/recurrence';
 
 const BOX_PADDING = spacing[4];
 const FIELD_LABEL_WIDTH = 72;

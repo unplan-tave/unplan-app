@@ -8,16 +8,16 @@ import { HomeIndicator } from '@/components/ui/Footer';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
-import { t } from '@/lib/i18n';
 import {
   getSocialLoginErrorMessage,
   loginWithGoogle,
   loginWithKakao,
-} from '@/state/auth/social-login';
-import { onboardingRoutes } from '@/state/onboarding/routes';
-import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
+} from '@/domains/auth/social-login';
+import { onboardingRoutes } from '@/domains/onboarding/routes';
+import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
+import { t } from '@/lib/i18n';
 
-import type { SocialProvider } from '@/state/auth/model';
+import type { SocialProvider } from '@/domains/auth/model';
 
 const loginBackground = require('../../../assets/login-background.jpg');
 

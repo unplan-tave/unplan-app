@@ -16,7 +16,6 @@ import { RepeatPresetSheet } from '@/components/features/card/sheets/repeat-pres
 import { TagPickerSheet } from '@/components/features/card/sheets/tag-picker-sheet';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
-import { useKeyboardHeight } from '@/hooks/use-keyboard-height';
 import {
   type CardFormValues,
   type CardTab,
@@ -26,8 +25,9 @@ import {
   getSuggestedConditionTag,
   getTimeValue,
   MEMO_MAX_LENGTH,
-} from '@/state/card/model';
-import { hasDueDate, hasQueueDurationOrUnknown, isQueueFormComplete } from '@/state/card/queue';
+} from '@/domains/card/model';
+import { hasDueDate, hasQueueDurationOrUnknown, isQueueFormComplete } from '@/domains/card/queue';
+import { useKeyboardHeight } from '@/hooks/use-keyboard-height';
 
 import { useCardPageData, useCardInit } from './hooks/use-card-page-data';
 import { useCardSheets } from './hooks/use-card-sheets';
