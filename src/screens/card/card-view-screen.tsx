@@ -3,8 +3,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { CardCreateHeader } from '@/components/features/card/card-create-header';
-import { CardToast } from '@/components/features/card/card-toast';
+import { CardCreateHeader } from '@/components/domain/card/card-create-header';
+import { CardToast } from '@/components/domain/card/card-toast';
 import { CardViewHeader } from '@/components/features/card-view/card-view-header';
 import { PinViewBody } from '@/components/features/card-view/pin-view-body';
 import { QueueViewBody } from '@/components/features/card-view/queue-view-body';
