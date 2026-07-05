@@ -4,10 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Keyboard, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
+import { DateOnlyGuideModal } from '@/components/features/add-pin-card/date-only-guide-modal';
 import { CardCreateHeader } from '@/components/features/card/card-create-header';
 import { CardToast } from '@/components/features/card/card-toast';
 import { CardForm } from '@/components/features/card/form/card-form';
-import { DateOnlyGuideModal } from '@/components/features/card/modals/date-only-guide-modal';
 import { DateTimeSheet } from '@/components/features/card/sheets/date-time-sheet';
 import { DueDurationSheet } from '@/components/features/card/sheets/due-duration-sheet';
 import { LocationSheet } from '@/components/features/card/sheets/location-sheet';

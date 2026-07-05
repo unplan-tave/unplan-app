@@ -4,14 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CardListEmptyState } from '@/components/features/card/list/card-list-empty-state';
+import { CardListEmptyState } from '@/components/features/card-list/card-list-empty-state';
 import {
   CardListFilterChips,
   type CardListMultiFilterKey,
-} from '@/components/features/card/list/card-list-filter-chips';
-import { CardListPinItem } from '@/components/features/card/list/card-list-pin-item';
-import { CardListQueueItem } from '@/components/features/card/list/card-list-queue-item';
-import { CardListSearchBar } from '@/components/features/card/list/card-list-search-bar';
+} from '@/components/features/card-list/card-list-filter-chips';
+import { CardListPinItem } from '@/components/features/card-list/card-list-pin-item';
+import { CardListQueueItem } from '@/components/features/card-list/card-list-queue-item';
+import { CardListSearchBar } from '@/components/features/card-list/card-list-search-bar';
 import { HomeBackground } from '@/components/features/home/home-background';
 import { HomeBottomNav } from '@/components/features/home/home-bottom-nav';
 import { type CardTagItem } from '@/components/ui/Card';
