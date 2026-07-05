@@ -3,7 +3,7 @@ import { create } from 'zustand';
 
 import { tokenStorage } from '@/lib/auth/token-storage';
 
-import type { AuthSession } from '@/domains/auth/model';
+import type { AuthSession } from './model';
 
 interface AuthState {
   token: string | null;
