@@ -36,7 +36,7 @@
 예: `Button`, `Card`, `BottomSheet`.
 
 **도메인** — 도메인 props 표시, UI 조합, 가벼운 포맷. 데이터 출처·라우팅 금지.
-예: `timeline-card`, `condition-meter`.
+예: `condition/condition-meter`.
 
 **기능** — UI·도메인 조합, 기능 단위 레이아웃, `useState`/`useMemo`/`useCallback`으로 쓰는 UI 상태.
 API·store 직접 접근은 지양. 하위가 공유하는 UI 상태만 기능 폴더 안에서 관리.
