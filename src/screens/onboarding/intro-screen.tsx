@@ -8,8 +8,8 @@ import { HeaderProgress } from '@/components/ui/Header';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
+import { onboardingRoutes } from '@/domains/onboarding/routes';
 import { t } from '@/lib/i18n';
-import { onboardingRoutes } from '@/state/onboarding/routes';
 import { type TranslationKey } from '@/translations/ko';
 
 const INTRO_STEPS = [

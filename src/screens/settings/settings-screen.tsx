@@ -6,10 +6,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
+import { useAuthStore } from '@/domains/auth/use-auth-store';
+import { onboardingRoutes } from '@/domains/onboarding/routes';
+import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
 import { t } from '@/lib/i18n';
-import { useAuthStore } from '@/state/auth/use-auth-store';
-import { onboardingRoutes } from '@/state/onboarding/routes';
-import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
 export function SettingsScreen() {
   const router = useRouter();

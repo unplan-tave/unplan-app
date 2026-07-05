@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
 
-import type { SocialProvider } from '@/state/auth/model';
+import type { SocialProvider } from '@/domains/auth/model';
 
 type SocialLoginButtonProvider = SocialProvider | 'apple';
 

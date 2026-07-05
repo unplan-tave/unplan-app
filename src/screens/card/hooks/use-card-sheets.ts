@@ -8,17 +8,17 @@ import {
   getScheduleDate,
   hasCompleteTime,
   type TimeFocus,
-} from '@/state/card/model';
+} from '@/domains/card/model';
 import {
   cloneRecurrenceValue,
   createDefaultCustomRecurrence,
   createPresetRecurrence,
   type RecurrencePreset,
   type RecurrenceValue,
-} from '@/state/card/recurrence';
+} from '@/domains/card/recurrence';
 
 import type { TagTab } from '@/components/features/card/sheets/tag-picker-sheet';
-import type { DueDurationDraft } from '@/state/card/queue';
+import type { DueDurationDraft } from '@/domains/card/queue';
 import type { UseFormSetValue } from 'react-hook-form';
 
 type RepeatOrigin = 'new' | 'edit';

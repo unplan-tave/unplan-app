@@ -4,14 +4,18 @@ import { TimelineCard } from '@/components/domain/timeline-card';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { type ConditionTagOption, type PersonalTagOption, type CardItem } from '@/state/card/model';
+import {
+  type ConditionTagOption,
+  type PersonalTagOption,
+  type CardItem,
+} from '@/domains/card/model';
 import {
   formatDueCountdown,
   formatDueDateDisplay,
   formatDurationInline,
   hasDueDate,
   UNKNOWN_DURATION_LABEL,
-} from '@/state/card/queue';
+} from '@/domains/card/queue';
 
 export interface RecommendationItem {
   card: CardItem;

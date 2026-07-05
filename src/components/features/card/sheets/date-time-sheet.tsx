@@ -5,14 +5,14 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Card } from '@/components/ui/Card';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { DEFAULT_TIME_RANGE, WEEKDAY_LABELS } from '@/state/card/data';
+import { DEFAULT_TIME_RANGE, WEEKDAY_LABELS } from '@/domains/card/data';
 import {
   type DateTimeDraft,
   getCalendarMonth,
   isDateInDraftRange,
   sortDateValues,
   type TimeFocus,
-} from '@/state/card/model';
+} from '@/domains/card/model';
 
 const DATE_CELL_SIZE = spacing[8];
 const SHEET_HEADER_MAX_WIDTH = 369;

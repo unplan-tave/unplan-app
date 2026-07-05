@@ -1,8 +1,8 @@
 import { router } from 'expo-router';
 import { useEffect } from 'react';
 
-import { type CardFormValues, type CardTab } from '@/state/card/model';
-import { useCardStore } from '@/state/card/use-card-store';
+import { type CardFormValues, type CardTab } from '@/domains/card/model';
+import { useCardStore } from '@/domains/card/use-card-store';
 
 import type { UseFormReset } from 'react-hook-form';
 

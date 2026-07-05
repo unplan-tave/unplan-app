@@ -6,8 +6,8 @@ import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { WEEKDAY_LABELS } from '@/state/card/data';
-import { getCalendarMonth, type CalendarCell } from '@/state/card/model';
+import { WEEKDAY_LABELS } from '@/domains/card/data';
+import { getCalendarMonth, type CalendarCell } from '@/domains/card/model';
 import {
   addDurationMinutes,
   createDefaultDurationDraft,
@@ -16,7 +16,7 @@ import {
   formatDurationInline,
   type DueDurationDraft,
   UNKNOWN_DURATION_LABEL,
-} from '@/state/card/queue';
+} from '@/domains/card/queue';
 
 const DATE_CELL_SIZE = spacing[8];
 const SHEET_HEADER_MAX_WIDTH = 369;

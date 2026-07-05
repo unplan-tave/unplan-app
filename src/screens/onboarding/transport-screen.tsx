@@ -5,9 +5,9 @@ import { OnboardingOptionGrid } from '@/components/features/onboarding/onboardin
 import { OnboardingStepLayout } from '@/components/features/onboarding/onboarding-step-layout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
+import { type TransportOptionId } from '@/domains/onboarding/model';
+import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
 import { t } from '@/lib/i18n';
-import { type TransportOptionId } from '@/state/onboarding/model';
-import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 import { type TranslationKey } from '@/translations/ko';
 
 const transportOptionDefinitions = [

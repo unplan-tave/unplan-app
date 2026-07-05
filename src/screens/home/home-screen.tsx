@@ -15,9 +15,9 @@ import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { getConditionTagById, type CardFormValues, type CardItem } from '@/state/card/model';
-import { getMockRecommendationTimeRange } from '@/state/card/queue';
-import { useCardStore } from '@/state/card/use-card-store';
+import { getConditionTagById, type CardFormValues, type CardItem } from '@/domains/card/model';
+import { getMockRecommendationTimeRange } from '@/domains/card/queue';
+import { useCardStore } from '@/domains/card/use-card-store';
 
 const WEEKDAY_LABELS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 const EMPTY_HOME_CARD_HEIGHT = 108;

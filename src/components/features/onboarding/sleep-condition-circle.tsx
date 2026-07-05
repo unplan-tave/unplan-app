@@ -4,7 +4,6 @@ import Svg, { Path } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
-import { t } from '@/lib/i18n';
 import {
   classifySleepMinutes,
   SLEEP_CONDITION_EDITABLE_MAX_MINUTES,
@@ -13,7 +12,8 @@ import {
   SLEEP_EXCESS_MIN_START_MINUTES,
   type SleepCondition,
   type SleepConditionThresholds,
-} from '@/state/onboarding/sleep-condition';
+} from '@/domains/onboarding/sleep-condition';
+import { t } from '@/lib/i18n';
 
 interface SleepConditionCircleProps {
   targetSleepMinutes: number;

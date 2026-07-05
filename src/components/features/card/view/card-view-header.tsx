@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { Tag } from '@/components/ui/Tag';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
-import { type ConditionTagOption, type PersonalTagOption } from '@/state/card/model';
+import { type ConditionTagOption, type PersonalTagOption } from '@/domains/card/model';
 
 export function CardViewHeader({
   title,

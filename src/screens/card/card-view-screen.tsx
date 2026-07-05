@@ -11,8 +11,8 @@ import { PinViewBody } from '@/components/features/card/view/pin-view-body';
 import { QueueViewBody } from '@/components/features/card/view/queue-view-body';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
-import { type CardFormValues, getConditionTagById } from '@/state/card/model';
-import { useCardStore } from '@/state/card/use-card-store';
+import { type CardFormValues, getConditionTagById } from '@/domains/card/model';
+import { useCardStore } from '@/domains/card/use-card-store';
 
 const SCREEN_MAX_WIDTH = 393;
 const CONTENT_MAX_WIDTH = 353;

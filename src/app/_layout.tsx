@@ -8,10 +8,10 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { fontFamilyWeight } from '@/constants/typography';
+import { useAuthStore } from '@/domains/auth/use-auth-store';
+import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
 import { configureGoogleAuthSDK } from '@/lib/auth/google-sdk';
 import { initializeKakaoAuthSDK } from '@/lib/auth/kakao-sdk';
-import { useAuthStore } from '@/state/auth/use-auth-store';
-import { useOnboardingStore } from '@/state/onboarding/use-onboarding-store';
 
 const queryClient = new QueryClient({
   defaultOptions: {
