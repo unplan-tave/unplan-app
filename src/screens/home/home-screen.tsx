@@ -15,9 +15,9 @@ import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { getConditionTagById, type CardFormValues, type CardItem } from '@/domains/card/model';
-import { getMockRecommendationTimeRange } from '@/domains/card/queue';
-import { useCardStore } from '@/domains/card/use-card-store';
+import { getConditionTagById, type CardFormValues, type CardItem } from '@/domains/schedule/model';
+import { getMockRecommendationTimeRange } from '@/domains/schedule/queue';
+import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 
 const WEEKDAY_LABELS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 const EMPTY_HOME_CARD_HEIGHT = 108;
@@ -41,9 +41,9 @@ export function HomeScreen() {
   const [now, setNow] = useState(() => new Date());
   const [isAddSheetVisible, setIsAddSheetVisible] = useState(false);
   const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
-  const cards = useCardStore((store) => store.cards);
-  const createCard = useCardStore((store) => store.createCard);
-  const personalTags = useCardStore((store) => store.personalTags);
+  const cards = useScheduleStore((store) => store.cards);
+  const createCard = useScheduleStore((store) => store.createCard);
+  const personalTags = useScheduleStore((store) => store.personalTags);
   const homeDate = useMemo(() => getHomeDateLabel(now), [now]);
   const currentTimeLabel = useMemo(() => formatTimeLabel(now), [now]);
   const timelineCards = useMemo(

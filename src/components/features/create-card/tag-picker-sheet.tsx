@@ -5,27 +5,26 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
-import { CONDITION_TAG_OPTIONS } from '@/domains/card/data';
+import { CONDITION_TAG_OPTIONS } from '@/domains/schedule/data';
 import {
   canCreatePersonalTag,
   getConditionTagDescription,
   normalizePersonalTagLabel,
   sortPersonalTags,
+  type CardTagTab,
   type ConditionTagId,
   type PersonalTagOption,
-} from '@/domains/card/model';
-
-export type TagTab = 'condition' | 'personal';
+} from '@/domains/schedule/model';
 
 const TAG_DOT_SIZE = 5.411;
 
 interface TagPickerSheetProps {
   visible: boolean;
-  activeTab: TagTab;
+  activeTab: CardTagTab;
   selectedConditionTagId: ConditionTagId | null;
   personalTags: PersonalTagOption[];
   selectedPersonalTagIds: string[];
-  onSwitchTab: (tab: TagTab) => void;
+  onSwitchTab: (tab: CardTagTab) => void;
   onClose: () => void;
   onSelectConditionTag: (tagId: ConditionTagId) => void;
   onDoneConditionTag: () => void;

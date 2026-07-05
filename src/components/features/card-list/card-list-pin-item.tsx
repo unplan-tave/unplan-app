@@ -3,12 +3,12 @@ import { StyleSheet, View } from 'react-native';
 import { Card, CardTagList, type CardTagItem } from '@/components/ui/Card';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
-import { formatPinDateMeta, getCardProgressStatus } from '@/domains/card/list';
+import { formatPinDateMeta, getCardProgressStatus } from '@/domains/schedule/list';
 
 import { CardListMetaRow } from './card-list-meta-row';
 import { CARD_TITLE_LINE_HEIGHT } from './card-list-typography';
 
-import type { CardItem } from '@/domains/card/model';
+import type { CardItem } from '@/domains/schedule/model';
 
 export function CardListPinItem({
   card,

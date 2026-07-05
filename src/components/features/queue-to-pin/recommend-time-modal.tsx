@@ -2,7 +2,7 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { getMockRecommendationLabel } from '@/domains/card/queue';
+import { getMockRecommendationLabel } from '@/domains/schedule/queue';
 
 let BlurView: React.ComponentType<{
   intensity: number;

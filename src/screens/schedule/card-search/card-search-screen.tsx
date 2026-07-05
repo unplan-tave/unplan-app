@@ -7,16 +7,16 @@ import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
-import { canSubmitCardSearch, normalizeCardSearchQuery } from '@/domains/card/search';
-import { useCardStore } from '@/domains/card/use-card-store';
+import { canSubmitCardSearch, normalizeCardSearchQuery } from '@/domains/schedule/search';
+import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 
 const CONTENT_MAX_WIDTH = 353;
 
 export function CardSearchScreen() {
-  const recentSearches = useCardStore((store) => store.cardRecentSearches);
-  const addRecentSearch = useCardStore((store) => store.addCardRecentSearch);
-  const deleteRecentSearch = useCardStore((store) => store.deleteCardRecentSearch);
-  const deleteAllRecentSearches = useCardStore((store) => store.deleteAllCardRecentSearches);
+  const recentSearches = useScheduleStore((store) => store.cardRecentSearches);
+  const addRecentSearch = useScheduleStore((store) => store.addCardRecentSearch);
+  const deleteRecentSearch = useScheduleStore((store) => store.deleteCardRecentSearch);
+  const deleteAllRecentSearches = useScheduleStore((store) => store.deleteAllCardRecentSearches);
   const [query, setQuery] = useState('');
 
   const submitSearch = useCallback(

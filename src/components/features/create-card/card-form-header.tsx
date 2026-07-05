@@ -8,7 +8,7 @@ import {
   type ConditionTagOption,
   type PersonalTagOption,
   type CardFormValues,
-} from '@/domains/card/model';
+} from '@/domains/schedule/model';
 
 const CONTENT_MAX_WIDTH = 353;
 const REQUIRED_MARK_SIZE = 14;

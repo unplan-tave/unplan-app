@@ -4,7 +4,7 @@ import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
 
-import type { CardTab } from '@/domains/card/model';
+import type { CardTab } from '@/domains/schedule/model';
 
 const HEADER_TOP_PADDING = spacing[16];
 const HEADER_HEIGHT = spacing[6];

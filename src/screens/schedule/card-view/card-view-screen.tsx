@@ -3,16 +3,16 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { CardCreateHeader } from '@/components/domain/card/card-create-header';
-import { CardToast } from '@/components/domain/card/card-toast';
+import { CardCreateHeader } from '@/components/domain/schedule/card-create-header';
+import { CardToast } from '@/components/domain/schedule/card-toast';
 import { CardViewHeader } from '@/components/features/card-view/card-view-header';
 import { PinViewBody } from '@/components/features/card-view/pin-view-body';
 import { QueueViewBody } from '@/components/features/card-view/queue-view-body';
 import { ConvertToPinBottomSheet } from '@/components/features/queue-to-pin/convert-to-pin-sheet';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
-import { type CardFormValues, getConditionTagById } from '@/domains/card/model';
-import { useCardStore } from '@/domains/card/use-card-store';
+import { type CardFormValues, getConditionTagById } from '@/domains/schedule/model';
+import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 
 const SCREEN_MAX_WIDTH = 393;
 const CONTENT_MAX_WIDTH = 353;
@@ -26,10 +26,10 @@ type ToastState = {
 
 export function CardViewScreen() {
   const { cardId, toast: toastParam } = useLocalSearchParams<{ cardId: string; toast?: string }>();
-  const card = useCardStore((store) => store.cards.find((c) => c.id === cardId));
-  const personalTags = useCardStore((store) => store.personalTags);
-  const createCard = useCardStore((store) => store.createCard);
-  const convertQueueToPinCard = useCardStore((store) => store.convertQueueToPinCard);
+  const card = useScheduleStore((store) => store.cards.find((c) => c.id === cardId));
+  const personalTags = useScheduleStore((store) => store.personalTags);
+  const createCard = useScheduleStore((store) => store.createCard);
+  const convertQueueToPinCard = useScheduleStore((store) => store.convertQueueToPinCard);
   const [isConvertSheetVisible, setIsConvertSheetVisible] = useState(false);
   const [toast, setToast] = useState<ToastState>(() =>
     toastParam === 'created' ? { message: '핀카드가 생성됐어요!', variant: 'confirm' } : null,

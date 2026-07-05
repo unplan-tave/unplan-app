@@ -3,8 +3,8 @@ import { StyleSheet, View } from 'react-native';
 import { Card } from '@/components/ui/Card';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { type CardItem } from '@/domains/card/model';
-import { formatRecurrenceChipSegments } from '@/domains/card/recurrence';
+import { type CardItem } from '@/domains/schedule/model';
+import { formatRecurrenceChipSegments } from '@/domains/schedule/recurrence';
 
 const BOX_PADDING = spacing[4];
 const FIELD_LABEL_WIDTH = 72;
