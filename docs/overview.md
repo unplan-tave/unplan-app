@@ -1,7 +1,7 @@
 # Unplan 코드베이스 개요
 
 > AI 스마트 스케줄러 앱(Unplan)의 전체 구조·구현 현황·인프라를 한 문서로 정리한 온보딩 문서입니다.
-> 기준일: **2026-06-20** · 처음 합류하거나 전체 그림이 필요할 때 이 문서부터 읽으세요.
+> 기준일: **2026-07-06** · 처음 합류하거나 전체 그림이 필요할 때 이 문서부터 읽으세요.
 
 [← 문서 목록](./README.md) · [코어 컨벤션](./conventions/core.md) · [확장 컨벤션](./conventions/advanced.md) · [개발 체크리스트](./roadmap/development-checklist.md)
 
@@ -55,7 +55,7 @@
 
 ```
 src/
-├── app/              # 라우트 + 레이아웃만 (thin layer, 화면 로직 금지)
+├── app/              # route/layout only (thin layer, 화면 로직 금지)
 │   ├── _layout.tsx       # 루트: 폰트 로드, SDK 초기화, Provider, Stack
 │   ├── index.tsx         # 스플래시 → 세션/온보딩 판단 후 분기 진입점
 │   ├── (auth)/           # 로그인
@@ -67,7 +67,7 @@ src/
 │   ├── ui/               # 전역 base primitive
 │   ├── domain/           # 여러 feature에서 재사용되는 도메인 표현
 │   └── features/         # 화면명/플로우명 기준 조합 컴포넌트
-├── domains/          # 도메인 타입 + store + api wrapper + 순수 로직
+├── domains/          # UI 없는 도메인 로직 레이어
 │   ├── auth/
 │   ├── onboarding/
 │   └── card/
@@ -83,7 +83,7 @@ src/
 └── translations/     # ko.ts (번역 키-값)
 ```
 
-**구조 원칙(AGENTS.md / core.md):** `app`은 route/layout만, 화면은 `screens`, 재사용 primitive는 `components/ui`, 도메인 표현은 `components/domain`, 화면/플로우 조합은 `components/features/<screen-or-flow>`, 도메인 로직은 `domains/<domain>`, 인프라는 `lib`. 라우트 파일은 `export { XScreen as default } from '@/screens/...'` 형태의 1줄 재노출을 우선한다.
+**구조 원칙(AGENTS.md / core.md):** `app`은 route/layout만, 화면은 `screens`, 재사용 primitive는 `components/ui`, 도메인 표현은 `components/domain`, 화면/플로우 조합은 `components/features/<screen-or-flow>`, 도메인 로직은 `domains/<domain>`, 인프라는 `src/lib`. 라우트 파일은 `export { XScreen as default } from '@/screens/...'` 형태의 1줄 재노출을 우선한다.
 
 ---
 
@@ -174,7 +174,7 @@ src/
 ## 9. 코드 리뷰 요약 (확장성 · 유지보수 · 불필요 코드)
 
 ### 잘 되어 있는 점
-- 책임이 명확히 분리된 feature 중심 구조(app=라우트 / screens / components / state / lib)와 thin route layer.
+- 책임이 명확히 분리된 구조(app=라우트 / screens / components / domains / lib)와 thin route layer.
 - 인증 인프라가 견고: SecureStore(민감)·MMKV(일반) 분리, SDK 지연초기화 가드, 소셜 로그인 에러 정규화, 디바이스 ID 영속.
 - 타입 안전성(strict TS, 경로 alias) + 자동화(Orval, ESLint/Prettier/Husky) + 정교한 CI(OTA/네이티브 빌드 분기).
 - 디자인 토큰 + primitive-first 컨벤션으로 디자인 변경에 강함.
@@ -202,4 +202,4 @@ src/
 
 ---
 
-*문서 자동 점검: 본 문서는 2026-06-20 기준 코드 스냅샷을 반영합니다. 구조·구현이 바뀌면 함께 갱신하세요.*
+*문서 자동 점검: 본 문서는 2026-07-06 기준 코드 스냅샷을 반영합니다. 구조·구현이 바뀌면 함께 갱신하세요.*
