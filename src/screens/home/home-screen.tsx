@@ -129,21 +129,21 @@ export function HomeScreen() {
 
   const handleViewQueue = useCallback(() => {
     setIsAddSheetVisible(false);
-    router.push('/schedule');
+    router.navigate('/schedule');
   }, []);
 
   const handleNavItemPress = useCallback((value: string) => {
     if (value === 'home') {
-      router.replace('/(tabs)');
+      router.navigate('/(tabs)');
       return;
     }
 
     if (value === 'setting') {
-      router.push('/settings');
+      router.navigate('/settings');
       return;
     }
 
-    router.push('/schedule');
+    router.navigate('/schedule');
   }, []);
 
   return (
