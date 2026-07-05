@@ -4,6 +4,7 @@ import { type RecurrenceValue } from './recurrence';
 export type { RecurrenceValue } from './recurrence';
 
 export type CardTab = 'pin' | 'queue';
+export type CardProgressStatus = 'incomplete' | 'in_progress' | 'complete';
 export type DateMode = 'empty' | 'single' | 'range';
 export type TimeFocus = 'start' | 'end';
 export type ConditionTagId = 'urgent' | 'core' | 'brain' | 'daily' | 'labor' | 'rest';
@@ -36,6 +37,7 @@ export interface CardFormValues {
 export interface CardItem extends CardFormValues {
   id: string;
   cardType: CardTab;
+  progressStatus?: CardProgressStatus;
   createdAt: string;
   updatedAt: string;
 }
