@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { type CardFormValues, type CardTab } from '@/domains/schedule/model';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
@@ -53,17 +53,24 @@ export function useCardPageData() {
 export function useCardInit({ cardId, initialCardType, initialValues, reset, onInit }: InitParams) {
   const beginCreate = useScheduleStore((store) => store.beginCreate);
   const beginEdit = useScheduleStore((store) => store.beginEdit);
+  const initialValuesRef = useRef(initialValues);
+  const onInitRef = useRef(onInit);
+  const resetRef = useRef(reset);
+
+  initialValuesRef.current = initialValues;
+  onInitRef.current = onInit;
+  resetRef.current = reset;
 
   useEffect(() => {
     const nextDraft =
-      cardId == null ? beginCreate(initialValues, initialCardType) : beginEdit(cardId);
+      cardId == null ? beginCreate(initialValuesRef.current, initialCardType) : beginEdit(cardId);
 
     if (nextDraft == null) {
       router.back();
       return;
     }
 
-    onInit(nextDraft.cardType, nextDraft.values);
-    reset(nextDraft.values);
-  }, [beginCreate, beginEdit, cardId, initialCardType, initialValues, onInit, reset]);
+    onInitRef.current(nextDraft.cardType, nextDraft.values);
+    resetRef.current(nextDraft.values);
+  }, [beginCreate, beginEdit, cardId, initialCardType]);
 }
