@@ -3,14 +3,14 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { ConditionMeter } from '@/components/domain/condition-meter';
-import { TimelineCard } from '@/components/domain/timeline-card';
+import { ConditionMeter } from '@/components/domain/condition/condition-meter';
 import {
   HomeAddBottomSheet,
   type RecommendationItem,
 } from '@/components/features/home/home-add-bottom-sheet';
 import { HomeBackground } from '@/components/features/home/home-background';
 import { HomeBottomNav } from '@/components/features/home/home-bottom-nav';
+import { TimelineCard } from '@/components/features/home/timeline-card';
 import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
