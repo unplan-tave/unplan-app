@@ -57,6 +57,8 @@ function renderIcon(name: IconProps['name'], color: string, variant: IconProps['
       return <ArrowDown color={color} />;
     case 'chevronDown':
       return <ChevronDown color={color} />;
+    case 'chevronUp':
+      return <ChevronUp color={color} />;
     case 'bell':
       return <Bell color={color} />;
     case 'cancel':
@@ -199,9 +201,21 @@ function ArrowDown({ color }: { color: string }) {
 function ChevronDown({ color }: { color: string }) {
   return (
     <Polyline
-      points="6.5 9 12 14.5 17.5 9"
+      points="5 8.5 12 15.5 19 8.5"
       stroke={color}
-      strokeWidth={2}
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  );
+}
+
+function ChevronUp({ color }: { color: string }) {
+  return (
+    <Polyline
+      points="5 15.5 12 8.5 19 15.5"
+      stroke={color}
+      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
     />
