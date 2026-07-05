@@ -7,7 +7,7 @@
 | 위치 | 용도 |
 |------|------|
 | `src/hooks` | 앱 전역 hook |
-| `src/screens/<domain>/hooks` | 특정 화면군에 종속된 page-data/sheet/form 조합 hook |
+| `src/screens/<domain-or-area>/<screen-name>/hooks` | 특정 화면에 종속된 page-data/sheet/form 조합 hook |
 | `src/domains/<domain>` | React에 의존하지 않는 순수 로직 |
 | `src/domains/<domain>/api/queries.ts` | 서버 상태 `use*Query` hook |
 | `src/domains/<domain>/api/mutations.ts` | 서버 상태 `use*Mutation` hook |

@@ -21,8 +21,8 @@
 ## 테스트 파일
 
 ```txt
-domains/card/search.ts
-domains/card/search.test.ts
+domains/schedule/search.ts
+domains/schedule/search.test.ts
 ```
 
 - 대상 파일과 같은 폴더에 둡니다.

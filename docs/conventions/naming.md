@@ -10,9 +10,9 @@
 | screen 파일 | kebab-case + `-screen.tsx` | `card-list-screen.tsx` |
 | component 파일 | kebab-case, 기존 `components/ui` 폴더 규칙은 유지 | `social-login-button.tsx` |
 | hook 파일 | kebab-case, `use-` 접두사 | `use-card-sheets.ts` |
-| store 파일 | kebab-case, `use-*-store.ts` | `use-card-store.ts` |
-| domain model | `model.ts` | `domains/card/model.ts` |
-| domain API | `api.ts` | `domains/card/api.ts` |
+| store 파일 | kebab-case, `use-*-store.ts` | `use-schedule-store.ts` |
+| domain model | `model.ts` | `domains/schedule/model.ts` |
+| domain API | `api.ts` | `domains/schedule/api.ts` |
 | validation | `validation.ts` | `domains/onboarding/validation.ts` |
 | route 상수 | `routes.ts` | `domains/onboarding/routes.ts` |
 | 테스트 | 대상 파일명 + `.test.ts(x)` | `validation.test.ts` |
