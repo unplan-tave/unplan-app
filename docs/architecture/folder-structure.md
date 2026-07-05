@@ -21,7 +21,7 @@ src/
 └── assets/
 ```
 
-이번 PR은 문서 구조만 바꿉니다. 실제 코드의 `src/state` 이동과 `components/features` 재배치는 후속 PR에서 처리합니다.
+`src/domains`는 도메인 로직의 기준 위치입니다. `components/features` 재배치는 후속 PR에서 처리합니다.
 
 ## `src/app`
 
@@ -82,7 +82,7 @@ src/domains/
 └── ai-recommendation/
 ```
 
-현재 코드에는 `src/state`가 남아 있습니다. `state -> domains` 이동은 별도 PR에서 처리합니다. 새 문서는 목표 구조를 `domains`로 표기하되, 코드 이동 PR 전까지는 기존 import를 억지로 바꾸지 않습니다.
+도메인 로직은 `src/domains`를 기준으로 import합니다.
 
 도메인 폴더의 기본 역할:
 

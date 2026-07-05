@@ -40,4 +40,4 @@ domains/* -> components/* 금지
 
 ## 현재 코드와의 차이
 
-현재 코드에는 `src/state`와 `components/features/card/*` 구조가 남아 있습니다. 이 PR에서는 문서 원칙만 정리하고, 실제 이동은 후속 PR에서 처리합니다.
+현재 코드에는 `components/features/card/*` 구조가 남아 있습니다. feature 재배치는 후속 PR에서 처리합니다.

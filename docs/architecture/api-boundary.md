@@ -36,6 +36,6 @@ export async function fetchScheduleViewModel(id: string): Promise<ScheduleViewMo
 - 화면은 ViewModel과 domain 함수만 사용합니다.
 - DTO 필드명이 바뀌어도 화면 변경이 최소화되도록 mapper 경계를 유지합니다.
 
-## 현재 코드와의 차이
+## 도메인 API 위치
 
-현재 코드는 아직 `src/state/<domain>`에 API wrapper와 ViewModel이 함께 있습니다. 후속 PR에서 `src/domains/<domain>`로 이동하기 전까지는 현재 import를 유지합니다.
+API wrapper와 ViewModel mapper는 `src/domains/<domain>`에 둡니다.

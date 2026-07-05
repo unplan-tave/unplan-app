@@ -9,7 +9,7 @@
 - `state`는 store만 담기에는 적절하지만, 현재 역할보다 좁습니다.
 - `model`은 store/api/validation까지 담기에는 좁으므로 최상위 폴더명으로 쓰지 않습니다.
 
-현재 코드의 `src/state`는 후속 PR에서 `src/domains`로 이동합니다. 이번 PR에서는 문서 원칙만 정리합니다.
+도메인 로직은 `src/domains` 아래에 둡니다.
 
 ## 기본 파일
 

@@ -24,7 +24,6 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
   - 여러 화면/feature에서 재사용되는 도메인 표현 컴포넌트는 `src/components/domain`에 둡니다.
   - 특정 화면/플로우에 종속된 조합 컴포넌트는 `src/components/features/<screen-or-flow>`에 둡니다.
 - 도메인 타입, store, API wrapper, validation, 순수 로직은 `src/domains/<domain>`에 둡니다.
-  - 현재 코드의 `src/state`는 후속 PR에서 `src/domains`로 이동합니다. 이 PR에서는 코드 import를 바꾸지 않습니다.
 - 앱 전역 hook은 `src/hooks`에 둡니다.
 
 ## 컴포넌트 구현 원칙

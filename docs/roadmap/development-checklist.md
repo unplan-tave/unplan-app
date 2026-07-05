@@ -17,15 +17,14 @@
 
 | 순서 | 범위 | 상태 | 비고 |
 |------|------|------|------|
-| 1 | docs IA 및 컨벤션 문서 분리 | 진행 중 | 코드 이동 없음 |
-| 2 | `src/state` -> `src/domains` 이동 | 예정 | import 수정 포함 |
+| 1 | docs IA 및 컨벤션 문서 분리 | 완료 | 코드 이동 없음 |
+| 2 | `src/state` -> `src/domains` 이동 | 완료 | import 수정 포함 |
 | 3 | `components/features` 화면명/플로우명 기준 재배치 | 예정 | card domain 대형 폴더 분해 |
 | 4 | `components/domain` 정리 및 잔재 제거 | 예정 | 여러 feature에서 재사용되는 도메인 표현만 유지 |
 | 5 | 문서/AGENTS 최종 동기화 | 예정 | 실제 코드 구조와 문서 표현 재검증 |
 
-## 이번 PR 범위
+## 구조 리팩터링 원칙
 
-- `core.md`를 상세 규칙 문서가 아니라 컨벤션 진입점/색인으로 축소합니다.
 - architecture 문서를 `docs/architecture`로 분리합니다.
 - 네이밍, TypeScript, 컴포넌트, 스타일링, domains, hooks, api, git, testing 문서를 `docs/conventions`로 분리합니다.
 - 컴포넌트 분해, 디자인 토큰, 접근성을 `docs/frontend`로 분리합니다.
@@ -33,9 +32,7 @@
 
 ## 이번 PR에서 하지 않는 것
 
-- `src/state` 실제 이동
 - `components/features` 실제 재배치
-- 코드 import 수정
 - 기능 구현 또는 화면 변경
 
 ## 과거 로드맵
