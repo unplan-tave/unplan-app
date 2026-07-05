@@ -1,15 +1,16 @@
 import { StyleSheet, View } from 'react-native';
 
-import { CardListMetaRow } from '@/components/features/card/list/card-list-meta-row';
-import { CARD_TITLE_LINE_HEIGHT } from '@/components/features/card/list/card-list-typography';
 import { Card, CardTagList, type CardTagItem } from '@/components/ui/Card';
 import { Typography } from '@/components/ui/Typography';
-import { colors, spacing } from '@/constants/theme';
-import { formatPinDateMeta, getCardProgressStatus } from '@/domains/card/list';
+import { colors, radius, spacing } from '@/constants/theme';
+import { formatQueueDateMeta, getCardProgressStatus } from '@/domains/card/list';
+
+import { CardListMetaRow } from './card-list-meta-row';
+import { CARD_TITLE_LINE_HEIGHT } from './card-list-typography';
 
 import type { CardItem } from '@/domains/card/model';
 
-export function CardListPinItem({
+export function CardListQueueItem({
   card,
   tags,
   onPress,
@@ -19,14 +20,14 @@ export function CardListPinItem({
   onPress?: () => void;
 }) {
   const isComplete = getCardProgressStatus(card) === 'complete';
-  const dateMeta = formatPinDateMeta(card);
+  const dateMeta = formatQueueDateMeta(card);
   const titleColor = isComplete ? colors.gray[500] : colors.gray[800];
 
   return (
     <Card
       variant="glass"
-      accessibilityLabel={`${card.title} 핀 카드`}
-      style={styles.card}
+      accessibilityLabel={`${card.title} 큐 카드`}
+      style={[styles.card, styles.queueCard]}
       onPress={onPress}
     >
       <View style={styles.content}>
@@ -42,8 +43,8 @@ export function CardListPinItem({
           <CardListMetaRow
             primary={dateMeta.primary}
             secondary={dateMeta.secondary}
-            color={colors.gray[500]}
-            dividerColor={colors.gray[300]}
+            color={colors.gray[600]}
+            dividerColor={colors.gray[400]}
           />
         </View>
         <CardTagList tags={tags} maxVisible={2} />
@@ -57,6 +58,13 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 15,
     paddingVertical: 9,
+  },
+  queueCard: {
+    borderRadius: radius.md,
+    borderColor: colors.gray.white,
+    backgroundColor: colors.alpha.white20,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   content: {
     gap: spacing[2] - 2,
