@@ -19,12 +19,38 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
 
 - Expo Router 공식 권장에 맞춰 `src/app`에는 route/layout 파일만 둡니다.
 - 실제 화면 구현은 `src/screens/<domain>/*-screen.tsx`에 둡니다.
+- 화면 데이터 조립, 이벤트 핸들러 묶음, sheet/form 상태 조합은 `src/screens/<domain>/hooks`에 둡니다.
 - 재사용 컴포넌트는 `src/components` 아래에 둡니다.
   - 전역 primitive/base 컴포넌트는 `src/components/ui`에 둡니다.
   - 여러 화면/feature에서 재사용되는 도메인 표현 컴포넌트는 `src/components/domain`에 둡니다.
   - 특정 화면/플로우에 종속된 조합 컴포넌트는 `src/components/features/<screen-or-flow>`에 둡니다.
 - 도메인 타입, store, API wrapper, validation, 순수 로직은 `src/domains/<domain>`에 둡니다.
+- 서버 상태 query/mutation hook은 도메인 API boundary(`src/domains/<domain>/api`)에 둡니다.
 - 앱 전역 hook은 `src/hooks`에 둡니다.
+- 앱 전역 인프라, 외부 SDK wrapper, storage adapter, generated API는 `src/lib`에 둡니다.
+
+## 의존 방향
+
+```txt
+screens -> components/features
+screens -> components/domain
+screens -> components/ui
+screens -> domains
+
+components/features -> components/domain
+components/features -> components/ui
+components/features -> domains
+
+components/domain -> components/ui
+components/domain -> domains
+
+domains -> components 금지
+components/domain -> components/features 금지
+```
+
+- 다른 feature 폴더를 직접 참조하지 않습니다. 공유가 필요하면 `components/domain`, `components/ui`, `domains` 승격을 검토합니다.
+- 같은 feature 폴더 내부의 보조 컴포넌트는 상대 import로 참조할 수 있습니다.
+- `domains`에는 React component, JSX, StyleSheet를 두지 않습니다.
 
 ## 컴포넌트 구현 원칙
 
@@ -35,6 +61,7 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
   - 진행 헤더는 `HeaderProgress`를 기반으로 구현합니다.
 - primitive가 비어 있거나 요구사항을 충족하지 못하면, 도메인 컴포넌트에서 새로 중복 구현하지 말고 primitive를 먼저 확장합니다.
 - 화면 고유 조합 컴포넌트는 `components/features/<screen-or-flow>`에 두되, 스타일/상태/접근성의 base 동작은 가능한 한 `components/ui`에서 가져옵니다.
+- 애매한 컴포넌트를 `shared`나 `common` 폴더에 먼저 넣지 않습니다. 한 화면/플로우 전용이면 feature에 두고, 두 번째 소비자가 생기면 승격합니다.
 
 ## PR 전 자가 점검
 

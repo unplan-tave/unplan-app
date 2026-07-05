@@ -19,9 +19,9 @@
 |------|------|------|------|
 | 1 | docs IA 및 컨벤션 문서 분리 | 완료 | 코드 이동 없음 |
 | 2 | `src/state` -> `src/domains` 이동 | 완료 | import 수정 포함 |
-| 3 | `components/features` 화면명/플로우명 기준 재배치 | 예정 | card domain 대형 폴더 분해 |
-| 4 | `components/domain` 정리 및 잔재 제거 | 예정 | 여러 feature에서 재사용되는 도메인 표현만 유지 |
-| 5 | 문서/AGENTS 최종 동기화 | 예정 | 실제 코드 구조와 문서 표현 재검증 |
+| 3 | `components/features` 화면명/플로우명 기준 재배치 | 완료 | 확실한 card-list/card-view/queue-to-pin 이동, 생성 공통 form은 보류 |
+| 4 | `components/domain` 정리 및 잔재 제거 | 완료 | `ConditionMeter`는 domain/condition, `TimelineCard`는 features/home |
+| 5 | 문서/AGENTS 최종 동기화 | 완료 | 실제 코드 구조와 문서 표현 재검증 |
 
 ## 구조 리팩터링 원칙
 
@@ -30,10 +30,11 @@
 - 컴포넌트 분해, 디자인 토큰, 접근성을 `docs/frontend`로 분리합니다.
 - `state -> domains`, `src/lib 유지`, `features -> domain -> ui`, `domains는 components 참조 금지` 원칙을 문서에 명시합니다.
 
-## 이번 PR에서 하지 않는 것
+## 남은 구조 정리 후보
 
-- `components/features` 실제 재배치
-- 기능 구현 또는 화면 변경
+- `components/features/card`에 남은 생성 공통 form/header/toast/shared sheet 소유권 정리
+- 비어 있거나 실제 파일이 없는 문서 예시와 코드 구조의 지속 동기화
+- 기능 구현 또는 화면 변경은 구조 리팩터링 PR과 분리
 
 ## 과거 로드맵
 

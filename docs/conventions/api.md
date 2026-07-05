@@ -19,6 +19,23 @@
 
 화면은 generated API를 직접 호출하지 않고 domain API wrapper 또는 React Query hook 경계를 사용합니다.
 
+도메인이 커지면 API boundary를 아래처럼 나눕니다.
+
+```txt
+src/domains/<domain>/api/
+├── client.ts
+├── mapper.ts
+├── query-keys.ts
+├── queries.ts
+└── mutations.ts
+```
+
+- `queries.ts`: TanStack Query `use*Query`
+- `mutations.ts`: TanStack Query `use*Mutation`
+- `query-keys.ts`: query key factory
+- `client.ts`: Orval generated API wrapper
+- `mapper.ts`: DTO <-> ViewModel 변환
+
 ## 에러 처리
 
 - 외부 입력 에러는 `unknown`으로 받고 타입 가드로 좁힙니다.

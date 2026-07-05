@@ -16,7 +16,12 @@
 | 파일 | 역할 |
 |------|------|
 | `model.ts` | 프론트 도메인 타입, ViewModel, enum/union 타입 |
-| `api.ts` | Orval 생성 API wrapper, DTO -> ViewModel 변환 |
+| `api.ts` | Orval 생성 API wrapper, DTO -> ViewModel 변환. 작은 도메인에서는 단일 파일 허용 |
+| `api/client.ts` | 도메인 API wrapper. 도메인이 커질 때 `api.ts`에서 분리 |
+| `api/mapper.ts` | DTO <-> ViewModel 변환 |
+| `api/query-keys.ts` | query key factory |
+| `api/queries.ts` | TanStack Query `use*Query` hook |
+| `api/mutations.ts` | TanStack Query `use*Mutation` hook |
 | `use-*-store.ts` | Zustand store |
 | `validation.ts` | 도메인 검증 로직 |
 | `routes.ts` | 해당 도메인의 route 상수 |
@@ -26,8 +31,12 @@
 
 - `domains`는 어디서든 참조할 수 있습니다.
 - `domains`는 `components`를 참조하면 안 됩니다.
-- 도메인 순수 로직은 React component나 hook에 의존하지 않습니다.
+- React component, JSX, StyleSheet를 두지 않습니다.
+- 도메인 순수 로직은 React component나 UI hook에 의존하지 않습니다.
 - 서버 DTO는 domain boundary에서 ViewModel로 변환합니다.
+- generated API/DTO는 `domains/<domain>/api` 밖으로 직접 퍼뜨리지 않습니다.
+- Zustand store는 클라이언트 상태만 담당합니다.
+- 서버 상태 캐시와 요청 lifecycle은 TanStack Query가 담당합니다.
 
 ## 예시
 
@@ -40,4 +49,15 @@ src/domains/card/
 ├── routes.ts
 ├── search.ts
 └── recurrence.ts
+```
+
+도메인이 커지면 `api.ts`를 아래처럼 나눕니다.
+
+```txt
+src/domains/card/api/
+├── client.ts
+├── mapper.ts
+├── query-keys.ts
+├── queries.ts
+└── mutations.ts
 ```

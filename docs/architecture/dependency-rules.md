@@ -6,6 +6,8 @@
 
 ```txt
 screens/* -> components/features/*
+screens/* -> components/domain/*
+screens/* -> components/ui/*
 components/features/* -> components/domain/*
 components/domain/* -> components/ui/*
 
@@ -32,12 +34,10 @@ domains/* -> components/* 금지
 
 `components/features/add-pin-card`가 `components/features/card-list`를 직접 import하지 않습니다.
 
+같은 feature 폴더 내부의 보조 컴포넌트끼리는 상대 import로 참조할 수 있습니다. 금지 대상은 서로 다른 feature 폴더 사이의 직접 의존입니다.
+
 공유가 필요하면 다음 중 하나로 이동합니다.
 
 - 도메인 표현 컴포넌트라면 `components/domain/<domain>`
 - 도메인 지식이 없다면 `components/ui`
 - 순수 로직이라면 `domains/<domain>`
-
-## 현재 코드와의 차이
-
-현재 코드에는 `components/features/card/*` 구조가 남아 있습니다. feature 재배치는 후속 PR에서 처리합니다.

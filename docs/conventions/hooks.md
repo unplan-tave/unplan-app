@@ -8,7 +8,9 @@
 |------|------|
 | `src/hooks` | 앱 전역 hook |
 | `src/screens/<domain>/hooks` | 특정 화면군에 종속된 page-data/sheet/form 조합 hook |
-| `src/domains/<domain>` | React에 의존하지 않는 순수 로직. hook을 두지 않습니다. |
+| `src/domains/<domain>` | React에 의존하지 않는 순수 로직 |
+| `src/domains/<domain>/api/queries.ts` | 서버 상태 `use*Query` hook |
+| `src/domains/<domain>/api/mutations.ts` | 서버 상태 `use*Mutation` hook |
 
 ## 이름
 
@@ -31,3 +33,4 @@ export function useCardSheets() {
 - 서로 동시에 열릴 수 없는 UI 상태는 여러 boolean 대신 union으로 둡니다.
 - props/state를 읽지 않는 순수 함수는 hook 안에 두지 말고 domain 파일로 분리합니다.
 - React Query/Zustand를 조합하는 hook은 screen hook으로 둡니다.
+- 앱 전역 session facade처럼 여러 도메인에서 쓰는 hook은 `src/hooks`에 둘 수 있으나, 내부 구현은 `domains`를 참조합니다.

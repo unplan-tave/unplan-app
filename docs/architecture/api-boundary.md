@@ -9,7 +9,8 @@
 ```txt
 OpenAPI spec
   -> Orval generated code (`src/lib/api`)
-  -> domain API wrapper (`src/domains/<domain>/api.ts`)
+  -> domain API wrapper (`src/domains/<domain>/api.ts` or `src/domains/<domain>/api/client.ts`)
+  -> mapper (`src/domains/<domain>/api/mapper.ts`)
   -> ViewModel (`src/domains/<domain>/model.ts`)
   -> screen / component props
 ```
@@ -38,4 +39,18 @@ export async function fetchScheduleViewModel(id: string): Promise<ScheduleViewMo
 
 ## 도메인 API 위치
 
-API wrapper와 ViewModel mapper는 `src/domains/<domain>`에 둡니다.
+API wrapper와 ViewModel mapper는 `src/domains/<domain>`에 둡니다. 작은 도메인은 현재처럼 `api.ts` 단일 파일을 허용하고, 도메인이 커지면 아래처럼 분리합니다.
+
+```txt
+src/domains/<domain>/api/
+├── client.ts
+├── mapper.ts
+├── query-keys.ts
+├── queries.ts
+└── mutations.ts
+```
+
+- `queries.ts`는 TanStack Query `use*Query` hook을 둡니다.
+- `mutations.ts`는 TanStack Query `use*Mutation` hook을 둡니다.
+- query key factory는 `query-keys.ts`로 분리합니다.
+- generated API/DTO는 이 경계 밖으로 직접 퍼뜨리지 않습니다.
