@@ -61,6 +61,12 @@ export const colors = {
     blueGray: 'rgb(60,94,103)',
   },
 
+  // ─── Chip (Figma Chips 컴포넌트 selected 상태) ────────────
+  chip: {
+    selectedBackground: '#D3E8FF',
+    selectedText: '#007BFF',
+  },
+
   // ─── Semantic ───────────────────────────────────────────
   background: '#FFFFFF',
   appIconBackground: '#EAF4FF',

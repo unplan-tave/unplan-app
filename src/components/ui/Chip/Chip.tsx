@@ -16,7 +16,7 @@ export function Chip({
   accessibilityLabel,
   ...props
 }: ChipProps) {
-  const contentColor = selected ? colors.primary : colors.gray[700];
+  const contentColor = selected ? colors.chip.selectedText : colors.gray[700];
 
   return (
     <Pressable
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     borderColor: colors.gray.white,
   },
   selected: {
-    backgroundColor: colors.alpha.primary20,
+    backgroundColor: colors.chip.selectedBackground,
     borderColor: colors.primary,
   },
   disabled: {

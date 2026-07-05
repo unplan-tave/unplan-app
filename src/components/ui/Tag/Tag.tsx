@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
     gap: 5,
     paddingLeft: 7,
     paddingRight: 5,
+    borderRadius: radius['2xs'],
     backgroundColor: colors.gray.white,
   },
   personal: {
