@@ -3,22 +3,22 @@ import { useCallback, useState } from 'react';
 import {
   type CardFormValues,
   type CardTab,
+  type CardTagTab,
   type ConditionTagId,
   type DateTimeDraft,
   getScheduleDate,
   hasCompleteTime,
   type TimeFocus,
-} from '@/domains/card/model';
+} from '@/domains/schedule/model';
 import {
   cloneRecurrenceValue,
   createDefaultCustomRecurrence,
   createPresetRecurrence,
   type RecurrencePreset,
   type RecurrenceValue,
-} from '@/domains/card/recurrence';
+} from '@/domains/schedule/recurrence';
 
-import type { TagTab } from '@/components/features/card/sheets/tag-picker-sheet';
-import type { DueDurationDraft } from '@/domains/card/queue';
+import type { DueDurationDraft } from '@/domains/schedule/queue';
 import type { UseFormSetValue } from 'react-hook-form';
 
 type RepeatOrigin = 'new' | 'edit';
@@ -30,7 +30,7 @@ type SheetState =
   | { kind: 'repeatPreset'; origin: RepeatOrigin }
   | { kind: 'repeatCustom'; origin: RepeatOrigin }
   | { kind: 'location' }
-  | { kind: 'tagPicker'; tab: TagTab; selectedConditionTagId: ConditionTagId | null }
+  | { kind: 'tagPicker'; tab: CardTagTab; selectedConditionTagId: ConditionTagId | null }
   | { kind: 'dateOnlyGuide' };
 
 export type { SheetState };
@@ -76,7 +76,7 @@ export function useCardSheets(params: UseCardSheetsParams) {
   const isLocationVisible = sheet.kind === 'location';
   const repeatSheetMode =
     sheet.kind === 'repeatPreset' ? 'preset' : sheet.kind === 'repeatCustom' ? 'custom' : 'none';
-  const tagSheetTab: TagTab | null = sheet.kind === 'tagPicker' ? sheet.tab : null;
+  const tagSheetTab: CardTagTab | null = sheet.kind === 'tagPicker' ? sheet.tab : null;
   const tagSheetSelectedId: ConditionTagId | null =
     sheet.kind === 'tagPicker' ? sheet.selectedConditionTagId : null;
   const isDateOnlyGuideVisible = sheet.kind === 'dateOnlyGuide';
@@ -240,7 +240,7 @@ export function useCardSheets(params: UseCardSheetsParams) {
     setSheet({ kind: 'tagPicker', tab: 'personal', selectedConditionTagId: conditionTagId });
   }, [conditionTagId]);
 
-  const switchTagTab = useCallback((tab: TagTab) => {
+  const switchTagTab = useCallback((tab: CardTagTab) => {
     setSheet((prev) => (prev.kind === 'tagPicker' ? { ...prev, tab } : prev));
   }, []);
 

@@ -7,14 +7,14 @@ import {
   type ConditionTagOption,
   type PersonalTagOption,
   type CardItem,
-} from '@/domains/card/model';
+} from '@/domains/schedule/model';
 import {
   formatDueCountdown,
   formatDueDateDisplay,
   formatDurationInline,
   hasDueDate,
   UNKNOWN_DURATION_LABEL,
-} from '@/domains/card/queue';
+} from '@/domains/schedule/queue';
 
 import { TimelineCard } from './timeline-card';
 

@@ -11,6 +11,22 @@
 
 도메인 로직은 `src/domains` 아래에 둡니다.
 
+도메인 폴더는 화면명이나 UI flow명이 아니라 제품/백엔드 도메인 기준으로 정합니다. `card`는 최상위 domain이 아니며, pin card / queue card / card list / card view / queue-to-pin은 `schedule` 도메인의 하위 개념입니다.
+
+확정 목표 도메인 목록:
+
+- `auth`
+- `member`
+- `onboarding-settings`
+- `schedule`
+- `sleep`
+- `condition`
+- `daily-memo`
+- `measurement`
+- `ai-recommendation`
+
+목표 도메인 목록은 문서에 명시하지만, 실제 repo에는 현재 코드가 있는 폴더만 둡니다. `member`, `sleep`, `daily-memo`, `measurement`, `ai-recommendation`처럼 아직 구현 파일이 없는 폴더를 `.gitkeep`만으로 미리 만들지 않습니다.
+
 ## 기본 파일
 
 | 파일 | 역할 |
@@ -27,6 +43,8 @@
 | `routes.ts` | 해당 도메인의 route 상수 |
 | `*.ts` | 날짜 계산, 라벨 매핑, 검색, 정렬 등 순수 로직 |
 
+파일과 하위 폴더는 실제 책임이 생길 때만 만듭니다. API가 아직 없으면 `api/`를 만들지 않고, 클라이언트 상태가 없으면 `use-<domain>-store.ts`를 만들지 않으며, 도메인 공통 상수가 없으면 `constants.ts`를 만들지 않습니다.
+
 ## 참조 규칙
 
 - `domains`는 어디서든 참조할 수 있습니다.
@@ -40,21 +58,43 @@
 
 ## 예시
 
+Schedule 도메인의 장기 목표 구조는 capability 단위 분리를 허용합니다. 단, 실제 코드가 없는 폴더는 미리 만들지 않습니다.
+
 ```txt
-src/domains/card/
+src/domains/schedule/
 ├── model.ts
-├── api.ts
-├── use-card-store.ts
-├── validation.ts
-├── routes.ts
-├── search.ts
-└── recurrence.ts
+├── constants.ts
+├── use-schedule-store.ts
+├── pin-card/
+│   ├── model.ts
+│   └── mapper.ts
+├── queue-card/
+│   ├── model.ts
+│   └── mapper.ts
+├── recurrence/
+│   └── model.ts
+├── location/
+│   └── model.ts
+├── create/
+│   ├── model.ts
+│   ├── validation.ts
+│   └── mapper.ts
+├── list/
+│   ├── filter.ts
+│   ├── sort.ts
+│   └── search.ts
+├── detail/
+│   ├── mapper.ts
+│   └── display.ts
+└── convert/
+    ├── queue-to-pin.ts
+    └── recommendation.ts
 ```
 
 도메인이 커지면 `api.ts`를 아래처럼 나눕니다.
 
 ```txt
-src/domains/card/api/
+src/domains/schedule/api/
 ├── client.ts
 ├── mapper.ts
 ├── query-keys.ts

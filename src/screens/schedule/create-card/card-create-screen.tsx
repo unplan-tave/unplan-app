@@ -4,16 +4,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Keyboard, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
-import { CardCreateHeader } from '@/components/domain/card/card-create-header';
-import { CardToast } from '@/components/domain/card/card-toast';
-import { DateOnlyGuideModal } from '@/components/features/add-pin-card/date-only-guide-modal';
-import { CardForm } from '@/components/features/card/form/card-form';
-import { DateTimeSheet } from '@/components/features/card/sheets/date-time-sheet';
-import { DueDurationSheet } from '@/components/features/card/sheets/due-duration-sheet';
-import { LocationSheet } from '@/components/features/card/sheets/location-sheet';
-import { RepeatCustomSheet } from '@/components/features/card/sheets/repeat-custom-sheet';
-import { RepeatPresetSheet } from '@/components/features/card/sheets/repeat-preset-sheet';
-import { TagPickerSheet } from '@/components/features/card/sheets/tag-picker-sheet';
+import { CardCreateHeader } from '@/components/domain/schedule/card-create-header';
+import { CardToast } from '@/components/domain/schedule/card-toast';
+import { CardForm } from '@/components/features/create-card/card-form';
+import { DateOnlyGuideModal } from '@/components/features/create-card/date-only-guide-modal';
+import { DateTimeSheet } from '@/components/features/create-card/date-time-sheet';
+import { DueDurationSheet } from '@/components/features/create-card/due-duration-sheet';
+import { LocationSheet } from '@/components/features/create-card/location-sheet';
+import { RepeatCustomSheet } from '@/components/features/create-card/repeat-custom-sheet';
+import { RepeatPresetSheet } from '@/components/features/create-card/repeat-preset-sheet';
+import { TagPickerSheet } from '@/components/features/create-card/tag-picker-sheet';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
 import {
@@ -25,8 +25,12 @@ import {
   getSuggestedConditionTag,
   getTimeValue,
   MEMO_MAX_LENGTH,
-} from '@/domains/card/model';
-import { hasDueDate, hasQueueDurationOrUnknown, isQueueFormComplete } from '@/domains/card/queue';
+} from '@/domains/schedule/model';
+import {
+  hasDueDate,
+  hasQueueDurationOrUnknown,
+  isQueueFormComplete,
+} from '@/domains/schedule/queue';
 import { useKeyboardHeight } from '@/hooks/use-keyboard-height';
 
 import { useCardPageData, useCardInit } from './hooks/use-card-page-data';

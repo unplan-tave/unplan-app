@@ -6,14 +6,14 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { type CardFormValues, type CardItem, getCalendarMonth } from '@/domains/card/model';
+import { type CardFormValues, type CardItem, getCalendarMonth } from '@/domains/schedule/model';
 import {
   createQueueToPinValuesFromCandidate,
   formatDueDateForStorage,
   getMockRecommendationCandidates,
   parseDueDateToDate,
   type RecommendationCandidate,
-} from '@/domains/card/queue';
+} from '@/domains/schedule/queue';
 import { isValidTimeRange, useTimeRangeValidation } from '@/hooks/use-time-range-validation';
 
 const WEEKDAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];

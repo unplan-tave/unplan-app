@@ -18,13 +18,16 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
 ## 구조 원칙
 
 - Expo Router 공식 권장에 맞춰 `src/app`에는 route/layout 파일만 둡니다.
-- 실제 화면 구현은 `src/screens/<domain>/*-screen.tsx`에 둡니다.
-- 화면 데이터 조립, 이벤트 핸들러 묶음, sheet/form 상태 조합은 `src/screens/<domain>/hooks`에 둡니다.
+- 실제 화면 구현은 `src/screens/<domain-or-area>/<screen-name>/*-screen.tsx`에 둡니다.
+- 화면 데이터 조립, 이벤트 핸들러 묶음, sheet/form 상태 조합은 해당 screen 폴더의 `hooks`에 둡니다.
 - 재사용 컴포넌트는 `src/components` 아래에 둡니다.
   - 전역 primitive/base 컴포넌트는 `src/components/ui`에 둡니다.
   - 여러 화면/feature에서 재사용되는 도메인 표현 컴포넌트는 `src/components/domain`에 둡니다.
   - 특정 화면/플로우에 종속된 조합 컴포넌트는 `src/components/features/<screen-or-flow>`에 둡니다.
 - 도메인 타입, store, API wrapper, validation, 순수 로직은 `src/domains/<domain>`에 둡니다.
+- `card`는 최상위 domain이 아닙니다. pin card, queue card, card list/view/search는 `schedule` 도메인의 하위 개념입니다.
+- `domains`는 화면명이나 UI flow명이 아니라 제품/백엔드 도메인 기준으로 둡니다. 현재 기준 도메인은 `auth`, `member`, `onboarding-settings`, `schedule`, `sleep`, `condition`, `daily-memo`, `measurement`, `ai-recommendation`입니다.
+- 목표 도메인 목록은 문서에 명시하되, 실제 repo에는 현재 코드가 있는 폴더만 둡니다. 미래 도메인 폴더를 `.gitkeep`만으로 미리 만들지 않습니다.
 - 서버 상태 query/mutation hook은 도메인 API boundary(`src/domains/<domain>/api`)에 둡니다.
 - 앱 전역 hook은 `src/hooks`에 둡니다.
 - 앱 전역 인프라, 외부 SDK wrapper, storage adapter, generated API는 `src/lib`에 둡니다.
@@ -61,6 +64,7 @@ components/domain -> components/features 금지
   - 진행 헤더는 `HeaderProgress`를 기반으로 구현합니다.
 - primitive가 비어 있거나 요구사항을 충족하지 못하면, 도메인 컴포넌트에서 새로 중복 구현하지 말고 primitive를 먼저 확장합니다.
 - 화면 고유 조합 컴포넌트는 `components/features/<screen-or-flow>`에 두되, 스타일/상태/접근성의 base 동작은 가능한 한 `components/ui`에서 가져옵니다.
+- Schedule 하위 UI라도 feature 폴더는 `create-card`, `card-list`, `card-view`, `card-search`, `queue-to-pin`처럼 Figma 화면명/사용자 flow 기준으로 둡니다.
 - 애매한 컴포넌트를 `shared`나 `common` 폴더에 먼저 넣지 않습니다. 한 화면/플로우 전용이면 feature에 두고, 두 번째 소비자가 생기면 승격합니다.
 
 ## PR 전 자가 점검

@@ -22,7 +22,7 @@ import {
 import { createQueueToPinValues } from './queue';
 import { addCardRecentSearch, removeCardRecentSearch } from './search';
 
-interface CardStoreState {
+interface ScheduleStoreState {
   cards: CardItem[];
   draft: CardDraft | null;
   personalTags: PersonalTagOption[];
@@ -53,7 +53,7 @@ const cardStorage = createJSONStorage(() => ({
   removeItem: (name: string) => mmkvStorage.remove(name),
 }));
 
-export const useCardStore = create<CardStoreState>()(
+export const useScheduleStore = create<ScheduleStoreState>()(
   persist(
     (set, get) => ({
       cards: [],

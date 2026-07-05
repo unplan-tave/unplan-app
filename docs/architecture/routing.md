@@ -5,14 +5,15 @@
 ## 원칙
 
 - Expo Router 기준으로 `src/app`은 route/layout 파일만 둡니다.
-- 실제 화면 구현은 `src/screens/<domain>/*-screen.tsx`에 둡니다.
+- 실제 화면 구현은 `src/screens/<domain-or-area>/<screen-name>/*-screen.tsx`에 둡니다.
+- route URL/segment가 `/card`여도 실제 screen 구현은 `src/screens/schedule/<screen-name>`에 둘 수 있습니다.
 - route 파일은 가능하면 screen re-export만 합니다.
 - route parameter 검증과 redirect는 route/screen 경계에서 명확히 처리합니다.
 
 ## 예시
 
 ```tsx
-export { CardListScreen as default } from '@/screens/card/card-list-screen';
+export { CardListScreen as default } from '@/screens/schedule/card-list/card-list-screen';
 ```
 
 ## Screen 책임

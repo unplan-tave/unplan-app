@@ -11,7 +11,7 @@ import {
   isValidLocationSearchLabel,
   LOCATION_SEARCH_MAX_LENGTH,
   normalizeLocationSearchLabel,
-} from '@/domains/card/location';
+} from '@/domains/schedule/location';
 
 interface LocationBottomSheetProps {
   visible: boolean;

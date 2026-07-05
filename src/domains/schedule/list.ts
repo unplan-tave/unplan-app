@@ -1,3 +1,4 @@
+import { getConditionTagById } from './model';
 import {
   formatDurationDisplay,
   hasDueDate,
@@ -5,9 +6,22 @@ import {
   UNKNOWN_DURATION_LABEL,
 } from './queue';
 
-import type { CardItem, CardProgressStatus, CardTab, ConditionTagId } from './model';
+import type {
+  CardItem,
+  CardProgressStatus,
+  CardTab,
+  ConditionTagId,
+  PersonalTagOption,
+} from './model';
 
 export type CardTypeFilter = 'all' | CardTab;
+export type CardListMultiFilterKey = 'progress' | 'condition' | 'personal';
+
+export interface CardListTagItem {
+  label: string;
+  variant: 'condition' | 'personal';
+  condition?: ConditionTagId;
+}
 
 export interface CardListFilters {
   cardType: CardTypeFilter;
@@ -209,4 +223,42 @@ export function createDefaultCardListFilters(): CardListFilters {
     personalTagIds: [],
     searchQuery: '',
   };
+}
+
+export function hasActiveCardListFilter(filters: CardListFilters): boolean {
+  return (
+    filters.cardType !== 'all' ||
+    filters.progressStatuses.length > 0 ||
+    filters.conditionTagIds.length > 0 ||
+    filters.personalTagIds.length > 0 ||
+    filters.searchQuery.trim().length > 0
+  );
+}
+
+export function buildCardListTags(
+  card: CardItem,
+  personalTags: PersonalTagOption[],
+): CardListTagItem[] {
+  const conditionTag = getConditionTagById(card.conditionTagId);
+  const cardPersonalTags = personalTags.filter((tag) => card.personalTagIds.includes(tag.id));
+
+  return [
+    {
+      label: conditionTag.label,
+      variant: 'condition',
+      condition: card.conditionTagId,
+    },
+    ...cardPersonalTags.map((tag) => ({
+      label: tag.label,
+      variant: 'personal' as const,
+    })),
+  ];
+}
+
+export function toggleCardListFilterValue<T extends string>(values: T[], value: T): T[] {
+  if (values.includes(value)) {
+    return values.filter((item) => item !== value);
+  }
+
+  return [...values, value];
 }

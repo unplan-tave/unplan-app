@@ -1,1 +1,1 @@
-export { CardSearchScreen as default } from '@/screens/card/card-search-screen';
+export { CardSearchScreen as default } from '@/screens/schedule/card-search/card-search-screen';

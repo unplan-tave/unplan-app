@@ -25,6 +25,8 @@ src/
 
 `src/domains`는 도메인 로직의 기준 위치입니다. `src/lib`은 루트 `lib/`로 빼지 않고 유지합니다.
 
+목표 구조는 문서에 명시하되, 실제 repo에는 현재 코드가 있는 폴더만 둡니다. 미래 도메인이나 미래 feature 폴더를 `.gitkeep`만으로 미리 만들지 않고, 해당 레이어에 실제 코드가 들어갈 때 폴더를 생성합니다.
+
 ## `src/app`
 
 Expo Router route/layout 전용입니다.
@@ -41,7 +43,7 @@ src/app/
 ```
 
 - route/layout 파일만 둡니다.
-- 실제 화면 구현은 `src/screens/<domain>/*-screen.tsx`에 둡니다.
+- 실제 화면 구현은 `src/screens/<domain-or-area>/<screen-name>/*-screen.tsx`에 둡니다.
 - route 파일은 가능하면 screen을 re-export만 합니다.
 - 화면 로직, API 호출, 상태 조합 로직을 두지 않습니다.
 - dev/catalog/debug route는 production에서 `<Redirect />`로 막습니다.
@@ -54,7 +56,6 @@ src/app/
 src/screens/
 ├── auth/
 ├── onboarding/
-├── card/
 ├── home/
 ├── schedule/
 ├── settings/
@@ -66,7 +67,7 @@ src/screens/
 - screen-level hook을 호출합니다.
 - navigation을 처리합니다.
 - 필요한 domain store/action/query hook을 연결합니다.
-- 화면별 상태 조합은 `screens/<domain>/hooks`에 둘 수 있습니다.
+- 화면별 상태 조합은 각 screen 폴더의 `hooks`에 둘 수 있습니다.
 - 화면 아래로는 resolved props를 내려보냅니다.
 - 복잡한 JSX는 `components/features/<screen-or-flow>`로 분리합니다.
 - 순수 계산/검증/매핑은 `domains/<domain>`으로 분리합니다.
@@ -76,14 +77,51 @@ src/screens/
 
 UI가 아닌 로직 레이어입니다.
 
+목표 도메인 목록:
+
+```txt
+src/domains/
+├── auth/
+├── member/
+├── onboarding-settings/
+├── schedule/
+├── sleep/
+├── condition/
+├── daily-memo/
+├── measurement/
+└── ai-recommendation/
+```
+
+현재 repo에는 구현된 도메인 폴더만 존재합니다.
+
 ```txt
 src/domains/
 ├── auth/
 ├── onboarding/
-└── card/
+└── schedule/
 ```
 
 도메인 로직은 `src/domains`를 기준으로 import합니다.
+
+`domains`는 화면명이나 UI flow명이 아니라 제품/백엔드 도메인 기준입니다. `card`는 최상위 domain이 아니며, pin card / queue card / card list / card view / queue-to-pin은 `schedule` 도메인의 하위 개념입니다.
+
+`schedule` 도메인은 장기적으로 capability 단위로 세분화할 수 있습니다. 아직 실제 코드가 없는 하위 폴더는 만들지 않습니다.
+
+```txt
+src/domains/schedule/
+├── model.ts
+├── constants.ts
+├── use-schedule-store.ts
+├── pin-card/
+├── queue-card/
+├── recurrence/
+├── location/
+├── create/
+├── list/
+├── detail/
+├── convert/
+└── api/
+```
 
 도메인 폴더의 기본 역할:
 
@@ -152,17 +190,17 @@ Figma 화면명 또는 사용자 플로우명 기준으로 나눕니다.
 
 ```txt
 src/components/features/
-├── add-pin-card/
+├── create-card/
 ├── queue-to-pin/
 ├── card-list/
 ├── card-view/
+├── card-search/
 ├── home/
 ├── auth/
-├── onboarding/
-└── card/
+└── onboarding/
 ```
 
-특정 화면/플로우에 종속된 조합 컴포넌트를 둡니다. `components/features/card`에는 아직 생성 공통 form, header, toast, 공유 sheet처럼 소유권이 확정되지 않은 파일이 남아 있습니다. 애매한 파일은 억지로 이동하지 않고 후속 PR에서 소유권이 명확해질 때 정리합니다.
+특정 화면/플로우에 종속된 조합 컴포넌트를 둡니다. Schedule 하위 UI라도 feature 폴더명은 `create-card`, `card-list`, `card-view`, `card-search`, `queue-to-pin`처럼 Figma 화면명/사용자 flow 기준으로 둡니다.
 
 ### components/domain
 
@@ -170,7 +208,8 @@ src/components/features/
 
 ```txt
 src/components/domain/
-└── condition/
+├── condition/
+└── schedule/
 ```
 
 예: condition meter, schedule time label, sleep duration label.

@@ -32,7 +32,7 @@ domains/* -> components/* 금지
 
 ## Feature끼리 import 금지
 
-`components/features/add-pin-card`가 `components/features/card-list`를 직접 import하지 않습니다.
+`components/features/create-card`가 `components/features/card-list`를 직접 import하지 않습니다.
 
 같은 feature 폴더 내부의 보조 컴포넌트끼리는 상대 import로 참조할 수 있습니다. 금지 대상은 서로 다른 feature 폴더 사이의 직접 의존입니다.
 

@@ -4,6 +4,7 @@ import { type RecurrenceValue } from './recurrence';
 export type { RecurrenceValue } from './recurrence';
 
 export type CardTab = 'pin' | 'queue';
+export type CardTagTab = 'condition' | 'personal';
 export type CardProgressStatus = 'incomplete' | 'in_progress' | 'complete';
 export type DateMode = 'empty' | 'single' | 'range';
 export type TimeFocus = 'start' | 'end';

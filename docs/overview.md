@@ -61,7 +61,7 @@ src/
 │   ├── (auth)/           # 로그인
 │   ├── onboarding/        # recovery → sleep → activity → transport
 │   └── (tabs)/           # 홈 · 일정 · 설정
-├── screens/          # 라우트가 렌더링하는 실제 화면 구현 (<domain>/*-screen.tsx)
+├── screens/          # 라우트가 렌더링하는 실제 화면 구현
 │   ├── auth/ home/ schedule/ settings/ onboarding/
 ├── components/
 │   ├── ui/               # 전역 base primitive
@@ -70,7 +70,7 @@ src/
 ├── domains/          # UI 없는 도메인 로직 레이어
 │   ├── auth/
 │   ├── onboarding/
-│   └── card/
+│   └── schedule/
 ├── lib/              # 앱 전역 인프라 / 크로스컷팅
 │   ├── api/              # client, mutator, endpoints(생성), model(생성)
 │   ├── auth/             # google-sdk, kakao-sdk, token-storage
@@ -83,7 +83,9 @@ src/
 └── translations/     # ko.ts (번역 키-값)
 ```
 
-**구조 원칙(AGENTS.md / core.md):** `app`은 route/layout만, 화면은 `screens`, 재사용 primitive는 `components/ui`, 도메인 표현은 `components/domain`, 화면/플로우 조합은 `components/features/<screen-or-flow>`, 도메인 로직은 `domains/<domain>`, 인프라는 `src/lib`. 라우트 파일은 `export { XScreen as default } from '@/screens/...'` 형태의 1줄 재노출을 우선한다.
+**구조 원칙(AGENTS.md / core.md):** `app`은 route/layout만, 화면은 `screens`, 재사용 primitive는 `components/ui`, 도메인 표현은 `components/domain`, 화면/플로우 조합은 `components/features/<screen-or-flow>`, 도메인 로직은 `domains/<domain>`, 인프라는 `src/lib`. `card`는 최상위 domain이 아니라 `schedule` 도메인의 하위 개념이며, pin/queue card UI flow는 feature/screen 이름으로만 남긴다. 라우트 파일은 `export { XScreen as default } from '@/screens/...'` 형태의 1줄 재노출을 우선한다.
+
+목표 도메인 목록은 문서에 유지하되 실제 repo에는 현재 코드가 있는 폴더만 둔다. 현재 `onboarding` 폴더는 기존 구현명이며, 장기 도메인 명칭은 서버/제품 기준에 맞춰 `onboarding-settings`로 수렴시키는 것을 목표로 한다.
 
 ---
 

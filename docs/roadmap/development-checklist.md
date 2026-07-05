@@ -32,7 +32,7 @@
 
 ## 남은 구조 정리 후보
 
-- `components/features/card`에 남은 생성 공통 form/header/toast/shared sheet 소유권 정리
+- `components/features/create-card` 구조와 schedule 하위 card flow 소유권 지속 점검
 - 비어 있거나 실제 파일이 없는 문서 예시와 코드 구조의 지속 동기화
 - 기능 구현 또는 화면 변경은 구조 리팩터링 PR과 분리
 

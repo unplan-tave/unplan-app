@@ -5,12 +5,14 @@ import { Chip } from '@/components/ui/Chip';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { CONDITION_TAG_OPTIONS } from '@/domains/card/data';
+import { CONDITION_TAG_OPTIONS } from '@/domains/schedule/data';
 
-import type { CardTypeFilter } from '@/domains/card/list';
-import type { CardProgressStatus, ConditionTagId, PersonalTagOption } from '@/domains/card/model';
-
-export type CardListMultiFilterKey = 'progress' | 'condition' | 'personal';
+import type { CardListMultiFilterKey, CardTypeFilter } from '@/domains/schedule/list';
+import type {
+  CardProgressStatus,
+  ConditionTagId,
+  PersonalTagOption,
+} from '@/domains/schedule/model';
 
 const PROGRESS_OPTIONS: Array<{ value: CardProgressStatus; label: string }> = [
   { value: 'incomplete', label: '미완료' },
