@@ -1,12 +1,12 @@
 # 컴포넌트 배치 규칙
 
-> [core.md 4. 컴포넌트 작성 규칙](./core.md#4-컴포넌트-작성-규칙)은 **언제** 쪼갤지 정한다. 이 문서는 **어디에** 둘지 정한다.
+> [components.md](../conventions/components.md)는 **언제** 쪼갤지 정한다. 이 문서는 **어디에** 둘지 정한다.
 
-[← 문서 목록](../README.md) · [코어 컨벤션](./core.md)
+[← 문서 목록](../README.md) · [컴포넌트 컨벤션](../conventions/components.md) · [의존 방향](../architecture/dependency-rules.md)
 
 ---
 
-`core.md` 기준(100줄 초과, 로직 3개 이상 등)을 지켜도 screen이 비대해질 수 있다. 예: `screens/card/card-create-screen.tsx`는 useState ~17개, 핸들러 ~35개, 787줄.
+컴포넌트 분리 기준을 지켜도 screen이 비대해질 수 있다. 예: `screens/card/card-create-screen.tsx`는 useState ~17개, 핸들러 ~35개, 787줄.
 
 원인은 보통 두 가지다.
 
@@ -72,9 +72,11 @@ screens/<domain>/
 components/
   ui/
   domain/
-  features/<feature>/
-    card/
-      form/  view/  sheets/  modals/
+  features/<screen-or-flow>/
+    add-pin-card/
+    add-queue-card/
+    card-list/
+    card-view/
 ```
 
 ### 화면 데이터 훅
@@ -101,13 +103,13 @@ screen이 비대해지면 **상수 · 순수 로직 · 상태 · JSX**를 밖으
 ### 상수
 
 - 파일 안에서만 쓰면 파일 상단 (`SCREEN_MAX_WIDTH`, `CONTENT_TOP`).
-- 도메인 공유면 `state/<domain>` (`MEMO_MAX_LENGTH`, `DURATION_INCREMENT_BUTTONS`).
+- 도메인 공유면 `domains/<domain>` (`MEMO_MAX_LENGTH`, `DURATION_INCREMENT_BUTTONS`).
 - 앱 전역이면 `constants/`.
 - 색·radius·spacing 리터럴은 상수가 아니라 **토큰** (`AGENTS.md` 참고).
 
 ### 순수 함수
 
-- props/state를 읽지 않는 함수는 `state/<domain>/*`로 내린다.
+- props/state를 읽지 않는 함수는 `domains/<domain>/*`로 내린다.
 - `getScheduleDate`, `isQueueFormComplete`, `hasDueDate` 같은 것은 screen 하단에 두지 않는다.
 - `*.test.ts`는 기능 작업이 끝난 뒤 한꺼번에 추가한다. (리팩터링·기능 PR마다 필수는 아님)
 
@@ -165,6 +167,6 @@ type SheetKind = 'none' | 'dateTime' | 'due' | 'location' | 'tag';
 - [ ] useState 5개 넘으면 훅으로 묶었는가
 - [ ] 상호배타 UI를 union 타입으로 합쳤는가
 - [ ] 파생값을 useState에 저장하지 않는가
-- [ ] 순수 함수를 `state/<domain>`으로 내렸는가
+- [ ] 순수 함수를 `domains/<domain>`으로 내렸는가
 - [ ] 색·spacing·radius에 토큰을 썼는가
 - [ ] 죽은 코드(빈 스타일, 미사용 prop)를 지웠는가
