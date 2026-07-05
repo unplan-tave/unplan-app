@@ -20,17 +20,22 @@ import {
   updateCardItem,
 } from './model';
 import { createQueueToPinValues } from './queue';
+import { addCardRecentSearch, removeCardRecentSearch } from './search';
 
 interface CardStoreState {
   cards: CardItem[];
   draft: CardDraft | null;
   personalTags: PersonalTagOption[];
   locationRecentSearches: string[];
+  cardRecentSearches: string[];
   createCard: (cardType: CardTab, values: CardFormValues) => CardItem;
   createPersonalTag: (label: string) => PersonalTagOption | null;
   addLocationRecentSearch: (label: string) => void;
   deleteLocationRecentSearch: (label: string) => void;
   deleteAllLocationRecentSearches: () => void;
+  addCardRecentSearch: (query: string) => void;
+  deleteCardRecentSearch: (query: string) => void;
+  deleteAllCardRecentSearches: () => void;
   beginCreate: (values: CardFormValues, cardType?: CardTab) => CardDraft;
   beginEdit: (cardId: string) => CardDraft | null;
   updateDraftValues: (values: Partial<CardFormValues>) => void;
@@ -55,6 +60,7 @@ export const useCardStore = create<CardStoreState>()(
       draft: null,
       personalTags: [],
       locationRecentSearches: [],
+      cardRecentSearches: [],
       createCard: (cardType, values) => {
         const card = createCardItem(cardType, values);
 
@@ -91,6 +97,19 @@ export const useCardStore = create<CardStoreState>()(
       },
       deleteAllLocationRecentSearches: () => {
         set({ locationRecentSearches: [] });
+      },
+      addCardRecentSearch: (query) => {
+        set((state) => ({
+          cardRecentSearches: addCardRecentSearch(state.cardRecentSearches, query),
+        }));
+      },
+      deleteCardRecentSearch: (query) => {
+        set((state) => ({
+          cardRecentSearches: removeCardRecentSearch(state.cardRecentSearches, query),
+        }));
+      },
+      deleteAllCardRecentSearches: () => {
+        set({ cardRecentSearches: [] });
       },
       beginCreate: (values, cardType = 'pin') => {
         const draft = createCardDraft(cardType, values);
@@ -234,6 +253,7 @@ export const useCardStore = create<CardStoreState>()(
         cards: state.cards,
         personalTags: state.personalTags,
         locationRecentSearches: state.locationRecentSearches,
+        cardRecentSearches: state.cardRecentSearches,
       }),
     },
   ),
