@@ -181,7 +181,7 @@ export function CardListScreen() {
           )}
         </ScrollView>
 
-        <View style={styles.footer}>
+        <View style={[styles.footer, { bottom: insets.bottom + spacing[2] }]}>
           <HomeBottomNav
             value="cardList"
             onAddPress={handleCreateCard}

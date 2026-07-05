@@ -57,6 +57,10 @@ export function getCardMonthKey(card: CardItem): string {
 }
 
 export function formatCardListMonthLabel(monthKey: string): string {
+  if (monthKey.startsWith('9999')) {
+    return '기한 없음';
+  }
+
   return monthKey;
 }
 

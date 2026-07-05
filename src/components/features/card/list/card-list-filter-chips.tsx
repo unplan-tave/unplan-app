@@ -245,7 +245,7 @@ function MultiFilterChip({
 
 function getProgressSummary(statuses: CardProgressStatus[]) {
   if (statuses.length === 0) {
-    return '미완료';
+    return '진행 상태';
   }
 
   return PROGRESS_OPTIONS.filter((option) => statuses.includes(option.value))
