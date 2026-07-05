@@ -76,10 +76,13 @@ components/
   domain/
   features/
     add-pin-card/
+    queue-to-pin/
     card-list/
     card-view/
-    queue-to-pin/
     home/
+    auth/
+    onboarding/
+    card/
 ```
 
 ### 화면 데이터 훅
