@@ -64,12 +64,15 @@ src/
 ├── screens/          # 라우트가 렌더링하는 실제 화면 구현 (<domain>/*-screen.tsx)
 │   ├── auth/ home/ schedule/ settings/ onboarding/
 ├── components/
-│   ├── ui/               # 전역 base primitive (디자인 시스템, 30+ 컴포넌트)
-│   ├── onboarding/        # 온보딩 전용 조합 컴포넌트
-│   └── auth/              # 소셜 로그인 버튼 등
-├── state/            # 도메인별 상태 + 모델 + 비즈니스 로직
-│   ├── auth/             # store, model, social-login, api
-│   └── onboarding/        # store, model, routes, sleep-condition
+│   ├── ui/               # 전역 base primitive
+│   ├── domain/           # 여러 feature에서 재사용되는 도메인 표현
+│   └── features/         # 화면명/플로우명 기준 조합 컴포넌트
+├── domains/          # 목표 구조: 도메인 타입 + store + api wrapper + 순수 로직
+│   ├── auth/
+│   └── onboarding/
+├── state/            # 현재 코드에 남아 있는 기존 도메인 로직 위치
+│   ├── auth/             # 후속 PR에서 domains/auth로 이동
+│   └── onboarding/        # 후속 PR에서 domains/onboarding으로 이동
 ├── lib/              # 앱 전역 인프라 / 크로스컷팅
 │   ├── api/              # client, mutator, endpoints(생성), model(생성)
 │   ├── auth/             # google-sdk, kakao-sdk, token-storage
@@ -82,7 +85,7 @@ src/
 └── translations/     # ko.ts (번역 키-값)
 ```
 
-**구조 원칙(AGENTS.md / core.md):** `app`은 route/layout만, 화면은 `screens`, 재사용 primitive는 `components/ui`, 도메인 조합은 `components/<domain>`, 상태·모델은 `state/<domain>`, 인프라는 `lib`. 라우트 파일은 `export { XScreen as default } from '@/screens/...'` 형태의 1줄 재노출.
+**구조 원칙(AGENTS.md / core.md):** `app`은 route/layout만, 화면은 `screens`, 재사용 primitive는 `components/ui`, 도메인 표현은 `components/domain`, 화면/플로우 조합은 `components/features/<screen-or-flow>`, 도메인 로직은 `domains/<domain>`, 인프라는 `lib`. 현재 코드의 `src/state`는 후속 PR에서 `src/domains`로 이동한다. 라우트 파일은 `export { XScreen as default } from '@/screens/...'` 형태의 1줄 재노출을 우선한다.
 
 ---
 

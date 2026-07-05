@@ -6,9 +6,12 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
 
 | 문서 | 용도 |
 |------|------|
-| [docs/conventions/core.md](./docs/conventions/core.md) | 기본 코딩 컨벤션 |
-| [docs/conventions/advanced.md](./docs/conventions/advanced.md) | 접근성, 성능, CI/CD 등 확장 규칙 |
-| [docs/roadmap/development-checklist.md](./docs/roadmap/development-checklist.md) | 디자인·API·프론트 병행 개발 원칙 + 진행 상황 |
+| [docs/conventions/core.md](./docs/conventions/core.md) | 컨벤션 진입점/색인 |
+| [docs/architecture/folder-structure.md](./docs/architecture/folder-structure.md) | 폴더 책임과 목표 구조 |
+| [docs/architecture/dependency-rules.md](./docs/architecture/dependency-rules.md) | 레이어별 의존 방향 |
+| [docs/architecture/api-boundary.md](./docs/architecture/api-boundary.md) | Orval/API wrapper/ViewModel 경계 |
+| [docs/frontend/component-decomposition.md](./docs/frontend/component-decomposition.md) | screen/component 분리 기준 |
+| [docs/roadmap/development-checklist.md](./docs/roadmap/development-checklist.md) | 병행 개발 원칙 + PR 분리 계획 |
 
 린트·포맷 규칙은 `eslint.config.js`, `.prettierrc`가 우선입니다.
 
@@ -18,8 +21,10 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
 - 실제 화면 구현은 `src/screens/<domain>/*-screen.tsx`에 둡니다.
 - 재사용 컴포넌트는 `src/components` 아래에 둡니다.
   - 전역 primitive/base 컴포넌트는 `src/components/ui`에 둡니다.
-  - 특정 화면군에서 재사용되는 조합 컴포넌트는 `src/components/<domain>`에 둡니다.
-- 앱 상태와 도메인 모델은 `src/state/<domain>`에 둡니다.
+  - 여러 화면/feature에서 재사용되는 도메인 표현 컴포넌트는 `src/components/domain`에 둡니다.
+  - 특정 화면/플로우에 종속된 조합 컴포넌트는 `src/components/features/<screen-or-flow>`에 둡니다.
+- 도메인 타입, store, API wrapper, validation, 순수 로직은 `src/domains/<domain>`에 둡니다.
+  - 현재 코드의 `src/state`는 후속 PR에서 `src/domains`로 이동합니다. 이 PR에서는 코드 import를 바꾸지 않습니다.
 - 앱 전역 hook은 `src/hooks`에 둡니다.
 
 ## 컴포넌트 구현 원칙
@@ -30,7 +35,7 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
   - 공통 화면 골격은 `ScreenLayout`을 기반으로 구현합니다.
   - 진행 헤더는 `HeaderProgress`를 기반으로 구현합니다.
 - primitive가 비어 있거나 요구사항을 충족하지 못하면, 도메인 컴포넌트에서 새로 중복 구현하지 말고 primitive를 먼저 확장합니다.
-- 화면 고유 조합 컴포넌트는 `components/<domain>`에 두되, 스타일/상태/접근성의 base 동작은 가능한 한 `components/ui`에서 가져옵니다.
+- 화면 고유 조합 컴포넌트는 `components/features/<screen-or-flow>`에 두되, 스타일/상태/접근성의 base 동작은 가능한 한 `components/ui`에서 가져옵니다.
 
 ## PR 전 자가 점검
 
@@ -43,4 +48,4 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
 - **고정 길이 배열은 튜플 타입** — 길이가 고정된 입력(예: GNB 4탭)은 `[T, T, T, T]` 튜플로 타입을 강제해 누락을 컴파일 단계에서 잡습니다.
 - **선택 props는 안전 기본값** — 옵셔널 배열/객체 prop은 기본값(`tags = []`)을 둬 `undefined` 런타임 에러를 방지합니다.
 - **죽은 코드 제거** — 빈 스타일(`selected: {}`), 미사용 prop, 주석 처리된 코드는 남기지 않습니다.
-- **순수 로직 테스트는 후순위** — 날짜 비교·라벨 매핑 등 순수 함수는 `state/<domain>`에 두고, `*.test.ts`는 기능 작업이 끝난 뒤 한꺼번에 추가합니다. 기능·리팩터링 PR마다 테스트를 필수로 넣지 않습니다.
+- **순수 로직 테스트는 후순위** — 날짜 비교·라벨 매핑 등 순수 함수는 `domains/<domain>`에 두고, `*.test.ts`는 기능 작업이 끝난 뒤 한꺼번에 추가합니다. 기능·리팩터링 PR마다 테스트를 필수로 넣지 않습니다.
