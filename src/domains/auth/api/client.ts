@@ -23,12 +23,16 @@ export async function submitSocialLogin({
     return toAuthSession(response);
   }
 
-  const response = await googleLogin({
-    google_id_token: accessToken,
-    device_id: deviceId,
-  });
+  if (provider === 'google') {
+    const response = await googleLogin({
+      google_id_token: accessToken,
+      device_id: deviceId,
+    });
 
-  return toAuthSession(response);
+    return toAuthSession(response);
+  }
+
+  throw new Error(`Unsupported social provider: ${provider satisfies never}`);
 }
 
 export async function reissueAuthSession({ deviceId }: AuthDeviceRequest): Promise<AuthSession> {
