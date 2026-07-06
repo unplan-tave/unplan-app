@@ -2,6 +2,9 @@ import { produce } from 'immer';
 import { create } from 'zustand';
 
 import { tokenStorage } from '@/lib/auth/token-storage';
+import { getDeviceId } from '@/lib/device/device-id';
+
+import { submitLogout } from './api/client';
 
 import type { AuthSession } from './model';
 
@@ -13,6 +16,7 @@ interface AuthState {
   setSession: (session: AuthSession) => Promise<void>;
   hydrateSession: () => Promise<void>;
   logout: () => Promise<void>;
+  clearSession: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()((set) => ({
@@ -53,7 +57,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
     );
   },
 
-  logout: async () => {
+  clearSession: async () => {
     await tokenStorage.clearTokens();
 
     set(
@@ -64,5 +68,16 @@ export const useAuthStore = create<AuthState>()((set) => ({
         state.isAuthenticated = false;
       }),
     );
+  },
+
+  logout: async () => {
+    try {
+      const deviceId = await getDeviceId();
+      await submitLogout({ deviceId });
+    } catch (error: unknown) {
+      console.error('Failed to logout on server.', error);
+    } finally {
+      await useAuthStore.getState().clearSession();
+    }
   },
 }));

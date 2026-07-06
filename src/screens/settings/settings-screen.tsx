@@ -1,99 +1,175 @@
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { Button } from '@/components/ui/Button';
+import { SettingsList } from '@/components/features/settings/settings-list';
+import { GNB } from '@/components/ui/GNB';
+import { Icon } from '@/components/ui/Icon';
+import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
-import { colors, spacing } from '@/constants/theme';
-import { useAuthStore } from '@/domains/auth/use-auth-store';
-import { onboardingRoutes } from '@/domains/onboarding/routes';
-import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
+import { colors, radius, spacing } from '@/constants/theme';
+import { useMemberProfileQuery } from '@/domains/member/api/queries';
 import { t } from '@/lib/i18n';
 
 export function SettingsScreen() {
   const router = useRouter();
-  const logout = useAuthStore((state) => state.logout);
-  const resetOnboarding = useOnboardingStore((state) => state.resetOnboarding);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [logoutError, setLogoutError] = useState<string | null>(null);
+  const profileQuery = useMemberProfileQuery();
+  const [scheduleEndNotification, setScheduleEndNotification] = useState(true);
+  const [conditionRecordNotification, setConditionRecordNotification] = useState(true);
+  const appVersion = Constants.expoConfig?.version ?? '1.0.0';
+  const profileNickname = profileQuery.isLoading
+    ? ''
+    : profileQuery.data?.nickname || t('settings.profileFallback.nickname');
+  const profileEmail = profileQuery.isLoading
+    ? ''
+    : profileQuery.data?.email || t('settings.profileFallback.email');
 
-  const handleOnboardingReset = () => {
-    resetOnboarding();
-    router.replace(onboardingRoutes.intro);
-  };
-
-  const handleUiPrimitivesOpen = () => {
-    router.push('/settings-ui-primitives');
-  };
-
-  const handleLogout = async () => {
-    if (isLoggingOut) {
+  const handleNavChange = (value: string) => {
+    if (value === 'home') {
+      router.navigate('/(tabs)');
       return;
     }
 
-    setIsLoggingOut(true);
-    setLogoutError(null);
-
-    try {
-      await logout();
-      router.replace('/login');
-    } catch {
-      setLogoutError(t('settings.logoutError'));
-      setIsLoggingOut(false);
+    if (value === 'setting') {
+      router.navigate('/settings');
+      return;
     }
+
+    router.navigate('/schedule');
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Typography variant="titleL">{t('settings.title')}</Typography>
-      <View style={styles.actions}>
-        {__DEV__ ? (
-          <>
-            <Button
-              label={t('settings.openUiPrimitives')}
-              disabled={isLoggingOut}
-              onPress={handleUiPrimitivesOpen}
-            />
-            <Button
-              label={t('settings.resetOnboarding')}
-              disabled={isLoggingOut}
-              onPress={handleOnboardingReset}
-            />
-          </>
-        ) : null}
-        <Button
-          label={isLoggingOut ? t('settings.loggingOut') : t('settings.logout')}
-          variant="primary"
-          disabled={isLoggingOut}
-          onPress={() => void handleLogout()}
+    <ScreenLayout
+      backgroundColor={colors.gray[50]}
+      contentStyle={styles.screen}
+      footer={
+        <View style={styles.footer}>
+          <GNB
+            value="setting"
+            onChange={handleNavChange}
+            onAddPress={() => router.push('/card/new')}
+          />
+        </View>
+      }
+    >
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+        <Pressable
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.profileCard, pressed && styles.pressed]}
+          onPress={() => router.push('/settings/account')}
+        >
+          <View style={styles.profileText}>
+            <Typography variant="titleL" color={colors.gray[900]}>
+              {profileNickname}
+            </Typography>
+            <Typography variant="bodyM" color={colors.gray[500]}>
+              {profileEmail}
+            </Typography>
+          </View>
+          <Icon name="arrowRight" size={24} color={colors.gray[300]} />
+        </Pressable>
+        <SettingsList
+          title={t('settings.appSettings')}
+          rows={[
+            {
+              label: t('settings.scheduleEndNotification'),
+              type: 'switch',
+              switchValue: scheduleEndNotification,
+              onSwitchChange: setScheduleEndNotification,
+            },
+            {
+              label: t('settings.conditionRecordNotification'),
+              type: 'switch',
+              switchValue: conditionRecordNotification,
+              onSwitchChange: setConditionRecordNotification,
+            },
+          ]}
         />
-        {logoutError ? (
-          <Typography
-            variant="bodyS"
-            color={colors.secondary}
-            align="center"
-            accessibilityLiveRegion="polite"
-          >
-            {logoutError}
-          </Typography>
-        ) : null}
-      </View>
-    </SafeAreaView>
+        <SettingsList
+          title={t('settings.recommendationSettings')}
+          rows={[
+            {
+              label: t('settings.scheduleRecommendationCriteria'),
+              onPress: () => undefined,
+            },
+            {
+              label: t('settings.recoveryMethods'),
+              onPress: () => undefined,
+            },
+            {
+              label: t('settings.sleepCondition'),
+              onPress: () => undefined,
+            },
+            {
+              label: t('settings.activityPattern'),
+              onPress: () => undefined,
+            },
+            {
+              label: t('settings.defaultTransport'),
+              onPress: () => undefined,
+            },
+          ]}
+        />
+        <SettingsList
+          title={t('settings.information')}
+          rows={[
+            {
+              label: t('settings.appVersion'),
+              value: appVersion,
+              type: 'text',
+            },
+            {
+              label: t('terms.service.title'),
+              onPress: () => router.push({ pathname: '/terms', params: { type: 'service' } }),
+            },
+            {
+              label: t('terms.privacy.title'),
+              onPress: () => router.push({ pathname: '/terms', params: { type: 'privacy' } }),
+            },
+          ]}
+        />
+      </ScrollView>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  screen: {
+    paddingHorizontal: 0,
+  },
+  content: {
+    paddingHorizontal: spacing[5],
+    paddingTop: spacing[5],
+    paddingBottom: 136,
+    gap: spacing[5],
+  },
+  profileCard: {
+    width: '100%',
+    maxWidth: 353,
+    minHeight: 89,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing[4],
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[3],
+    borderRadius: radius.sm,
+    backgroundColor: colors.gray.white,
+  },
+  profileText: {
+    gap: 5,
+  },
+  footer: {
+    position: 'absolute',
+    right: 0,
+    bottom: 34,
+    left: 0,
     alignItems: 'center',
     paddingHorizontal: spacing[5],
-    paddingTop: spacing[10],
-    gap: spacing[8],
   },
-  actions: {
-    width: '100%',
-    alignItems: 'center',
-    gap: spacing[3],
+  pressed: {
+    opacity: 0.72,
   },
 });
