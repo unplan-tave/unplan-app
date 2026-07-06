@@ -5,6 +5,7 @@ import {
   reissue,
   withdraw,
 } from '@/lib/api/endpoints/auth-controller/auth-controller';
+import { tokenStorage } from '@/lib/auth/token-storage';
 
 import { toAuthSession, toReissuedAuthSession } from './mapper';
 
@@ -37,7 +38,20 @@ export async function submitSocialLogin({
 }
 
 export async function reissueAuthSession({ deviceId }: AuthDeviceRequest): Promise<AuthSession> {
-  const response = await reissue({ device_id: deviceId });
+  const refreshToken = await tokenStorage.getRefreshToken();
+
+  if (!refreshToken) {
+    throw new Error('Missing refresh token.');
+  }
+
+  const response = await reissue(
+    { device_id: deviceId },
+    {
+      headers: {
+        Authorization: `Bearer ${refreshToken}`,
+      },
+    },
+  );
 
   return toReissuedAuthSession(response);
 }

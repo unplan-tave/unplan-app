@@ -8,6 +8,9 @@ export interface SettingsListRow {
   label: string;
   value?: string;
   type?: 'navigation' | 'switch' | 'text';
+  /** 조회 화면용 톤 — label은 흐리게, value는 진하게 표시 */
+  muted?: boolean;
+  dividerAbove?: boolean;
   disabled?: boolean;
   switchValue?: boolean;
   onPress?: () => void;
@@ -30,7 +33,10 @@ export function SettingsList({ title, rows, style }: SettingsListProps) {
       ) : null}
       <View style={styles.rows}>
         {rows.map((row) => (
-          <SettingsRow key={row.label} row={row} />
+          <View key={row.label} style={styles.rowGroup}>
+            {row.dividerAbove ? <View style={styles.divider} /> : null}
+            <SettingsRow row={row} />
+          </View>
         ))}
       </View>
     </View>
@@ -49,12 +55,19 @@ function SettingsRow({ row }: { row: SettingsListRow }) {
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}
       onPress={row.onPress}
     >
-      <Typography variant="bodyM" color={row.disabled ? colors.gray[400] : colors.gray[700]}>
+      <Typography
+        variant="bodyM"
+        color={row.disabled || row.muted ? colors.gray[400] : colors.gray[700]}
+      >
         {row.label}
       </Typography>
       <View style={styles.trailing}>
         {row.value ? (
-          <Typography variant="bodyM" color={colors.gray[400]} numberOfLines={1}>
+          <Typography
+            variant="bodyM"
+            color={row.muted ? colors.gray[600] : colors.gray[400]}
+            numberOfLines={1}
+          >
             {row.value}
           </Typography>
         ) : null}
@@ -91,6 +104,13 @@ const styles = StyleSheet.create({
   },
   rows: {
     gap: spacing[4],
+  },
+  rowGroup: {
+    gap: spacing[4],
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.gray[200],
   },
   row: {
     minHeight: 26,

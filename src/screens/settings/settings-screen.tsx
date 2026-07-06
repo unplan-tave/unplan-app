@@ -9,6 +9,7 @@ import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useRecommendationCriteriaStore } from '@/domains/ai-recommendation/use-recommendation-criteria-store';
 import { useMemberProfileQuery } from '@/domains/member/api/queries';
 import { t } from '@/lib/i18n';
 
@@ -17,6 +18,12 @@ export function SettingsScreen() {
   const profileQuery = useMemberProfileQuery();
   const [scheduleEndNotification, setScheduleEndNotification] = useState(true);
   const [conditionRecordNotification, setConditionRecordNotification] = useState(true);
+  const recommendationPushEnabled = useRecommendationCriteriaStore(
+    (state) => state.criteria.pushEnabled,
+  );
+  const setRecommendationPushEnabled = useRecommendationCriteriaStore(
+    (state) => state.setPushEnabled,
+  );
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
   const profileNickname = profileQuery.isLoading
     ? ''
@@ -70,7 +77,7 @@ export function SettingsScreen() {
           <Icon name="arrowRight" size={24} color={colors.gray[300]} />
         </Pressable>
         <SettingsList
-          title={t('settings.appSettings')}
+          title={t('settings.notificationSettings')}
           rows={[
             {
               label: t('settings.scheduleEndNotification'),
@@ -84,6 +91,12 @@ export function SettingsScreen() {
               switchValue: conditionRecordNotification,
               onSwitchChange: setConditionRecordNotification,
             },
+            {
+              label: t('settings.recommendationScheduleNotification'),
+              type: 'switch',
+              switchValue: recommendationPushEnabled,
+              onSwitchChange: setRecommendationPushEnabled,
+            },
           ]}
         />
         <SettingsList
@@ -91,23 +104,23 @@ export function SettingsScreen() {
           rows={[
             {
               label: t('settings.scheduleRecommendationCriteria'),
-              onPress: () => undefined,
+              onPress: () => router.push('/settings/recommendation'),
             },
             {
               label: t('settings.recoveryMethods'),
-              onPress: () => undefined,
+              onPress: () => router.push('/settings/recovery'),
             },
             {
               label: t('settings.sleepCondition'),
-              onPress: () => undefined,
+              onPress: () => router.push('/settings/sleep-condition'),
             },
             {
               label: t('settings.activityPattern'),
-              onPress: () => undefined,
+              onPress: () => router.push('/settings/activity-pattern'),
             },
             {
               label: t('settings.defaultTransport'),
-              onPress: () => undefined,
+              onPress: () => router.push('/settings/transport'),
             },
           ]}
         />

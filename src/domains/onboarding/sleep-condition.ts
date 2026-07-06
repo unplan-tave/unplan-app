@@ -17,6 +17,18 @@ export const DEFAULT_SLEEP_CONDITION_THRESHOLDS: SleepConditionThresholds = {
   optimalMinutes: 9 * 60,
 };
 
+/** 분 → "3시간 0분" (0분이면 "0시간") */
+export function formatSleepDurationLabel(totalMinutes: number): string {
+  if (totalMinutes === 0) {
+    return '0시간';
+  }
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return `${hours}시간 ${minutes}분`;
+}
+
 export function classifySleepMinutes(
   minutes: number,
   thresholds: SleepConditionThresholds = DEFAULT_SLEEP_CONDITION_THRESHOLDS,

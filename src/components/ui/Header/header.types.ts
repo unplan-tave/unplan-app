@@ -25,6 +25,7 @@ export interface HeaderBackProps extends Omit<PressableProps, 'style' | 'childre
 
 export interface HeaderCancelProps extends Omit<PressableProps, 'style' | 'children'> {
   label?: string;
+  color?: string;
   style?: StyleProp<ViewStyle>;
 }
 
