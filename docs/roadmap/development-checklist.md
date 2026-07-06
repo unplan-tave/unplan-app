@@ -23,6 +23,13 @@
 | 4 | `components/domain` 정리 및 잔재 제거 | 완료 | `ConditionMeter`는 domain/condition, `TimelineCard`는 features/home |
 | 5 | 문서/AGENTS 최종 동기화 | 완료 | 실제 코드 구조와 문서 표현 재검증 |
 
+## API boundary 정리
+
+| 순서 | 범위 | 상태 | 비고 |
+|------|------|------|------|
+| 1 | `domains/schedule/api` (client, mapper, query-keys, queries, mutations) | 완료 | ViewModel은 `domains/schedule/model.ts`. 화면 mock/store 연동은 후속 PR |
+| 2 | schedule 화면 mock/store → 서버 query 전환 | 대기 | `CardFormValues` ↔ API Input 브리지 포함 |
+
 ## 구조 리팩터링 원칙
 
 - architecture 문서를 `docs/architecture`로 분리합니다.

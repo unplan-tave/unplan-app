@@ -1,5 +1,3 @@
-import type { RecurrenceRequest } from '@/lib/api/model/recurrenceRequest';
-
 export type RecurrencePreset = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
 
 export type RecurrenceEndType = 'never' | 'count' | 'until';
@@ -49,8 +47,6 @@ export const WEEKLY_DETAIL_DAYS = [
 ] as const;
 
 export const DIGIT_ITEMS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] as const;
-
-const API_WEEKDAY_CODES = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const;
 
 export function cloneRecurrenceValue(value: RecurrenceValue): RecurrenceValue {
   return {
@@ -283,74 +279,6 @@ export function isDateOnOrAfterSchedule(dateValue: string, scheduleDate: string)
   return dateValue >= scheduleDate;
 }
 
-export function toRecurrenceRequest(
-  value: RecurrenceValue,
-  scheduleDate: string,
-): RecurrenceRequest {
-  const request: RecurrenceRequest = {
-    freq: value.freq,
-    interval: value.interval,
-    until:
-      value.endType === 'until'
-        ? value.until
-        : value.endType === 'count'
-          ? estimateUntilByCount(value, scheduleDate)
-          : '2099.12.31',
-  };
-
-  if (value.freq === 'WEEKLY' && value.byDay.length > 0) {
-    request.by_day = value.byDay.map((day) => API_WEEKDAY_CODES[day]).join(',');
-  }
-
-  if (value.freq === 'MONTHLY') {
-    request.by_month_day = String(getMonthDayFromDate(scheduleDate));
-  }
-
-  return request;
-}
-
-function estimateUntilByCount(value: RecurrenceValue, scheduleDate: string) {
-  const startDate = parseDateValue(scheduleDate) ?? new Date();
-  const occurrences = Math.max(value.occurrenceCount - 1, 0);
-  const nextDate = new Date(startDate);
-
-  switch (value.freq) {
-    case 'DAILY':
-      nextDate.setDate(nextDate.getDate() + occurrences * value.interval);
-      break;
-    case 'WEEKLY':
-      nextDate.setDate(nextDate.getDate() + occurrences * value.interval * 7);
-      break;
-    case 'MONTHLY':
-      addMonthsClamped(nextDate, occurrences * value.interval);
-      break;
-    case 'YEARLY':
-      addYearsClamped(nextDate, occurrences * value.interval);
-      break;
-  }
-
-  return formatDateValue(nextDate);
-}
-
-function addMonthsClamped(date: Date, months: number) {
-  const originalDay = date.getDate();
-  const targetMonthIndex = date.getMonth() + months;
-  const targetYear = date.getFullYear() + Math.floor(targetMonthIndex / 12);
-  const targetMonth = ((targetMonthIndex % 12) + 12) % 12;
-  const lastDayOfTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
-
-  date.setFullYear(targetYear, targetMonth, Math.min(originalDay, lastDayOfTargetMonth));
-}
-
-function addYearsClamped(date: Date, years: number) {
-  const originalDay = date.getDate();
-  const targetYear = date.getFullYear() + years;
-  const targetMonth = date.getMonth();
-  const lastDayOfTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
-
-  date.setFullYear(targetYear, targetMonth, Math.min(originalDay, lastDayOfTargetMonth));
-}
-
 function parseDateValue(dateValue: string) {
   const [year, month, day] = dateValue.split('.').map(Number);
 
@@ -359,12 +287,4 @@ function parseDateValue(dateValue: string) {
   }
 
   return new Date(year, month - 1, day);
-}
-
-function formatDateValue(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-
-  return `${year}.${month}.${day}`;
 }
