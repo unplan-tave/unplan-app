@@ -1,19 +1,32 @@
 import {
+  ConditionType,
   OnboardingRequestTransportationsItem,
   UpdateMethodsDefaultMethodsItem,
 } from '@/lib/api/model';
 
-import { getSelectedActivityHours } from '../activity-time-ranges';
+import { parseActivityTimeline, toActivityTimeline } from '../activity-time-ranges';
+import { DEFAULT_SLEEP_CONDITION_THRESHOLDS } from '../sleep-condition';
 
 import type {
+  ActivityPatternSettings,
   OnboardingPreferences,
+  RecoveryMethodsSettings,
   RecoveryOptionId,
+  SleepConditionSettings,
   TimeRange,
   TransportOptionId,
 } from '../model';
 import type {
+  BiorhythmRequest,
+  GetBiorhythm,
+  GetMethods,
   OnboardingRequest,
   OnboardingRequestTransportationsItem as BackendTransportOption,
+  SleepConditionResponse,
+  TransportRequest,
+  TransportResponse,
+  UpdateConditions,
+  UpdateMethods,
   UpdateMethodsDefaultMethodsItem as BackendRecoveryOption,
 } from '@/lib/api/model';
 
@@ -32,10 +45,98 @@ const transportOptionMap: Record<TransportOptionId, BackendTransportOption> = {
   car: OnboardingRequestTransportationsItem.CAR,
 };
 
-function toTimeline(ranges: TimeRange[]): string {
-  const selectedHours = getSelectedActivityHours(ranges);
+const recoveryOptionIdMap: Record<BackendRecoveryOption, Exclude<RecoveryOptionId, 'custom'>> = {
+  [UpdateMethodsDefaultMethodsItem.NAP]: 'nap',
+  [UpdateMethodsDefaultMethodsItem.MUSIC]: 'music',
+  [UpdateMethodsDefaultMethodsItem.WALK]: 'walk',
+  [UpdateMethodsDefaultMethodsItem.STRETCHING]: 'stretching',
+  [UpdateMethodsDefaultMethodsItem.FOOD]: 'food',
+};
 
-  return Array.from({ length: 24 }, (_, hour) => (selectedHours.has(hour) ? '1' : '0')).join('');
+const transportOptionIdMap: Record<BackendTransportOption, TransportOptionId> = {
+  [OnboardingRequestTransportationsItem.WALK]: 'walk',
+  [OnboardingRequestTransportationsItem.BICYCLE]: 'bicycle',
+  [OnboardingRequestTransportationsItem.PUBLIC_TRANSPORT]: 'publicTransit',
+  [OnboardingRequestTransportationsItem.CAR]: 'car',
+};
+
+function toTimeline(ranges: TimeRange[]): string {
+  return toActivityTimeline(ranges);
+}
+
+export function toRecoveryMethodsSettings(
+  response: GetMethods | undefined,
+): RecoveryMethodsSettings {
+  return {
+    recoveryOptionIds: (response?.default_methods ?? []).map(
+      (method) => recoveryOptionIdMap[method],
+    ),
+    customMethods: response?.custom_methods ?? [],
+  };
+}
+
+export function toUpdateMethodsRequest(settings: RecoveryMethodsSettings): UpdateMethods {
+  return {
+    default_methods: settings.recoveryOptionIds.map((optionId) => recoveryOptionMap[optionId]),
+    custom_methods: settings.customMethods,
+  };
+}
+
+export function toSleepConditionSettings(
+  response: SleepConditionResponse | undefined,
+): SleepConditionSettings {
+  const thresholds = new Map(
+    (response?.conditions ?? []).map((condition) => [condition.type, condition.duration]),
+  );
+
+  return {
+    targetSleepMinutes: response?.target_duration ?? 450,
+    dangerThresholdMinutes:
+      thresholds.get(ConditionType.DANGER) ?? DEFAULT_SLEEP_CONDITION_THRESHOLDS.dangerMinutes,
+    lackThresholdMinutes:
+      thresholds.get(ConditionType.LACK) ?? DEFAULT_SLEEP_CONDITION_THRESHOLDS.lackMinutes,
+    optimalThresholdMinutes:
+      thresholds.get(ConditionType.OPTIMAL) ?? DEFAULT_SLEEP_CONDITION_THRESHOLDS.optimalMinutes,
+  };
+}
+
+export function toUpdateConditionsRequest(settings: SleepConditionSettings): UpdateConditions {
+  return {
+    target_duration: settings.targetSleepMinutes,
+    danger_threshold: settings.dangerThresholdMinutes,
+    lack_threshold: settings.lackThresholdMinutes,
+    optimal_threshold: settings.optimalThresholdMinutes,
+  };
+}
+
+export function toActivityPatternSettings(
+  response: GetBiorhythm | undefined,
+): ActivityPatternSettings {
+  return {
+    focusTimeRanges: parseActivityTimeline(response?.focused_timeline),
+    sleepyTimeRanges: parseActivityTimeline(response?.drowsy_timeline),
+    sleepTimeRanges: parseActivityTimeline(response?.sleep_timeline),
+  };
+}
+
+export function toBiorhythmRequest(settings: ActivityPatternSettings): BiorhythmRequest {
+  return {
+    focused_timeline: toActivityTimeline(settings.focusTimeRanges),
+    drowsy_timeline: toActivityTimeline(settings.sleepyTimeRanges),
+    sleep_timeline: toActivityTimeline(settings.sleepTimeRanges),
+  };
+}
+
+export function toTransportOptionIds(response: TransportResponse | undefined): TransportOptionId[] {
+  return (response?.transport_types ?? []).map(
+    (transportType) => transportOptionIdMap[transportType],
+  );
+}
+
+export function toTransportRequest(optionIds: TransportOptionId[]): TransportRequest {
+  return {
+    transport_types: optionIds.map((optionId) => transportOptionMap[optionId]),
+  };
 }
 
 export function toOnboardingRequest(preferences: OnboardingPreferences): OnboardingRequest {
