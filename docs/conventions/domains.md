@@ -32,8 +32,7 @@
 | 파일 | 역할 |
 |------|------|
 | `model.ts` | 프론트 도메인 타입, ViewModel, enum/union 타입 |
-| `api.ts` | Orval 생성 API wrapper, DTO -> ViewModel 변환. 작은 도메인에서는 단일 파일 허용 |
-| `api/client.ts` | 도메인 API wrapper. 도메인이 커질 때 `api.ts`에서 분리 |
+| `api/client.ts` | Orval generated endpoint를 감싸는 도메인 API wrapper |
 | `api/mapper.ts` | DTO <-> ViewModel 변환 |
 | `api/query-keys.ts` | query key factory |
 | `api/queries.ts` | TanStack Query `use*Query` hook |
@@ -44,6 +43,8 @@
 | `*.ts` | 날짜 계산, 라벨 매핑, 검색, 정렬 등 순수 로직 |
 
 파일과 하위 폴더는 실제 책임이 생길 때만 만듭니다. API가 아직 없으면 `api/`를 만들지 않고, 클라이언트 상태가 없으면 `use-<domain>-store.ts`를 만들지 않으며, 도메인 공통 상수가 없으면 `constants.ts`를 만들지 않습니다.
+
+`onboarding-settings`는 제품 도메인명입니다. 현재 코드에는 과도기적으로 `src/domains/onboarding` 폴더가 남아 있으며, 폴더명 변경은 별도 PR에서 처리합니다. 새 문서와 목표 구조에서는 `onboarding-settings`를 기준명으로 사용합니다.
 
 ## 참조 규칙
 
@@ -91,7 +92,7 @@ src/domains/schedule/
     └── recommendation.ts
 ```
 
-도메인이 커지면 `api.ts`를 아래처럼 나눕니다.
+API가 있는 도메인은 API boundary를 아래처럼 둡니다. query/mutation 파일은 실제 사용할 때만 만듭니다.
 
 ```txt
 src/domains/schedule/api/

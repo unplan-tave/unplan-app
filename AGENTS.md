@@ -27,8 +27,13 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
 - 도메인 타입, store, API wrapper, validation, 순수 로직은 `src/domains/<domain>`에 둡니다.
 - `card`는 최상위 domain이 아닙니다. pin card, queue card, card list/view/search는 `schedule` 도메인의 하위 개념입니다.
 - `domains`는 화면명이나 UI flow명이 아니라 제품/백엔드 도메인 기준으로 둡니다. 현재 기준 도메인은 `auth`, `member`, `onboarding-settings`, `schedule`, `sleep`, `condition`, `daily-memo`, `measurement`, `ai-recommendation`입니다.
+- `onboarding-settings`는 제품 도메인명입니다. 현재 코드의 `src/domains/onboarding`은 과도기 폴더이며, 폴더명 변경은 별도 PR에서 처리합니다.
 - 목표 도메인 목록은 문서에 명시하되, 실제 repo에는 현재 코드가 있는 폴더만 둡니다. 미래 도메인 폴더를 `.gitkeep`만으로 미리 만들지 않습니다.
 - 서버 상태 query/mutation hook은 도메인 API boundary(`src/domains/<domain>/api`)에 둡니다.
+- Orval generated code는 `src/lib/api`에 유지하고 직접 수정하지 않습니다. 도메인 API wrapper는 `src/domains/<domain>/api/client.ts`, DTO 변환은 `src/domains/<domain>/api/mapper.ts`에 둡니다.
+- `use*Query`는 `src/domains/<domain>/api/queries.ts`, `use*Mutation`은 `src/domains/<domain>/api/mutations.ts`에 두며 실제 필요할 때만 파일을 만듭니다.
+- API가 없는 도메인에는 빈 `api/` 폴더를 만들지 않습니다. screen/components는 generated DTO가 아니라 domain model/ViewModel을 사용합니다.
+- Orval generated API 변화는 `domains/<domain>/api`에서 흡수하고 screen/components에 generated 구조를 노출하지 않습니다.
 - 앱 전역 hook은 `src/hooks`에 둡니다.
 - screen 전용 hook은 `src/screens/<domain-or-area>/<screen-name>/hooks`에 두고, 앱 전역 공용 hook만 `src/hooks`에 둡니다.
 - hook이 250줄을 넘거나 여러 책임을 가지면 분해를 검토합니다.

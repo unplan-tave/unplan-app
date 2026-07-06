@@ -107,14 +107,16 @@ src/
 ### 5.1 인증 (auth) — ✅ 동작
 - **`lib/auth/kakao-sdk.ts` / `google-sdk.ts`** — SDK 지연 초기화 + 설정 누락 시 graceful 경고/전용 에러 클래스(`KakaoSDKConfigError`, `GoogleSDKConfigError`).
 - **`domains/auth/social-login.ts`** — `loginWithKakao()` / `loginWithGoogle()`. 카카오톡 미설치 시 카카오계정 로그인 폴백, 취소/네트워크/SDK/설정/알수없음으로 에러 정규화(`SocialLoginError`).
-- **`domains/auth/api.ts`** — `submitSocialLogin()`이 `/auth/{provider}`로 토큰 전송, 응답 래퍼 unwrap.
+- **`domains/auth/api/client.ts`** — `submitSocialLogin()`이 `/auth/{provider}`로 토큰 전송.
+- **`domains/auth/api/mapper.ts`** — 생성 응답 DTO를 `AuthSession`으로 변환.
 - **`domains/auth/use-auth-store.ts`** — `setSession` / `hydrateSession` / `logout`. 토큰은 SecureStore에 저장.
 - **`hooks/use-auth.ts`** — store 셀렉터 묶음.
 - **`lib/device/device-id.ts`** — UUID 디바이스 ID 생성·영속(SecureStore), 폴백 포함.
 
 ### 5.2 온보딩 (onboarding) — ✅ API 연동
 - **`domains/onboarding/use-onboarding-store.ts`** — 회복 수단, 목표 수면시간, 집중/졸림/수면 시간대, 이동수단 선택과 제출 상태 관리. 서버 저장 성공 후 완료 플래그를 MMKV에 저장.
-- **`domains/onboarding/api.ts`** — 프론트 모델을 생성 DTO로 변환하고 최초 온보딩 단일 저장 API를 호출.
+- **`domains/onboarding/api/client.ts`** — 최초 온보딩 단일 저장 API를 호출.
+- **`domains/onboarding/api/mapper.ts`** — 프론트 온보딩 모델을 생성 요청 DTO로 변환.
 - **`domains/onboarding/sleep-condition.ts`** — 수면 분(minute)을 risk/lack/good/excess로 분류(Figma 스펙 반영).
 
 ### 5.3 메인 탭 (home / schedule / settings) — 🟡 진행 중
@@ -127,7 +129,7 @@ src/
 - **클라이언트**: `lib/api/client.ts` — `Config.apiUrl` 기반 axios. 요청 인터셉터가 SecureStore의 access token을 Bearer로 주입. 응답 인터셉터에 **401 refresh-token 재시도 TODO**(미구현).
 - **Orval 자동생성**: `orval.config.ts`가 `OPENAPI_SPEC_URL`에서 스펙을 받아 `src/lib/api/endpoints`(태그별 React Query 훅)와 `src/lib/api/model`(타입)을 생성. 커스텀 mutator(`orval-mutator.ts`)로 공용 axios 인스턴스 재사용. 두 디렉터리는 ESLint ignore 대상.
 - 생성된 태그: `auth-controller`, `daily-memo`, `onboarding`, `setting-onboarding`, `schedule-crud`, `test-controller`.
-- 온보딩은 `domains/onboarding/api.ts`, 인증은 `domains/auth/api.ts`의 수기 래퍼를 통해 생성 함수를 사용함.
+- 온보딩은 `domains/onboarding/api/client.ts`, 인증은 `domains/auth/api/client.ts`의 domain API wrapper를 통해 생성 함수를 사용함.
 
 ---
 

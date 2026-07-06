@@ -30,6 +30,23 @@ domains/* -> components/* 금지
 | Domain logic | `src/domains` | `lib`, `constants` | `components` 참조 |
 | Infra | `src/lib` | 외부 SDK, generated API | 특정 화면/feature 의존 |
 
+## API Boundary
+
+Orval generated code는 `src/lib/api`에 유지하고 generated endpoint/model 파일은 직접 수정하지 않습니다.
+
+도메인에서 서버 API를 사용할 때는 `src/domains/<domain>/api` 아래에 경계를 둡니다.
+
+- `api/client.ts`: generated endpoint를 감싸는 domain API wrapper
+- `api/mapper.ts`: DTO ↔ domain model/ViewModel 변환
+- `api/query-keys.ts`: query key factory. query가 있을 때만 생성
+- `api/queries.ts`: `use*Query`. query가 있을 때만 생성
+- `api/mutations.ts`: `use*Mutation`. mutation hook이 필요할 때만 생성
+
+API가 없는 도메인에는 빈 `api/` 폴더를 만들지 않습니다. screen/components는 generated DTO가 아니라 domain model/ViewModel을 사용합니다.
+Orval generated API 변화는 domain API boundary에서 흡수하고, screen/components가 generated endpoint/model 구조 변화에 직접 흔들리지 않게 합니다.
+
+`src/lib/auth`는 SDK/token storage 같은 인프라 레이어이며, auth 도메인 정책과 flow 조합은 `src/domains/auth`에 둡니다.
+
 ## Feature끼리 import 금지
 
 `components/features/create-card`가 `components/features/card-list`를 직접 import하지 않습니다.
