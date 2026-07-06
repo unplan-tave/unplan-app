@@ -12,7 +12,7 @@
 | hook 파일 | kebab-case, `use-` 접두사 | `use-card-sheets.ts` |
 | store 파일 | kebab-case, `use-*-store.ts` | `use-schedule-store.ts` |
 | domain model | `model.ts` | `domains/schedule/model.ts` |
-| domain API | `api.ts` | `domains/schedule/api.ts` |
+| domain API | `api/client.ts`, `api/mapper.ts` 등 책임별 파일 | `domains/schedule/api/client.ts` |
 | validation | `validation.ts` | `domains/onboarding/validation.ts` |
 | route 상수 | `routes.ts` | `domains/onboarding/routes.ts` |
 | 테스트 | 대상 파일명 + `.test.ts(x)` | `validation.test.ts` |

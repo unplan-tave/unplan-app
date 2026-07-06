@@ -128,8 +128,7 @@ src/domains/schedule/
 | 파일 | 역할 |
 |------|------|
 | `model.ts` | 프론트 도메인 타입, ViewModel, enum/union 타입 |
-| `api.ts` | Orval 생성 API wrapper, DTO -> ViewModel 변환. 작은 도메인에서는 현재처럼 단일 파일 허용 |
-| `api/client.ts` | 도메인 API wrapper. 도메인이 커질 때 `api.ts`에서 분리 |
+| `api/client.ts` | Orval generated endpoint를 감싸는 도메인 API wrapper |
 | `api/mapper.ts` | DTO <-> ViewModel 변환 |
 | `api/query-keys.ts` | query key factory |
 | `api/queries.ts` | TanStack Query `use*Query` hook |

@@ -24,7 +24,7 @@
 | 디자인 | Figma 기반 디자인 토큰 + primitive-first 컴포넌트 시스템 |
 | 코드 규모 | `src` 기준 약 5,800 LOC (TS/TSX) |
 
-**현재 단계:** 인증·온보딩 플로우는 동작하는 수준으로 구현됨. 메인 탭 화면(홈/일정/설정)은 아직 플레이스홀더. 백엔드 연동은 인증만 실제 연결되어 있고 나머지 도메인 API는 스캐폴딩 상태.
+**현재 단계:** 인증·온보딩 플로우는 동작하는 수준으로 구현됨. 메인 탭 화면(홈/일정/설정)은 아직 플레이스홀더. 백엔드 연동은 인증·온보딩이 실제 연결되어 있고, schedule은 `domains/schedule/api` boundary가 준비됐지만 기존 mock/store 기반 화면을 서버 query로 전환하는 작업은 후속 범위입니다.
 
 ---
 
@@ -121,6 +121,9 @@ src/
 
 ### 5.3 메인 탭 (home / schedule / settings) — 🟡 진행 중
 - 홈·일정은 플레이스홀더이며, 설정에는 로그아웃과 개발용 온보딩 초기화 기능이 연결됨.
+- **`domains/schedule/api/client.ts`** — `schedule-crud` generated endpoint를 감싸 일별/주별/월별/상세 조회와 생성/수정/삭제를 domain ViewModel로 반환.
+- **`domains/schedule/api/mapper.ts`** — schedule generated DTO/request와 프론트 schedule model 사이의 변환을 담당.
+- **`domains/schedule/api/query-keys.ts` / `queries.ts` / `mutations.ts`** — TanStack Query key와 hook 경계. 화면의 기존 mock/store 데이터 전환은 별도 PR에서 진행.
 
 ---
 
@@ -129,7 +132,7 @@ src/
 - **클라이언트**: `lib/api/client.ts` — `Config.apiUrl` 기반 axios. 요청 인터셉터가 SecureStore의 access token을 Bearer로 주입. 응답 인터셉터에 **401 refresh-token 재시도 TODO**(미구현).
 - **Orval 자동생성**: `orval.config.ts`가 `OPENAPI_SPEC_URL`에서 스펙을 받아 `src/lib/api/endpoints`(태그별 React Query 훅)와 `src/lib/api/model`(타입)을 생성. 커스텀 mutator(`orval-mutator.ts`)로 공용 axios 인스턴스 재사용. 두 디렉터리는 ESLint ignore 대상.
 - 생성된 태그: `auth-controller`, `daily-memo`, `onboarding`, `setting-onboarding`, `schedule-crud`, `test-controller`.
-- 온보딩은 `domains/onboarding/api/client.ts`, 인증은 `domains/auth/api/client.ts`의 domain API wrapper를 통해 생성 함수를 사용함.
+- 인증·온보딩·schedule은 각 `domains/<domain>/api/client.ts`의 domain API wrapper를 통해 generated endpoint를 사용함. screen/components는 generated endpoint/model을 직접 참조하지 않음.
 
 ---
 
@@ -185,7 +188,7 @@ src/
 
 ### 정리하면 좋은 점 (불필요 / 중복)
 1. **미사용 UI primitive 다수** — `Input`, `Modal`, `BottomSheet`, `Calendar`, `GNB`, `ConditionCard`, `RecommendCard`, `ProgressBar`, `ProgressSegment`, `StatusBar`, `TimeStepper`, `ViewModeButton`, `ChipGroup`, `AppIcon`, `Tag` 등이 화면에서 전혀 사용되지 않음. 디자인 선반영 의도라면 OK지만, 화면 구현이 임박하지 않았다면 드리프트/유지보수 부담. 살릴 것·뺄 것을 트래킹 권장.
-2. **Orval 생성 훅 활용 범위 제한** — 인증·온보딩은 수기 래퍼에서 생성 함수를 사용하지만, 나머지 도메인은 아직 화면과 연결되지 않음.
+2. **Orval 생성 훅 활용 범위 제한** — 인증·온보딩은 수기 래퍼에서 생성 함수를 사용하고, schedule은 domain API boundary와 TanStack Query hook이 준비됨. 다만 schedule 화면은 아직 mock/store 기반이라 서버 query 전환은 후속 작업임.
 3. **타입 중복/데드코드** — `domains/auth/model.ts`의 `Schedule`, `ApiError` 인터페이스가 미사용. `ApiResponse`는 생성 모델과 개념 중복.
 4. **미구현 TODO** — axios 401 refresh 재시도. 백엔드 계약 확정 시 처리 필요.
 5. **테스트 부재** — CI는 `npm test --if-present`를 돌리지만 테스트 프레임워크/스크립트가 전혀 없음(devDeps에도 없음). 검증 공백.
@@ -199,7 +202,7 @@ src/
 
 ## 10. 다음 단계 제안
 
-- 백엔드 API 계약 확정 후: 나머지 도메인의 Orval 연동과 401 refresh 구현.
+- 백엔드 API 계약 확정 후: schedule 화면의 mock/store 기반 데이터를 서버 query로 단계적 전환하고, 나머지 도메인의 Orval 연동과 401 refresh 구현.
 - 홈/일정/설정 화면을 선구현된 primitive로 실제 구현.
 - 테스트 환경(예: Jest + RNTL) 도입 및 CI에 연결.
 - 데드코드/네이밍 정리 + 미사용 컴포넌트 정책 결정.
