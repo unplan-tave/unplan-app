@@ -21,7 +21,6 @@ export function useRecommendationCriteria() {
   const addExcludeRange = useRecommendationCriteriaStore((state) => state.addExcludeRange);
   const updateExcludeRange = useRecommendationCriteriaStore((state) => state.updateExcludeRange);
   const removeExcludeRange = useRecommendationCriteriaStore((state) => state.removeExcludeRange);
-  const setPushEnabled = useRecommendationCriteriaStore((state) => state.setPushEnabled);
 
   const [isMinFreeSheetVisible, setIsMinFreeSheetVisible] = useState(false);
   const [rangeSheet, setRangeSheet] = useState<RangeSheetState>(null);
@@ -88,7 +87,6 @@ export function useRecommendationCriteria() {
   return {
     criteria,
     setExcludeEnabled,
-    setPushEnabled,
     removeExcludeRange,
     isMinFreeSheetVisible,
     openMinFreeSheet: () => setIsMinFreeSheetVisible(true),

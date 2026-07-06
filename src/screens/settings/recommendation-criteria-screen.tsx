@@ -19,7 +19,6 @@ export function RecommendationCriteriaScreen() {
   const {
     criteria,
     setExcludeEnabled,
-    setPushEnabled,
     removeExcludeRange,
     isMinFreeSheetVisible,
     openMinFreeSheet,
@@ -93,28 +92,6 @@ export function RecommendationCriteriaScreen() {
                 onAddRange={openAddRangeSheet}
               />
             ) : null}
-          </View>
-        </View>
-        <View style={styles.section}>
-          <Typography variant="titleS" color={colors.gray[900]}>
-            {t('settings.recommendation.notificationTitle')}
-          </Typography>
-          <View>
-            <View style={styles.row}>
-              <Typography variant="bodyM" color={colors.gray[700]}>
-                {t('settings.recommendation.pushLabel')}
-              </Typography>
-              <Switch
-                value={criteria.pushEnabled}
-                trackColor={{ false: colors.gray[300], true: colors.primary }}
-                thumbColor={colors.gray.white}
-                ios_backgroundColor={colors.gray[300]}
-                onValueChange={setPushEnabled}
-              />
-            </View>
-            <Typography variant="bodyS" color={colors.gray[400]}>
-              {t('settings.recommendation.pushCaption')}
-            </Typography>
           </View>
         </View>
       </ScrollView>
