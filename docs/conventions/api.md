@@ -20,7 +20,7 @@
 - domain error 정규화
 
 화면은 generated API를 직접 호출하지 않고 domain API wrapper 또는 React Query hook 경계를 사용합니다.
-Orval 생성 결과의 endpoint/model 구조가 바뀌더라도 영향은 `domains/<domain>/api`에서 흡수하고, screen/components/hooks 호출부는 domain model/ViewModel을 유지합니다.
+Orval 생성 결과의 endpoint/model 구조가 바뀌더라도 영향은 `src/domains/<domain>/api/*`에서 흡수하고, screen/components/hooks 호출부는 domain model/ViewModel을 유지합니다.
 
 API가 있는 도메인은 API boundary를 아래처럼 나눕니다. 단, 실제 책임이 있는 파일만 만듭니다.
 

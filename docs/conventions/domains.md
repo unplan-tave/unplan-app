@@ -53,8 +53,8 @@
 - React component, JSX, StyleSheet를 두지 않습니다.
 - 도메인 순수 로직은 React component나 UI hook에 의존하지 않습니다.
 - 서버 DTO는 domain boundary에서 ViewModel로 변환합니다.
-- generated API/DTO 직접 import는 `domains/<domain>/api` 안에서만 허용합니다.
-- `domains/<domain>/api` 밖의 도메인 로직은 domain model/ViewModel을 사용하고 generated DTO를 호출부로 퍼뜨리지 않습니다.
+- generated API/DTO 직접 import는 `src/domains/<domain>/api/*` 안에서만 허용합니다.
+- `src/domains/<domain>/api/*` 밖의 도메인 로직은 domain model/ViewModel을 사용하고 generated DTO를 호출부로 퍼뜨리지 않습니다.
 - Zustand store는 클라이언트 상태만 담당합니다.
 - 서버 상태 캐시와 요청 lifecycle은 TanStack Query가 담당합니다.
 

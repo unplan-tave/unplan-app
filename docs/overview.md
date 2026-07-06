@@ -132,7 +132,7 @@ src/
 - **클라이언트**: `lib/api/client.ts` — `Config.apiUrl` 기반 axios. 요청 인터셉터가 SecureStore의 access token을 Bearer로 주입. 응답 인터셉터에 **401 refresh-token 재시도 TODO**(미구현).
 - **Orval 자동생성**: `orval.config.ts`가 `OPENAPI_SPEC_URL`에서 스펙을 받아 `src/lib/api/endpoints`(태그별 React Query 훅)와 `src/lib/api/model`(타입)을 생성. 커스텀 mutator(`orval-mutator.ts`)로 공용 axios 인스턴스 재사용. 두 디렉터리는 ESLint ignore 대상.
 - 생성된 태그: `auth-controller`, `daily-memo`, `onboarding`, `setting-onboarding`, `schedule-crud`, `test-controller`.
-- 인증·온보딩·schedule은 각 `domains/<domain>/api/client.ts`의 domain API wrapper를 통해 generated endpoint를 사용함. screen/components는 generated endpoint/model을 직접 참조하지 않음.
+- 인증·온보딩·schedule은 각 `src/domains/<domain>/api/client.ts`의 domain API wrapper를 통해 generated endpoint를 사용함. screen/components는 generated endpoint/model을 직접 참조하지 않음.
 
 ---
 

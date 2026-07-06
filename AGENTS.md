@@ -34,7 +34,7 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
 - 도메인 API wrapper는 `src/domains/<domain>/api/client.ts`, DTO 변환은 `src/domains/<domain>/api/mapper.ts`에 둡니다.
 - `use*Query`는 `src/domains/<domain>/api/queries.ts`, `use*Mutation`은 `src/domains/<domain>/api/mutations.ts`에 두며 실제 필요할 때만 파일을 만듭니다.
 - API가 없는 도메인에는 빈 `api/` 폴더를 만들지 않습니다. screen/components는 generated DTO가 아니라 domain model/ViewModel을 사용합니다.
-- Orval generated API 변화는 `domains/<domain>/api`에서 흡수하고 screen/components에 generated 구조를 노출하지 않습니다.
+- Orval generated API 변화는 `src/domains/<domain>/api/*`에서 흡수하고 screen/components에 generated 구조를 노출하지 않습니다.
 - 앱 전역 hook은 `src/hooks`에 둡니다.
 - screen 전용 hook은 `src/screens/<domain-or-area>/<screen-name>/hooks`에 두고, 앱 전역 공용 hook만 `src/hooks`에 둡니다.
 - hook이 250줄을 넘거나 여러 책임을 가지면 분해를 검토합니다.

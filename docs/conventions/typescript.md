@@ -43,8 +43,8 @@ export function toScheduleViewModel(dto: ScheduleDetailResponse): ScheduleViewMo
 ```
 
 - Orval 생성 타입은 `src/lib/api/model`에 둡니다.
-- 프론트 전용 타입은 `domains/<domain>/model.ts`에 둡니다.
-- DTO -> ViewModel 변환은 `domains/<domain>/api.ts` 또는 도메인 순수 함수로 모읍니다.
+- 프론트 전용 타입은 `src/domains/<domain>/model.ts`에 둡니다.
+- DTO -> ViewModel 변환은 `src/domains/<domain>/api/mapper.ts` 또는 도메인 순수 함수로 모읍니다.
 - UI는 ViewModel만 바라보게 합니다.
 
 ## Optional과 기본값
