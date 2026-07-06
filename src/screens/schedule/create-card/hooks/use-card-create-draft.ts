@@ -1,20 +1,28 @@
 import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
 
-import { type CardFormValues, type CardTab } from '@/domains/schedule/model';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 
+import type { CardFormValues, CardTab } from '@/domains/schedule/model';
 import type { UseFormReset } from 'react-hook-form';
 
-interface InitParams {
+interface UseCardCreateDraftParams {
   cardId: string | undefined;
   initialCardType: CardTab;
   initialValues: CardFormValues;
   reset: UseFormReset<CardFormValues>;
   onInit: (cardType: CardTab, values: CardFormValues) => void;
+  values: CardFormValues;
 }
 
-export function useCardPageData() {
+export function useCardCreateDraft({
+  cardId,
+  initialCardType,
+  initialValues,
+  reset,
+  onInit,
+  values,
+}: UseCardCreateDraftParams) {
   const beginCreate = useScheduleStore((store) => store.beginCreate);
   const beginEdit = useScheduleStore((store) => store.beginEdit);
   const updateDraftValues = useScheduleStore((store) => store.updateDraftValues);
@@ -32,27 +40,6 @@ export function useCardPageData() {
   const discardDraft = useScheduleStore((store) => store.discardDraft);
   const draftMode = useScheduleStore((store) => store.draft?.mode ?? 'create');
 
-  return {
-    beginCreate,
-    beginEdit,
-    updateDraftValues,
-    changeDraftCardType,
-    personalTags,
-    createPersonalTag,
-    locationRecentSearches,
-    addLocationRecentSearch,
-    deleteLocationRecentSearch,
-    deleteAllLocationRecentSearches,
-    saveDraft,
-    deleteCard,
-    discardDraft,
-    draftMode,
-  };
-}
-
-export function useCardInit({ cardId, initialCardType, initialValues, reset, onInit }: InitParams) {
-  const beginCreate = useScheduleStore((store) => store.beginCreate);
-  const beginEdit = useScheduleStore((store) => store.beginEdit);
   const initialValuesRef = useRef(initialValues);
   const onInitRef = useRef(onInit);
   const resetRef = useRef(reset);
@@ -73,4 +60,23 @@ export function useCardInit({ cardId, initialCardType, initialValues, reset, onI
     onInitRef.current(nextDraft.cardType, nextDraft.values);
     resetRef.current(nextDraft.values);
   }, [beginCreate, beginEdit, cardId, initialCardType]);
+
+  useEffect(() => {
+    updateDraftValues(values);
+  }, [updateDraftValues, values]);
+
+  return {
+    updateDraftValues,
+    changeDraftCardType,
+    personalTags,
+    createPersonalTag,
+    locationRecentSearches,
+    addLocationRecentSearch,
+    deleteLocationRecentSearch,
+    deleteAllLocationRecentSearches,
+    saveDraft,
+    deleteCard,
+    discardDraft,
+    draftMode,
+  };
 }

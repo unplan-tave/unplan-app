@@ -4,8 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CardListEmptyState } from '@/components/features/card-list/card-list-empty-state';
 import { CardListFilterChips } from '@/components/features/card-list/card-list-filter-chips';
-import { CardListGridItem } from '@/components/features/card-list/card-list-grid-item';
 import { CardListSearchBar } from '@/components/features/card-list/card-list-search-bar';
+import { CardListSections } from '@/components/features/card-list/card-list-sections';
 import { HomeBackground } from '@/components/features/home/home-background';
 import { HomeBottomNav } from '@/components/features/home/home-bottom-nav';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
@@ -87,24 +87,11 @@ export function CardListScreen() {
           {filteredCards.length === 0 ? (
             <CardListEmptyState hasActiveFilter={hasActiveFilter} />
           ) : (
-            sections.map((section) => (
-              <View key={section.monthKey} style={styles.section}>
-                <Typography variant="caption" color={colors.gray.white} style={styles.headerLabel}>
-                  {section.monthLabel}
-                </Typography>
-                <View style={styles.grid}>
-                  {section.cards.map((card) => (
-                    <View key={card.id} style={styles.gridItem}>
-                      <CardListGridItem
-                        card={card}
-                        personalTags={personalTags}
-                        onPress={() => handleCardPress(card.id)}
-                      />
-                    </View>
-                  ))}
-                </View>
-              </View>
-            ))
+            <CardListSections
+              sections={sections}
+              personalTags={personalTags}
+              onCardPress={handleCardPress}
+            />
           )}
         </ScrollView>
 
@@ -148,19 +135,6 @@ const styles = StyleSheet.create({
     textShadowColor: colors.alpha.black35,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 5,
-  },
-  section: {
-    gap: spacing[2],
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing[1],
-  },
-  gridItem: {
-    flexBasis: '48%',
-    flexGrow: 1,
-    maxWidth: '49%',
   },
   footer: {
     position: 'absolute',

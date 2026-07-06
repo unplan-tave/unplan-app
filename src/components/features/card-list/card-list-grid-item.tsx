@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { buildCardListTags } from '@/domains/schedule/list';
 
@@ -14,13 +14,16 @@ export function CardListGridItem({
 }: {
   card: CardItem;
   personalTags: PersonalTagOption[];
-  onPress: () => void;
+  onPress: (cardId: string) => void;
 }) {
   const tags = useMemo(() => buildCardListTags(card, personalTags), [card, personalTags]);
+  const handlePress = useCallback(() => {
+    onPress(card.id);
+  }, [card.id, onPress]);
 
   if (card.cardType === 'queue') {
-    return <CardListQueueItem card={card} tags={tags} onPress={onPress} />;
+    return <CardListQueueItem card={card} tags={tags} onPress={handlePress} />;
   }
 
-  return <CardListPinItem card={card} tags={tags} onPress={onPress} />;
+  return <CardListPinItem card={card} tags={tags} onPress={handlePress} />;
 }

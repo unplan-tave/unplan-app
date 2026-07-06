@@ -1,6 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { CardCreateHeader } from '@/components/domain/schedule/card-create-header';
@@ -11,87 +9,33 @@ import { QueueViewBody } from '@/components/features/card-view/queue-view-body';
 import { ConvertToPinBottomSheet } from '@/components/features/queue-to-pin/convert-to-pin-sheet';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
-import { type CardFormValues, getConditionTagById } from '@/domains/schedule/model';
-import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
+
+import { useCardViewScreen } from './hooks/use-card-view-screen';
 
 const SCREEN_MAX_WIDTH = 393;
 const CONTENT_MAX_WIDTH = 353;
 const CONTENT_TOP = 100;
 const FORM_GAP = spacing[6];
 
-type ToastState = {
-  message: string;
-  variant: 'warning' | 'confirm';
-} | null;
-
 export function CardViewScreen() {
-  const { cardId, toast: toastParam } = useLocalSearchParams<{ cardId: string; toast?: string }>();
-  const card = useScheduleStore((store) => store.cards.find((c) => c.id === cardId));
-  const personalTags = useScheduleStore((store) => store.personalTags);
-  const createCard = useScheduleStore((store) => store.createCard);
-  const convertQueueToPinCard = useScheduleStore((store) => store.convertQueueToPinCard);
-  const [isConvertSheetVisible, setIsConvertSheetVisible] = useState(false);
-  const [toast, setToast] = useState<ToastState>(() =>
-    toastParam === 'created' ? { message: '핀카드가 생성됐어요!', variant: 'confirm' } : null,
-  );
+  const {
+    card,
+    conditionTag,
+    cardPersonalTags,
+    isConvertSheetVisible,
+    toast,
+    handleBack,
+    handleEdit,
+    openConvertSheet,
+    closeConvertSheet,
+    handleConvert,
+    handleEditDuration,
+    closeToast,
+  } = useCardViewScreen();
 
-  const handleBack = useCallback(() => {
-    router.replace('/(tabs)');
-  }, []);
-  const handleEdit = useCallback(() => {
-    router.push(`/card/card-detail?cardId=${cardId}`);
-  }, [cardId]);
-
-  const handleOpenConvertSheet = useCallback(() => {
-    setIsConvertSheetVisible(true);
-  }, []);
-
-  const handleConvert = useCallback(
-    (values: CardFormValues, keepOriginal: boolean) => {
-      if (cardId == null) return;
-
-      setIsConvertSheetVisible(false);
-
-      if (keepOriginal) {
-        const newCard = createCard('pin', values);
-        router.push(`/card/view?cardId=${newCard.id}&toast=created`);
-      } else {
-        convertQueueToPinCard(cardId, values);
-        setToast({ message: '핀카드로 전환됐어요!', variant: 'confirm' });
-      }
-    },
-    [cardId, createCard, convertQueueToPinCard],
-  );
-
-  const handleEditDuration = useCallback(() => {
-    setIsConvertSheetVisible(false);
-    router.push(`/card/card-detail?cardId=${cardId}`);
-  }, [cardId]);
-
-  useEffect(() => {
-    if (toast == null) {
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      setToast(null);
-    }, 3_000);
-
-    return () => clearTimeout(timeoutId);
-  }, [toast]);
-
-  useEffect(() => {
-    if (card == null) {
-      router.replace('/(tabs)');
-    }
-  }, [card]);
-
-  if (card == null) {
+  if (card == null || conditionTag == null) {
     return null;
   }
-
-  const conditionTag = getConditionTagById(card.conditionTagId);
-  const cardPersonalTags = personalTags.filter((tag) => card.personalTagIds.includes(tag.id));
 
   return (
     <ScreenLayout
@@ -116,7 +60,7 @@ export function CardViewScreen() {
           />
 
           {card.cardType === 'queue' ? (
-            <QueueViewBody card={card} onOpenConvertSheet={handleOpenConvertSheet} />
+            <QueueViewBody card={card} onOpenConvertSheet={openConvertSheet} />
           ) : (
             <PinViewBody card={card} />
           )}
@@ -126,7 +70,7 @@ export function CardViewScreen() {
       <ConvertToPinBottomSheet
         visible={isConvertSheetVisible}
         card={card}
-        onClose={() => setIsConvertSheetVisible(false)}
+        onClose={closeConvertSheet}
         onConvert={handleConvert}
         onEditDuration={handleEditDuration}
       />
@@ -134,8 +78,8 @@ export function CardViewScreen() {
         <CardToast
           message={toast.message}
           variant={toast.variant}
-          onClose={() => setToast(null)}
-          onConfirm={() => setToast(null)}
+          onClose={closeToast}
+          onConfirm={closeToast}
         />
       ) : null}
     </ScreenLayout>

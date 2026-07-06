@@ -1,37 +1,25 @@
-import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
-import { canSubmitCardSearch, normalizeCardSearchQuery } from '@/domains/schedule/search';
-import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
+
+import { useCardSearchScreen } from './hooks/use-card-search-screen';
 
 const CONTENT_MAX_WIDTH = 353;
 
 export function CardSearchScreen() {
-  const recentSearches = useScheduleStore((store) => store.cardRecentSearches);
-  const addRecentSearch = useScheduleStore((store) => store.addCardRecentSearch);
-  const deleteRecentSearch = useScheduleStore((store) => store.deleteCardRecentSearch);
-  const deleteAllRecentSearches = useScheduleStore((store) => store.deleteAllCardRecentSearches);
-  const [query, setQuery] = useState('');
-
-  const submitSearch = useCallback(
-    (value: string) => {
-      if (!canSubmitCardSearch(value)) {
-        return;
-      }
-
-      const normalized = normalizeCardSearchQuery(value);
-
-      addRecentSearch(normalized);
-      router.navigate({ pathname: '/schedule', params: { q: normalized } });
-    },
-    [addRecentSearch],
-  );
+  const {
+    query,
+    setQuery,
+    recentSearches,
+    submitSearch,
+    deleteRecentSearch,
+    deleteAllRecentSearches,
+    handleBack,
+  } = useCardSearchScreen();
 
   return (
     <ScreenLayout backgroundColor={colors.onboardingMutedBackground}>
@@ -41,7 +29,7 @@ export function CardSearchScreen() {
           accessibilityLabel="뒤로가기"
           accessibilityRole="button"
           style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
-          onPress={() => router.back()}
+          onPress={handleBack}
         >
           <Icon name="arrowLeft" size={24} color={colors.gray[400]} />
         </Pressable>

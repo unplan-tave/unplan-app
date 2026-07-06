@@ -30,6 +30,11 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
 - 목표 도메인 목록은 문서에 명시하되, 실제 repo에는 현재 코드가 있는 폴더만 둡니다. 미래 도메인 폴더를 `.gitkeep`만으로 미리 만들지 않습니다.
 - 서버 상태 query/mutation hook은 도메인 API boundary(`src/domains/<domain>/api`)에 둡니다.
 - 앱 전역 hook은 `src/hooks`에 둡니다.
+- screen 전용 hook은 `src/screens/<domain-or-area>/<screen-name>/hooks`에 두고, 앱 전역 공용 hook만 `src/hooks`에 둡니다.
+- hook이 250줄을 넘거나 여러 책임을 가지면 분해를 검토합니다.
+- hook에서 UI 컴포넌트를 import하지 않습니다.
+- Hook을 호출하지 않는 순수 계산/검증/매핑 로직은 `use` 함수로 만들지 말고 `domains`의 일반 함수로 둡니다.
+- 외부 store/외부 시스템 구독 hook은 `useSyncExternalStore` 또는 라이브러리 공식 hook을 우선 검토합니다.
 - 앱 전역 인프라, 외부 SDK wrapper, storage adapter, generated API는 `src/lib`에 둡니다.
 
 ## 의존 방향
