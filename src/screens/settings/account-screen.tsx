@@ -10,14 +10,11 @@ import { t } from '@/lib/i18n';
 
 import { useSettingsAccount } from './hooks/use-settings-account';
 
-const SETTINGS_PROFILE = {
-  nickname: '중성마녀',
-  email: 'unplan@naver.com',
-} as const;
-
 export function AccountScreen() {
   const router = useRouter();
   const account = useSettingsAccount();
+  const profileNickname = account.profile?.nickname || t('settings.profileFallback.nickname');
+  const profileEmail = account.profile?.email || t('settings.profileFallback.email');
 
   return (
     <ScreenLayout backgroundColor={colors.gray[50]} contentStyle={styles.screen}>
@@ -33,12 +30,12 @@ export function AccountScreen() {
           rows={[
             {
               label: t('settings.account.nickname'),
-              value: SETTINGS_PROFILE.nickname,
+              value: profileNickname,
               onPress: () => router.push('/settings/nickname'),
             },
             {
               label: t('settings.account.connectedAccount'),
-              value: SETTINGS_PROFILE.email,
+              value: profileEmail,
               type: 'text',
             },
           ]}
@@ -50,7 +47,9 @@ export function AccountScreen() {
               onPress: account.openLogoutDialog,
             },
             {
-              label: t('settings.account.deleteAccount'),
+              label: account.isDeletingAccount
+                ? t('settings.deletingAccount')
+                : t('settings.account.deleteAccount'),
               onPress: account.openDeleteAccountDialog,
             },
           ]}
@@ -69,7 +68,7 @@ export function AccountScreen() {
         title={t('settings.deleteAccountModal.title')}
         confirmLabel={t('settings.account.delete')}
         cancelLabel={t('common.cancel')}
-        onConfirm={account.closeDialog}
+        onConfirm={account.confirmDeleteAccount}
         onCancel={account.closeDialog}
       />
     </ScreenLayout>

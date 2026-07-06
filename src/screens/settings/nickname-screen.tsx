@@ -15,10 +15,8 @@ import { t } from '@/lib/i18n';
 
 import { useNicknameEdit } from './hooks/use-nickname-edit';
 
-const CURRENT_NICKNAME = '중성마녀';
-
 export function NicknameScreen() {
-  const edit = useNicknameEdit(CURRENT_NICKNAME);
+  const edit = useNicknameEdit();
 
   return (
     <ScreenLayout backgroundColor={colors.gray[50]} contentStyle={styles.screen}>
@@ -42,7 +40,7 @@ export function NicknameScreen() {
                 variant="bodyM"
                 color={edit.canSubmit ? colors.chip.selectedText : colors.gray[300]}
               >
-                {t('common.done')}
+                {edit.isSubmitting ? t('common.saving') : t('common.done')}
               </Typography>
             </Pressable>
           }

@@ -9,18 +9,17 @@ import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useMemberProfileQuery } from '@/domains/member/api/queries';
 import { t } from '@/lib/i18n';
-
-const SETTINGS_PROFILE = {
-  nickname: '중성마녀',
-  email: 'unplan@naver.com',
-} as const;
 
 export function SettingsScreen() {
   const router = useRouter();
+  const profileQuery = useMemberProfileQuery();
   const [scheduleEndNotification, setScheduleEndNotification] = useState(true);
   const [conditionRecordNotification, setConditionRecordNotification] = useState(true);
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
+  const profileNickname = profileQuery.data?.nickname || t('settings.profileFallback.nickname');
+  const profileEmail = profileQuery.data?.email || t('settings.profileFallback.email');
 
   const handleNavChange = (value: string) => {
     if (value === 'home') {
@@ -58,10 +57,10 @@ export function SettingsScreen() {
         >
           <View style={styles.profileText}>
             <Typography variant="titleL" color={colors.gray[900]}>
-              {SETTINGS_PROFILE.nickname}
+              {profileNickname}
             </Typography>
             <Typography variant="bodyM" color={colors.gray[500]}>
-              {SETTINGS_PROFILE.email}
+              {profileEmail}
             </Typography>
           </View>
           <Icon name="arrowRight" size={24} color={colors.gray[300]} />
