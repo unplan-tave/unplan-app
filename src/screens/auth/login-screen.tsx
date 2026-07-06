@@ -23,7 +23,7 @@ const loginBackground = require('../../../assets/login-background.jpg');
 
 export function LoginScreen() {
   const router = useRouter();
-  const hasCompletedOnboarding = useOnboardingStore((state) => state.hasCompletedOnboarding);
+  const setOnboardingCompleted = useOnboardingStore((state) => state.setOnboardingCompleted);
   const [isGoogleLoginLoading, setIsGoogleLoginLoading] = useState(false);
   const [isKakaoLoginLoading, setIsKakaoLoginLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -52,7 +52,10 @@ export function LoginScreen() {
     setErrorMessage(null);
 
     try {
-      await login();
+      const session = await login();
+      const hasCompletedOnboarding = session.hasCompletedOnboarding === true;
+
+      setOnboardingCompleted(hasCompletedOnboarding);
       router.replace(hasCompletedOnboarding ? '/(tabs)' : onboardingRoutes.intro);
     } catch (error) {
       setErrorMessage(getSocialLoginErrorMessage(error));
