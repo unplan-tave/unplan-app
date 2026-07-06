@@ -9,6 +9,7 @@ import {
 } from '@/lib/api/endpoints/schedule-crud/schedule-crud';
 
 import {
+  normalizeDateForRequest,
   toDailyScheduleGroups,
   toScheduleCreateRequest,
   toScheduleCreateResult,
@@ -43,7 +44,7 @@ export interface GetSchedulesByMonthInput {
 export async function fetchSchedulesByDate(
   input: GetSchedulesByDateInput,
 ): Promise<ScheduleListItem[]> {
-  const response = await getSchedulesByDate({ date: input.date });
+  const response = await getSchedulesByDate({ date: normalizeDateForRequest(input.date) ?? '' });
 
   return toScheduleListItems(response);
 }
@@ -57,7 +58,7 @@ export async function fetchScheduleDetail(scheduleId: number): Promise<ScheduleD
 export async function fetchSchedulesByWeek(
   input: GetSchedulesByWeekInput,
 ): Promise<DailyScheduleGroup[]> {
-  const response = await getSchedulesByWeek({ date: input.date });
+  const response = await getSchedulesByWeek({ date: normalizeDateForRequest(input.date) ?? '' });
 
   return toDailyScheduleGroups(response);
 }
@@ -65,7 +66,9 @@ export async function fetchSchedulesByWeek(
 export async function fetchSchedulesByMonth(
   input: GetSchedulesByMonthInput,
 ): Promise<ScheduleMonthlyOverview> {
-  const response = await getSchedulesByMonth({ month: input.month });
+  const response = await getSchedulesByMonth({
+    month: normalizeDateForRequest(input.month) ?? '',
+  });
 
   return toScheduleMonthlyOverview(response);
 }

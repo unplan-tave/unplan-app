@@ -95,8 +95,8 @@ const statusToUpdateDtoMap: Record<ScheduleStatus, ScheduleUpdateRequestStatus> 
   done: ScheduleUpdateRequestStatus.DONE,
 };
 
-export function toScheduleListItems(response: ScheduleGetResponse[]): ScheduleListItem[] {
-  return response.map(toScheduleListItem);
+export function toScheduleListItems(response?: ScheduleGetResponse[]): ScheduleListItem[] {
+  return (response ?? []).map(toScheduleListItem);
 }
 
 export function toScheduleListItem(response: ScheduleGetResponse): ScheduleListItem {
@@ -149,16 +149,16 @@ export function toScheduleCreateResult(response: ScheduleCreateResponse): Schedu
   };
 }
 
-export function toDailyScheduleGroups(response: ScheduleWeeklyResponse): DailyScheduleGroup[] {
-  return (response.weekly_schedules ?? []).map(toDailyScheduleGroup);
+export function toDailyScheduleGroups(response?: ScheduleWeeklyResponse): DailyScheduleGroup[] {
+  return (response?.weekly_schedules ?? []).map(toDailyScheduleGroup);
 }
 
 export function toScheduleMonthlyOverview(
-  response: ScheduleMonthlyResponse,
+  response?: ScheduleMonthlyResponse,
 ): ScheduleMonthlyOverview {
   return {
-    yearMonth: response.year_month ?? '',
-    schedules: (response.schedules ?? []).map(toMonthlyScheduleCount),
+    yearMonth: response?.year_month ?? '',
+    schedules: (response?.schedules ?? []).map(toMonthlyScheduleCount),
   };
 }
 
@@ -387,3 +387,5 @@ function normalizeDateForView(value?: string) {
 function normalizeDateForRequest(value?: string) {
   return value?.replace(/\./g, '-');
 }
+
+export { normalizeDateForRequest };
