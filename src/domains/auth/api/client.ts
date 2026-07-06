@@ -3,6 +3,7 @@ import {
   kakaoLogin,
   logout,
   reissue,
+  withdraw,
 } from '@/lib/api/endpoints/auth-controller/auth-controller';
 
 import { toAuthSession, toReissuedAuthSession } from './mapper';
@@ -43,4 +44,8 @@ export async function reissueAuthSession({ deviceId }: AuthDeviceRequest): Promi
 
 export async function submitLogout({ deviceId }: AuthDeviceRequest): Promise<void> {
   await logout({ device_id: deviceId });
+}
+
+export async function submitWithdraw(): Promise<void> {
+  await withdraw();
 }
