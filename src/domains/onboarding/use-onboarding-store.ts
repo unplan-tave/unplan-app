@@ -5,7 +5,7 @@ import { t } from '@/lib/i18n';
 import { mmkvStorage } from '@/lib/storage/mmkv-storage';
 
 import { toggleActivityHourRange, toggleContinuousSleepRange } from './activity-time-ranges';
-import { getOnboardingSubmissionErrorMessage, submitOnboarding } from './api';
+import { getOnboardingSubmissionErrorMessage, submitOnboarding } from './api/client';
 import { validateOnboardingPreferences } from './validation';
 
 import type { OnboardingPreferences, RecoveryOptionId, TransportOptionId } from './model';
