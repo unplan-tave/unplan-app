@@ -16,7 +16,10 @@ import type {
 import type {
   GoogleLoginRequestDto,
   KakaoLoginRequestDto,
+  LogoutRequestDto,
   SocialLoginResponseDto,
+  TokenReissueRequestDto,
+  TokenReissueResponseDto,
 } from '../../model';
 
 import { apiMutator } from '../../mutator/orval-mutator';
@@ -24,6 +27,162 @@ import type { ErrorType, BodyType } from '../../mutator/orval-mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+export const reissue = (
+  tokenReissueRequestDto: BodyType<TokenReissueRequestDto>,
+  options?: SecondParameter<typeof apiMutator>,
+  signal?: AbortSignal,
+) => {
+  return apiMutator<TokenReissueResponseDto>(
+    {
+      url: `/auth/reissue`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: tokenReissueRequestDto,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getReissueMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof reissue>>,
+    TError,
+    { data: BodyType<TokenReissueRequestDto> },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiMutator>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof reissue>>,
+  TError,
+  { data: BodyType<TokenReissueRequestDto> },
+  TContext
+> => {
+  const mutationKey = ['reissue'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof reissue>>,
+    { data: BodyType<TokenReissueRequestDto> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return reissue(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReissueMutationResult = NonNullable<Awaited<ReturnType<typeof reissue>>>;
+export type ReissueMutationBody = BodyType<TokenReissueRequestDto>;
+export type ReissueMutationError = ErrorType<unknown>;
+
+export const useReissue = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof reissue>>,
+      TError,
+      { data: BodyType<TokenReissueRequestDto> },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof reissue>>,
+  TError,
+  { data: BodyType<TokenReissueRequestDto> },
+  TContext
+> => {
+  const mutationOptions = getReissueMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const logout = (
+  logoutRequestDto: BodyType<LogoutRequestDto>,
+  options?: SecondParameter<typeof apiMutator>,
+  signal?: AbortSignal,
+) => {
+  return apiMutator<void>(
+    {
+      url: `/auth/logout`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: logoutRequestDto,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getLogoutMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof logout>>,
+    TError,
+    { data: BodyType<LogoutRequestDto> },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiMutator>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof logout>>,
+  TError,
+  { data: BodyType<LogoutRequestDto> },
+  TContext
+> => {
+  const mutationKey = ['logout'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof logout>>,
+    { data: BodyType<LogoutRequestDto> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return logout(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type LogoutMutationResult = NonNullable<Awaited<ReturnType<typeof logout>>>;
+export type LogoutMutationBody = BodyType<LogoutRequestDto>;
+export type LogoutMutationError = ErrorType<unknown>;
+
+export const useLogout = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof logout>>,
+      TError,
+      { data: BodyType<LogoutRequestDto> },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof logout>>,
+  TError,
+  { data: BodyType<LogoutRequestDto> },
+  TContext
+> => {
+  const mutationOptions = getLogoutMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
 export const kakaoLogin = (
   kakaoLoginRequestDto: BodyType<KakaoLoginRequestDto>,
   options?: SecondParameter<typeof apiMutator>,
@@ -177,6 +336,46 @@ export const useGoogleLogin = <TError = ErrorType<unknown>, TContext = unknown>(
   TContext
 > => {
   const mutationOptions = getGoogleLoginMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const withdraw = (options?: SecondParameter<typeof apiMutator>) => {
+  return apiMutator<void>({ url: `/auth/withdraw`, method: 'PATCH' }, options);
+};
+
+export const getWithdrawMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof withdraw>>, TError, void, TContext>;
+  request?: SecondParameter<typeof apiMutator>;
+}): UseMutationOptions<Awaited<ReturnType<typeof withdraw>>, TError, void, TContext> => {
+  const mutationKey = ['withdraw'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof withdraw>>, void> = () => {
+    return withdraw(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type WithdrawMutationResult = NonNullable<Awaited<ReturnType<typeof withdraw>>>;
+
+export type WithdrawMutationError = ErrorType<unknown>;
+
+export const useWithdraw = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof withdraw>>, TError, void, TContext>;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<Awaited<ReturnType<typeof withdraw>>, TError, void, TContext> => {
+  const mutationOptions = getWithdrawMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

@@ -5,7 +5,7 @@ import { t } from '@/lib/i18n';
 import { mmkvStorage } from '@/lib/storage/mmkv-storage';
 
 import { toggleActivityHourRange, toggleContinuousSleepRange } from './activity-time-ranges';
-import { getOnboardingSubmissionErrorMessage, submitOnboarding } from './api';
+import { getOnboardingSubmissionErrorMessage, submitOnboarding } from './api/client';
 import { validateOnboardingPreferences } from './validation';
 
 import type { OnboardingPreferences, RecoveryOptionId, TransportOptionId } from './model';
@@ -29,12 +29,22 @@ function persistOnboardingCompleted() {
   mmkvStorage.set(ONBOARDING_COMPLETED_KEY, 'true');
 }
 
+function syncOnboardingCompleted(completed: boolean) {
+  if (completed) {
+    persistOnboardingCompleted();
+    return;
+  }
+
+  mmkvStorage.remove(ONBOARDING_COMPLETED_KEY);
+}
+
 interface OnboardingState {
   hasCompletedOnboarding: boolean;
   isSubmitting: boolean;
   submissionError: string | null;
   preferences: OnboardingPreferences;
   hydrateOnboarding: () => void;
+  setOnboardingCompleted: (completed: boolean) => void;
   toggleRecoveryOption: (optionId: RecoveryOptionId) => void;
   setCustomRecoveryLabel: (label: string | null) => void;
   setTargetSleepMinutes: (minutes: number) => void;
@@ -58,15 +68,22 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
   submissionError: null,
   preferences: initialPreferences,
 
-  // TODO: 프로필 조회 / 로그인 API에서 온보딩 완료 여부를 반환하면,
-  // 로컬 스토리지 대신 서버 응답값으로 hasCompletedOnboarding을 설정하도록 수정 필요
-  // 현재는 임시로 항상 true로 설정해 온보딩을 건너뜀
   hydrateOnboarding: () => {
-    persistOnboardingCompleted();
+    const hasCompletedOnboarding = mmkvStorage.get(ONBOARDING_COMPLETED_KEY) === 'true';
 
     set(
       produce((state: OnboardingState) => {
-        state.hasCompletedOnboarding = true;
+        state.hasCompletedOnboarding = hasCompletedOnboarding;
+      }),
+    );
+  },
+
+  setOnboardingCompleted: (completed) => {
+    syncOnboardingCompleted(completed);
+
+    set(
+      produce((state: OnboardingState) => {
+        state.hasCompletedOnboarding = completed;
       }),
     );
   },

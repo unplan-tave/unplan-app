@@ -1,20 +1,16 @@
-import { isAxiosError } from 'axios';
-
-import { saveOnboarding } from '@/lib/api/endpoints/onboarding/onboarding';
 import {
   OnboardingRequestTransportationsItem,
   UpdateMethodsDefaultMethodsItem,
 } from '@/lib/api/model';
-import { t } from '@/lib/i18n';
 
-import { getSelectedActivityHours } from './activity-time-ranges';
+import { getSelectedActivityHours } from '../activity-time-ranges';
 
 import type {
   OnboardingPreferences,
   RecoveryOptionId,
   TimeRange,
   TransportOptionId,
-} from './model';
+} from '../model';
 import type {
   OnboardingRequest,
   OnboardingRequestTransportationsItem as BackendTransportOption,
@@ -42,7 +38,7 @@ function toTimeline(ranges: TimeRange[]): string {
   return Array.from({ length: 24 }, (_, hour) => (selectedHours.has(hour) ? '1' : '0')).join('');
 }
 
-function toOnboardingRequest(preferences: OnboardingPreferences): OnboardingRequest {
+export function toOnboardingRequest(preferences: OnboardingPreferences): OnboardingRequest {
   const customRecoveryLabel = preferences.customRecoveryLabel?.trim();
   const defaultRecoveryOptions = preferences.recoveryOptionIds
     .filter((optionId): optionId is Exclude<RecoveryOptionId, 'custom'> => optionId !== 'custom')
@@ -66,31 +62,4 @@ function toOnboardingRequest(preferences: OnboardingPreferences): OnboardingRequ
     },
     transportations: preferences.transportOptionIds.map((optionId) => transportOptionMap[optionId]),
   };
-}
-
-export function getOnboardingSubmissionErrorMessage(error: unknown): string {
-  if (isAxiosError(error)) {
-    const responseData = error.response?.data;
-
-    if (
-      typeof responseData === 'object' &&
-      responseData !== null &&
-      'message' in responseData &&
-      typeof responseData.message === 'string'
-    ) {
-      return responseData.message;
-    }
-
-    return t('onboarding.error.network');
-  }
-
-  return error instanceof Error ? error.message : t('onboarding.error.saveFailed');
-}
-
-export async function submitOnboarding(preferences: OnboardingPreferences): Promise<void> {
-  const response = await saveOnboarding(toOnboardingRequest(preferences));
-
-  if (!response || response.success !== true) {
-    throw new Error(response?.message ?? t('onboarding.error.saveFailed'));
-  }
 }

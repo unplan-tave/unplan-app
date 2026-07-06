@@ -6,9 +6,6 @@
  * OpenAPI spec version: v1.0.0
  */
 
-export type GetSchedulesByDateParams = {
-  /**
-   * 조회할 날짜 (yyyy-MM-dd)
-   */
+export type GetDailyRecordParams = {
   date: string;
 };

@@ -6,9 +6,9 @@
  * OpenAPI spec version: v1.0.0
  */
 
-export type GetSchedulesByDateParams = {
-  /**
-   * 조회할 날짜 (yyyy-MM-dd)
-   */
-  date: string;
-};
+export interface ConditionResponse {
+  conditionId?: number;
+  bodyScore?: number;
+  mindScore?: number;
+  dateTime?: string;
+}

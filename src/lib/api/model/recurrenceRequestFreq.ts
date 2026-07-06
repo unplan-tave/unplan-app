@@ -6,6 +6,9 @@
  * OpenAPI spec version: v1.0.0
  */
 
+/**
+ * 반복 빈도 (필수)
+ */
 export type RecurrenceRequestFreq =
   (typeof RecurrenceRequestFreq)[keyof typeof RecurrenceRequestFreq];
 

@@ -11,7 +11,7 @@ import { ensureGoogleAuthSDKConfigured, GoogleSDKConfigError } from '@/lib/auth/
 import { ensureKakaoAuthSDKInitialized, KakaoSDKConfigError } from '@/lib/auth/kakao-sdk';
 import { getDeviceId } from '@/lib/device/device-id';
 
-import { submitSocialLogin } from './api';
+import { submitSocialLogin } from './api/client';
 import { type AuthSession } from './model';
 import { useAuthStore } from './use-auth-store';
 

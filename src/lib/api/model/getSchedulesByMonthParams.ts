@@ -6,9 +6,9 @@
  * OpenAPI spec version: v1.0.0
  */
 
-export type GetSchedulesByDateParams = {
+export type GetSchedulesByMonthParams = {
   /**
-   * 조회할 날짜 (yyyy-MM-dd)
+   * 조회할 년/월 (yyyy-MM)
    */
-  date: string;
+  month: string;
 };
