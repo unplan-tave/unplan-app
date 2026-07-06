@@ -91,23 +91,23 @@ export function SettingsScreen() {
           rows={[
             {
               label: t('settings.scheduleRecommendationCriteria'),
-              onPress: () => undefined,
+              onPress: () => router.push('/settings/recommendation'),
             },
             {
               label: t('settings.recoveryMethods'),
-              onPress: () => undefined,
+              onPress: () => router.push('/settings/recovery'),
             },
             {
               label: t('settings.sleepCondition'),
-              onPress: () => undefined,
+              onPress: () => router.push('/settings/sleep-condition'),
             },
             {
               label: t('settings.activityPattern'),
-              onPress: () => undefined,
+              onPress: () => router.push('/settings/activity-pattern'),
             },
             {
               label: t('settings.defaultTransport'),
-              onPress: () => undefined,
+              onPress: () => router.push('/settings/transport'),
             },
           ]}
         />
