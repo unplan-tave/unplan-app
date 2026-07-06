@@ -1,6 +1,7 @@
 import { produce } from 'immer';
 import { create } from 'zustand';
 
+import { registerAuthSessionHandlers } from '@/lib/auth/auth-session-controller';
 import { tokenStorage } from '@/lib/auth/token-storage';
 import { getDeviceId } from '@/lib/device/device-id';
 
@@ -81,3 +82,8 @@ export const useAuthStore = create<AuthState>()((set) => ({
     }
   },
 }));
+
+registerAuthSessionHandlers({
+  setSession: async (session) => useAuthStore.getState().setSession(session),
+  clearSession: async () => useAuthStore.getState().clearSession(),
+});
