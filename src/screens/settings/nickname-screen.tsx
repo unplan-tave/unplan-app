@@ -59,6 +59,11 @@ export function NicknameScreen() {
             onChangeText={edit.updateNickname}
             onSubmitEditing={edit.submit}
           />
+          {edit.errorMessage ? (
+            <Typography variant="bodyS" color={colors.secondary} accessibilityLiveRegion="polite">
+              {edit.errorMessage}
+            </Typography>
+          ) : null}
         </View>
       </KeyboardAvoidingView>
     </ScreenLayout>
@@ -82,6 +87,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
+    gap: spacing[3],
     paddingHorizontal: spacing[5],
     paddingTop: spacing[5],
   },

@@ -18,8 +18,12 @@ export function SettingsScreen() {
   const [scheduleEndNotification, setScheduleEndNotification] = useState(true);
   const [conditionRecordNotification, setConditionRecordNotification] = useState(true);
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
-  const profileNickname = profileQuery.data?.nickname || t('settings.profileFallback.nickname');
-  const profileEmail = profileQuery.data?.email || t('settings.profileFallback.email');
+  const profileNickname = profileQuery.isLoading
+    ? ''
+    : profileQuery.data?.nickname || t('settings.profileFallback.nickname');
+  const profileEmail = profileQuery.isLoading
+    ? ''
+    : profileQuery.data?.email || t('settings.profileFallback.email');
 
   const handleNavChange = (value: string) => {
     if (value === 'home') {

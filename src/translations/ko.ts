@@ -84,6 +84,7 @@ export const ko = {
   'settings.logoutModal.title': '계정에서 로그아웃합니다',
   'settings.nickname.inputLabel': '닉네임 입력',
   'settings.nickname.title': '닉네임',
+  'settings.nickname.updateError': '닉네임을 변경하지 못했습니다. 다시 시도해 주세요.',
   'settings.profileFallback.email': 'unplan@naver.com',
   'settings.profileFallback.nickname': '중성마녀',
   'settings.recommendationSettings': '추천 개인화 설정',

@@ -13,8 +13,12 @@ import { useSettingsAccount } from './hooks/use-settings-account';
 export function AccountScreen() {
   const router = useRouter();
   const account = useSettingsAccount();
-  const profileNickname = account.profile?.nickname || t('settings.profileFallback.nickname');
-  const profileEmail = account.profile?.email || t('settings.profileFallback.email');
+  const profileNickname = account.isProfileLoading
+    ? ''
+    : account.profile?.nickname || t('settings.profileFallback.nickname');
+  const profileEmail = account.isProfileLoading
+    ? ''
+    : account.profile?.email || t('settings.profileFallback.email');
 
   return (
     <ScreenLayout backgroundColor={colors.gray[50]} contentStyle={styles.screen}>

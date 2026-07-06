@@ -28,8 +28,14 @@ export function useSettingsAccount() {
     }
 
     setIsLoggingOut(true);
-    await logout();
-    router.replace('/login');
+
+    try {
+      await logout();
+      router.replace('/login');
+    } catch (error: unknown) {
+      console.error('Failed to logout.', error);
+      setIsLoggingOut(false);
+    }
   };
 
   const confirmDeleteAccount = () => {

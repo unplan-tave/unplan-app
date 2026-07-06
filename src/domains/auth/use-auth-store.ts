@@ -71,8 +71,13 @@ export const useAuthStore = create<AuthState>()((set) => ({
   },
 
   logout: async () => {
-    const deviceId = await getDeviceId();
-    await submitLogout({ deviceId });
-    await useAuthStore.getState().clearSession();
+    try {
+      const deviceId = await getDeviceId();
+      await submitLogout({ deviceId });
+    } catch (error: unknown) {
+      console.error('Failed to logout on server.', error);
+    } finally {
+      await useAuthStore.getState().clearSession();
+    }
   },
 }));
