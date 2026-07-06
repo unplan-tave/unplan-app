@@ -7,6 +7,7 @@ import { type HeaderCancelProps } from './header.types';
 
 export function HeaderCancel({
   label = '취소',
+  color = colors.gray[500],
   accessibilityLabel,
   style,
   ...props
@@ -19,7 +20,7 @@ export function HeaderCancel({
       style={({ pressed }) => [styles.button, pressed && styles.pressed, style]}
       {...props}
     >
-      <Typography variant="bodyS" color={colors.gray[500]}>
+      <Typography variant="bodyS" color={color}>
         {label}
       </Typography>
     </Pressable>
