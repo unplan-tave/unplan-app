@@ -23,11 +23,15 @@ import type {
 
 import type {
   GetSchedulesByDateParams,
+  GetSchedulesByMonthParams,
+  GetSchedulesByWeekParams,
   ScheduleCreateRequest,
   ScheduleCreateResponse,
   ScheduleDetailResponse,
   ScheduleGetResponse,
+  ScheduleMonthlyResponse,
   ScheduleUpdateRequest,
+  ScheduleWeeklyResponse,
 } from '../../model';
 
 import { apiMutator } from '../../mutator/orval-mutator';
@@ -35,19 +39,23 @@ import type { ErrorType, BodyType } from '../../mutator/orval-mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+/**
+ * 특정 날짜의 일정 목록을 조회합니다.
+ * @summary 일정 일별 조회
+ */
 export const getSchedulesByDate = (
   params: GetSchedulesByDateParams,
   options?: SecondParameter<typeof apiMutator>,
   signal?: AbortSignal,
 ) => {
   return apiMutator<ScheduleGetResponse[]>(
-    { url: `/api/schedule`, method: 'GET', params, signal },
+    { url: `/schedule`, method: 'GET', params, signal },
     options,
   );
 };
 
 export const getGetSchedulesByDateQueryKey = (params?: GetSchedulesByDateParams) => {
-  return [`/api/schedule`, ...(params ? [params] : [])] as const;
+  return [`/schedule`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetSchedulesByDateQueryOptions = <
@@ -130,6 +138,9 @@ export function useGetSchedulesByDate<
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 일정 일별 조회
+ */
 
 export function useGetSchedulesByDate<
   TData = Awaited<ReturnType<typeof getSchedulesByDate>>,
@@ -153,6 +164,10 @@ export function useGetSchedulesByDate<
   return query;
 }
 
+/**
+ * 새로운 일정을 생성합니다. 시작/종료 시간이 없으면 큐카드로 등록됩니다.
+ * @summary 일정 생성
+ */
 export const createSchedule = (
   scheduleCreateRequest: BodyType<ScheduleCreateRequest>,
   options?: SecondParameter<typeof apiMutator>,
@@ -160,7 +175,7 @@ export const createSchedule = (
 ) => {
   return apiMutator<ScheduleCreateResponse>(
     {
-      url: `/api/schedule`,
+      url: `/schedule`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: scheduleCreateRequest,
@@ -210,6 +225,9 @@ export type CreateScheduleMutationResult = NonNullable<Awaited<ReturnType<typeof
 export type CreateScheduleMutationBody = BodyType<ScheduleCreateRequest>;
 export type CreateScheduleMutationError = ErrorType<unknown>;
 
+/**
+ * @summary 일정 생성
+ */
 export const useCreateSchedule = <TError = ErrorType<unknown>, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
@@ -231,19 +249,23 @@ export const useCreateSchedule = <TError = ErrorType<unknown>, TContext = unknow
 
   return useMutation(mutationOptions, queryClient);
 };
+/**
+ * 특정 일정의 상세 정보를 조회합니다.
+ * @summary 일정 상세 조회
+ */
 export const getScheduleDetail = (
   scheduleId: number,
   options?: SecondParameter<typeof apiMutator>,
   signal?: AbortSignal,
 ) => {
   return apiMutator<ScheduleDetailResponse>(
-    { url: `/api/schedule/${scheduleId}`, method: 'GET', signal },
+    { url: `/schedule/${scheduleId}`, method: 'GET', signal },
     options,
   );
 };
 
 export const getGetScheduleDetailQueryKey = (scheduleId?: number) => {
-  return [`/api/schedule/${scheduleId}`] as const;
+  return [`/schedule/${scheduleId}`] as const;
 };
 
 export const getGetScheduleDetailQueryOptions = <
@@ -324,6 +346,9 @@ export function useGetScheduleDetail<
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 일정 상세 조회
+ */
 
 export function useGetScheduleDetail<
   TData = Awaited<ReturnType<typeof getScheduleDetail>>,
@@ -347,11 +372,15 @@ export function useGetScheduleDetail<
   return query;
 }
 
+/**
+ * 특정 일정을 삭제합니다.
+ * @summary 일정 삭제
+ */
 export const deleteSchedule = (
   scheduleId: number,
   options?: SecondParameter<typeof apiMutator>,
 ) => {
-  return apiMutator<void>({ url: `/api/schedule/${scheduleId}`, method: 'DELETE' }, options);
+  return apiMutator<void>({ url: `/schedule/${scheduleId}`, method: 'DELETE' }, options);
 };
 
 export const getDeleteScheduleMutationOptions = <
@@ -394,6 +423,9 @@ export type DeleteScheduleMutationResult = NonNullable<Awaited<ReturnType<typeof
 
 export type DeleteScheduleMutationError = ErrorType<unknown>;
 
+/**
+ * @summary 일정 삭제
+ */
 export const useDeleteSchedule = <TError = ErrorType<unknown>, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
@@ -415,6 +447,10 @@ export const useDeleteSchedule = <TError = ErrorType<unknown>, TContext = unknow
 
   return useMutation(mutationOptions, queryClient);
 };
+/**
+ * 특정 일정의 정보를 수정합니다. 전달한 필드만 업데이트됩니다.
+ * @summary 일정 수정
+ */
 export const updateSchedule = (
   scheduleId: number,
   scheduleUpdateRequest: BodyType<ScheduleUpdateRequest>,
@@ -422,7 +458,7 @@ export const updateSchedule = (
 ) => {
   return apiMutator<ScheduleDetailResponse>(
     {
-      url: `/api/schedule/${scheduleId}`,
+      url: `/schedule/${scheduleId}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: scheduleUpdateRequest,
@@ -471,6 +507,9 @@ export type UpdateScheduleMutationResult = NonNullable<Awaited<ReturnType<typeof
 export type UpdateScheduleMutationBody = BodyType<ScheduleUpdateRequest>;
 export type UpdateScheduleMutationError = ErrorType<unknown>;
 
+/**
+ * @summary 일정 수정
+ */
 export const useUpdateSchedule = <TError = ErrorType<unknown>, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
@@ -492,3 +531,260 @@ export const useUpdateSchedule = <TError = ErrorType<unknown>, TContext = unknow
 
   return useMutation(mutationOptions, queryClient);
 };
+/**
+ * 선택한 날짜가 포함된 주(일~토)의 일정 목록을 조회합니다.
+ * @summary 일정 주별 조회
+ */
+export const getSchedulesByWeek = (
+  params: GetSchedulesByWeekParams,
+  options?: SecondParameter<typeof apiMutator>,
+  signal?: AbortSignal,
+) => {
+  return apiMutator<ScheduleWeeklyResponse>(
+    { url: `/schedule/weekly`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetSchedulesByWeekQueryKey = (params?: GetSchedulesByWeekParams) => {
+  return [`/schedule/weekly`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetSchedulesByWeekQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSchedulesByWeek>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetSchedulesByWeekParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSchedulesByWeek>>, TError, TData>>;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSchedulesByWeekQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSchedulesByWeek>>> = ({ signal }) =>
+    getSchedulesByWeek(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSchedulesByWeek>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetSchedulesByWeekQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSchedulesByWeek>>
+>;
+export type GetSchedulesByWeekQueryError = ErrorType<unknown>;
+
+export function useGetSchedulesByWeek<
+  TData = Awaited<ReturnType<typeof getSchedulesByWeek>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetSchedulesByWeekParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSchedulesByWeek>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSchedulesByWeek>>,
+          TError,
+          Awaited<ReturnType<typeof getSchedulesByWeek>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetSchedulesByWeek<
+  TData = Awaited<ReturnType<typeof getSchedulesByWeek>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetSchedulesByWeekParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSchedulesByWeek>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSchedulesByWeek>>,
+          TError,
+          Awaited<ReturnType<typeof getSchedulesByWeek>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetSchedulesByWeek<
+  TData = Awaited<ReturnType<typeof getSchedulesByWeek>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetSchedulesByWeekParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSchedulesByWeek>>, TError, TData>>;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 일정 주별 조회
+ */
+
+export function useGetSchedulesByWeek<
+  TData = Awaited<ReturnType<typeof getSchedulesByWeek>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetSchedulesByWeekParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSchedulesByWeek>>, TError, TData>>;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetSchedulesByWeekQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * 해당 월의 캘린더 뷰 기준(첫째 주 일요일 ~ 마지막 주 토요일) 날짜별 일정 개수를 조회합니다.
+ * @summary 일정 월별 조회
+ */
+export const getSchedulesByMonth = (
+  params: GetSchedulesByMonthParams,
+  options?: SecondParameter<typeof apiMutator>,
+  signal?: AbortSignal,
+) => {
+  return apiMutator<ScheduleMonthlyResponse>(
+    { url: `/schedule/monthly`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetSchedulesByMonthQueryKey = (params?: GetSchedulesByMonthParams) => {
+  return [`/schedule/monthly`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetSchedulesByMonthQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSchedulesByMonth>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetSchedulesByMonthParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSchedulesByMonth>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSchedulesByMonthQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSchedulesByMonth>>> = ({ signal }) =>
+    getSchedulesByMonth(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSchedulesByMonth>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetSchedulesByMonthQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSchedulesByMonth>>
+>;
+export type GetSchedulesByMonthQueryError = ErrorType<unknown>;
+
+export function useGetSchedulesByMonth<
+  TData = Awaited<ReturnType<typeof getSchedulesByMonth>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetSchedulesByMonthParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSchedulesByMonth>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSchedulesByMonth>>,
+          TError,
+          Awaited<ReturnType<typeof getSchedulesByMonth>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetSchedulesByMonth<
+  TData = Awaited<ReturnType<typeof getSchedulesByMonth>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetSchedulesByMonthParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSchedulesByMonth>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSchedulesByMonth>>,
+          TError,
+          Awaited<ReturnType<typeof getSchedulesByMonth>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetSchedulesByMonth<
+  TData = Awaited<ReturnType<typeof getSchedulesByMonth>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetSchedulesByMonthParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSchedulesByMonth>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 일정 월별 조회
+ */
+
+export function useGetSchedulesByMonth<
+  TData = Awaited<ReturnType<typeof getSchedulesByMonth>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetSchedulesByMonthParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSchedulesByMonth>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetSchedulesByMonthQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}

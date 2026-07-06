@@ -6,11 +6,9 @@
  * OpenAPI spec version: v1.0.0
  */
 
-export interface SocialLoginResponseDto {
+export interface TokenReissueResponseDto {
   /** @minLength 1 */
   access_token: string;
   /** @minLength 1 */
   refresh_token: string;
-  is_new_user: boolean;
-  onboarding_completed: boolean;
 }

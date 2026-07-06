@@ -5,10 +5,9 @@
  * Unplan Server API Documentation
  * OpenAPI spec version: v1.0.0
  */
+import type { ScheduleSummary } from './scheduleSummary';
 
-export type GetSchedulesByDateParams = {
-  /**
-   * 조회할 날짜 (yyyy-MM-dd)
-   */
-  date: string;
-};
+export interface DailySchedules {
+  date?: string;
+  schedules?: ScheduleSummary[];
+}
