@@ -1,8 +1,13 @@
-import { googleLogin, kakaoLogin } from '@/lib/api/endpoints/auth-controller/auth-controller';
+import {
+  googleLogin,
+  kakaoLogin,
+  logout,
+  reissue,
+} from '@/lib/api/endpoints/auth-controller/auth-controller';
 
-import { toAuthSession } from './mapper';
+import { toAuthSession, toReissuedAuthSession } from './mapper';
 
-import type { AuthSession, SocialLoginRequest } from '../model';
+import type { AuthDeviceRequest, AuthSession, SocialLoginRequest } from '../model';
 
 export async function submitSocialLogin({
   accessToken,
@@ -24,4 +29,14 @@ export async function submitSocialLogin({
   });
 
   return toAuthSession(response);
+}
+
+export async function reissueAuthSession({ deviceId }: AuthDeviceRequest): Promise<AuthSession> {
+  const response = await reissue({ device_id: deviceId });
+
+  return toReissuedAuthSession(response);
+}
+
+export async function submitLogout({ deviceId }: AuthDeviceRequest): Promise<void> {
+  await logout({ device_id: deviceId });
 }
