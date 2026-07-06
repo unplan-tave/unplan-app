@@ -9,6 +9,9 @@ export type CardProgressStatus = 'incomplete' | 'in_progress' | 'complete';
 export type DateMode = 'empty' | 'single' | 'range';
 export type TimeFocus = 'start' | 'end';
 export type ConditionTagId = 'urgent' | 'core' | 'brain' | 'daily' | 'labor' | 'rest';
+export type ScheduleStatus = 'todo' | 'inProgress' | 'done';
+export type ReminderType = 'before' | 'after';
+export type ReminderSoundType = 'sound' | 'vibrate';
 
 export const MEMO_MAX_LENGTH = 2000;
 
@@ -75,6 +78,94 @@ export interface CalendarCell {
   label: string;
   value: string;
   isToday: boolean;
+}
+
+export interface ScheduleListItem {
+  id: number;
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  estimatedMinutes: number | null;
+  isQueue: boolean;
+  status: ScheduleStatus;
+  conditionTagId: ConditionTagId;
+}
+
+export interface ScheduleDetail extends ScheduleListItem {
+  memo: string;
+  location: string;
+  latitude: number | null;
+  longitude: number | null;
+  isReminderEnabled: boolean;
+  reminderMinutes: number | null;
+  reminderType: ReminderType | null;
+  reminderSoundType: ReminderSoundType | null;
+  isRecurring: boolean;
+  isConflict: boolean;
+}
+
+export interface ScheduleCreateResult {
+  id: number;
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  estimatedMinutes: number | null;
+  isQueue: boolean;
+}
+
+export interface DailyScheduleSummary {
+  id: number;
+  title: string;
+}
+
+export interface DailyScheduleGroup {
+  date: string;
+  schedules: DailyScheduleSummary[];
+}
+
+export interface MonthlyScheduleCount {
+  date: string;
+  count: number;
+}
+
+export interface ScheduleMonthlyOverview {
+  yearMonth: string;
+  schedules: MonthlyScheduleCount[];
+}
+
+export interface ScheduleCreateInput {
+  title: string;
+  conditionTagId: ConditionTagId;
+  personalTags?: string[];
+  date?: string;
+  startTime?: string;
+  endTime?: string;
+  estimatedMinutes?: number;
+  latitude?: number;
+  longitude?: number;
+  memo?: string;
+  isReminderEnabled?: boolean;
+  reminderMinutes?: number;
+  reminderType?: ReminderType;
+  reminderSoundType?: ReminderSoundType;
+  recurrence?: RecurrenceValue | null;
+}
+
+export interface ScheduleUpdateInput {
+  title?: string;
+  conditionTagId?: ConditionTagId;
+  date?: string;
+  startTime?: string;
+  endTime?: string;
+  estimatedMinutes?: number;
+  memo?: string;
+  status?: ScheduleStatus;
+  isReminderEnabled?: boolean;
+  reminderMinutes?: number;
+  reminderType?: ReminderType;
+  reminderSoundType?: ReminderSoundType;
 }
 
 export function createDefaultCardFormValues(): CardFormValues {
