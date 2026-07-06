@@ -140,8 +140,14 @@ function DrumColumn({
   onSelect: (index: number) => void;
 }) {
   const scrollRef = useRef<ScrollView>(null);
+  const isInternalScrollRef = useRef(false);
 
   useEffect(() => {
+    if (isInternalScrollRef.current) {
+      isInternalScrollRef.current = false;
+      return;
+    }
+
     scrollRef.current?.scrollTo({ y: selectedIndex * DRUM_ITEM_HEIGHT, animated: false });
   }, [selectedIndex]);
 
@@ -156,10 +162,15 @@ function DrumColumn({
 
   const handleItemPress = useCallback(
     (index: number) => {
+      if (index === selectedIndex) {
+        return;
+      }
+
+      isInternalScrollRef.current = true;
       scrollRef.current?.scrollTo({ y: index * DRUM_ITEM_HEIGHT, animated: true });
       onSelect(index);
     },
-    [onSelect],
+    [onSelect, selectedIndex],
   );
 
   const paddedItems = [...Array(DRUM_PADDING).fill(''), ...items, ...Array(DRUM_PADDING).fill('')];

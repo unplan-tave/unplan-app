@@ -49,7 +49,7 @@ export function useTransportSettings() {
             clearTimeout(toastTimerRef.current);
           }
 
-          setErrorMessage(t('settings.recovery.updateError'));
+          setErrorMessage(t('settings.updateError'));
           toastTimerRef.current = setTimeout(() => setErrorMessage(null), TOAST_DURATION_MS);
         },
       });

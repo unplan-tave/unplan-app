@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ActivityTimeRail } from '@/components/features/onboarding/activity-time-rail';
 import { Header, HeaderCancel } from '@/components/ui/Header';
@@ -48,6 +48,7 @@ export function ActivityPatternEditScreen() {
 
     updateMutation.mutate(settings, {
       onSuccess: () => router.back(),
+      onError: () => Alert.alert(t('settings.updateError')),
     });
   };
 

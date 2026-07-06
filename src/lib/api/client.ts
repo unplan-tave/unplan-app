@@ -15,6 +15,8 @@ interface RetriableRequestConfig extends AxiosRequestConfig {
   _authRetry?: boolean;
 }
 
+type AxiosHeadersInput = Parameters<typeof AxiosHeaders.from>[0];
+
 const AUTH_REISSUE_PATH = '/auth/reissue';
 const AUTH_REFRESH_STATUS_CODES = new Set([401, 403]);
 
@@ -36,11 +38,16 @@ function isReissueEndpoint(url?: string): boolean {
   return url === AUTH_REISSUE_PATH;
 }
 
+function toAxiosHeaders(headers: AxiosRequestConfig['headers']) {
+  return AxiosHeaders.from(headers as AxiosHeadersInput);
+}
+
 function shouldReissue(
   error: AxiosError,
 ): error is AxiosError & { config: RetriableRequestConfig } {
   const status = error.response?.status;
   const config = error.config as RetriableRequestConfig | undefined;
+  const headers = toAxiosHeaders(config?.headers);
 
   return Boolean(
     config &&
@@ -48,7 +55,7 @@ function shouldReissue(
     AUTH_REFRESH_STATUS_CODES.has(status) &&
     !config._authRetry &&
     !isAuthEndpoint(config.url) &&
-    config.headers?.Authorization,
+    headers.has('Authorization'),
   );
 }
 
@@ -87,7 +94,7 @@ async function reissueTokens(): Promise<TokenReissueResponseDto> {
 apiClient.interceptors.request.use(
   async (config) => {
     const accessToken = await tokenStorage.getAccessToken();
-    const headers = AxiosHeaders.from(config.headers);
+    const headers = toAxiosHeaders(config.headers);
     const hasAuthorization = headers.has('Authorization');
 
     if (accessToken && !hasAuthorization && !isReissueEndpoint(config.url)) {
@@ -131,7 +138,7 @@ apiClient.interceptors.response.use(
             refreshToken: session.refresh_token,
           });
 
-          originalRequest.headers = AxiosHeaders.from(originalRequest.headers);
+          originalRequest.headers = toAxiosHeaders(originalRequest.headers);
           originalRequest.headers.set('Authorization', `Bearer ${session.access_token}`);
 
           return apiClient(originalRequest);

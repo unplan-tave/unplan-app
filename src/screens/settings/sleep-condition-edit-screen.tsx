@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 
 import { SleepConditionCircle } from '@/components/features/onboarding/sleep-condition-circle';
 import { Header, HeaderCancel } from '@/components/ui/Header';
@@ -35,6 +35,7 @@ export function SleepConditionEditScreen() {
 
     updateMutation.mutate(settings, {
       onSuccess: () => router.back(),
+      onError: () => Alert.alert(t('settings.updateError')),
     });
   };
 

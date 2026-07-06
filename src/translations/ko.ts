@@ -110,7 +110,6 @@ export const ko = {
   'settings.recovery.music': '음악 감상',
   'settings.recovery.nap': '짧은 낮잠',
   'settings.recovery.stretching': '스트레칭',
-  'settings.recovery.updateError': '설정을 저장하지 못했습니다. 다시 시도해 주세요.',
   'settings.recovery.walk': '산책',
   'settings.recoveryMethods': '컨디션 회복 방법',
   'settings.scheduleEndNotification': '일정 종료 알림',
@@ -127,6 +126,7 @@ export const ko = {
   'settings.transport.car': '자동차',
   'settings.transport.publicTransit': '대중 교통',
   'settings.transport.walk': '도보',
+  'settings.updateError': '설정을 저장하지 못했습니다. 다시 시도해 주세요.',
   'terms.privacy.body':
     'Unplan은 로그인, 일정 추천, 사용자 설정 저장을 위해 필요한 최소한의 개인정보를 처리합니다.\n\n처리 항목에는 소셜 로그인 식별 정보, 온보딩 응답, 일정과 메모, 이동 방식 및 컨디션 설정 정보가 포함될 수 있습니다.\n\n수집된 정보는 서비스 제공과 품질 개선 목적에 한해 사용되며, 관련 법령에서 정한 기간 또는 사용자가 요청한 삭제 시점까지 보관됩니다.\n\n개인정보 관련 문의와 삭제 요청은 운영 채널을 통해 접수할 수 있습니다.',
   'terms.privacy.link': '개인정보 처리방침',

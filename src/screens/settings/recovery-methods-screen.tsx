@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { CardToast } from '@/components/domain/schedule/card-toast';
 import { SettingsCheckboxRow } from '@/components/features/settings/settings-checkbox-row';
@@ -32,6 +32,7 @@ export function RecoveryMethodsScreen() {
     removeCustomMethod,
     addCustomMethod,
     customMethodMaxLength,
+    isLoading,
     errorMessage,
     dismissError,
   } = useRecoveryMethods();
@@ -61,56 +62,64 @@ export function RecoveryMethodsScreen() {
       />
       <View style={styles.content}>
         <View style={styles.section}>
-          {DEFAULT_OPTION_DEFINITIONS.map((option) => (
-            <SettingsCheckboxRow
-              key={option.id}
-              label={t(option.labelKey)}
-              checked={settings.recoveryOptionIds.includes(option.id)}
-              onToggle={() => toggleDefaultOption(option.id)}
-            />
-          ))}
-          {settings.customMethods.map((method) => (
-            <SettingsCheckboxRow
-              key={method}
-              label={method}
-              checked
-              onToggle={() => removeCustomMethod(method)}
-            />
-          ))}
-          <View style={styles.divider} />
-          {isCustomEditing ? (
-            <View style={styles.customInputRow}>
-              <View style={styles.customInputCheckbox} />
-              <TextInput
-                autoFocus
-                value={customDraft}
-                maxLength={customMethodMaxLength}
-                placeholder={t('settings.recovery.customPlaceholder')}
-                placeholderTextColor={colors.gray[300]}
-                returnKeyType="done"
-                style={styles.customInput}
-                onChangeText={setCustomDraft}
-                onSubmitEditing={handleCustomSubmit}
-                onBlur={() => {
-                  if (!customDraft.trim()) {
-                    setIsCustomEditing(false);
-                    setCustomDraft('');
-                  }
-                }}
-              />
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator color={colors.primary} />
             </View>
           ) : (
-            <Pressable
-              accessibilityLabel={t('settings.recovery.customAdd')}
-              accessibilityRole="button"
-              style={({ pressed }) => [styles.customAddRow, pressed && styles.pressed]}
-              onPress={() => setIsCustomEditing(true)}
-            >
-              <Icon name="plus" size={20} color={colors.gray[400]} />
-              <Typography variant="bodyM" color={colors.gray[400]}>
-                {t('settings.recovery.customAdd')}
-              </Typography>
-            </Pressable>
+            <>
+              {DEFAULT_OPTION_DEFINITIONS.map((option) => (
+                <SettingsCheckboxRow
+                  key={option.id}
+                  label={t(option.labelKey)}
+                  checked={settings.recoveryOptionIds.includes(option.id)}
+                  onToggle={() => toggleDefaultOption(option.id)}
+                />
+              ))}
+              {settings.customMethods.map((method) => (
+                <SettingsCheckboxRow
+                  key={method}
+                  label={method}
+                  checked
+                  onToggle={() => removeCustomMethod(method)}
+                />
+              ))}
+              <View style={styles.divider} />
+              {isCustomEditing ? (
+                <View style={styles.customInputRow}>
+                  <View style={styles.customInputCheckbox} />
+                  <TextInput
+                    autoFocus
+                    value={customDraft}
+                    maxLength={customMethodMaxLength}
+                    placeholder={t('settings.recovery.customPlaceholder')}
+                    placeholderTextColor={colors.gray[300]}
+                    returnKeyType="done"
+                    style={styles.customInput}
+                    onChangeText={setCustomDraft}
+                    onSubmitEditing={handleCustomSubmit}
+                    onBlur={() => {
+                      if (!customDraft.trim()) {
+                        setIsCustomEditing(false);
+                        setCustomDraft('');
+                      }
+                    }}
+                  />
+                </View>
+              ) : (
+                <Pressable
+                  accessibilityLabel={t('settings.recovery.customAdd')}
+                  accessibilityRole="button"
+                  style={({ pressed }) => [styles.customAddRow, pressed && styles.pressed]}
+                  onPress={() => setIsCustomEditing(true)}
+                >
+                  <Icon name="plus" size={20} color={colors.gray[400]} />
+                  <Typography variant="bodyM" color={colors.gray[400]}>
+                    {t('settings.recovery.customAdd')}
+                  </Typography>
+                </Pressable>
+              )}
+            </>
           )}
         </View>
       </View>
@@ -142,6 +151,11 @@ const styles = StyleSheet.create({
     padding: spacing[4],
     borderRadius: radius.sm,
     backgroundColor: colors.gray.white,
+  },
+  loadingContainer: {
+    minHeight: 194,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   divider: {
     height: 1,
