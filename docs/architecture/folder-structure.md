@@ -71,7 +71,7 @@ src/screens/
 - 화면 아래로는 resolved props를 내려보냅니다.
 - 복잡한 JSX는 `components/features/<screen-or-flow>`로 분리합니다.
 - 순수 계산/검증/매핑은 `domains/<domain>`으로 분리합니다.
-- 서버 상태 query/mutation hook은 `domains/<domain>/api`에 둡니다.
+- 서버 상태 query/mutation hook은 `src/domains/<domain>/api`에 둡니다.
 
 ## `src/domains`
 
