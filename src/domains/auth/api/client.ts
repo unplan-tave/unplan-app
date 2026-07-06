@@ -1,16 +1,8 @@
 import { googleLogin, kakaoLogin } from '@/lib/api/endpoints/auth-controller/auth-controller';
 
-import type { AuthSession, SocialLoginRequest } from './model';
+import { toAuthSession } from './mapper';
 
-type SocialLoginApiResponse = Awaited<ReturnType<typeof kakaoLogin>>;
-
-function toAuthSession(response: SocialLoginApiResponse): AuthSession {
-  return {
-    accessToken: response.access_token,
-    refreshToken: response.refresh_token,
-    isNewUser: response.is_new_user,
-  };
-}
+import type { AuthSession, SocialLoginRequest } from '../model';
 
 export async function submitSocialLogin({
   accessToken,
