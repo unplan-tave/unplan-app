@@ -23,11 +23,7 @@ export function CardListSections({ sections, personalTags, onCardPress }: CardLi
       <View style={styles.grid}>
         {section.cards.map((card) => (
           <View key={card.id} style={styles.gridItem}>
-            <CardListGridItem
-              card={card}
-              personalTags={personalTags}
-              onPress={() => onCardPress(card.id)}
-            />
+            <CardListGridItem card={card} personalTags={personalTags} onPress={onCardPress} />
           </View>
         ))}
       </View>
