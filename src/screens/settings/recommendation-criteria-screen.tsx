@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 
 import { CardToast } from '@/components/domain/schedule/card-toast';
 import { ExcludeTimeRangeList } from '@/components/features/settings/exclude-time-range-list';
@@ -33,6 +33,8 @@ export function RecommendationCriteriaScreen() {
     handleSubmitRange,
     toastMessage,
     dismissToast,
+    isLoading,
+    isUpdating,
   } = useRecommendationCriteria();
 
   return (
@@ -45,54 +47,64 @@ export function RecommendationCriteriaScreen() {
       />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <View style={styles.section}>
-          <Typography variant="titleS" color={colors.gray[900]}>
-            {t('settings.recommendation.conditionsTitle')}
-          </Typography>
-          <View style={styles.sectionRows}>
-            <View>
-              <Pressable
-                accessibilityLabel={t('settings.recommendation.minFreeTime')}
-                accessibilityRole="button"
-                style={({ pressed }) => [styles.row, pressed && styles.pressed]}
-                onPress={openMinFreeSheet}
-              >
-                <Typography variant="bodyM" color={colors.gray[700]}>
-                  {t('settings.recommendation.minFreeTime')}
-                </Typography>
-                <Typography variant="bodyM" color={colors.gray[500]}>
-                  {`${formatDurationLabel(criteria.minFreeMinutes)} ${t('settings.recommendation.minFreeTimeSuffix')}`}
-                </Typography>
-              </Pressable>
-              <Typography variant="bodyS" color={colors.gray[400]}>
-                {t('settings.recommendation.minFreeTimeCaption')}
-              </Typography>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator color={colors.primary} />
             </View>
-            <View>
-              <View style={styles.row}>
-                <Typography variant="bodyM" color={colors.gray[700]}>
-                  {t('settings.recommendation.excludeTime')}
-                </Typography>
-                <Switch
-                  value={criteria.excludeEnabled}
-                  trackColor={{ false: colors.gray[300], true: colors.primary }}
-                  thumbColor={colors.gray.white}
-                  ios_backgroundColor={colors.gray[300]}
-                  onValueChange={setExcludeEnabled}
-                />
+          ) : (
+            <>
+              <Typography variant="titleS" color={colors.gray[900]}>
+                {t('settings.recommendation.conditionsTitle')}
+              </Typography>
+              <View style={styles.sectionRows}>
+                <View>
+                  <Pressable
+                    accessibilityLabel={t('settings.recommendation.minFreeTime')}
+                    accessibilityRole="button"
+                    disabled={isUpdating}
+                    style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+                    onPress={openMinFreeSheet}
+                  >
+                    <Typography variant="bodyM" color={colors.gray[700]}>
+                      {t('settings.recommendation.minFreeTime')}
+                    </Typography>
+                    <Typography variant="bodyM" color={colors.gray[500]}>
+                      {`${formatDurationLabel(criteria.minFreeMinutes)} ${t('settings.recommendation.minFreeTimeSuffix')}`}
+                    </Typography>
+                  </Pressable>
+                  <Typography variant="bodyS" color={colors.gray[400]}>
+                    {t('settings.recommendation.minFreeTimeCaption')}
+                  </Typography>
+                </View>
+                <View>
+                  <View style={styles.row}>
+                    <Typography variant="bodyM" color={colors.gray[700]}>
+                      {t('settings.recommendation.excludeTime')}
+                    </Typography>
+                    <Switch
+                      value={criteria.excludeEnabled}
+                      disabled={isUpdating}
+                      trackColor={{ false: colors.gray[300], true: colors.primary }}
+                      thumbColor={colors.gray.white}
+                      ios_backgroundColor={colors.gray[300]}
+                      onValueChange={setExcludeEnabled}
+                    />
+                  </View>
+                  <Typography variant="bodyS" color={colors.gray[400]}>
+                    {t('settings.recommendation.excludeTimeCaption')}
+                  </Typography>
+                </View>
+                {criteria.excludeEnabled ? (
+                  <ExcludeTimeRangeList
+                    ranges={criteria.excludeRanges}
+                    onEditRange={isUpdating ? () => {} : openEditRangeSheet}
+                    onRemoveRange={isUpdating ? () => {} : removeExcludeRange}
+                    onAddRange={isUpdating ? () => {} : openAddRangeSheet}
+                  />
+                ) : null}
               </View>
-              <Typography variant="bodyS" color={colors.gray[400]}>
-                {t('settings.recommendation.excludeTimeCaption')}
-              </Typography>
-            </View>
-            {criteria.excludeEnabled ? (
-              <ExcludeTimeRangeList
-                ranges={criteria.excludeRanges}
-                onEditRange={openEditRangeSheet}
-                onRemoveRange={removeExcludeRange}
-                onAddRange={openAddRangeSheet}
-              />
-            ) : null}
-          </View>
+            </>
+          )}
         </View>
       </ScrollView>
       <MinFreeTimeSheet
@@ -147,6 +159,11 @@ const styles = StyleSheet.create({
   },
   sectionRows: {
     gap: spacing[4],
+  },
+  loadingContainer: {
+    minHeight: 194,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   row: {
     minHeight: 26,

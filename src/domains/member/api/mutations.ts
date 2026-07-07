@@ -1,27 +1,47 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useOptimisticQueryMutation } from '@/lib/api/optimistic-query-mutation';
 
-import { submitMemberProfileUpdate } from './client';
+import { submitAlarmSettings, submitMemberProfileUpdate } from './client';
 import { memberQueryKeys } from './query-keys';
 
-import type { MemberProfileUpdateInput } from '../model';
+import type { AlarmSettings, MemberProfile, MemberProfileUpdateInput } from '../model';
+import type { OptimisticQueryMutationContext } from '@/lib/api/optimistic-query-mutation';
 import type { UseMutationOptions } from '@tanstack/react-query';
 
-type MemberMutationOptions<TData, TVariables> = Omit<
-  UseMutationOptions<TData, Error, TVariables>,
-  'mutationFn'
+type MemberMutationOptions<TData, TVariables, TCache = TVariables> = Omit<
+  UseMutationOptions<TData, Error, TVariables, OptimisticQueryMutationContext<TCache>>,
+  'mutationFn' | 'onMutate'
 >;
 
-export function useUpdateMemberProfileMutation(
-  options?: MemberMutationOptions<void, MemberProfileUpdateInput>,
-) {
-  const queryClient = useQueryClient();
+function mergeMemberProfile(
+  previous: MemberProfile | undefined,
+  input: MemberProfileUpdateInput,
+): MemberProfile {
+  return {
+    name: previous?.name ?? '',
+    nickname: previous?.nickname ?? '',
+    email: previous?.email ?? '',
+    hasCompletedOnboarding: previous?.hasCompletedOnboarding ?? false,
+    ...input,
+  };
+}
 
-  return useMutation({
+export function useUpdateMemberProfileMutation(
+  options?: MemberMutationOptions<void, MemberProfileUpdateInput, MemberProfile>,
+) {
+  return useOptimisticQueryMutation<void, MemberProfileUpdateInput, MemberProfile>({
     mutationFn: submitMemberProfileUpdate,
+    queryKey: memberQueryKeys.profile(),
+    toCacheValue: mergeMemberProfile,
     ...options,
-    onSuccess: (data, variables, onMutateResult, context) => {
-      void queryClient.invalidateQueries({ queryKey: memberQueryKeys.profile() });
-      options?.onSuccess?.(data, variables, onMutateResult, context);
-    },
+  });
+}
+
+export function useUpdateAlarmSettingsMutation(
+  options?: MemberMutationOptions<void, AlarmSettings, AlarmSettings>,
+) {
+  return useOptimisticQueryMutation({
+    mutationFn: submitAlarmSettings,
+    queryKey: memberQueryKeys.alarmSettings(),
+    ...options,
   });
 }

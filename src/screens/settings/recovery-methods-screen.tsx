@@ -33,6 +33,7 @@ export function RecoveryMethodsScreen() {
     addCustomMethod,
     customMethodMaxLength,
     isLoading,
+    isUpdating,
     errorMessage,
     dismissError,
   } = useRecoveryMethods();
@@ -73,6 +74,7 @@ export function RecoveryMethodsScreen() {
                   key={option.id}
                   label={t(option.labelKey)}
                   checked={settings.recoveryOptionIds.includes(option.id)}
+                  disabled={isUpdating}
                   onToggle={() => toggleDefaultOption(option.id)}
                 />
               ))}
@@ -81,6 +83,7 @@ export function RecoveryMethodsScreen() {
                   key={method}
                   label={method}
                   checked
+                  disabled={isUpdating}
                   onToggle={() => removeCustomMethod(method)}
                 />
               ))}
@@ -111,6 +114,7 @@ export function RecoveryMethodsScreen() {
                   accessibilityLabel={t('settings.recovery.customAdd')}
                   accessibilityRole="button"
                   style={({ pressed }) => [styles.customAddRow, pressed && styles.pressed]}
+                  disabled={isUpdating}
                   onPress={() => setIsCustomEditing(true)}
                 >
                   <Icon name="plus" size={20} color={colors.gray[400]} />

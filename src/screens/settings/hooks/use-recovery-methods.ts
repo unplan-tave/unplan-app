@@ -16,13 +16,9 @@ const EMPTY_SETTINGS: RecoveryMethodsSettings = {
 
 export function useRecoveryMethods() {
   const settingsQuery = useRecoveryMethodsSettingsQuery();
-  const [draft, setDraft] = useState<RecoveryMethodsSettings | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const updateMutation = useUpdateRecoveryMethodsSettingsMutation({
-    onSuccess: () => setDraft(null),
-  });
+  const updateMutation = useUpdateRecoveryMethodsSettingsMutation();
 
   useEffect(
     () => () => {
@@ -33,7 +29,7 @@ export function useRecoveryMethods() {
     [],
   );
 
-  const settings = draft ?? settingsQuery.data ?? EMPTY_SETTINGS;
+  const settings = settingsQuery.data ?? EMPTY_SETTINGS;
 
   const showError = useCallback(() => {
     if (toastTimerRef.current) {
@@ -46,17 +42,15 @@ export function useRecoveryMethods() {
 
   const applySettings = useCallback(
     (next: RecoveryMethodsSettings) => {
-      const previous = draft;
+      if (settingsQuery.isLoading || updateMutation.isPending) {
+        return;
+      }
 
-      setDraft(next);
       updateMutation.mutate(next, {
-        onError: () => {
-          setDraft(previous);
-          showError();
-        },
+        onError: () => showError(),
       });
     },
-    [draft, showError, updateMutation],
+    [settingsQuery.isLoading, showError, updateMutation],
   );
 
   const toggleDefaultOption = useCallback(
@@ -101,6 +95,7 @@ export function useRecoveryMethods() {
 
   return {
     isLoading: settingsQuery.isLoading,
+    isUpdating: updateMutation.isPending,
     settings,
     toggleDefaultOption,
     removeCustomMethod,

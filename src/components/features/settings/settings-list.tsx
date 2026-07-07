@@ -74,6 +74,7 @@ function SettingsRow({ row }: { row: SettingsListRow }) {
         {type === 'switch' ? (
           <Switch
             value={row.switchValue}
+            disabled={row.disabled}
             trackColor={{ false: colors.gray[300], true: colors.primary }}
             thumbColor={colors.gray.white}
             ios_backgroundColor={colors.gray[300]}

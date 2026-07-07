@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { CardToast } from '@/components/domain/schedule/card-toast';
 import { SettingsCheckboxRow } from '@/components/features/settings/settings-checkbox-row';
@@ -22,7 +22,8 @@ const TRANSPORT_OPTION_DEFINITIONS = [
 
 export function TransportScreen() {
   const router = useRouter();
-  const { selectedOptionIds, toggleOption, errorMessage, dismissError } = useTransportSettings();
+  const { selectedOptionIds, toggleOption, isLoading, isUpdating, errorMessage, dismissError } =
+    useTransportSettings();
 
   return (
     <ScreenLayout backgroundColor={colors.gray[50]} contentStyle={styles.screen}>
@@ -34,14 +35,21 @@ export function TransportScreen() {
       />
       <View style={styles.content}>
         <View style={styles.section}>
-          {TRANSPORT_OPTION_DEFINITIONS.map((option) => (
-            <SettingsCheckboxRow
-              key={option.id}
-              label={t(option.labelKey)}
-              checked={selectedOptionIds.includes(option.id)}
-              onToggle={() => toggleOption(option.id)}
-            />
-          ))}
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator color={colors.primary} />
+            </View>
+          ) : (
+            TRANSPORT_OPTION_DEFINITIONS.map((option) => (
+              <SettingsCheckboxRow
+                key={option.id}
+                label={t(option.labelKey)}
+                checked={selectedOptionIds.includes(option.id)}
+                disabled={isUpdating}
+                onToggle={() => toggleOption(option.id)}
+              />
+            ))
+          )}
         </View>
       </View>
       {errorMessage ? <CardToast message={errorMessage} onClose={dismissError} /> : null}
@@ -72,5 +80,10 @@ const styles = StyleSheet.create({
     padding: spacing[4],
     borderRadius: radius.sm,
     backgroundColor: colors.gray.white,
+  },
+  loadingContainer: {
+    minHeight: 152,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

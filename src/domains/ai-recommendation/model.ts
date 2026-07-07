@@ -8,7 +8,10 @@ export interface RecommendationCriteria {
   minFreeMinutes: number;
   excludeEnabled: boolean;
   excludeRanges: MinuteRange[];
-  pushEnabled: boolean;
+}
+
+export interface RecommendationCriteriaSettings extends RecommendationCriteria {
+  isRecommendOn: boolean;
 }
 
 export const MINUTES_PER_DAY = 24 * 60;
@@ -22,7 +25,11 @@ export const DEFAULT_RECOMMENDATION_CRITERIA: RecommendationCriteria = {
   minFreeMinutes: 0,
   excludeEnabled: false,
   excludeRanges: [],
-  pushEnabled: false,
+};
+
+export const DEFAULT_RECOMMENDATION_CRITERIA_SETTINGS: RecommendationCriteriaSettings = {
+  isRecommendOn: true,
+  ...DEFAULT_RECOMMENDATION_CRITERIA,
 };
 
 export function isValidMinuteRange(range: MinuteRange): boolean {
@@ -56,10 +63,19 @@ export function formatDurationLabel(totalMinutes: number): string {
 
 /** 분 → "07:30" */
 export function formatClockLabel(totalMinutes: number): string {
+  return toClockTime(totalMinutes);
+}
+
+export function toClockTime(totalMinutes: number): string {
   const hours = Math.floor(totalMinutes / 60) % 24;
   const minutes = totalMinutes % 60;
 
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
+export function parseClockToMinutes(time: string): number {
+  const [hours = '0', minutes = '0'] = time.split(':');
+  return Number(hours) * 60 + Number(minutes);
 }
 
 export function sortMinuteRanges(ranges: MinuteRange[]): MinuteRange[] {

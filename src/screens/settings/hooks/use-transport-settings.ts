@@ -10,13 +10,9 @@ const TOAST_DURATION_MS = 3000;
 
 export function useTransportSettings() {
   const settingsQuery = useTransportSettingsQuery();
-  const [draft, setDraft] = useState<TransportOptionId[] | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const updateMutation = useUpdateTransportSettingsMutation({
-    onSuccess: () => setDraft(null),
-  });
+  const updateMutation = useUpdateTransportSettingsMutation();
 
   useEffect(
     () => () => {
@@ -27,24 +23,21 @@ export function useTransportSettings() {
     [],
   );
 
-  const selectedOptionIds = useMemo(
-    () => draft ?? settingsQuery.data ?? [],
-    [draft, settingsQuery.data],
-  );
+  const selectedOptionIds = useMemo(() => settingsQuery.data ?? [], [settingsQuery.data]);
 
   const toggleOption = useCallback(
     (optionId: TransportOptionId) => {
+      if (settingsQuery.isLoading || updateMutation.isPending) {
+        return;
+      }
+
       const isSelected = selectedOptionIds.includes(optionId);
       const next = isSelected
         ? selectedOptionIds.filter((selectedId) => selectedId !== optionId)
         : [...selectedOptionIds, optionId];
-      const previous = draft;
 
-      setDraft(next);
       updateMutation.mutate(next, {
         onError: () => {
-          setDraft(previous);
-
           if (toastTimerRef.current) {
             clearTimeout(toastTimerRef.current);
           }
@@ -54,11 +47,12 @@ export function useTransportSettings() {
         },
       });
     },
-    [draft, selectedOptionIds, updateMutation],
+    [selectedOptionIds, settingsQuery.isLoading, updateMutation],
   );
 
   return {
     isLoading: settingsQuery.isLoading,
+    isUpdating: updateMutation.isPending,
     selectedOptionIds,
     toggleOption,
     errorMessage,
