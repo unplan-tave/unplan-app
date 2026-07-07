@@ -2,15 +2,12 @@ import { produce } from 'immer';
 import { create } from 'zustand';
 
 import { t } from '@/lib/i18n';
-import { mmkvStorage } from '@/lib/storage/mmkv-storage';
 
 import { toggleActivityHourRange, toggleContinuousSleepRange } from './activity-time-ranges';
 import { getOnboardingSubmissionErrorMessage, submitOnboarding } from './api/client';
 import { validateOnboardingPreferences } from './validation';
 
 import type { OnboardingPreferences, RecoveryOptionId, TransportOptionId } from './model';
-
-const ONBOARDING_COMPLETED_KEY = 'onboarding.completed';
 
 const initialPreferences: OnboardingPreferences = {
   recoveryOptionIds: [],
@@ -24,19 +21,6 @@ const initialPreferences: OnboardingPreferences = {
   sleepTimeRanges: [],
   transportOptionIds: [],
 };
-
-function persistOnboardingCompleted() {
-  mmkvStorage.set(ONBOARDING_COMPLETED_KEY, 'true');
-}
-
-function syncOnboardingCompleted(completed: boolean) {
-  if (completed) {
-    persistOnboardingCompleted();
-    return;
-  }
-
-  mmkvStorage.remove(ONBOARDING_COMPLETED_KEY);
-}
 
 interface OnboardingState {
   hasCompletedOnboarding: boolean;
@@ -69,18 +53,14 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
   preferences: initialPreferences,
 
   hydrateOnboarding: () => {
-    const hasCompletedOnboarding = mmkvStorage.get(ONBOARDING_COMPLETED_KEY) === 'true';
-
     set(
       produce((state: OnboardingState) => {
-        state.hasCompletedOnboarding = hasCompletedOnboarding;
+        state.hasCompletedOnboarding = false;
       }),
     );
   },
 
   setOnboardingCompleted: (completed) => {
-    syncOnboardingCompleted(completed);
-
     set(
       produce((state: OnboardingState) => {
         state.hasCompletedOnboarding = completed;
@@ -177,7 +157,6 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
         state.hasCompletedOnboarding = true;
       }),
     );
-    persistOnboardingCompleted();
 
     try {
       await submitOnboarding(submissionPreferences);
@@ -201,8 +180,6 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
   },
 
   resetOnboarding: () => {
-    mmkvStorage.remove(ONBOARDING_COMPLETED_KEY);
-
     set(
       produce((state: OnboardingState) => {
         state.hasCompletedOnboarding = false;

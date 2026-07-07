@@ -1,31 +1,9 @@
 import { produce } from 'immer';
 import { create } from 'zustand';
 
-import { mmkvStorage } from '@/lib/storage/mmkv-storage';
-
 import { DEFAULT_EXCLUDE_RANGE, DEFAULT_RECOMMENDATION_CRITERIA, sortMinuteRanges } from './model';
 
 import type { MinuteRange, RecommendationCriteria } from './model';
-
-const RECOMMENDATION_CRITERIA_KEY = 'ai-recommendation.criteria';
-
-function loadPersistedCriteria(): RecommendationCriteria {
-  const rawValue = mmkvStorage.get(RECOMMENDATION_CRITERIA_KEY);
-
-  if (!rawValue) {
-    return DEFAULT_RECOMMENDATION_CRITERIA;
-  }
-
-  try {
-    return { ...DEFAULT_RECOMMENDATION_CRITERIA, ...JSON.parse(rawValue) };
-  } catch {
-    return DEFAULT_RECOMMENDATION_CRITERIA;
-  }
-}
-
-function persistCriteria(criteria: RecommendationCriteria) {
-  mmkvStorage.set(RECOMMENDATION_CRITERIA_KEY, JSON.stringify(criteria));
-}
 
 interface RecommendationCriteriaState {
   criteria: RecommendationCriteria;
@@ -35,6 +13,7 @@ interface RecommendationCriteriaState {
   updateExcludeRange: (index: number, range: MinuteRange) => void;
   removeExcludeRange: (index: number) => void;
   setPushEnabled: (enabled: boolean) => void;
+  resetClientState: () => void;
 }
 
 export const useRecommendationCriteriaStore = create<RecommendationCriteriaState>()((set) => {
@@ -42,12 +21,11 @@ export const useRecommendationCriteriaStore = create<RecommendationCriteriaState
     set(
       produce((state: RecommendationCriteriaState) => {
         recipe(state.criteria);
-        persistCriteria(state.criteria);
       }),
     );
 
   return {
-    criteria: loadPersistedCriteria(),
+    criteria: DEFAULT_RECOMMENDATION_CRITERIA,
 
     setMinFreeMinutes: (minutes) =>
       update((criteria) => {
@@ -86,5 +64,9 @@ export const useRecommendationCriteriaStore = create<RecommendationCriteriaState
       update((criteria) => {
         criteria.pushEnabled = enabled;
       }),
+
+    resetClientState: () => {
+      set({ criteria: DEFAULT_RECOMMENDATION_CRITERIA });
+    },
   };
 });
