@@ -17,6 +17,11 @@ const transportOptionDefinitions = [
   { id: 'car', labelKey: 'onboarding.transport.car', icon: '🚗' },
 ] satisfies ReadonlyArray<{ id: TransportOptionId; labelKey: TranslationKey; icon: string }>;
 
+const HOME_WITH_NOTIFICATION_PROMPT = {
+  pathname: '/(tabs)',
+  params: { onboardingNotification: '1' },
+} as const;
+
 export function TransportScreen() {
   const router = useRouter();
   const selectedIds = useOnboardingStore((state) => state.preferences.transportOptionIds);
@@ -38,7 +43,7 @@ export function TransportScreen() {
     const didComplete = await completeOnboarding();
 
     if (didComplete) {
-      router.replace('/(tabs)');
+      router.replace(HOME_WITH_NOTIFICATION_PROMPT);
     }
   };
 
@@ -50,7 +55,7 @@ export function TransportScreen() {
     const didComplete = await completeOnboarding({ skipTransport: true });
 
     if (didComplete) {
-      router.replace('/(tabs)');
+      router.replace(HOME_WITH_NOTIFICATION_PROMPT);
     }
   };
 

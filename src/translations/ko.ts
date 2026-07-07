@@ -44,6 +44,12 @@ export const ko = {
   'onboarding.transport.title': '선호하는 이동방식을 알려주세요!',
   'onboarding.transport.walk': '도보',
   'onboarding.option.custom': '직접 입력',
+  'onboarding.notification.allow': '알림 허용',
+  'onboarding.notification.deny': '허용 안 함',
+  'onboarding.notification.description':
+    '일정 완료 확인, 컨디션 기록, 맞춤 일정\n추천 알림을 보내드릴게요',
+  'onboarding.notification.saveError': '알림 설정을 저장하지 못했습니다. 다시 시도해 주세요.',
+  'onboarding.notification.title': '더 정확한 일정 추천을 위해\n알림을 보내도 될까요?',
   'onboarding.error.network': '온보딩 정보를 저장하지 못했습니다. 네트워크 연결을 확인해 주세요.',
   'onboarding.error.recoveryRequired': '회복 방법을 한 가지 이상 선택해 주세요.',
   'onboarding.error.retry': '확인 버튼을 눌러 다시 시도해 주세요.',

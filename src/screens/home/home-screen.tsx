@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -11,15 +11,20 @@ import {
 import { HomeBackground } from '@/components/features/home/home-background';
 import { HomeBottomNav } from '@/components/features/home/home-bottom-nav';
 import { TimelineCard } from '@/components/features/home/timeline-card';
+import { OnboardingNotificationModal } from '@/components/features/onboarding/onboarding-notification-modal';
 import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useUpdateAlarmSettingsMutation } from '@/domains/member/api/mutations';
 import { useSchedulesByDateQuery } from '@/domains/schedule/api/queries';
 import { toCardItemsFromScheduleList } from '@/domains/schedule/card-mapper';
 import { getCardPersonalTagLabels } from '@/domains/schedule/list';
 import { getConditionTagById, type CardItem } from '@/domains/schedule/model';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
+import { t } from '@/lib/i18n';
+
+import type { AlarmSettings } from '@/domains/member/model';
 
 const WEEKDAY_LABELS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 const EMPTY_HOME_CARD_HEIGHT = 108;
@@ -40,8 +45,12 @@ const ADD_CARD_TOP =
 const CURRENT_TIME_TOP = ADD_CARD_TOP + EMPTY_HOME_CARD_HEIGHT + CURRENT_TIME_GAP_FROM_ADD_CARD;
 
 export function HomeScreen() {
+  const params = useLocalSearchParams<{ onboardingNotification?: string }>();
   const [now, setNow] = useState(() => new Date());
   const [isAddSheetVisible, setIsAddSheetVisible] = useState(false);
+  const [isNotificationModalVisible, setIsNotificationModalVisible] = useState(false);
+  const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
+  const updateAlarmSettingsMutation = useUpdateAlarmSettingsMutation();
   const personalTags = useScheduleStore((store) => store.personalTags);
   const homeDate = useMemo(() => getHomeDateLabel(now), [now]);
   const todayDate = useMemo(() => formatDateValue(now), [now]);
@@ -64,6 +73,39 @@ export function HomeScreen() {
 
     return () => clearInterval(intervalId);
   }, []);
+
+  useEffect(() => {
+    if (params.onboardingNotification === '1') {
+      setIsNotificationModalVisible(true);
+    }
+  }, [params.onboardingNotification]);
+
+  const closeNotificationModal = useCallback(() => {
+    setIsNotificationModalVisible(false);
+    setNotificationErrorMessage(null);
+    router.replace('/(tabs)');
+  }, []);
+
+  const updateNotificationSettings = useCallback(
+    (enabled: boolean) => {
+      if (updateAlarmSettingsMutation.isPending) {
+        return;
+      }
+
+      const nextSettings: AlarmSettings = {
+        scheduleEndAlarmOn: enabled,
+        conditionRecordAlarmOn: enabled,
+        recommendAlarmOn: enabled,
+      };
+
+      setNotificationErrorMessage(null);
+      updateAlarmSettingsMutation.mutate(nextSettings, {
+        onSuccess: closeNotificationModal,
+        onError: () => setNotificationErrorMessage(t('onboarding.notification.saveError')),
+      });
+    },
+    [closeNotificationModal, updateAlarmSettingsMutation],
+  );
 
   const handleCreateCard = useCallback(() => {
     setIsAddSheetVisible(false);
@@ -217,6 +259,13 @@ export function HomeScreen() {
         onDismissRecommendation={handleDismissRecommendation}
         onRecommendationAddPress={handleAddRecommendation}
         onViewQueuePress={handleViewQueue}
+      />
+      <OnboardingNotificationModal
+        visible={isNotificationModalVisible}
+        isSubmitting={updateAlarmSettingsMutation.isPending}
+        errorMessage={notificationErrorMessage}
+        onAllow={() => updateNotificationSettings(true)}
+        onDeny={() => updateNotificationSettings(false)}
       />
     </ScreenLayout>
   );
