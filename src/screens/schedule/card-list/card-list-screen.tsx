@@ -27,6 +27,8 @@ export function CardListScreen() {
     filteredCards,
     sections,
     hasActiveFilter,
+    isLoading,
+    isError,
     handleCardPress,
     handleCreateCard,
     handleSearchPress,
@@ -84,7 +86,11 @@ export function CardListScreen() {
             총 {filteredCards.length}개의 카드
           </Typography>
 
-          {filteredCards.length === 0 ? (
+          {isLoading ? (
+            <CardListStatusMessage message="카드 목록을 불러오는 중이에요." />
+          ) : isError ? (
+            <CardListStatusMessage message="카드 목록을 불러오지 못했어요." />
+          ) : filteredCards.length === 0 ? (
             <CardListEmptyState hasActiveFilter={hasActiveFilter} />
           ) : (
             <CardListSections
@@ -104,6 +110,16 @@ export function CardListScreen() {
         </View>
       </View>
     </ScreenLayout>
+  );
+}
+
+function CardListStatusMessage({ message }: { message: string }) {
+  return (
+    <View style={styles.statusMessage}>
+      <Typography variant="bodyM" color={colors.gray.white} align="center">
+        {message}
+      </Typography>
+    </View>
   );
 }
 
@@ -143,5 +159,12 @@ const styles = StyleSheet.create({
     bottom: spacing[2],
     alignItems: 'center',
     paddingHorizontal: spacing[5],
+  },
+  statusMessage: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing[10],
+    paddingHorizontal: spacing[4],
   },
 });
