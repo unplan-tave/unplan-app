@@ -1,29 +1,35 @@
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { CardToast } from '@/components/domain/schedule/card-toast';
 import { SettingsList } from '@/components/features/settings/settings-list';
 import { GNB } from '@/components/ui/GNB';
 import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { useRecommendationCriteriaStore } from '@/domains/ai-recommendation/use-recommendation-criteria-store';
 import { useMemberProfileQuery } from '@/domains/member/api/queries';
 import { t } from '@/lib/i18n';
+
+import { useAlarmSettings } from './hooks/use-alarm-settings';
 
 export function SettingsScreen() {
   const router = useRouter();
   const profileQuery = useMemberProfileQuery();
-  const [scheduleEndNotification, setScheduleEndNotification] = useState(true);
-  const [conditionRecordNotification, setConditionRecordNotification] = useState(true);
-  const recommendationPushEnabled = useRecommendationCriteriaStore(
-    (state) => state.criteria.pushEnabled,
-  );
-  const setRecommendationPushEnabled = useRecommendationCriteriaStore(
-    (state) => state.setPushEnabled,
-  );
+  const {
+    scheduleEndNotification,
+    conditionRecordNotification,
+    recommendationPushEnabled,
+    setScheduleEndNotification,
+    setConditionRecordNotification,
+    setRecommendationPushEnabled,
+    errorMessage,
+    dismissError,
+    isLoading: isAlarmSettingsLoading,
+    isUpdating: isAlarmSettingsUpdating,
+  } = useAlarmSettings();
+  const isAlarmSettingsDisabled = isAlarmSettingsLoading || isAlarmSettingsUpdating;
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
   const profileNickname = profileQuery.isLoading
     ? ''
@@ -82,18 +88,21 @@ export function SettingsScreen() {
             {
               label: t('settings.scheduleEndNotification'),
               type: 'switch',
+              disabled: isAlarmSettingsDisabled,
               switchValue: scheduleEndNotification,
               onSwitchChange: setScheduleEndNotification,
             },
             {
               label: t('settings.conditionRecordNotification'),
               type: 'switch',
+              disabled: isAlarmSettingsDisabled,
               switchValue: conditionRecordNotification,
               onSwitchChange: setConditionRecordNotification,
             },
             {
               label: t('settings.recommendationScheduleNotification'),
               type: 'switch',
+              disabled: isAlarmSettingsDisabled,
               switchValue: recommendationPushEnabled,
               onSwitchChange: setRecommendationPushEnabled,
             },
@@ -143,6 +152,7 @@ export function SettingsScreen() {
           ]}
         />
       </ScrollView>
+      {errorMessage ? <CardToast message={errorMessage} onClose={dismissError} /> : null}
     </ScreenLayout>
   );
 }
