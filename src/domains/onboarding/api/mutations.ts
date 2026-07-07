@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useOptimisticQueryMutation } from '@/lib/api/optimistic-query-mutation';
 
 import {
   submitActivityPatternSettings,
@@ -14,66 +14,50 @@ import type {
   SleepConditionSettings,
   TransportOptionId,
 } from '../model';
-import type { QueryKey, UseMutationOptions } from '@tanstack/react-query';
+import type { OptimisticQueryMutationContext } from '@/lib/api/optimistic-query-mutation';
+import type { UseMutationOptions } from '@tanstack/react-query';
 
 type SettingsMutationOptions<TVariables> = Omit<
-  UseMutationOptions<void, Error, TVariables>,
-  'mutationFn'
+  UseMutationOptions<void, Error, TVariables, OptimisticQueryMutationContext<TVariables>>,
+  'mutationFn' | 'onMutate'
 >;
-
-function useSettingsMutation<TVariables>(
-  mutationFn: (variables: TVariables) => Promise<void>,
-  queryKey: QueryKey,
-  options?: SettingsMutationOptions<TVariables>,
-) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn,
-    ...options,
-    onSuccess: (data, variables, onMutateResult, context) => {
-      void queryClient.invalidateQueries({ queryKey });
-      options?.onSuccess?.(data, variables, onMutateResult, context);
-    },
-  });
-}
 
 export function useUpdateRecoveryMethodsSettingsMutation(
   options?: SettingsMutationOptions<RecoveryMethodsSettings>,
 ) {
-  return useSettingsMutation(
-    submitRecoveryMethodsSettings,
-    onboardingSettingsQueryKeys.recoveryMethods(),
-    options,
-  );
+  return useOptimisticQueryMutation({
+    mutationFn: submitRecoveryMethodsSettings,
+    queryKey: onboardingSettingsQueryKeys.recoveryMethods(),
+    ...options,
+  });
 }
 
 export function useUpdateSleepConditionSettingsMutation(
   options?: SettingsMutationOptions<SleepConditionSettings>,
 ) {
-  return useSettingsMutation(
-    submitSleepConditionSettings,
-    onboardingSettingsQueryKeys.sleepCondition(),
-    options,
-  );
+  return useOptimisticQueryMutation({
+    mutationFn: submitSleepConditionSettings,
+    queryKey: onboardingSettingsQueryKeys.sleepCondition(),
+    ...options,
+  });
 }
 
 export function useUpdateActivityPatternSettingsMutation(
   options?: SettingsMutationOptions<ActivityPatternSettings>,
 ) {
-  return useSettingsMutation(
-    submitActivityPatternSettings,
-    onboardingSettingsQueryKeys.activityPattern(),
-    options,
-  );
+  return useOptimisticQueryMutation({
+    mutationFn: submitActivityPatternSettings,
+    queryKey: onboardingSettingsQueryKeys.activityPattern(),
+    ...options,
+  });
 }
 
 export function useUpdateTransportSettingsMutation(
   options?: SettingsMutationOptions<TransportOptionId[]>,
 ) {
-  return useSettingsMutation(
-    submitTransportSettings,
-    onboardingSettingsQueryKeys.transport(),
-    options,
-  );
+  return useOptimisticQueryMutation({
+    mutationFn: submitTransportSettings,
+    queryKey: onboardingSettingsQueryKeys.transport(),
+    ...options,
+  });
 }
