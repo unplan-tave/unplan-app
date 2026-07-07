@@ -6,11 +6,13 @@ import type { Dispatch, SetStateAction } from 'react';
 
 interface UseCardCreateDateOnlyGuideParams {
   changeDraftCardType: (cardType: CardTab) => void;
+  setActiveTab: (cardType: CardTab) => void;
   setSheet: Dispatch<SetStateAction<CardCreateSheetState>>;
 }
 
 export function useCardCreateDateOnlyGuide({
   changeDraftCardType,
+  setActiveTab,
   setSheet,
 }: UseCardCreateDateOnlyGuideParams) {
   const openTimeFromGuide = useCallback(() => {
@@ -20,9 +22,10 @@ export function useCardCreateDateOnlyGuide({
   const keepDateOnly = useCallback(() => setSheet({ kind: 'none' }), [setSheet]);
 
   const changeToQueueCard = useCallback(() => {
+    setActiveTab('queue');
     changeDraftCardType('queue');
     setSheet({ kind: 'none' });
-  }, [changeDraftCardType, setSheet]);
+  }, [changeDraftCardType, setActiveTab, setSheet]);
 
   return {
     openTimeFromGuide,

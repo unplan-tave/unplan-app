@@ -240,7 +240,7 @@ export function buildCardListTags(
   personalTags: PersonalTagOption[],
 ): CardListTagItem[] {
   const conditionTag = getConditionTagById(card.conditionTagId);
-  const cardPersonalTags = personalTags.filter((tag) => card.personalTagIds.includes(tag.id));
+  const cardPersonalTagLabels = getCardPersonalTagLabels(card, personalTags);
 
   return [
     {
@@ -248,11 +248,19 @@ export function buildCardListTags(
       variant: 'condition',
       condition: card.conditionTagId,
     },
-    ...cardPersonalTags.map((tag) => ({
-      label: tag.label,
+    ...cardPersonalTagLabels.map((label) => ({
+      label,
       variant: 'personal' as const,
     })),
   ];
+}
+
+export function getCardPersonalTagLabels(card: CardItem, personalTags: PersonalTagOption[]) {
+  const selectedLabels = personalTags
+    .filter((tag) => card.personalTagIds.includes(tag.id))
+    .map((tag) => tag.label);
+
+  return [...new Set([...card.personalTagLabels, ...selectedLabels])];
 }
 
 export function toggleCardListFilterValue<T extends string>(values: T[], value: T): T[] {

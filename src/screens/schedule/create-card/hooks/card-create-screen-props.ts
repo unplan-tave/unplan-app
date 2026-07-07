@@ -40,15 +40,24 @@ export function createCardCreateScreenProps({
   scroll,
   tagFeedback,
 }: CreateCardCreateScreenPropsParams) {
-  const selectedPersonalTags = draft.personalTags.filter((tag) =>
+  const selectedPersonalTagsById = draft.personalTags.filter((tag) =>
     values.personalTagIds.includes(tag.id),
   );
+  const selectedPersonalTagLabels = new Set(selectedPersonalTagsById.map((tag) => tag.label));
+  const unmatchedPersonalTags = values.personalTagLabels
+    .filter((label) => !selectedPersonalTagLabels.has(label))
+    .map((label) => ({
+      id: `server-personal-tag:${label}`,
+      label,
+      createdAt: '',
+    }));
+  const selectedPersonalTags = [...selectedPersonalTagsById, ...unmatchedPersonalTags];
 
   return {
     scrollRef: scroll.scrollRef,
     headerProps: {
       deleteVisible: draft.draftMode === 'edit',
-      doneEnabled: validation.isRequiredComplete,
+      doneEnabled: validation.isRequiredComplete && !actions.isSubmitting,
       onClose: actions.handleClose,
       onDelete: actions.handleDelete,
       onDone: actions.handleDone,

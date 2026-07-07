@@ -2,12 +2,15 @@ import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { useScheduleDetailQuery } from '@/domains/schedule/api/queries';
+import { toCardItemFromScheduleDetail } from '@/domains/schedule/card-mapper';
 import { getCardCreateValidation } from '@/domains/schedule/create/validation';
 import {
   type CardFormValues,
   type CardTab,
   createDefaultCardFormValues,
 } from '@/domains/schedule/model';
+import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 import { useKeyboardHeight } from '@/hooks/use-keyboard-height';
 
 import { createCardCreateScreenProps } from './card-create-screen-props';
@@ -19,11 +22,13 @@ import { useCardCreateTags } from './use-card-create-tags';
 
 export function useCardCreateForm() {
   const { cardId, type } = useLocalSearchParams<{ cardId?: string; type?: 'queue' }>();
+  const numericCardId = useMemo(() => parseNumericCardId(cardId), [cardId]);
   const initialCardType: CardTab = type === 'queue' ? 'queue' : 'pin';
   const initialValues = useMemo(() => createDefaultCardFormValues(), []);
   const [activeTab, setActiveTab] = useState<CardTab>(initialCardType);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [initializedTitle, setInitializedTitle] = useState<string | null>(null);
+  const personalTags = useScheduleStore((store) => store.personalTags);
   const keyboardHeight = useKeyboardHeight();
 
   const {
@@ -34,10 +39,21 @@ export function useCardCreateForm() {
     watch,
     formState: { errors },
   } = useForm<CardFormValues>({ mode: 'onSubmit', defaultValues: initialValues });
+  const scheduleDetailQuery = useScheduleDetailQuery(numericCardId, {
+    enabled: numericCardId != null,
+  });
+  const editCard = useMemo(
+    () =>
+      scheduleDetailQuery.data == null
+        ? null
+        : toCardItemFromScheduleDetail(scheduleDetailQuery.data, personalTags),
+    [personalTags, scheduleDetailQuery.data],
+  );
 
   const title = watch('title') ?? '';
   const conditionTagId = watch('conditionTagId');
   const personalTagIds = watch('personalTagIds');
+  const personalTagLabels = watch('personalTagLabels');
   const dateMode = watch('dateMode');
   const dateStart = watch('dateStart');
   const dateEnd = watch('dateEnd');
@@ -60,6 +76,7 @@ export function useCardCreateForm() {
       title,
       conditionTagId,
       personalTagIds,
+      personalTagLabels,
       dateMode,
       dateStart,
       dateEnd,
@@ -90,6 +107,7 @@ export function useCardCreateForm() {
       location,
       locationDetail,
       memo,
+      personalTagLabels,
       personalTagIds,
       recommendationAcknowledged,
       recurrence,
@@ -111,6 +129,7 @@ export function useCardCreateForm() {
     cardId,
     initialCardType,
     initialValues,
+    editCard,
     reset,
     onInit: handleInitRef,
     values,
@@ -120,6 +139,7 @@ export function useCardCreateForm() {
     setValue,
     updateDraftValues: draft.updateDraftValues,
     changeDraftCardType: draft.changeDraftCardType,
+    setActiveTab,
     addLocationRecentSearch: draft.addLocationRecentSearch,
     hasSubmitted,
     activeTab,
@@ -156,6 +176,8 @@ export function useCardCreateForm() {
   const scroll = useCardCreateScroll();
   const actions = useCardCreateActions({
     cardId,
+    activeTab,
+    personalTags: draft.personalTags,
     isRequiredComplete: validation.isRequiredComplete,
     handleSubmit,
     saveDraft: draft.saveDraft,
@@ -178,4 +200,14 @@ export function useCardCreateForm() {
     scroll,
     tagFeedback,
   });
+}
+
+function parseNumericCardId(cardId: string | undefined) {
+  if (cardId == null) {
+    return null;
+  }
+
+  const parsed = Number(cardId);
+
+  return Number.isFinite(parsed) ? parsed : null;
 }

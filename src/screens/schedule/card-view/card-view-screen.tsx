@@ -8,6 +8,7 @@ import { PinViewBody } from '@/components/features/card-view/pin-view-body';
 import { QueueViewBody } from '@/components/features/card-view/queue-view-body';
 import { ConvertToPinBottomSheet } from '@/components/features/queue-to-pin/convert-to-pin-sheet';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
+import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
 
 import { useCardViewScreen } from './hooks/use-card-view-screen';
@@ -21,7 +22,9 @@ export function CardViewScreen() {
   const {
     card,
     conditionTag,
-    cardPersonalTags,
+    cardPersonalTagLabels,
+    isLoading,
+    isError,
     isConvertSheetVisible,
     toast,
     handleBack,
@@ -32,6 +35,14 @@ export function CardViewScreen() {
     handleEditDuration,
     closeToast,
   } = useCardViewScreen();
+
+  if (isLoading) {
+    return <CardViewStatus message="카드를 불러오는 중이에요." />;
+  }
+
+  if (isError) {
+    return <CardViewStatus message="카드를 불러오지 못했어요." />;
+  }
 
   if (card == null || conditionTag == null) {
     return null;
@@ -56,7 +67,7 @@ export function CardViewScreen() {
           <CardViewHeader
             title={card.title}
             conditionTag={conditionTag}
-            personalTags={cardPersonalTags}
+            personalTagLabels={cardPersonalTagLabels}
           />
 
           {card.cardType === 'queue' ? (
@@ -86,6 +97,19 @@ export function CardViewScreen() {
   );
 }
 
+function CardViewStatus({ message }: { message: string }) {
+  return (
+    <ScreenLayout backgroundColor={colors.surface} contentStyle={styles.screenContent}>
+      <StatusBar style="dark" />
+      <View style={styles.status}>
+        <Typography variant="bodyM" color={colors.gray[700]} align="center">
+          {message}
+        </Typography>
+      </View>
+    </ScreenLayout>
+  );
+}
+
 const styles = StyleSheet.create({
   screenContent: {
     flex: 1,
@@ -103,5 +127,11 @@ const styles = StyleSheet.create({
     gap: FORM_GAP,
     paddingTop: CONTENT_TOP,
     paddingBottom: spacing[16],
+  },
+  status: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing[6],
   },
 });

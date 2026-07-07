@@ -19,6 +19,7 @@ export interface CardFormValues {
   title: string;
   conditionTagId: ConditionTagId;
   personalTagIds: string[];
+  personalTagLabels: string[];
   dateMode: DateMode;
   dateStart: string;
   dateEnd: string;
@@ -90,6 +91,7 @@ export interface ScheduleListItem {
   isQueue: boolean;
   status: ScheduleStatus;
   conditionTagId: ConditionTagId;
+  personalTags: string[];
 }
 
 export interface ScheduleDetail extends ScheduleListItem {
@@ -173,6 +175,7 @@ export function createDefaultCardFormValues(): CardFormValues {
     title: '',
     conditionTagId: 'daily',
     personalTagIds: [],
+    personalTagLabels: [],
     dateMode: 'empty',
     dateStart: '',
     dateEnd: '',
@@ -245,6 +248,7 @@ export function cloneCardFormValues(values: CardFormValues): CardFormValues {
     title: values.title,
     conditionTagId: values.conditionTagId,
     personalTagIds: [...values.personalTagIds],
+    personalTagLabels: [...values.personalTagLabels],
     dateMode: values.dateMode,
     dateStart: values.dateStart,
     dateEnd: values.dateEnd,

@@ -71,7 +71,8 @@ export function useCardCreateTagSheet({
   const confirmPersonalTags = useCallback(
     (nextPersonalTagIds: string[]) => {
       setValue('personalTagIds', nextPersonalTagIds, { shouldDirty: true });
-      updateDraftValues({ personalTagIds: nextPersonalTagIds });
+      setValue('personalTagLabels', [], { shouldDirty: true });
+      updateDraftValues({ personalTagIds: nextPersonalTagIds, personalTagLabels: [] });
       setSheet({ kind: 'none' });
     },
     [setSheet, setValue, updateDraftValues],

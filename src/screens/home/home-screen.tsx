@@ -15,8 +15,10 @@ import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { getConditionTagById, type CardFormValues, type CardItem } from '@/domains/schedule/model';
-import { getMockRecommendationTimeRange } from '@/domains/schedule/queue';
+import { useSchedulesByDateQuery } from '@/domains/schedule/api/queries';
+import { toCardItemsFromScheduleList } from '@/domains/schedule/card-mapper';
+import { getCardPersonalTagLabels } from '@/domains/schedule/list';
+import { getConditionTagById, type CardItem } from '@/domains/schedule/model';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 
 const WEEKDAY_LABELS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
@@ -40,27 +42,20 @@ const CURRENT_TIME_TOP = ADD_CARD_TOP + EMPTY_HOME_CARD_HEIGHT + CURRENT_TIME_GA
 export function HomeScreen() {
   const [now, setNow] = useState(() => new Date());
   const [isAddSheetVisible, setIsAddSheetVisible] = useState(false);
-  const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
-  const cards = useScheduleStore((store) => store.cards);
-  const createCard = useScheduleStore((store) => store.createCard);
   const personalTags = useScheduleStore((store) => store.personalTags);
   const homeDate = useMemo(() => getHomeDateLabel(now), [now]);
+  const todayDate = useMemo(() => formatDateValue(now), [now]);
+  const schedulesByDateQuery = useSchedulesByDateQuery(todayDate);
+  const cards = useMemo(
+    () => toCardItemsFromScheduleList(schedulesByDateQuery.data ?? [], personalTags),
+    [personalTags, schedulesByDateQuery.data],
+  );
   const currentTimeLabel = useMemo(() => formatTimeLabel(now), [now]);
   const timelineCards = useMemo(
     () => cards.filter((card) => card.cardType === 'pin').slice(0, 3),
     [cards],
   );
-  const recommendations = useMemo<RecommendationItem[]>(() => {
-    const queueCards = cards.filter(
-      (card) => card.cardType === 'queue' && !dismissedCardIds.includes(card.id),
-    );
-
-    return queueCards.map((card) => ({
-      card,
-      conditionTag: getConditionTagById(card.conditionTagId),
-      personalTags: personalTags.filter((tag) => card.personalTagIds.includes(tag.id)),
-    }));
-  }, [cards, dismissedCardIds, personalTags]);
+  const recommendations = useMemo<RecommendationItem[]>(() => [], []);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -84,48 +79,13 @@ export function HomeScreen() {
   }, []);
 
   const handleDismissRecommendation = useCallback((cardId: string) => {
-    setDismissedCardIds((prev) => [...prev, cardId]);
+    void cardId;
   }, []);
 
-  const handleAddRecommendation = useCallback(
-    (cardId: string) => {
-      const queueCard = cards.find((card) => card.id === cardId);
-
-      if (queueCard == null) {
-        return;
-      }
-
-      const today = getTodayString();
-      const [recommendedStart, recommendedEnd] = getMockRecommendationTimeRange();
-      const values: CardFormValues = {
-        title: queueCard.title,
-        conditionTagId: queueCard.conditionTagId,
-        personalTagIds: queueCard.personalTagIds,
-        dateMode: 'single',
-        dateStart: today,
-        dateEnd: '',
-        timeFilled: true,
-        timeStart: recommendedStart,
-        timeEnd: recommendedEnd,
-        location: queueCard.location,
-        locationDetail: queueCard.locationDetail ?? '',
-        memo: queueCard.memo,
-        repeatEnabled: false,
-        recurrence: null,
-        reminderEnabled: queueCard.reminderEnabled,
-        dueDate: queueCard.dueDate ?? '',
-        durationHours: queueCard.durationHours ?? 0,
-        durationMinutes: queueCard.durationMinutes ?? 0,
-        durationUnknown: queueCard.durationUnknown ?? false,
-        recommendationAcknowledged: queueCard.recommendationAcknowledged ?? false,
-      };
-
-      createCard('pin', values);
-      setDismissedCardIds((prev) => [...prev, cardId]);
-      setIsAddSheetVisible(false);
-    },
-    [cards, createCard],
-  );
+  const handleAddRecommendation = useCallback((cardId: string) => {
+    void cardId;
+    setIsAddSheetVisible(false);
+  }, []);
 
   const handleViewQueue = useCallback(() => {
     setIsAddSheetVisible(false);
@@ -165,9 +125,7 @@ export function HomeScreen() {
           ) : (
             timelineCards.map((card) => {
               const conditionTag = getConditionTagById(card.conditionTagId);
-              const cardPersonalTags = personalTags.filter((tag) =>
-                card.personalTagIds.includes(tag.id),
-              );
+              const cardPersonalTagLabels = getCardPersonalTagLabels(card, personalTags);
 
               return (
                 <TimelineCard
@@ -182,8 +140,8 @@ export function HomeScreen() {
                       variant: 'condition' as const,
                       condition: card.conditionTagId,
                     },
-                    ...cardPersonalTags.map((tag) => ({
-                      label: tag.label,
+                    ...cardPersonalTagLabels.map((label) => ({
+                      label,
                       variant: 'personal' as const,
                     })),
                   ]}
@@ -284,9 +242,8 @@ function padTimeUnit(value: number) {
   return String(value).padStart(2, '0');
 }
 
-function getTodayString() {
-  const now = new Date();
-  return `${now.getFullYear()}.${padTimeUnit(now.getMonth() + 1)}.${padTimeUnit(now.getDate())}`;
+function formatDateValue(date: Date) {
+  return `${date.getFullYear()}.${padTimeUnit(date.getMonth() + 1)}.${padTimeUnit(date.getDate())}`;
 }
 
 function getTimelineTime(card: CardItem) {

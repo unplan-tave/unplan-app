@@ -3,13 +3,14 @@ import { useEffect, useRef } from 'react';
 
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 
-import type { CardFormValues, CardTab } from '@/domains/schedule/model';
+import type { CardFormValues, CardItem, CardTab } from '@/domains/schedule/model';
 import type { UseFormReset } from 'react-hook-form';
 
 interface UseCardCreateDraftParams {
   cardId: string | undefined;
   initialCardType: CardTab;
   initialValues: CardFormValues;
+  editCard: CardItem | null;
   reset: UseFormReset<CardFormValues>;
   onInit: (cardType: CardTab, values: CardFormValues) => void;
   values: CardFormValues;
@@ -19,12 +20,14 @@ export function useCardCreateDraft({
   cardId,
   initialCardType,
   initialValues,
+  editCard,
   reset,
   onInit,
   values,
 }: UseCardCreateDraftParams) {
   const beginCreate = useScheduleStore((store) => store.beginCreate);
   const beginEdit = useScheduleStore((store) => store.beginEdit);
+  const beginEditFromCard = useScheduleStore((store) => store.beginEditFromCard);
   const updateDraftValues = useScheduleStore((store) => store.updateDraftValues);
   const changeDraftCardType = useScheduleStore((store) => store.changeDraftCardType);
   const personalTags = useScheduleStore((store) => store.personalTags);
@@ -49,8 +52,16 @@ export function useCardCreateDraft({
   resetRef.current = reset;
 
   useEffect(() => {
+    if (cardId != null && editCard == null) {
+      return;
+    }
+
     const nextDraft =
-      cardId == null ? beginCreate(initialValuesRef.current, initialCardType) : beginEdit(cardId);
+      cardId == null
+        ? beginCreate(initialValuesRef.current, initialCardType)
+        : editCard == null
+          ? beginEdit(cardId)
+          : beginEditFromCard(editCard);
 
     if (nextDraft == null) {
       router.back();
@@ -59,7 +70,7 @@ export function useCardCreateDraft({
 
     onInitRef.current(nextDraft.cardType, nextDraft.values);
     resetRef.current(nextDraft.values);
-  }, [beginCreate, beginEdit, cardId, initialCardType]);
+  }, [beginCreate, beginEdit, beginEditFromCard, cardId, editCard, initialCardType]);
 
   useEffect(() => {
     updateDraftValues(values);

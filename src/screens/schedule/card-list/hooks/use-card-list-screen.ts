@@ -1,9 +1,10 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { useScheduleSearchQuery } from '@/domains/schedule/api/queries';
+import { toCardItemsFromScheduleList } from '@/domains/schedule/card-mapper';
 import {
   createDefaultCardListFilters,
-  filterCardsForList,
   groupCardsByMonth,
   hasActiveCardListFilter,
   toggleCardListFilterValue,
@@ -14,9 +15,24 @@ import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 
 import type { CardProgressStatus } from '@/domains/schedule/model';
 
+const API_STATUS_BY_PROGRESS: Record<CardProgressStatus, string> = {
+  incomplete: 'TODO',
+  in_progress: 'IN_PROGRESS',
+  complete: 'DONE',
+};
+
+const API_CONDITION_BY_TAG_ID: Record<CardListFilters['conditionTagIds'][number], string> = {
+  urgent: 'URGENT',
+  core: 'CORE_TASK',
+  brain: 'BRAIN_WORK',
+  daily: 'DAILY_TASK',
+  labor: 'SIMPLE_TASK',
+  rest: 'RECOVERY',
+};
+const CARD_LIST_SEARCH_SORT_BY = 'CREATED_AT_DESC';
+
 export function useCardListScreen() {
   const { q } = useLocalSearchParams<{ q?: string }>();
-  const cards = useScheduleStore((store) => store.cards);
   const personalTags = useScheduleStore((store) => store.personalTags);
   const [filters, setFilters] = useState<CardListFilters>(() => createDefaultCardListFilters());
   const [expandedFilter, setExpandedFilter] = useState<CardListMultiFilterKey | null>(null);
@@ -25,7 +41,35 @@ export function useCardListScreen() {
     setFilters((prev) => ({ ...prev, searchQuery: q ?? '' }));
   }, [q]);
 
-  const filteredCards = useMemo(() => filterCardsForList(cards, filters), [cards, filters]);
+  const searchInput = useMemo(
+    () => ({
+      keyword: filters.searchQuery,
+      isQueue: filters.cardType === 'all' ? undefined : filters.cardType === 'queue' ? true : false,
+      status:
+        filters.progressStatuses[0] == null
+          ? undefined
+          : API_STATUS_BY_PROGRESS[filters.progressStatuses[0]],
+      conditionTags: filters.conditionTagIds.map((tagId) => API_CONDITION_BY_TAG_ID[tagId]),
+      personalTags: personalTags
+        .filter((tag) => filters.personalTagIds.includes(tag.id))
+        .map((tag) => tag.label),
+      sortBy: CARD_LIST_SEARCH_SORT_BY,
+    }),
+    [
+      filters.cardType,
+      filters.conditionTagIds,
+      filters.personalTagIds,
+      filters.progressStatuses,
+      filters.searchQuery,
+      personalTags,
+    ],
+  );
+  const scheduleSearchQuery = useScheduleSearchQuery(searchInput);
+  const cards = useMemo(
+    () => toCardItemsFromScheduleList(scheduleSearchQuery.data ?? [], personalTags),
+    [personalTags, scheduleSearchQuery.data],
+  );
+  const filteredCards = cards;
   const sections = useMemo(() => groupCardsByMonth(filteredCards), [filteredCards]);
   const hasActiveFilter = useMemo(() => hasActiveCardListFilter(filters), [filters]);
 
@@ -95,6 +139,8 @@ export function useCardListScreen() {
     filteredCards,
     sections,
     hasActiveFilter,
+    isLoading: scheduleSearchQuery.isLoading,
+    isError: scheduleSearchQuery.isError,
     handleCardPress,
     handleCreateCard,
     handleSearchPress,
