@@ -24,6 +24,7 @@ interface UseCardCreateSheetsParams {
   setValue: UseFormSetValue<CardFormValues>;
   updateDraftValues: (values: Partial<CardFormValues>) => void;
   changeDraftCardType: (cardType: CardTab) => void;
+  setActiveTab: (cardType: CardTab) => void;
   addLocationRecentSearch: (query: string) => void;
   hasSubmitted: boolean;
   activeTab: CardTab;
@@ -39,6 +40,7 @@ export function useCardCreateSheets(params: UseCardCreateSheetsParams) {
     setValue,
     updateDraftValues,
     changeDraftCardType,
+    setActiveTab,
     addLocationRecentSearch,
     hasSubmitted,
     activeTab,
@@ -94,6 +96,7 @@ export function useCardCreateSheets(params: UseCardCreateSheetsParams) {
   });
   const dateOnlyGuide = useCardCreateDateOnlyGuide({
     changeDraftCardType,
+    setActiveTab,
     setSheet,
   });
 

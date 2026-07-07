@@ -48,7 +48,7 @@ export function createCardCreateScreenProps({
     scrollRef: scroll.scrollRef,
     headerProps: {
       deleteVisible: draft.draftMode === 'edit',
-      doneEnabled: validation.isRequiredComplete,
+      doneEnabled: validation.isRequiredComplete && !actions.isSubmitting,
       onClose: actions.handleClose,
       onDelete: actions.handleDelete,
       onDone: actions.handleDone,

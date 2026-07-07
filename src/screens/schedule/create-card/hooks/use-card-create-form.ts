@@ -120,6 +120,7 @@ export function useCardCreateForm() {
     setValue,
     updateDraftValues: draft.updateDraftValues,
     changeDraftCardType: draft.changeDraftCardType,
+    setActiveTab,
     addLocationRecentSearch: draft.addLocationRecentSearch,
     hasSubmitted,
     activeTab,
@@ -156,6 +157,8 @@ export function useCardCreateForm() {
   const scroll = useCardCreateScroll();
   const actions = useCardCreateActions({
     cardId,
+    activeTab,
+    personalTags: draft.personalTags,
     isRequiredComplete: validation.isRequiredComplete,
     handleSubmit,
     saveDraft: draft.saveDraft,
