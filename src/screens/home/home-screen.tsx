@@ -15,6 +15,8 @@ import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useSchedulesByDateQuery } from '@/domains/schedule/api/queries';
+import { toCardItemsFromScheduleList } from '@/domains/schedule/card-mapper';
 import { getConditionTagById, type CardFormValues, type CardItem } from '@/domains/schedule/model';
 import { getMockRecommendationTimeRange } from '@/domains/schedule/queue';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
@@ -41,17 +43,23 @@ export function HomeScreen() {
   const [now, setNow] = useState(() => new Date());
   const [isAddSheetVisible, setIsAddSheetVisible] = useState(false);
   const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
-  const cards = useScheduleStore((store) => store.cards);
+  const localCards = useScheduleStore((store) => store.cards);
   const createCard = useScheduleStore((store) => store.createCard);
   const personalTags = useScheduleStore((store) => store.personalTags);
   const homeDate = useMemo(() => getHomeDateLabel(now), [now]);
+  const todayDate = useMemo(() => formatDateValue(now), [now]);
+  const schedulesByDateQuery = useSchedulesByDateQuery(todayDate);
+  const cards = useMemo(
+    () => toCardItemsFromScheduleList(schedulesByDateQuery.data ?? []),
+    [schedulesByDateQuery.data],
+  );
   const currentTimeLabel = useMemo(() => formatTimeLabel(now), [now]);
   const timelineCards = useMemo(
     () => cards.filter((card) => card.cardType === 'pin').slice(0, 3),
     [cards],
   );
   const recommendations = useMemo<RecommendationItem[]>(() => {
-    const queueCards = cards.filter(
+    const queueCards = localCards.filter(
       (card) => card.cardType === 'queue' && !dismissedCardIds.includes(card.id),
     );
 
@@ -60,7 +68,7 @@ export function HomeScreen() {
       conditionTag: getConditionTagById(card.conditionTagId),
       personalTags: personalTags.filter((tag) => card.personalTagIds.includes(tag.id)),
     }));
-  }, [cards, dismissedCardIds, personalTags]);
+  }, [dismissedCardIds, localCards, personalTags]);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -89,20 +97,19 @@ export function HomeScreen() {
 
   const handleAddRecommendation = useCallback(
     (cardId: string) => {
-      const queueCard = cards.find((card) => card.id === cardId);
+      const queueCard = localCards.find((card) => card.id === cardId);
 
       if (queueCard == null) {
         return;
       }
 
-      const today = getTodayString();
       const [recommendedStart, recommendedEnd] = getMockRecommendationTimeRange();
       const values: CardFormValues = {
         title: queueCard.title,
         conditionTagId: queueCard.conditionTagId,
         personalTagIds: queueCard.personalTagIds,
         dateMode: 'single',
-        dateStart: today,
+        dateStart: todayDate,
         dateEnd: '',
         timeFilled: true,
         timeStart: recommendedStart,
@@ -124,7 +131,7 @@ export function HomeScreen() {
       setDismissedCardIds((prev) => [...prev, cardId]);
       setIsAddSheetVisible(false);
     },
-    [cards, createCard],
+    [createCard, localCards, todayDate],
   );
 
   const handleViewQueue = useCallback(() => {
@@ -284,9 +291,8 @@ function padTimeUnit(value: number) {
   return String(value).padStart(2, '0');
 }
 
-function getTodayString() {
-  const now = new Date();
-  return `${now.getFullYear()}.${padTimeUnit(now.getMonth() + 1)}.${padTimeUnit(now.getDate())}`;
+function formatDateValue(date: Date) {
+  return `${date.getFullYear()}.${padTimeUnit(date.getMonth() + 1)}.${padTimeUnit(date.getDate())}`;
 }
 
 function getTimelineTime(card: CardItem) {
