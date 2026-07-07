@@ -47,6 +47,28 @@ import type {
   ScheduleWeeklyResponse,
 } from '@/lib/api/model';
 
+export interface ScheduleSearchResponse {
+  data?: {
+    totalCount?: number;
+    schedules?: ScheduleSearchItemResponse[];
+  } | null;
+}
+
+interface ScheduleSearchItemResponse {
+  scheduleId?: number;
+  title?: string;
+  date?: string;
+  startTime?: string | null;
+  endTime?: string | null;
+  estimatedTime?: number | null;
+  conditionTag?: string;
+  personalTags?: string[];
+  status?: string;
+  isQueue?: boolean;
+  isRecommended?: boolean;
+  isConflict?: boolean;
+}
+
 const API_WEEKDAY_CODES = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const;
 
 const conditionTagToCreateDtoMap: Record<ConditionTagId, ScheduleCreateRequestConditionTag> = {
@@ -110,6 +132,26 @@ export function toScheduleListItem(response: ScheduleGetResponse): ScheduleListI
     isQueue: response.is_queue ?? false,
     status: toScheduleStatus(response.status),
     conditionTagId: toConditionTagId(response.condition_tag),
+  };
+}
+
+export function toScheduleSearchListItems(response?: ScheduleSearchResponse): ScheduleListItem[] {
+  return (response?.data?.schedules ?? []).map(toScheduleSearchListItem);
+}
+
+function toScheduleSearchListItem(response: ScheduleSearchItemResponse): ScheduleListItem {
+  const isQueue = response.isQueue ?? (response.startTime == null && response.endTime == null);
+
+  return {
+    id: response.scheduleId ?? 0,
+    title: response.title ?? '',
+    date: normalizeDateForView(response.date),
+    startTime: response.startTime ?? '',
+    endTime: response.endTime ?? '',
+    estimatedMinutes: response.estimatedTime ?? null,
+    isQueue,
+    status: toScheduleStatus(response.status),
+    conditionTagId: toConditionTagId(response.conditionTag),
   };
 }
 
@@ -231,7 +273,7 @@ function toMonthlyScheduleCount(response: DailyCount): MonthlyScheduleCount {
 }
 
 function toConditionTagId(
-  conditionTag?: ScheduleGetResponseConditionTag | ScheduleDetailResponseConditionTag,
+  conditionTag?: ScheduleGetResponseConditionTag | ScheduleDetailResponseConditionTag | string,
 ): ConditionTagId {
   switch (conditionTag) {
     case ScheduleGetResponseConditionTag.URGENT:
@@ -257,7 +299,7 @@ function toConditionTagId(
 }
 
 function toScheduleStatus(
-  status?: ScheduleGetResponseStatus | ScheduleDetailResponseStatus,
+  status?: ScheduleGetResponseStatus | ScheduleDetailResponseStatus | string,
 ): ScheduleStatus {
   switch (status) {
     case ScheduleGetResponseStatus.DONE:

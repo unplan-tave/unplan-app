@@ -7,6 +7,7 @@ import {
   getSchedulesByWeek,
   updateSchedule,
 } from '@/lib/api/endpoints/schedule-crud/schedule-crud';
+import { apiMutator } from '@/lib/api/mutator/orval-mutator';
 
 import {
   normalizeDateForRequest,
@@ -16,7 +17,9 @@ import {
   toScheduleDetail,
   toScheduleListItems,
   toScheduleMonthlyOverview,
+  toScheduleSearchListItems,
   toScheduleUpdateRequest,
+  type ScheduleSearchResponse,
 } from './mapper';
 
 import type {
@@ -39,6 +42,15 @@ export interface GetSchedulesByWeekInput {
 
 export interface GetSchedulesByMonthInput {
   month: string;
+}
+
+export interface SearchSchedulesInput {
+  keyword?: string;
+  isQueue?: boolean;
+  status?: string;
+  conditionTags?: string[];
+  personalTags?: string[];
+  sortBy: string;
 }
 
 export async function fetchSchedulesByDate(
@@ -73,6 +85,16 @@ export async function fetchSchedulesByMonth(
   return toScheduleMonthlyOverview(response);
 }
 
+export async function searchSchedules(input: SearchSchedulesInput): Promise<ScheduleListItem[]> {
+  const response = await apiMutator<ScheduleSearchResponse>({
+    url: '/schedule/search',
+    method: 'GET',
+    params: toScheduleSearchParams(input),
+  });
+
+  return toScheduleSearchListItems(response);
+}
+
 export async function submitScheduleCreate(
   input: ScheduleCreateInput,
 ): Promise<ScheduleCreateResult> {
@@ -92,4 +114,21 @@ export async function submitScheduleUpdate(
 
 export async function submitScheduleDelete(scheduleId: number): Promise<void> {
   await deleteSchedule(scheduleId);
+}
+
+function toScheduleSearchParams(input: SearchSchedulesInput) {
+  return {
+    keyword: normalizeOptionalParam(input.keyword),
+    isQueue: input.isQueue,
+    status: input.status,
+    conditionTags: input.conditionTags?.length ? input.conditionTags : undefined,
+    personalTags: input.personalTags?.length ? input.personalTags : undefined,
+    sortBy: input.sortBy,
+  };
+}
+
+function normalizeOptionalParam(value: string | undefined) {
+  const normalized = value?.trim();
+
+  return normalized == null || normalized.length === 0 ? undefined : normalized;
 }

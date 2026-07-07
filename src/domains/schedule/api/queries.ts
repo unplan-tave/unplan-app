@@ -5,9 +5,11 @@ import {
   fetchSchedulesByDate,
   fetchSchedulesByMonth,
   fetchSchedulesByWeek,
+  searchSchedules,
 } from './client';
 import { scheduleQueryKeys } from './query-keys';
 
+import type { SearchSchedulesInput } from './client';
 import type {
   DailyScheduleGroup,
   ScheduleDetail,
@@ -26,6 +28,17 @@ export function useSchedulesByDateQuery(
     queryKey: scheduleQueryKeys.byDate(date),
     queryFn: () => fetchSchedulesByDate({ date }),
     enabled: date.length > 0,
+    ...options,
+  });
+}
+
+export function useScheduleSearchQuery(
+  input: SearchSchedulesInput,
+  options?: ScheduleQueryOptions<ScheduleListItem[]>,
+) {
+  return useQuery({
+    queryKey: scheduleQueryKeys.search(input),
+    queryFn: () => searchSchedules(input),
     ...options,
   });
 }
