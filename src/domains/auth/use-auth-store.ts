@@ -2,6 +2,7 @@ import { produce } from 'immer';
 import { create } from 'zustand';
 
 import { registerAuthSessionHandlers } from '@/lib/auth/auth-session-controller';
+import { clearClientSessionState } from '@/lib/auth/client-session-state';
 import { tokenStorage } from '@/lib/auth/token-storage';
 import { getDeviceId } from '@/lib/device/device-id';
 
@@ -27,6 +28,8 @@ export const useAuthStore = create<AuthState>()((set) => ({
   isAuthenticated: false,
 
   setSession: async (session: AuthSession) => {
+    clearClientSessionState();
+
     await tokenStorage.setTokens({
       accessToken: session.accessToken,
       refreshToken: session.refreshToken,
@@ -60,6 +63,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
 
   clearSession: async () => {
     await tokenStorage.clearTokens();
+    clearClientSessionState();
 
     set(
       produce((state: AuthState) => {
