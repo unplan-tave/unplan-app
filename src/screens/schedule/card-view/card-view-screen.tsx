@@ -22,7 +22,7 @@ export function CardViewScreen() {
   const {
     card,
     conditionTag,
-    cardPersonalTags,
+    cardPersonalTagLabels,
     isLoading,
     isError,
     isConvertSheetVisible,
@@ -67,7 +67,7 @@ export function CardViewScreen() {
           <CardViewHeader
             title={card.title}
             conditionTag={conditionTag}
-            personalTags={cardPersonalTags}
+            personalTagLabels={cardPersonalTagLabels}
           />
 
           {card.cardType === 'queue' ? (

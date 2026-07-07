@@ -132,6 +132,7 @@ export function toScheduleListItem(response: ScheduleGetResponse): ScheduleListI
     isQueue: response.is_queue ?? false,
     status: toScheduleStatus(response.status),
     conditionTagId: toConditionTagId(response.condition_tag),
+    personalTags: getPersonalTagsFromResponse(response),
   };
 }
 
@@ -152,6 +153,7 @@ function toScheduleSearchListItem(response: ScheduleSearchItemResponse): Schedul
     isQueue,
     status: toScheduleStatus(response.status),
     conditionTagId: toConditionTagId(response.conditionTag),
+    personalTags: response.personalTags ?? [],
   };
 }
 
@@ -166,6 +168,7 @@ export function toScheduleDetail(response: ScheduleDetailResponse): ScheduleDeta
     isQueue: response.is_queue ?? false,
     status: toScheduleStatus(response.status),
     conditionTagId: toConditionTagId(response.condition_tag),
+    personalTags: getPersonalTagsFromResponse(response),
     memo: response.memo ?? '',
     location: response.location ?? '',
     latitude: response.latitude ?? null,
@@ -177,6 +180,21 @@ export function toScheduleDetail(response: ScheduleDetailResponse): ScheduleDeta
     isRecurring: response.is_recurring ?? false,
     isConflict: response.is_conflict ?? false,
   };
+}
+
+function getPersonalTagsFromResponse(response: unknown): string[] {
+  if (typeof response !== 'object' || response == null) {
+    return [];
+  }
+
+  const value =
+    'personal_tags' in response
+      ? response.personal_tags
+      : 'personalTags' in response
+        ? response.personalTags
+        : undefined;
+
+  return Array.isArray(value) ? value.filter((tag): tag is string => typeof tag === 'string') : [];
 }
 
 export function toScheduleCreateResult(response: ScheduleCreateResponse): ScheduleCreateResult {

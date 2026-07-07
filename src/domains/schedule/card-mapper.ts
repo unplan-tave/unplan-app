@@ -50,13 +50,13 @@ export function toScheduleUpdateInput(
     estimatedMinutes: toEstimatedMinutes(values),
     memo: createInput.memo,
     isReminderEnabled: createInput.isReminderEnabled,
-    reminderMinutes: createInput.reminderMinutes,
-    reminderType: createInput.reminderType,
-    reminderSoundType: createInput.reminderSoundType,
   };
 }
 
-export function toCardItemFromScheduleDetail(detail: ScheduleDetail): CardItem {
+export function toCardItemFromScheduleDetail(
+  detail: ScheduleDetail,
+  personalTags: PersonalTagOption[],
+): CardItem {
   const defaults = createDefaultCardFormValues();
   const estimatedDuration = fromEstimatedMinutes(detail.estimatedMinutes);
   const isPinTimeFilled =
@@ -68,6 +68,8 @@ export function toCardItemFromScheduleDetail(detail: ScheduleDetail): CardItem {
     cardType: detail.isQueue ? 'queue' : 'pin',
     title: detail.title,
     conditionTagId: detail.conditionTagId,
+    personalTagIds: toPersonalTagIds(detail.personalTags, personalTags),
+    personalTagLabels: detail.personalTags,
     dateMode: detail.isQueue ? 'empty' : 'single',
     dateStart: detail.isQueue ? '' : detail.date,
     timeFilled: isPinTimeFilled,
@@ -85,11 +87,17 @@ export function toCardItemFromScheduleDetail(detail: ScheduleDetail): CardItem {
   };
 }
 
-export function toCardItemsFromScheduleList(items: ScheduleListItem[]): CardItem[] {
-  return items.map(toCardItemFromScheduleListItem);
+export function toCardItemsFromScheduleList(
+  items: ScheduleListItem[],
+  personalTags: PersonalTagOption[],
+): CardItem[] {
+  return items.map((item) => toCardItemFromScheduleListItem(item, personalTags));
 }
 
-export function toCardItemFromScheduleListItem(item: ScheduleListItem): CardItem {
+export function toCardItemFromScheduleListItem(
+  item: ScheduleListItem,
+  personalTags: PersonalTagOption[],
+): CardItem {
   const defaults = createDefaultCardFormValues();
   const estimatedDuration = fromEstimatedMinutes(item.estimatedMinutes);
   const isPinTimeFilled = !item.isQueue && item.startTime.length > 0 && item.endTime.length > 0;
@@ -100,6 +108,8 @@ export function toCardItemFromScheduleListItem(item: ScheduleListItem): CardItem
     cardType: item.isQueue ? 'queue' : 'pin',
     title: item.title,
     conditionTagId: item.conditionTagId,
+    personalTagIds: toPersonalTagIds(item.personalTags, personalTags),
+    personalTagLabels: item.personalTags,
     progressStatus: toCardProgressStatus(item.status),
     dateMode: item.isQueue ? 'empty' : 'single',
     dateStart: item.isQueue ? '' : item.date,
@@ -115,6 +125,12 @@ export function toCardItemFromScheduleListItem(item: ScheduleListItem): CardItem
   };
 }
 
+function toPersonalTagIds(tagLabels: string[], personalTags: PersonalTagOption[]) {
+  const labelSet = new Set(tagLabels.map((label) => label.trim()).filter(Boolean));
+
+  return personalTags.filter((tag) => labelSet.has(tag.label)).map((tag) => tag.id);
+}
+
 function toScheduleInputBase(
   values: CardFormValues,
   personalTags: PersonalTagOption[],
@@ -122,7 +138,7 @@ function toScheduleInputBase(
   return {
     title: values.title.trim(),
     conditionTagId: values.conditionTagId,
-    personalTags: toPersonalTagLabels(values.personalTagIds, personalTags),
+    personalTags: toMergedPersonalTagLabels(values, personalTags),
     memo: normalizeOptionalText(values.memo),
     isReminderEnabled: values.reminderEnabled,
   };
@@ -135,6 +151,17 @@ function toPersonalTagLabels(tagIds: string[], personalTags: PersonalTagOption[]
     .filter((label) => label.length > 0);
 
   return labels.length > 0 ? labels : undefined;
+}
+
+function toMergedPersonalTagLabels(values: CardFormValues, personalTags: PersonalTagOption[]) {
+  const selectedLabels = toPersonalTagLabels(values.personalTagIds, personalTags) ?? [];
+  const labels = [...values.personalTagLabels, ...selectedLabels]
+    .map((label) => label.trim())
+    .filter((label) => label.length > 0);
+
+  const uniqueLabels = [...new Set(labels)];
+
+  return uniqueLabels.length > 0 ? uniqueLabels : undefined;
 }
 
 function toEstimatedMinutes(values: CardFormValues) {

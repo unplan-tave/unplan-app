@@ -66,8 +66,8 @@ export function useCardListScreen() {
   );
   const scheduleSearchQuery = useScheduleSearchQuery(searchInput);
   const cards = useMemo(
-    () => toCardItemsFromScheduleList(scheduleSearchQuery.data ?? []),
-    [scheduleSearchQuery.data],
+    () => toCardItemsFromScheduleList(scheduleSearchQuery.data ?? [], personalTags),
+    [personalTags, scheduleSearchQuery.data],
   );
   const filteredCards = cards;
   const sections = useMemo(() => groupCardsByMonth(filteredCards), [filteredCards]);

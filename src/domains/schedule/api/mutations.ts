@@ -50,6 +50,7 @@ function updateScheduleDetailCacheAfterCreate(
     isQueue: result.isQueue,
     status: 'todo',
     conditionTagId: input.conditionTagId,
+    personalTags: input.personalTags ?? [],
     memo: input.memo ?? '',
     location: '',
     latitude: input.latitude ?? null,
@@ -86,6 +87,7 @@ function updateScheduleListCacheAfterCreate(
     isQueue: result.isQueue,
     status: 'todo',
     conditionTagId: input.conditionTagId,
+    personalTags: input.personalTags ?? [],
   };
 
   queryClient.setQueryData<ScheduleListItem[]>(scheduleQueryKeys.byDate(date), (current = []) => {

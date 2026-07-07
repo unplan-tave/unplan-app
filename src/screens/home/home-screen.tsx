@@ -17,6 +17,7 @@ import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 import { useSchedulesByDateQuery } from '@/domains/schedule/api/queries';
 import { toCardItemsFromScheduleList } from '@/domains/schedule/card-mapper';
+import { getCardPersonalTagLabels } from '@/domains/schedule/list';
 import { getConditionTagById, type CardItem } from '@/domains/schedule/model';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 
@@ -46,8 +47,8 @@ export function HomeScreen() {
   const todayDate = useMemo(() => formatDateValue(now), [now]);
   const schedulesByDateQuery = useSchedulesByDateQuery(todayDate);
   const cards = useMemo(
-    () => toCardItemsFromScheduleList(schedulesByDateQuery.data ?? []),
-    [schedulesByDateQuery.data],
+    () => toCardItemsFromScheduleList(schedulesByDateQuery.data ?? [], personalTags),
+    [personalTags, schedulesByDateQuery.data],
   );
   const currentTimeLabel = useMemo(() => formatTimeLabel(now), [now]);
   const timelineCards = useMemo(
@@ -124,9 +125,7 @@ export function HomeScreen() {
           ) : (
             timelineCards.map((card) => {
               const conditionTag = getConditionTagById(card.conditionTagId);
-              const cardPersonalTags = personalTags.filter((tag) =>
-                card.personalTagIds.includes(tag.id),
-              );
+              const cardPersonalTagLabels = getCardPersonalTagLabels(card, personalTags);
 
               return (
                 <TimelineCard
@@ -141,8 +140,8 @@ export function HomeScreen() {
                       variant: 'condition' as const,
                       condition: card.conditionTagId,
                     },
-                    ...cardPersonalTags.map((tag) => ({
-                      label: tag.label,
+                    ...cardPersonalTagLabels.map((label) => ({
+                      label,
                       variant: 'personal' as const,
                     })),
                   ]}

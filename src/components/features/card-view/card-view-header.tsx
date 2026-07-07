@@ -3,16 +3,16 @@ import { StyleSheet, View } from 'react-native';
 import { Tag } from '@/components/ui/Tag';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
-import { type ConditionTagOption, type PersonalTagOption } from '@/domains/schedule/model';
+import { type ConditionTagOption } from '@/domains/schedule/model';
 
 export function CardViewHeader({
   title,
   conditionTag,
-  personalTags,
+  personalTagLabels,
 }: {
   title: string;
   conditionTag: ConditionTagOption;
-  personalTags: PersonalTagOption[];
+  personalTagLabels: string[];
 }) {
   return (
     <View style={styles.head}>
@@ -21,8 +21,8 @@ export function CardViewHeader({
       </Typography>
       <View style={styles.tagRow}>
         <Tag variant="condition" condition={conditionTag.id} label={conditionTag.label} />
-        {personalTags.map((tag) => (
-          <Tag key={tag.id} variant="personal" label={tag.label} />
+        {personalTagLabels.map((label) => (
+          <Tag key={label} variant="personal" label={label} />
         ))}
       </View>
     </View>

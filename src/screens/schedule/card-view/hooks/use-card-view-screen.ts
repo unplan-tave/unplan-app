@@ -11,6 +11,7 @@ import {
   toScheduleCreateInput,
   toScheduleUpdateInput,
 } from '@/domains/schedule/card-mapper';
+import { getCardPersonalTagLabels } from '@/domains/schedule/list';
 import { type CardFormValues, getConditionTagById } from '@/domains/schedule/model';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 
@@ -36,15 +37,15 @@ export function useCardViewScreen() {
     () =>
       scheduleDetailQuery.data == null
         ? null
-        : toCardItemFromScheduleDetail(scheduleDetailQuery.data),
-    [scheduleDetailQuery.data],
+        : toCardItemFromScheduleDetail(scheduleDetailQuery.data, personalTags),
+    [personalTags, scheduleDetailQuery.data],
   );
   const card = apiCard;
   const isConverting = createScheduleMutation.isPending || updateScheduleMutation.isPending;
 
   const conditionTag = card == null ? null : getConditionTagById(card.conditionTagId);
-  const cardPersonalTags = useMemo(
-    () => (card == null ? [] : personalTags.filter((tag) => card.personalTagIds.includes(tag.id))),
+  const cardPersonalTagLabels = useMemo(
+    () => (card == null ? [] : getCardPersonalTagLabels(card, personalTags)),
     [card, personalTags],
   );
 
@@ -162,7 +163,7 @@ export function useCardViewScreen() {
   return {
     card,
     conditionTag,
-    cardPersonalTags,
+    cardPersonalTagLabels,
     isLoading: scheduleDetailQuery.isLoading,
     isError: scheduleDetailQuery.isError,
     isConvertSheetVisible,

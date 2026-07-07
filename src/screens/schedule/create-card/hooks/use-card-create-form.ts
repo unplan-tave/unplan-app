@@ -10,6 +10,7 @@ import {
   type CardTab,
   createDefaultCardFormValues,
 } from '@/domains/schedule/model';
+import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 import { useKeyboardHeight } from '@/hooks/use-keyboard-height';
 
 import { createCardCreateScreenProps } from './card-create-screen-props';
@@ -27,6 +28,7 @@ export function useCardCreateForm() {
   const [activeTab, setActiveTab] = useState<CardTab>(initialCardType);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [initializedTitle, setInitializedTitle] = useState<string | null>(null);
+  const personalTags = useScheduleStore((store) => store.personalTags);
   const keyboardHeight = useKeyboardHeight();
 
   const {
@@ -44,13 +46,14 @@ export function useCardCreateForm() {
     () =>
       scheduleDetailQuery.data == null
         ? null
-        : toCardItemFromScheduleDetail(scheduleDetailQuery.data),
-    [scheduleDetailQuery.data],
+        : toCardItemFromScheduleDetail(scheduleDetailQuery.data, personalTags),
+    [personalTags, scheduleDetailQuery.data],
   );
 
   const title = watch('title') ?? '';
   const conditionTagId = watch('conditionTagId');
   const personalTagIds = watch('personalTagIds');
+  const personalTagLabels = watch('personalTagLabels');
   const dateMode = watch('dateMode');
   const dateStart = watch('dateStart');
   const dateEnd = watch('dateEnd');
@@ -73,6 +76,7 @@ export function useCardCreateForm() {
       title,
       conditionTagId,
       personalTagIds,
+      personalTagLabels,
       dateMode,
       dateStart,
       dateEnd,
@@ -103,6 +107,7 @@ export function useCardCreateForm() {
       location,
       locationDetail,
       memo,
+      personalTagLabels,
       personalTagIds,
       recommendationAcknowledged,
       recurrence,
