@@ -20,7 +20,8 @@ export function useNicknameEdit() {
   });
   const [nickname, setNickname] = useState('');
   const trimmedNickname = nickname.trim();
-  const canSubmit = trimmedNickname.length > 0;
+  const hasLoadedProfile = !profileQuery.isLoading && profileQuery.data != null;
+  const canSubmit = hasLoadedProfile && trimmedNickname.length > 0;
 
   const placeholder = useMemo(() => `1~${MAX_NICKNAME_LENGTH}자`, []);
 

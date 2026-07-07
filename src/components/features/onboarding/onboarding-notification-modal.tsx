@@ -35,7 +35,7 @@ export function OnboardingNotificationModal({
   onDeny,
 }: OnboardingNotificationModalProps) {
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onDeny}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={() => {}}>
       <View style={styles.overlay}>
         <View style={styles.cardBorder}>
           {BlurView != null ? (

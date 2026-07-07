@@ -44,9 +44,7 @@ export function useOptimisticQueryMutation<TData, TVariables, TCache = TVariable
       return { previous };
     },
     onError: (error, variables, onMutateResult, context: MutationFunctionContext) => {
-      if (onMutateResult?.previous !== undefined) {
-        queryClient.setQueryData(queryKey, onMutateResult.previous);
-      }
+      queryClient.setQueryData(queryKey, onMutateResult?.previous);
 
       options.onError?.(error, variables, onMutateResult, context);
     },
