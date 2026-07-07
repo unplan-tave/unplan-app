@@ -62,8 +62,10 @@
     "web": "expo start --web",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
+    "check": "npm run type-check && npm run lint && npm run format:check",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "api:generate": "orval --config orval.config.ts",
     "prepare": "husky"
   },
