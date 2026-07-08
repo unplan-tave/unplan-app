@@ -10,6 +10,7 @@ import { HomeAddBottomSheet } from '@/components/features/home/home-add-bottom-s
 import { HomeBackground } from '@/components/features/home/home-background';
 import { HomeBottomNav } from '@/components/features/home/home-bottom-nav';
 import { HomeCalendarView } from '@/components/features/home/home-calendar-view';
+import { HomeProgressSheet } from '@/components/features/home/home-progress-sheet';
 import { TimelineCard } from '@/components/features/home/timeline-card';
 import { OnboardingNotificationModal } from '@/components/features/onboarding/onboarding-notification-modal';
 import { Icon } from '@/components/ui/Icon';
@@ -19,8 +20,17 @@ import { ViewModeButton } from '@/components/ui/ViewModeButton';
 import { colors, radius, spacing } from '@/constants/theme';
 import { getConditionCommentByDate } from '@/domains/condition/comment';
 import { useUpdateAlarmSettingsMutation } from '@/domains/member/api/mutations';
-import { getCardPersonalTagLabels } from '@/domains/schedule/list';
-import { getConditionTagById, type CardItem } from '@/domains/schedule/model';
+import { useUpdateScheduleMutation } from '@/domains/schedule/api/mutations';
+import {
+  getCardPersonalTagLabels,
+  getCardProgressStatus,
+  progressStatusToScheduleStatus,
+} from '@/domains/schedule/list';
+import {
+  getConditionTagById,
+  type CardItem,
+  type CardProgressStatus,
+} from '@/domains/schedule/model';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 import { t } from '@/lib/i18n';
 
@@ -56,7 +66,10 @@ export function HomeScreen() {
   const [dismissedRecommendationIds, setDismissedRecommendationIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const [progressCard, setProgressCard] = useState<CardItem | null>(null);
+  const [progressStatus, setProgressStatus] = useState<CardProgressStatus>('incomplete');
   const updateAlarmSettingsMutation = useUpdateAlarmSettingsMutation();
+  const updateScheduleMutation = useUpdateScheduleMutation();
   const personalTags = useScheduleStore((store) => store.personalTags);
   const homeDate = useMemo(() => getHomeDateLabel(selectedDate), [selectedDate]);
   const selectedDateValue = useMemo(() => formatDateValue(selectedDate), [selectedDate]);
@@ -168,6 +181,44 @@ export function HomeScreen() {
     router.navigate('/schedule');
   }, []);
 
+  const handleCardPress = useCallback(
+    (card: CardItem) => {
+      // 종료 시각이 지난 일정만 진행도 확인 시트를 띄웁니다. (Figma: "종료 시각이 지난 일정")
+      if (isScheduleEnded(card, selectedDate, now)) {
+        setProgressCard(card);
+        setProgressStatus(getCardProgressStatus(card));
+        return;
+      }
+
+      router.push(`/card/view?cardId=${card.id}`);
+    },
+    [now, selectedDate],
+  );
+
+  const handleCloseProgressSheet = useCallback(() => {
+    setProgressCard(null);
+  }, []);
+
+  const handleCompleteProgress = useCallback(() => {
+    if (progressCard == null || updateScheduleMutation.isPending) {
+      return;
+    }
+
+    updateScheduleMutation.mutate(
+      {
+        scheduleId: Number(progressCard.id),
+        data: { status: progressStatusToScheduleStatus(progressStatus) },
+      },
+      { onSuccess: () => setProgressCard(null) },
+    );
+  }, [progressCard, progressStatus, updateScheduleMutation]);
+
+  // TODO(home-progress): "큐 카드로 남겨두기"(핀 → 큐 전환) 시트 연동 예정.
+  const handleLeaveAsQueue = useCallback(() => {}, []);
+
+  // TODO(home-progress): "종료 시간 연장" 스텝퍼 시트 연동 예정.
+  const handleExtendTime = useCallback(() => {}, []);
+
   const handleSelectDate = useCallback((date: Date) => {
     setSelectedDate(date);
   }, []);
@@ -230,11 +281,7 @@ export function HomeScreen() {
                           variant: 'personal' as const,
                         })),
                       ]}
-                      onPress={
-                        isRecommendation
-                          ? undefined
-                          : () => router.push(`/card/view?cardId=${card.id}`)
-                      }
+                      onPress={isRecommendation ? undefined : () => handleCardPress(card)}
                       onAddPress={
                         isRecommendation ? () => handleAddRecommendation(card.id) : undefined
                       }
@@ -304,6 +351,17 @@ export function HomeScreen() {
         onRecommendationAddPress={handleAddRecommendation}
         onViewQueuePress={handleViewQueue}
       />
+      <HomeProgressSheet
+        visible={progressCard != null}
+        timeSummary={progressCard ? getProgressTimeSummary(progressCard) : ''}
+        status={progressStatus}
+        onChangeStatus={setProgressStatus}
+        onCancel={handleCloseProgressSheet}
+        onComplete={handleCompleteProgress}
+        completeDisabled={updateScheduleMutation.isPending}
+        onLeaveAsQueuePress={handleLeaveAsQueue}
+        onExtendTimePress={handleExtendTime}
+      />
       <OnboardingNotificationModal
         visible={isNotificationModalVisible}
         isSubmitting={updateAlarmSettingsMutation.isPending}
@@ -333,6 +391,29 @@ function getTimelineRange(card: CardItem) {
   }
 
   return `${card.timeStart || '00:00'} - ${card.timeEnd || '00:00'}`;
+}
+
+function isScheduleEnded(card: CardItem, selectedDate: Date, now: Date) {
+  if (card.cardType === 'queue' || !card.timeFilled || !card.timeEnd) {
+    return false;
+  }
+
+  const [hours, minutes] = card.timeEnd.split(':').map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return false;
+  }
+
+  const endAt = new Date(selectedDate);
+  endAt.setHours(hours, minutes, 0, 0);
+
+  return endAt.getTime() <= now.getTime();
+}
+
+function getProgressTimeSummary(card: CardItem) {
+  const monthDay = card.dateStart ? card.dateStart.slice(5).replace(/[.-]/g, '/') : '';
+  const range = card.timeFilled ? `${card.timeStart} - ${card.timeEnd}` : '';
+
+  return [monthDay, range].filter(Boolean).join('  ');
 }
 
 function getTimelineCardStatus(card: CardItem, isRecommendation: boolean) {
