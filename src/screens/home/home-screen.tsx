@@ -6,10 +6,13 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 
 import { ConditionSummaryPanel } from '@/components/domain/condition/condition-summary-panel';
+import { CardToast } from '@/components/domain/schedule/card-toast';
+import { DueDurationSheet } from '@/components/domain/schedule/due-duration-sheet';
 import { HomeAddBottomSheet } from '@/components/features/home/home-add-bottom-sheet';
 import { HomeBackground } from '@/components/features/home/home-background';
 import { HomeBottomNav } from '@/components/features/home/home-bottom-nav';
 import { HomeCalendarView } from '@/components/features/home/home-calendar-view';
+import { HomeExtendTimeSheet } from '@/components/features/home/home-extend-time-sheet';
 import { HomeProgressSheet } from '@/components/features/home/home-progress-sheet';
 import { TimelineCard } from '@/components/features/home/timeline-card';
 import { OnboardingNotificationModal } from '@/components/features/onboarding/onboarding-notification-modal';
@@ -21,6 +24,7 @@ import { colors, radius, spacing } from '@/constants/theme';
 import { getConditionCommentByDate } from '@/domains/condition/comment';
 import { useUpdateAlarmSettingsMutation } from '@/domains/member/api/mutations';
 import { useUpdateScheduleMutation } from '@/domains/schedule/api/mutations';
+import { toQueueConversionUpdateInput } from '@/domains/schedule/card-mapper';
 import {
   getCardPersonalTagLabels,
   getCardProgressStatus,
@@ -31,6 +35,8 @@ import {
   type CardItem,
   type CardProgressStatus,
 } from '@/domains/schedule/model';
+import { type DueDurationDraft } from '@/domains/schedule/queue';
+import { addMinutesToTime, parseTimeToMinutes } from '@/domains/schedule/time';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 import { t } from '@/lib/i18n';
 
@@ -54,6 +60,7 @@ const HOME_TIMELINE_CARD_LIST_BOTTOM = 160;
 const HOME_CURRENT_TIME_TOP = 252;
 const HOME_CURRENT_TIME_LINE_WIDTH = 13;
 const RECOMMENDATION_HELPER_TEXT = '잠깐 쉬는 게 어떨까요?';
+const EXTEND_STEP_MINUTES = 10;
 
 export function HomeScreen() {
   const params = useLocalSearchParams<{ onboardingNotification?: string }>();
@@ -68,6 +75,10 @@ export function HomeScreen() {
   );
   const [progressCard, setProgressCard] = useState<CardItem | null>(null);
   const [progressStatus, setProgressStatus] = useState<CardProgressStatus>('incomplete');
+  const [isExtendSheetVisible, setIsExtendSheetVisible] = useState(false);
+  const [isQueueSheetVisible, setIsQueueSheetVisible] = useState(false);
+  const [extensionMinutes, setExtensionMinutes] = useState(EXTEND_STEP_MINUTES);
+  const [isConflictToastDismissed, setIsConflictToastDismissed] = useState(false);
   const updateAlarmSettingsMutation = useUpdateAlarmSettingsMutation();
   const updateScheduleMutation = useUpdateScheduleMutation();
   const personalTags = useScheduleStore((store) => store.personalTags);
@@ -92,6 +103,11 @@ export function HomeScreen() {
       ].sort((first, second) => first.card.timeStart.localeCompare(second.card.timeStart)),
     [timelineCards, visibleRecommendations],
   );
+  const extendComputation = useMemo(
+    () => computeExtendState(progressCard, extensionMinutes, timelineCards),
+    [extensionMinutes, progressCard, timelineCards],
+  );
+  const queueDraftValue = useMemo(() => createQueueDraftFromCard(progressCard), [progressCard]);
   const changeViewModeByZoom = useCallback((direction: 'in' | 'out') => {
     setViewMode((prev) => getZoomedHomeViewMode(prev, direction));
   }, []);
@@ -197,6 +213,8 @@ export function HomeScreen() {
 
   const handleCloseProgressSheet = useCallback(() => {
     setProgressCard(null);
+    setIsExtendSheetVisible(false);
+    setIsQueueSheetVisible(false);
   }, []);
 
   const handleCompleteProgress = useCallback(() => {
@@ -213,11 +231,74 @@ export function HomeScreen() {
     );
   }, [progressCard, progressStatus, updateScheduleMutation]);
 
-  // TODO(home-progress): "큐 카드로 남겨두기"(핀 → 큐 전환) 시트 연동 예정.
-  const handleLeaveAsQueue = useCallback(() => {}, []);
+  const handleOpenQueueSheet = useCallback(() => {
+    setIsQueueSheetVisible(true);
+  }, []);
 
-  // TODO(home-progress): "종료 시간 연장" 스텝퍼 시트 연동 예정.
-  const handleExtendTime = useCallback(() => {}, []);
+  const handleCloseQueueSheet = useCallback(() => {
+    setIsQueueSheetVisible(false);
+  }, []);
+
+  const handleConfirmQueueConversion = useCallback(
+    (draft: DueDurationDraft) => {
+      if (progressCard == null || updateScheduleMutation.isPending) {
+        return;
+      }
+
+      updateScheduleMutation.mutate(
+        {
+          scheduleId: Number(progressCard.id),
+          data: toQueueConversionUpdateInput(draft),
+        },
+        {
+          onSuccess: () => {
+            setIsQueueSheetVisible(false);
+            setProgressCard(null);
+          },
+        },
+      );
+    },
+    [progressCard, updateScheduleMutation],
+  );
+
+  const handleOpenExtendSheet = useCallback(() => {
+    setExtensionMinutes(EXTEND_STEP_MINUTES);
+    setIsConflictToastDismissed(false);
+    setIsExtendSheetVisible(true);
+  }, []);
+
+  const handleCloseExtendSheet = useCallback(() => {
+    setIsExtendSheetVisible(false);
+  }, []);
+
+  const handleDecreaseExtension = useCallback(() => {
+    setIsConflictToastDismissed(false);
+    setExtensionMinutes((prev) => Math.max(EXTEND_STEP_MINUTES, prev - EXTEND_STEP_MINUTES));
+  }, []);
+
+  const handleIncreaseExtension = useCallback(() => {
+    setIsConflictToastDismissed(false);
+    setExtensionMinutes((prev) => prev + EXTEND_STEP_MINUTES);
+  }, []);
+
+  const handleCompleteExtension = useCallback(() => {
+    if (progressCard == null || extendComputation.hasConflict || updateScheduleMutation.isPending) {
+      return;
+    }
+
+    updateScheduleMutation.mutate(
+      {
+        scheduleId: Number(progressCard.id),
+        data: { endTime: extendComputation.newEndTime },
+      },
+      {
+        onSuccess: () => {
+          setIsExtendSheetVisible(false);
+          setProgressCard(null);
+        },
+      },
+    );
+  }, [extendComputation, progressCard, updateScheduleMutation]);
 
   const handleSelectDate = useCallback((date: Date) => {
     setSelectedDate(date);
@@ -352,16 +433,52 @@ export function HomeScreen() {
         onViewQueuePress={handleViewQueue}
       />
       <HomeProgressSheet
-        visible={progressCard != null}
+        visible={progressCard != null && !isExtendSheetVisible && !isQueueSheetVisible}
         timeSummary={progressCard ? getProgressTimeSummary(progressCard) : ''}
         status={progressStatus}
         onChangeStatus={setProgressStatus}
         onCancel={handleCloseProgressSheet}
         onComplete={handleCompleteProgress}
         completeDisabled={updateScheduleMutation.isPending}
-        onLeaveAsQueuePress={handleLeaveAsQueue}
-        onExtendTimePress={handleExtendTime}
+        onLeaveAsQueuePress={handleOpenQueueSheet}
+        onExtendTimePress={handleOpenExtendSheet}
       />
+      {progressCard ? (
+        <DueDurationSheet
+          visible={isQueueSheetVisible}
+          value={queueDraftValue}
+          title="큐 카드로 남겨두기"
+          subtitle={'일정을 수행할 시간을 나중에 찾아볼게요\n마감일과 소요 시간을 확인해 주세요'}
+          scheduleTitle={progressCard.title}
+          leftAction="back"
+          allowClearDueDate
+          onClose={handleCloseQueueSheet}
+          onDone={handleConfirmQueueConversion}
+        />
+      ) : null}
+      {progressCard ? (
+        <HomeExtendTimeSheet
+          visible={isExtendSheetVisible}
+          title={progressCard.title}
+          dateLabel={getScheduleMonthDay(progressCard)}
+          startTime={progressCard.timeStart}
+          newEndTime={extendComputation.newEndTime}
+          addedMinutes={extensionMinutes}
+          decreaseDisabled={extendComputation.decreaseDisabled}
+          hasConflict={extendComputation.hasConflict}
+          onBack={handleCloseExtendSheet}
+          onComplete={handleCompleteExtension}
+          onDecrease={handleDecreaseExtension}
+          onIncrease={handleIncreaseExtension}
+          completeDisabled={extendComputation.hasConflict || updateScheduleMutation.isPending}
+        />
+      ) : null}
+      {isExtendSheetVisible && extendComputation.hasConflict && !isConflictToastDismissed ? (
+        <CardToast
+          message="다음 일정과 겹쳐요!"
+          onClose={() => setIsConflictToastDismissed(true)}
+        />
+      ) : null}
       <OnboardingNotificationModal
         visible={isNotificationModalVisible}
         isSubmitting={updateAlarmSettingsMutation.isPending}
@@ -409,11 +526,93 @@ function isScheduleEnded(card: CardItem, selectedDate: Date, now: Date) {
   return endAt.getTime() <= now.getTime();
 }
 
+function getScheduleMonthDay(card: CardItem) {
+  return card.dateStart ? card.dateStart.slice(5).replace(/[.-]/g, '/') : '';
+}
+
 function getProgressTimeSummary(card: CardItem) {
-  const monthDay = card.dateStart ? card.dateStart.slice(5).replace(/[.-]/g, '/') : '';
   const range = card.timeFilled ? `${card.timeStart} - ${card.timeEnd}` : '';
 
-  return [monthDay, range].filter(Boolean).join('  ');
+  return [getScheduleMonthDay(card), range].filter(Boolean).join('  ');
+}
+
+/** 큐 전환 시트 초기값: 마감일은 미지정, 소요시간은 기존 핀 일정의 시간 범위(종료-시작)에서 가져옵니다. */
+function createQueueDraftFromCard(card: CardItem | null): DueDurationDraft {
+  if (card == null) {
+    return { dueDate: '', durationHours: 0, durationMinutes: 0, durationUnknown: false };
+  }
+
+  const startMinutes = parseTimeToMinutes(card.timeStart);
+  const endMinutes = parseTimeToMinutes(card.timeEnd);
+  const rangeMinutes =
+    card.timeFilled && startMinutes != null && endMinutes != null && endMinutes > startMinutes
+      ? endMinutes - startMinutes
+      : card.durationHours * 60 + card.durationMinutes;
+
+  return {
+    dueDate: '',
+    durationHours: Math.floor(rangeMinutes / 60),
+    durationMinutes: rangeMinutes % 60,
+    durationUnknown: false,
+  };
+}
+
+interface ExtendState {
+  newEndTime: string;
+  hasConflict: boolean;
+  decreaseDisabled: boolean;
+}
+
+function computeExtendState(
+  card: CardItem | null,
+  extensionMinutes: number,
+  cards: CardItem[],
+): ExtendState {
+  if (card == null) {
+    return { newEndTime: '', hasConflict: false, decreaseDisabled: true };
+  }
+
+  const newEndTime = addMinutesToTime(card.timeEnd, extensionMinutes);
+  const newEndMinutes = parseTimeToMinutes(newEndTime);
+  const originalEndMinutes = parseTimeToMinutes(card.timeEnd);
+  const nextStartMinutes = getNextScheduleStartMinutes(card, originalEndMinutes, cards);
+  const hasConflict =
+    newEndMinutes != null && nextStartMinutes != null && newEndMinutes > nextStartMinutes;
+
+  return {
+    newEndTime,
+    hasConflict,
+    decreaseDisabled: extensionMinutes <= EXTEND_STEP_MINUTES,
+  };
+}
+
+/** 연장 대상 일정 종료 이후 가장 먼저 시작하는 핀 일정의 시작 분. 없으면 null. */
+function getNextScheduleStartMinutes(
+  card: CardItem,
+  originalEndMinutes: number | null,
+  cards: CardItem[],
+): number | null {
+  if (originalEndMinutes == null) {
+    return null;
+  }
+
+  let nextStart: number | null = null;
+  for (const other of cards) {
+    if (other.id === card.id || other.cardType === 'queue' || !other.timeFilled) {
+      continue;
+    }
+
+    const startMinutes = parseTimeToMinutes(other.timeStart);
+    if (startMinutes == null || startMinutes < originalEndMinutes) {
+      continue;
+    }
+
+    if (nextStart == null || startMinutes < nextStart) {
+      nextStart = startMinutes;
+    }
+  }
+
+  return nextStart;
 }
 
 function getTimelineCardStatus(card: CardItem, isRecommendation: boolean) {
