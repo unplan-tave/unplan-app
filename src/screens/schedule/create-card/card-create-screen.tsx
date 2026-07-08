@@ -3,10 +3,10 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { CardCreateHeader } from '@/components/domain/schedule/card-create-header';
 import { CardToast } from '@/components/domain/schedule/card-toast';
+import { DueDurationSheet } from '@/components/domain/schedule/due-duration-sheet';
 import { CardForm } from '@/components/features/create-card/card-form';
 import { DateOnlyGuideModal } from '@/components/features/create-card/date-only-guide-modal';
 import { DateTimeSheet } from '@/components/features/create-card/date-time-sheet';
-import { DueDurationSheet } from '@/components/features/create-card/due-duration-sheet';
 import { LocationSheet } from '@/components/features/create-card/location-sheet';
 import { RepeatCustomSheet } from '@/components/features/create-card/repeat-custom-sheet';
 import { RepeatPresetSheet } from '@/components/features/create-card/repeat-preset-sheet';

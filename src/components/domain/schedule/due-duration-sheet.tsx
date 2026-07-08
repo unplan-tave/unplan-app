@@ -24,19 +24,38 @@ const DATE_CELL_RADIUS = DATE_CELL_SIZE / 2;
 const TODAY_DOT_SIZE = 4;
 const DURATION_BUTTON_HEIGHT = spacing[10];
 
+export type DueDurationLeftAction = 'cancel' | 'back';
+
+export interface DueDurationSheetProps {
+  visible: boolean;
+  value: DueDurationDraft;
+  onClose: () => void;
+  onDone: (draft: DueDurationDraft) => void;
+  onDurationUnknown?: () => void;
+  /** 헤더 타이틀. 기본 '마감일/소요시간' */
+  title?: string;
+  /** 타이틀 아래 안내 문구(여러 줄 가능) */
+  subtitle?: string;
+  /** 안내 문구 아래 일정 제목 카드 */
+  scheduleTitle?: string;
+  /** 좌측 액션 모양. 'cancel'(취소 텍스트, 기본) / 'back'(뒤로 화살표) */
+  leftAction?: DueDurationLeftAction;
+  /** 캘린더 하단에 '마감일 지정하지 않음' 토글 노출 */
+  allowClearDueDate?: boolean;
+}
+
 export function DueDurationSheet({
   visible,
   value,
   onClose,
   onDone,
   onDurationUnknown,
-}: {
-  visible: boolean;
-  value: DueDurationDraft;
-  onClose: () => void;
-  onDone: (draft: DueDurationDraft) => void;
-  onDurationUnknown?: () => void;
-}) {
+  title = '마감일/소요시간',
+  subtitle,
+  scheduleTitle,
+  leftAction = 'cancel',
+  allowClearDueDate = false,
+}: DueDurationSheetProps) {
   const [draft, setDraft] = useState<DueDurationDraft>(value);
   const [calendarBaseDate, setCalendarBaseDate] = useState(() => new Date());
   const calendar = getCalendarMonth(calendarBaseDate);
@@ -62,6 +81,10 @@ export function DueDurationSheet({
     }
 
     setDraft((prev) => ({ ...prev, dueDate: dateValue }));
+  }, []);
+
+  const handleClearDueDate = useCallback(() => {
+    setDraft((prev) => ({ ...prev, dueDate: '' }));
   }, []);
 
   const handleAddDuration = useCallback((minutes: number) => {
@@ -126,9 +149,13 @@ export function DueDurationSheet({
           style={({ pressed }) => [styles.sheetHeaderAction, pressed && styles.pressed]}
           onPress={onClose}
         >
-          <Typography variant="bodyM" color={colors.primary}>
-            취소
-          </Typography>
+          {leftAction === 'back' ? (
+            <Icon name="arrowLeft" size={24} color={colors.gray[700]} />
+          ) : (
+            <Typography variant="bodyM" color={colors.primary}>
+              취소
+            </Typography>
+          )}
         </Pressable>
         <Typography
           pointerEvents="none"
@@ -137,7 +164,7 @@ export function DueDurationSheet({
           align="center"
           style={styles.sheetTitle}
         >
-          마감일/소요시간
+          {title}
         </Typography>
         <Pressable
           accessibilityLabel="마감일과 소요시간 선택 완료"
@@ -151,6 +178,20 @@ export function DueDurationSheet({
           </Typography>
         </Pressable>
       </View>
+
+      {subtitle ? (
+        <Typography variant="bodyM" color={colors.gray[600]} align="center">
+          {subtitle}
+        </Typography>
+      ) : null}
+
+      {scheduleTitle ? (
+        <Card variant="solid" accessibilityRole="none" style={styles.scheduleTitleCard}>
+          <Typography variant="titleS" color={colors.gray[800]} align="center">
+            {scheduleTitle}
+          </Typography>
+        </Card>
+      ) : null}
 
       <View style={styles.sheetContent}>
         <Card variant="solid" accessibilityRole="none" style={styles.calendarPanel}>
@@ -206,6 +247,20 @@ export function DueDurationSheet({
               />
             ))}
           </View>
+          {allowClearDueDate ? (
+            <Pressable
+              accessibilityLabel="마감일 지정하지 않음"
+              accessibilityRole="button"
+              accessibilityState={{ selected: draft.dueDate.length === 0 }}
+              hitSlop={8}
+              style={({ pressed }) => [styles.clearDueButton, pressed && styles.pressed]}
+              onPress={handleClearDueDate}
+            >
+              <Typography variant="bodyS" color={colors.gray[500]}>
+                마감일 지정하지 않음
+              </Typography>
+            </Pressable>
+          ) : null}
         </Card>
 
         <Card variant="solid" accessibilityRole="none" style={styles.durationPanel}>
@@ -354,6 +409,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
   },
+  scheduleTitleCard: {
+    width: '100%',
+    paddingVertical: spacing[4],
+    borderWidth: 0,
+    backgroundColor: colors.alpha.white50,
+  },
   sheetContent: {
     width: '100%',
     gap: spacing[3],
@@ -418,6 +479,12 @@ const styles = StyleSheet.create({
     height: TODAY_DOT_SIZE,
     borderRadius: TODAY_DOT_SIZE / 2,
     backgroundColor: colors.gray.white,
+  },
+  clearDueButton: {
+    alignSelf: 'center',
+    minHeight: spacing[6],
+    justifyContent: 'center',
+    paddingHorizontal: spacing[2],
   },
   durationPanel: {
     width: '100%',
