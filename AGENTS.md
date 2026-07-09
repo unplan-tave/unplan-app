@@ -26,8 +26,8 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
   - 특정 화면/플로우에 종속된 조합 컴포넌트는 `src/components/features/<screen-or-flow>`에 둡니다.
 - 도메인 타입, store, API wrapper, validation, 순수 로직은 `src/domains/<domain>`에 둡니다.
 - `card`는 최상위 domain이 아닙니다. pin card, queue card, card list/view/search는 `schedule` 도메인의 하위 개념입니다.
-- `domains`는 화면명이나 UI flow명이 아니라 제품/백엔드 도메인 기준으로 둡니다. 현재 기준 도메인은 `auth`, `member`, `onboarding-settings`, `schedule`, `sleep`, `condition`, `daily-memo`, `measurement`, `ai-recommendation`입니다.
-- `onboarding-settings`는 제품 도메인명입니다. 현재 코드의 `src/domains/onboarding`은 과도기 폴더이며, 폴더명 변경은 별도 PR에서 처리합니다.
+- `domains`는 화면명이나 UI flow명이 아니라 제품/백엔드 도메인 기준으로 둡니다. 현재 기준 도메인은 `auth`, `member`, `onboarding`, `schedule`, `sleep`, `condition`, `daily-memo`, `measurement`, `ai-recommendation`입니다.
+- `onboarding` 도메인은 최초 설정 저장(`/onboarding`)과 이후 선호값 수정(`setting-onboarding` API)을 담당합니다. 온보딩 UI 플로우는 `screens/onboarding`, `app/onboarding`에 둡니다.
 - 목표 도메인 목록은 문서에 명시하되, 실제 repo에는 현재 코드가 있는 폴더만 둡니다. 미래 도메인 폴더를 `.gitkeep`만으로 미리 만들지 않습니다.
 - 서버 상태 query/mutation hook은 도메인 API boundary(`src/domains/<domain>/api`)에 둡니다.
 - Orval generated code는 `src/lib/api`에 유지하고 직접 수정하지 않습니다. generated endpoint/model 직접 import는 `src/domains/<domain>/api/*`에서만 허용합니다.

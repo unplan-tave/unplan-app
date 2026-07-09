@@ -12,6 +12,7 @@ import type {
   CardTab,
   ConditionTagId,
   PersonalTagOption,
+  ScheduleStatus,
 } from './model';
 
 export type CardTypeFilter = 'all' | CardTab;
@@ -41,6 +42,17 @@ const ALL_PROGRESS_STATUSES: CardProgressStatus[] = ['incomplete', 'in_progress'
 
 export function getCardProgressStatus(card: CardItem): CardProgressStatus {
   return card.progressStatus ?? 'in_progress';
+}
+
+const PROGRESS_STATUS_TO_SCHEDULE_STATUS: Record<CardProgressStatus, ScheduleStatus> = {
+  incomplete: 'todo',
+  in_progress: 'inProgress',
+  complete: 'done',
+};
+
+/** 홈 진행도 세그먼트(시작전/진행중/완료) 선택 값을 일정 수정 API 상태로 변환합니다. */
+export function progressStatusToScheduleStatus(status: CardProgressStatus): ScheduleStatus {
+  return PROGRESS_STATUS_TO_SCHEDULE_STATUS[status];
 }
 
 export function getCardSortDate(card: CardItem): string {

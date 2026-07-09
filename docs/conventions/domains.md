@@ -17,7 +17,7 @@
 
 - `auth`
 - `member`
-- `onboarding-settings`
+- `onboarding`
 - `schedule`
 - `sleep`
 - `condition`
@@ -44,7 +44,7 @@
 
 파일과 하위 폴더는 실제 책임이 생길 때만 만듭니다. API가 아직 없으면 `api/`를 만들지 않고, 클라이언트 상태가 없으면 `use-<domain>-store.ts`를 만들지 않으며, 도메인 공통 상수가 없으면 `constants.ts`를 만들지 않습니다.
 
-`onboarding-settings`는 제품 도메인명입니다. 현재 코드에는 과도기적으로 `src/domains/onboarding` 폴더가 남아 있으며, 폴더명 변경은 별도 PR에서 처리합니다. 새 문서와 목표 구조에서는 `onboarding-settings`를 기준명으로 사용합니다.
+`onboarding` 도메인은 최초 설정 저장(`/onboarding`)과 이후 선호값 수정(`setting-onboarding` API)을 담당합니다. 온보딩 UI 플로우는 `screens/onboarding`, `app/onboarding`에 둡니다.
 
 ## 참조 규칙
 

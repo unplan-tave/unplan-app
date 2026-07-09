@@ -83,7 +83,7 @@ UI가 아닌 로직 레이어입니다.
 src/domains/
 ├── auth/
 ├── member/
-├── onboarding-settings/
+├── onboarding/
 ├── schedule/
 ├── sleep/
 ├── condition/

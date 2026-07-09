@@ -10,6 +10,7 @@ import type {
   ScheduleListItem,
   ScheduleUpdateInput,
 } from './model';
+import type { DueDurationDraft } from './queue';
 
 export function toScheduleCreateInput(
   cardType: CardTab,
@@ -50,6 +51,24 @@ export function toScheduleUpdateInput(
     estimatedMinutes: toEstimatedMinutes(values),
     memo: createInput.memo,
     isReminderEnabled: createInput.isReminderEnabled,
+  };
+}
+
+/**
+ * 핀카드를 큐카드로 전환할 때의 일정 수정 입력.
+ * 시작/종료 시간을 비워 큐카드로 만들고 마감일(date)과 소요시간을 넘깁니다.
+ * TODO(pin-to-queue-api): 빈 문자열 start/end 전송으로 큐 전환되는지 백엔드 동작 확인 필요.
+ */
+export function toQueueConversionUpdateInput(draft: DueDurationDraft): ScheduleUpdateInput {
+  const minutes = draft.durationUnknown
+    ? undefined
+    : draft.durationHours * 60 + draft.durationMinutes;
+
+  return {
+    date: normalizeOptionalDate(draft.dueDate),
+    startTime: '',
+    endTime: '',
+    estimatedMinutes: minutes != null && minutes > 0 ? minutes : undefined,
   };
 }
 

@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useScheduleSearchQuery } from '@/domains/schedule/api/queries';
@@ -36,6 +36,15 @@ export function useCardListScreen() {
   const personalTags = useScheduleStore((store) => store.personalTags);
   const [filters, setFilters] = useState<CardListFilters>(() => createDefaultCardListFilters());
   const [expandedFilter, setExpandedFilter] = useState<CardListMultiFilterKey | null>(null);
+  const [isScreenFocused, setIsScreenFocused] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      setIsScreenFocused(true);
+
+      return () => setIsScreenFocused(false);
+    }, []),
+  );
 
   useEffect(() => {
     setFilters((prev) => ({ ...prev, searchQuery: q ?? '' }));
@@ -64,7 +73,9 @@ export function useCardListScreen() {
       personalTags,
     ],
   );
-  const scheduleSearchQuery = useScheduleSearchQuery(searchInput);
+  const scheduleSearchQuery = useScheduleSearchQuery(searchInput, {
+    enabled: isScreenFocused,
+  });
   const cards = useMemo(
     () => toCardItemsFromScheduleList(scheduleSearchQuery.data ?? [], personalTags),
     [personalTags, scheduleSearchQuery.data],

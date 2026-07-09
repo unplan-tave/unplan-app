@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
-import { colors, radius, spacing } from '@/constants/theme';
+import { colors, fontFamilyWeight, radius, spacing } from '@/constants/theme';
 
 interface HomeBottomNavItem {
   value: string;
@@ -83,7 +83,13 @@ function NavItem({
       onPress={() => onPress?.(item.value)}
     >
       <Icon name={item.iconName} size={28} color={color} />
-      <Typography variant="caption" color={color} align="center" numberOfLines={1}>
+      <Typography
+        variant="caption"
+        color={color}
+        align="center"
+        numberOfLines={1}
+        style={styles.itemLabel}
+      >
         {item.label}
       </Typography>
     </Pressable>
@@ -117,6 +123,10 @@ const styles = StyleSheet.create({
     minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  itemLabel: {
+    fontFamily: fontFamilyWeight.semiBold,
+    fontWeight: '600',
   },
   itemMuted: {
     opacity: 0.5,

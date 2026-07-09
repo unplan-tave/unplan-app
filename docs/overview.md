@@ -85,7 +85,7 @@ src/
 
 **구조 원칙(AGENTS.md / core.md):** `app`은 route/layout만, 화면은 `screens`, 재사용 primitive는 `components/ui`, 도메인 표현은 `components/domain`, 화면/플로우 조합은 `components/features/<screen-or-flow>`, 도메인 로직은 `domains/<domain>`, 인프라는 `src/lib`. `card`는 최상위 domain이 아니라 `schedule` 도메인의 하위 개념이며, pin/queue card UI flow는 feature/screen 이름으로만 남긴다. 라우트 파일은 `export { XScreen as default } from '@/screens/...'` 형태의 1줄 재노출을 우선한다.
 
-목표 도메인 목록은 문서에 유지하되 실제 repo에는 현재 코드가 있는 폴더만 둔다. 현재 `onboarding` 폴더는 기존 구현명이며, 장기 도메인 명칭은 서버/제품 기준에 맞춰 `onboarding-settings`로 수렴시키는 것을 목표로 한다.
+목표 도메인 목록은 문서에 유지하되 실제 repo에는 현재 코드가 있는 폴더만 둔다. `onboarding` 도메인은 최초 설정 저장과 이후 선호값 수정(`setting-onboarding` API)을 담당하며, 온보딩 UI 플로우는 `screens/onboarding`, `app/onboarding`에 둔다.
 
 ---
 
