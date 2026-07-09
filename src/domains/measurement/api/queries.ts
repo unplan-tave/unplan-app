@@ -30,12 +30,12 @@ export function useDailyMeasurementQuery(
   const todayValue = formatDateValue(new Date());
 
   return useQuery({
+    ...options,
     queryKey: measurementQueryKeys.daily(date),
     queryFn: () => fetchDailyMeasurement({ date }),
     // 미래 날짜는 기록이 존재할 수 없어 요청하지 않는다.
-    enabled: date.length > 0 && date <= todayValue,
+    enabled: date.length > 0 && date <= todayValue && (options?.enabled ?? true),
     staleTime: date < todayValue ? PAST_DATE_STALE_TIME : CURRENT_PERIOD_STALE_TIME,
-    ...options,
   });
 }
 
@@ -46,6 +46,7 @@ export function useMeasurementAveragesQuery(
   const isCurrentPeriod = input != null && isMeasurementRangeCurrent(input.from, input.to);
 
   return useQuery({
+    ...options,
     queryKey: input == null ? measurementQueryKeys.all : measurementQueryKeys.averages(input),
     queryFn: () => {
       if (input == null) {
@@ -54,9 +55,8 @@ export function useMeasurementAveragesQuery(
 
       return fetchMeasurementAverages(input);
     },
-    enabled: input != null,
+    enabled: input != null && (options?.enabled ?? true),
     staleTime: isCurrentPeriod ? CURRENT_PERIOD_STALE_TIME : PAST_DATE_STALE_TIME,
-    ...options,
   });
 }
 

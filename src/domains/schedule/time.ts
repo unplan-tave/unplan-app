@@ -18,7 +18,7 @@ export function parseTimeToMinutes(time: string): number | null {
 
 /** 자정 기준 분을 "HH:MM"으로 변환합니다. (24:00 이상은 다음 날로 넘어가지 않고 클램프) */
 export function formatMinutesToTime(totalMinutes: number): string {
-  const clamped = Math.max(0, Math.min(totalMinutes, MINUTES_PER_DAY));
+  const clamped = Math.max(0, Math.min(totalMinutes, MINUTES_PER_DAY - 1));
   const hours = Math.floor(clamped / 60);
   const minutes = clamped % 60;
 

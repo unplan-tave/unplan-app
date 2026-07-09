@@ -28,6 +28,7 @@ const WEEK_LENGTH = 7;
 const CALENDAR_CELL_HEIGHT = 60;
 const DATE_BADGE_SIZE = 28;
 const MONTHLY_DATE_BADGE_SIZE = 26;
+const MAX_WEEKLY_PREVIEW_COUNT = 2;
 
 export function HomeCalendarView({ mode, days, onSelectDate }: HomeCalendarViewProps) {
   if (mode === 'weekly') {
@@ -112,13 +113,18 @@ function WeeklyDayColumn({
         </Typography>
       </View>
       <View style={styles.weeklyScheduleList}>
-        {day.previewTitles.map((title, index) => (
+        {day.previewTitles.slice(0, MAX_WEEKLY_PREVIEW_COUNT).map((title, index) => (
           <View key={`${day.dateValue}-${index}`} style={styles.weeklyScheduleCell}>
             <Typography variant="caption" color={colors.gray[700]} align="center" numberOfLines={2}>
               {title}
             </Typography>
           </View>
         ))}
+        {day.previewTitles.length > MAX_WEEKLY_PREVIEW_COUNT ? (
+          <Typography variant="caption" color={colors.gray[500]} align="center" numberOfLines={1}>
+            +{day.previewTitles.length - MAX_WEEKLY_PREVIEW_COUNT}개 더보기
+          </Typography>
+        ) : null}
       </View>
     </Pressable>
   );
