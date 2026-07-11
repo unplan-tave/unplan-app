@@ -13,6 +13,7 @@ interface ConditionSummaryPanelProps {
   dateLabel: string;
   summary: ConditionSummary;
   memoLabel?: string;
+  memoCount?: number;
   onDatePress?: () => void;
   onMemoPress?: () => void;
 }
@@ -27,6 +28,7 @@ export function ConditionSummaryPanel({
   dateLabel,
   summary,
   memoLabel = '날짜별 메모 작성',
+  memoCount = 0,
   onDatePress,
   onMemoPress,
 }: ConditionSummaryPanelProps) {
@@ -42,10 +44,20 @@ export function ConditionSummaryPanel({
         <Icon name="chevronDown" size={20} color={colors.gray.white} />
       </Pressable>
       <Pressable style={styles.memoRow} onPress={onMemoPress} disabled={onMemoPress == null}>
-        <Icon name="plus" size={16} color={colors.alpha.white50} />
-        <Typography variant="caption" color={colors.alpha.white50}>
+        <Icon name={memoCount > 0 ? 'edit' : 'plus'} size={16} color={colors.alpha.white50} />
+        <Typography
+          variant="caption"
+          color={colors.alpha.white50}
+          numberOfLines={1}
+          style={styles.memoLabel}
+        >
           {memoLabel}
         </Typography>
+        {memoCount > 1 ? (
+          <Typography variant="caption" color={colors.alpha.white50}>
+            1/{memoCount}
+          </Typography>
+        ) : null}
       </Pressable>
       <View style={styles.divider} />
       <Typography variant="titleL" color={colors.gray.white} style={styles.conditionScore}>
@@ -68,6 +80,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[1],
+  },
+  memoLabel: {
+    maxWidth: 90,
   },
   divider: {
     width: PANEL_DIVIDER_WIDTH,
