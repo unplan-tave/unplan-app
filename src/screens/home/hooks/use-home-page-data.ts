@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { useDailyMemosByDatesQuery, useDailyMemosQuery } from '@/domains/daily-memo/api/queries';
 import {
   useDailyMeasurementQuery,
   useMeasurementAveragesQuery,
@@ -87,6 +88,8 @@ export function useHomePageData({
   const dailyMeasurementQuery = useDailyMeasurementQuery(selectedDateValue, {
     enabled: viewMode === 'daily',
   });
+  const dailyMemosQuery = useDailyMemosQuery(selectedDateValue);
+  const visibleDailyMemoQueries = useDailyMemosByDatesQuery(visibleDateValues);
   const measurementAveragesQuery = useMeasurementAveragesQuery(averageInput, {
     enabled: viewMode !== 'daily',
   });
@@ -119,6 +122,9 @@ export function useHomePageData({
     () =>
       buildHomeCalendarDays({
         dateValues: visibleDateValues,
+        memoDateValues: visibleDateValues.filter(
+          (_, index) => (visibleDailyMemoQueries[index]?.data?.length ?? 0) > 0,
+        ),
         monthSchedules: schedulesByMonthQuery.data?.schedules ?? [],
         selectedDate,
         viewMode,
@@ -130,6 +136,7 @@ export function useHomePageData({
       selectedDate,
       viewMode,
       visibleDateValues,
+      visibleDailyMemoQueries,
     ],
   );
   const conditionSummary = useMemo(() => {
@@ -146,6 +153,8 @@ export function useHomePageData({
     timelineCards,
     recommendations,
     conditionSummary,
+    dailyMemos: dailyMemosQuery.data ?? [],
+    dailyMemosQuery,
     isLoading:
       (viewMode === 'daily' && schedulesByDateQuery.isLoading) ||
       (viewMode === 'daily' && dailyMeasurementQuery.isLoading) ||
@@ -163,12 +172,14 @@ export function useHomePageData({
 
 function buildHomeCalendarDays({
   dateValues,
+  memoDateValues,
   monthSchedules,
   selectedDate,
   viewMode,
   weekSchedules,
 }: {
   dateValues: string[];
+  memoDateValues: string[];
   monthSchedules: MonthlyScheduleCount[];
   selectedDate: Date;
   viewMode: HomeViewMode;
@@ -177,6 +188,7 @@ function buildHomeCalendarDays({
   const today = new Date();
   const weekScheduleMap = new Map(weekSchedules.map((group) => [group.date, group.schedules]));
   const monthScheduleMap = new Map(monthSchedules.map((item) => [item.date, item.count]));
+  const memoDateSet = new Set(memoDateValues);
 
   return dateValues.map((dateValue) => {
     const date = toHomeCalendarDate(dateValue);
@@ -190,8 +202,7 @@ function buildHomeCalendarDays({
       inCurrentMonth: date.getMonth() === selectedDate.getMonth(),
       isToday: isSameDate(date, today),
       isSelected: isSameDate(date, selectedDate),
-      // 날짜별 메모(밑줄 표시)는 daily-memo API 연동 전까지 비활성.
-      hasMemo: false,
+      hasMemo: memoDateSet.has(dateValue),
       scheduleCount: viewMode === 'weekly' ? weekSchedulesForDate.length : monthScheduleCount,
       previewTitles: weekSchedulesForDate.map((schedule) => schedule.title),
     };

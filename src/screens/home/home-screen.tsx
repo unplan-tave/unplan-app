@@ -8,6 +8,7 @@ import { runOnJS } from 'react-native-reanimated';
 import { ConditionSummaryPanel } from '@/components/domain/condition/condition-summary-panel';
 import { CardToast } from '@/components/domain/schedule/card-toast';
 import { DueDurationSheet } from '@/components/domain/schedule/due-duration-sheet';
+import { DailyMemoBottomSheet } from '@/components/features/home/daily-memo-bottom-sheet';
 import { HomeAddBottomSheet } from '@/components/features/home/home-add-bottom-sheet';
 import { HomeBackground } from '@/components/features/home/home-background';
 import { HomeBottomNav } from '@/components/features/home/home-bottom-nav';
@@ -22,6 +23,10 @@ import { Typography } from '@/components/ui/Typography';
 import { ViewModeButton } from '@/components/ui/ViewModeButton';
 import { colors, radius, spacing } from '@/constants/theme';
 import { getConditionCommentByDate } from '@/domains/condition/comment';
+import {
+  useCreateDailyMemoMutation,
+  useDeleteDailyMemoMutation,
+} from '@/domains/daily-memo/api/mutations';
 import { useUpdateAlarmSettingsMutation } from '@/domains/member/api/mutations';
 import { useUpdateScheduleMutation } from '@/domains/schedule/api/mutations';
 import { toQueueConversionUpdateInput } from '@/domains/schedule/card-mapper';
@@ -68,6 +73,8 @@ export function HomeScreen() {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [viewMode, setViewMode] = useState<HomeViewMode>('daily');
   const [isAddSheetVisible, setIsAddSheetVisible] = useState(false);
+  const [isDailyMemoSheetVisible, setIsDailyMemoSheetVisible] = useState(false);
+  const [deletingMemoId, setDeletingMemoId] = useState<number | null>(null);
   const [isNotificationModalVisible, setIsNotificationModalVisible] = useState(false);
   const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
   const [dismissedRecommendationIds, setDismissedRecommendationIds] = useState<Set<string>>(
@@ -81,16 +88,26 @@ export function HomeScreen() {
   const [isConflictToastDismissed, setIsConflictToastDismissed] = useState(false);
   const updateAlarmSettingsMutation = useUpdateAlarmSettingsMutation();
   const updateScheduleMutation = useUpdateScheduleMutation();
+  const createDailyMemoMutation = useCreateDailyMemoMutation();
+  const deleteDailyMemoMutation = useDeleteDailyMemoMutation();
   const personalTags = useScheduleStore((store) => store.personalTags);
   const homeDate = useMemo(() => getHomeDateLabel(selectedDate), [selectedDate]);
   const selectedDateValue = useMemo(() => formatDateValue(selectedDate), [selectedDate]);
   const currentTimeLabel = useMemo(() => formatTimeLabel(now), [now]);
-  const { calendarDays, conditionSummary, isError, isLoading, recommendations, timelineCards } =
-    useHomePageData({
-      personalTags,
-      selectedDate,
-      viewMode,
-    });
+  const {
+    calendarDays,
+    conditionSummary,
+    dailyMemos,
+    dailyMemosQuery,
+    isError,
+    isLoading,
+    recommendations,
+    timelineCards,
+  } = useHomePageData({
+    personalTags,
+    selectedDate,
+    viewMode,
+  });
   const visibleRecommendations = useMemo(
     () => recommendations.filter((item) => !dismissedRecommendationIds.has(item.card.id)),
     [dismissedRecommendationIds, recommendations],
@@ -174,6 +191,32 @@ export function HomeScreen() {
   const handleOpenAddSheet = useCallback(() => {
     setIsAddSheetVisible(true);
   }, []);
+
+  const handleCreateDailyMemo = useCallback(
+    async (content: string) => {
+      if (createDailyMemoMutation.isPending) {
+        return;
+      }
+
+      await createDailyMemoMutation.mutateAsync({ date: selectedDateValue, content });
+    },
+    [createDailyMemoMutation, selectedDateValue],
+  );
+
+  const handleDeleteDailyMemo = useCallback(
+    (id: number) => {
+      if (deleteDailyMemoMutation.isPending) {
+        return;
+      }
+
+      setDeletingMemoId(id);
+      deleteDailyMemoMutation.mutate(
+        { date: selectedDateValue, id },
+        { onSettled: () => setDeletingMemoId(null) },
+      );
+    },
+    [deleteDailyMemoMutation, selectedDateValue],
+  );
 
   const handleCloseAddSheet = useCallback(() => {
     setIsAddSheetVisible(false);
@@ -399,6 +442,9 @@ export function HomeScreen() {
                 year={homeDate.year}
                 dateLabel={homeDate.date}
                 summary={conditionSummary}
+                memoLabel={dailyMemos[0]?.content ?? '날짜별 메모 작성'}
+                memoCount={dailyMemos.length}
+                onMemoPress={() => setIsDailyMemoSheetVisible(true)}
               />
             </View>
             <View style={styles.messageBox}>
@@ -431,6 +477,20 @@ export function HomeScreen() {
         onDismissRecommendation={handleDismissRecommendation}
         onRecommendationAddPress={handleAddRecommendation}
         onViewQueuePress={handleViewQueue}
+      />
+      <DailyMemoBottomSheet
+        visible={isDailyMemoSheetVisible}
+        dateLabel={formatDailyMemoDate(selectedDate)}
+        memos={dailyMemos}
+        isLoading={dailyMemosQuery.isLoading}
+        isError={dailyMemosQuery.isError}
+        hasMutationError={createDailyMemoMutation.isError || deleteDailyMemoMutation.isError}
+        isCreating={createDailyMemoMutation.isPending}
+        deletingMemoId={deletingMemoId}
+        onClose={() => setIsDailyMemoSheetVisible(false)}
+        onRetry={() => void dailyMemosQuery.refetch()}
+        onCreate={handleCreateDailyMemo}
+        onDelete={handleDeleteDailyMemo}
       />
       <HomeProgressSheet
         visible={progressCard != null && !isExtendSheetVisible && !isQueueSheetVisible}
@@ -492,6 +552,15 @@ export function HomeScreen() {
 
 function formatTimeLabel(date: Date) {
   return `${padTimeUnit(date.getHours())}:${padTimeUnit(date.getMinutes())}`;
+}
+
+function formatDailyMemoDate(date: Date) {
+  return new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+  }).format(date);
 }
 
 function padTimeUnit(value: number) {
