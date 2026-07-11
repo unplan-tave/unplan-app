@@ -10,6 +10,7 @@ import {
   DAILY_MEMO_MAX_LENGTH,
   type DailyMemo,
 } from '@/domains/daily-memo/model';
+import { t } from '@/lib/i18n';
 
 interface DailyMemoBottomSheetProps {
   visible: boolean;
@@ -74,15 +75,15 @@ export function DailyMemoBottomSheet({
       <View style={styles.header}>
         <Pressable accessibilityRole="button" onPress={onClose} hitSlop={spacing[2]}>
           <Typography variant="caption" color={colors.primary}>
-            취소
+            {t('common.cancel')}
           </Typography>
         </Pressable>
         <Typography variant="caption" color={colors.gray[800]}>
-          날짜별 메모
+          {t('home.dailyMemo.title')}
         </Typography>
         <Pressable accessibilityRole="button" onPress={onClose} hitSlop={spacing[2]}>
           <Typography variant="caption" color={colors.primary}>
-            완료
+            {t('common.done')}
           </Typography>
         </Pressable>
       </View>
@@ -101,7 +102,7 @@ export function DailyMemoBottomSheet({
         {isError ? (
           <Pressable accessibilityRole="button" style={styles.stateRow} onPress={onRetry}>
             <Typography variant="caption" color={colors.secondary}>
-              메모를 불러오지 못했어요. 다시 시도
+              {t('home.dailyMemo.loadError')}
             </Typography>
           </Pressable>
         ) : null}
@@ -118,7 +119,10 @@ export function DailyMemoBottomSheet({
                   {memo.content}
                 </Typography>
                 <Pressable
-                  accessibilityLabel={`${memo.content} 메모 삭제`}
+                  accessibilityLabel={t('home.dailyMemo.deleteAccessibilityLabel').replace(
+                    '{content}',
+                    memo.content,
+                  )}
                   accessibilityRole="button"
                   disabled={deletingMemoId != null}
                   hitSlop={spacing[2]}
@@ -138,10 +142,10 @@ export function DailyMemoBottomSheet({
           <View style={styles.inputRow}>
             <TextInput
               value={content}
-              accessibilityLabel="날짜별 메모 입력"
+              accessibilityLabel={t('home.dailyMemo.inputAccessibilityLabel')}
               blurOnSubmit={false}
               maxLength={DAILY_MEMO_MAX_LENGTH}
-              placeholder="1~20자 입력"
+              placeholder={t('home.dailyMemo.placeholder')}
               placeholderTextColor={colors.gray[300]}
               returnKeyType="done"
               style={styles.input}
@@ -150,7 +154,7 @@ export function DailyMemoBottomSheet({
             />
             {content.length > 0 ? (
               <Pressable
-                accessibilityLabel="입력 지우기"
+                accessibilityLabel={t('home.dailyMemo.clearInput')}
                 accessibilityRole="button"
                 hitSlop={spacing[2]}
                 onPress={() => setContent('')}
@@ -164,7 +168,7 @@ export function DailyMemoBottomSheet({
 
       {hasMutationError ? (
         <Typography variant="caption" color={colors.secondary} align="center">
-          메모를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.
+          {t('home.dailyMemo.mutationError')}
         </Typography>
       ) : null}
 
@@ -180,7 +184,9 @@ export function DailyMemoBottomSheet({
           <>
             <Icon name="plus" size={16} color={canSubmit ? colors.gray[500] : colors.gray[300]} />
             <Typography variant="caption" color={canSubmit ? colors.gray[500] : colors.gray[300]}>
-              {isAtLimit ? '메모는 최대 5개까지 추가할 수 있어요' : '메모 추가하기'}
+              {isAtLimit
+                ? t('home.dailyMemo.maxCount').replace('{count}', String(DAILY_MEMO_MAX_COUNT))
+                : t('home.dailyMemo.add')}
             </Typography>
           </>
         )}

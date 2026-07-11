@@ -43,7 +43,7 @@ import {
 import { type DueDurationDraft } from '@/domains/schedule/queue';
 import { addMinutesToTime, parseTimeToMinutes } from '@/domains/schedule/time';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
-import { t } from '@/lib/i18n';
+import { getLocale, t } from '@/lib/i18n';
 
 import {
   formatDateValue,
@@ -442,7 +442,7 @@ export function HomeScreen() {
                 year={homeDate.year}
                 dateLabel={homeDate.date}
                 summary={conditionSummary}
-                memoLabel={dailyMemos[0]?.content ?? '날짜별 메모 작성'}
+                memoLabel={dailyMemos[0]?.content ?? t('home.dailyMemo.emptyLabel')}
                 memoCount={dailyMemos.length}
                 onMemoPress={() => setIsDailyMemoSheetVisible(true)}
               />
@@ -555,7 +555,7 @@ function formatTimeLabel(date: Date) {
 }
 
 function formatDailyMemoDate(date: Date) {
-  return new Intl.DateTimeFormat('ko-KR', {
+  return new Intl.DateTimeFormat(getLocale(), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
