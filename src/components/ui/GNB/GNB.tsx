@@ -7,10 +7,10 @@ import { GNBAddButton } from './GNBAddButton';
 import { GNBItem } from './GNBItem';
 
 const DEFAULT_ITEMS: GNBItems = [
-  { label: '홈', value: 'home', iconName: 'home' },
-  { label: '카드', value: 'list', iconName: 'list' },
-  { label: '컨디션', value: 'condition', iconName: 'condition' },
-  { label: '설정', value: 'setting', iconName: 'setting' },
+  { label: 'home', value: 'home', iconName: 'home' },
+  { label: 'card list', value: 'list', iconName: 'list' },
+  { label: 'condition', value: 'condition', iconName: 'condition' },
+  { label: 'setting', value: 'setting', iconName: 'setting' },
 ];
 
 export function GNB({
