@@ -21,12 +21,12 @@ const RECOVERY_RECOMMENDATION_ID = 'recovery';
  * 예: `14:00 ~ 15:30까지, 1시간 30분 동안 스케줄이 비어 있어요`
  */
 export function formatFreeSlotMessage(slot: ConditionFreeSlot): string {
-  return `${slot.startTime} ~ ${slot.endTime}까지, ${formatDurationLabel(slot.durationMinutes)} 동안 스케줄이 비어 있어요`;
+  return `${slot.startTime} ~ ${slot.endTime}까지, ${formatDurationLabel(slot.durationMinutes)} ${t('condition.recommendation.freeSlotMessageSuffix')}`;
 }
 
 /** `약 1시간 소요` 형태의 소요 시간 라벨. */
 export function formatDurationCaption(totalMinutes: number): string {
-  return `약 ${formatDurationLabel(totalMinutes)} 소요`;
+  return `약 ${formatDurationLabel(totalMinutes)} ${t('condition.recommendation.durationSuffix')}`;
 }
 
 export function formatDurationLabel(totalMinutes: number): string {
@@ -100,10 +100,12 @@ export function toQueueRecommendations(
       id: card.id,
       title: card.title,
       conditionTagId: card.conditionTagId,
-      reason: '예상 소요 시간이 빈 스케줄과 딱 맞고,\n몰입하기 좋은 컨디션과 시간대예요.',
-      dueLabel: card.dueDate ? `마감일 ${formatDueDate(card.dueDate)}` : null,
+      reason: t('condition.recommendation.queue.reason'),
+      dueLabel: card.dueDate
+        ? `${t('condition.recommendation.dueDatePrefix')} ${formatDueDate(card.dueDate)}`
+        : null,
       durationLabel: card.durationUnknown
-        ? '소요 시간 미정'
+        ? t('condition.recommendation.durationUnknown')
         : formatDurationCaption(getCardDurationMinutes(card)),
     }));
 }
@@ -141,7 +143,7 @@ export function toRecoveryRecommendation(
   return {
     kind: 'recovery',
     id: RECOVERY_RECOMMENDATION_ID,
-    reason: '직접 설정한 컨디션 회복수단이에요\n조금 쉬는 게 더 효율적일 것 같아요!',
+    reason: t('condition.recommendation.recovery.reason'),
     durationLabel: formatDurationCaption(RECOVERY_SLOT_MINUTES),
     options,
   };

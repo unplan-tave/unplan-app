@@ -9,6 +9,7 @@ import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 import { isRecoveryRecommendation } from '@/domains/condition/recommendation';
 import { getConditionTagById } from '@/domains/schedule/model';
+import { t } from '@/lib/i18n';
 
 import type {
   ConditionRecommendation,
@@ -33,8 +34,6 @@ interface ConditionRecommendationSheetProps {
   onManualTimePress: () => void;
   onAccept: () => void;
 }
-
-const SHEET_TITLE = '컨디션 기반 추천 일정';
 
 export function ConditionRecommendationSheet({
   visible,
@@ -61,16 +60,16 @@ export function ConditionRecommendationSheet({
       <View style={styles.header}>
         <Pressable accessibilityRole="button" hitSlop={8} onPress={onClose}>
           <Typography variant="bodyM" color={colors.gray[500]}>
-            취소
+            {t('common.cancel')}
           </Typography>
         </Pressable>
         <Typography variant="bodyM" color={colors.gray[600]}>
-          {SHEET_TITLE}
+          {t('condition.recommendation.sheet.title')}
         </Typography>
         {isEmpty ? (
           <Pressable accessibilityRole="button" hitSlop={8} onPress={onClose}>
             <Typography variant="bodyM" color={colors.primary}>
-              완료
+              {t('common.done')}
             </Typography>
           </Pressable>
         ) : (
@@ -81,7 +80,7 @@ export function ConditionRecommendationSheet({
       {isEmpty ? (
         <View style={styles.emptyCard}>
           <Typography variant="titleS" color={colors.gray[800]} align="center">
-            추천 일정을 찾지 못했어요!
+            {t('condition.recommendation.empty.title')}
           </Typography>
           <Typography variant="bodyS" color={colors.gray[600]} align="center">
             {emptyDescription}
@@ -97,7 +96,9 @@ export function ConditionRecommendationSheet({
               <View style={styles.introTagRow}>
                 <RecommendationTag recommendation={recommendation} />
                 <Typography variant="bodyS" color={colors.gray[700]}>
-                  {isRecovery ? '이 필요한 컨디션이에요' : '을 하기에 좋은 컨디션이에요'}
+                  {isRecovery
+                    ? t('condition.recommendation.recovery.conditionSuffix')
+                    : t('condition.recommendation.queue.conditionSuffix')}
                 </Typography>
               </View>
             </View>
@@ -107,14 +108,14 @@ export function ConditionRecommendationSheet({
             <View style={styles.recommendationHead}>
               <View style={styles.recommendationTitleRow}>
                 <Typography variant="bodyS" color={colors.gray[800]}>
-                  추천 일정 {activeIndex + 1}
+                  {t('condition.recommendation.itemTitle')} {activeIndex + 1}
                 </Typography>
                 <View style={styles.pagination}>
                   <Typography variant="bodyS" color={colors.gray[800]}>
                     {activeIndex + 1}/{recommendations.length}
                   </Typography>
                   <Pressable
-                    accessibilityLabel="이전 추천 보기"
+                    accessibilityLabel={t('condition.recommendation.prevAccessibilityLabel')}
                     accessibilityRole="button"
                     accessibilityState={{ disabled: activeIndex === 0 }}
                     disabled={activeIndex === 0}
@@ -128,7 +129,7 @@ export function ConditionRecommendationSheet({
                     />
                   </Pressable>
                   <Pressable
-                    accessibilityLabel="다음 추천 보기"
+                    accessibilityLabel={t('condition.recommendation.nextAccessibilityLabel')}
                     accessibilityRole="button"
                     accessibilityState={{ disabled: activeIndex >= recommendations.length - 1 }}
                     disabled={activeIndex >= recommendations.length - 1}
@@ -167,9 +168,13 @@ export function ConditionRecommendationSheet({
           </View>
 
           <View style={styles.actions}>
-            <Button label="시간 직접 입력" fullWidth onPress={onManualTimePress} />
             <Button
-              label="추천 수락"
+              label={t('condition.recommendation.manualTime')}
+              fullWidth
+              onPress={onManualTimePress}
+            />
+            <Button
+              label={t('condition.recommendation.accept')}
               variant="primary"
               fullWidth
               disabled={needsRecoveryOption}
@@ -220,7 +225,7 @@ function QueueRecommendationCard({
         onPress={onKeepQueuePress}
       >
         <Typography variant="bodyS" color={colors.gray[500]}>
-          기존 큐 카드 유지하기
+          {t('condition.recommendation.keepQueue')}
         </Typography>
         <Icon name="arrowRight" size={16} color={colors.gray[500]} />
       </Pressable>
@@ -258,7 +263,7 @@ function RecoveryRecommendationCard({
       </View>
       {selectedOptionId == null ? (
         <Typography variant="bodyS" color={colors.secondary}>
-          원하는 컨디션 회복 수단을 선택해 주세요!
+          {t('condition.recommendation.recovery.selectRequired')}
         </Typography>
       ) : null}
     </View>
