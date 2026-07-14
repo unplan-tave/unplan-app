@@ -1,6 +1,5 @@
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -26,9 +25,8 @@ const HEADER_STATUS_COLUMN_WIDTH = 112;
 
 export function ConditionScreen() {
   const insets = useSafeAreaInsets();
-  const now = useMemo(() => new Date(), []);
   const view = useConditionView();
-  const recommendation = useConditionRecommendation(view.selectedDate, now);
+  const recommendation = useConditionRecommendation(view.selectedDate);
 
   const handleNavChange = useTabNavigation();
 
