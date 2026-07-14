@@ -2,13 +2,14 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
-import { colors } from '@/constants/theme';
+import { colors, radius, spacing } from '@/constants/theme';
 
 import { type ChipProps } from './chip.types';
 
 export function Chip({
   label,
   selected = false,
+  variant = 'pill',
   iconName,
   disabled = false,
   style,
@@ -26,6 +27,7 @@ export function Chip({
       disabled={disabled}
       style={({ pressed }) => [
         styles.container,
+        variant === 'square' && styles.square,
         selected && styles.selected,
         disabled && styles.disabled,
         pressed && !disabled && styles.pressed,
@@ -62,6 +64,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gray.white,
     borderWidth: 1,
     borderColor: colors.gray.white,
+  },
+  square: {
+    minWidth: 0,
+    paddingHorizontal: spacing[2],
+    borderRadius: radius['2xs'],
   },
   selected: {
     backgroundColor: colors.chip.selectedBackground,
