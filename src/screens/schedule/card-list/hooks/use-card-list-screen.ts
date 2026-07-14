@@ -12,6 +12,7 @@ import {
   type CardListMultiFilterKey,
 } from '@/domains/schedule/list';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
+import { useTabNavigation } from '@/hooks/use-tab-navigation';
 
 import type { CardProgressStatus } from '@/domains/schedule/model';
 
@@ -100,19 +101,7 @@ export function useCardListScreen() {
     router.setParams({ q: '' });
   }, []);
 
-  const handleNavItemPress = useCallback((value: string) => {
-    if (value === 'home') {
-      router.navigate('/(tabs)');
-      return;
-    }
-
-    if (value === 'setting') {
-      router.navigate('/settings');
-      return;
-    }
-
-    router.navigate('/schedule');
-  }, []);
+  const handleNavItemPress = useTabNavigation();
 
   const handleChangeCardType = useCallback((cardType: CardListFilters['cardType']) => {
     setFilters((prev) => ({ ...prev, cardType }));

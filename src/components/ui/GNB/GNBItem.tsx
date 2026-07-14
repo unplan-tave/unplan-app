@@ -40,8 +40,10 @@ export function GNBItem({ item, selected = false, style, ...props }: GNBItemProp
 
 const styles = StyleSheet.create({
   container: {
-    width: 40,
+    // 라벨(`card list`, `condition`)이 잘리지 않도록 고정 폭 대신 최소 폭을 둡니다.
+    minWidth: 40,
     minHeight: 52,
+    paddingHorizontal: 2,
     alignItems: 'center',
     justifyContent: 'center',
     opacity: 0.5,

@@ -10,13 +10,13 @@ import { CardToast } from '@/components/domain/schedule/card-toast';
 import { DueDurationSheet } from '@/components/domain/schedule/due-duration-sheet';
 import { DailyMemoBottomSheet } from '@/components/features/home/daily-memo-bottom-sheet';
 import { HomeAddBottomSheet } from '@/components/features/home/home-add-bottom-sheet';
-import { HomeBackground } from '@/components/features/home/home-background';
 import { HomeBottomNav } from '@/components/features/home/home-bottom-nav';
 import { HomeCalendarView } from '@/components/features/home/home-calendar-view';
 import { HomeExtendTimeSheet } from '@/components/features/home/home-extend-time-sheet';
 import { HomeProgressSheet } from '@/components/features/home/home-progress-sheet';
 import { TimelineCard } from '@/components/features/home/timeline-card';
 import { OnboardingNotificationModal } from '@/components/features/onboarding/onboarding-notification-modal';
+import { AppBackground } from '@/components/ui/AppBackground';
 import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
@@ -43,6 +43,7 @@ import {
 import { type DueDurationDraft } from '@/domains/schedule/queue';
 import { addMinutesToTime, parseTimeToMinutes } from '@/domains/schedule/time';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
+import { useTabNavigation } from '@/hooks/use-tab-navigation';
 import { getLocale, t } from '@/lib/i18n';
 
 import {
@@ -351,19 +352,7 @@ export function HomeScreen() {
     setViewMode((prev) => getNextHomeViewMode(prev));
   }, []);
 
-  const handleNavItemPress = useCallback((value: string) => {
-    if (value === 'home') {
-      router.navigate('/(tabs)');
-      return;
-    }
-
-    if (value === 'setting') {
-      router.navigate('/settings');
-      return;
-    }
-
-    router.navigate('/schedule');
-  }, []);
+  const handleNavItemPress = useTabNavigation();
 
   return (
     <ScreenLayout
@@ -372,7 +361,7 @@ export function HomeScreen() {
       useSafeArea={false}
     >
       <StatusBar style="light" />
-      <HomeBackground />
+      <AppBackground />
       <GestureDetector gesture={pinchGesture}>
         <View style={styles.canvas}>
           {viewMode === 'daily' ? (

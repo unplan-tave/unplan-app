@@ -18,6 +18,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="condition"
+        options={{
+          title: '컨디션',
+          tabBarLabel: '컨디션',
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: '설정',

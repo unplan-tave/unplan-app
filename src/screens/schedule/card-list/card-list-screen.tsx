@@ -6,8 +6,8 @@ import { CardListEmptyState } from '@/components/features/card-list/card-list-em
 import { CardListFilterChips } from '@/components/features/card-list/card-list-filter-chips';
 import { CardListSearchBar } from '@/components/features/card-list/card-list-search-bar';
 import { CardListSections } from '@/components/features/card-list/card-list-sections';
-import { HomeBackground } from '@/components/features/home/home-background';
 import { HomeBottomNav } from '@/components/features/home/home-bottom-nav';
+import { AppBackground } from '@/components/ui/AppBackground';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
@@ -48,7 +48,7 @@ export function CardListScreen() {
       useSafeArea={false}
     >
       <StatusBar style="light" />
-      <HomeBackground />
+      <AppBackground />
       <View style={styles.canvas}>
         <ScrollView
           style={styles.scrollView}

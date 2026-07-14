@@ -55,6 +55,7 @@ export const colors = {
     black50: 'rgba(0,0,0,0.5)',
     primary20: 'rgba(36,141,254,0.2)',
     secondary10: 'rgba(241,94,94,0.1)',
+    gray50020: 'rgba(119,127,136,0.2)',
     gray70050: 'rgba(54,62,70,0.5)',
   },
 

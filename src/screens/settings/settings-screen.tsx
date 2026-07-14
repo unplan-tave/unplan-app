@@ -10,6 +10,7 @@ import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 import { useMemberProfileQuery } from '@/domains/member/api/queries';
+import { useTabNavigation } from '@/hooks/use-tab-navigation';
 import { t } from '@/lib/i18n';
 
 import { useAlarmSettings } from './hooks/use-alarm-settings';
@@ -38,19 +39,7 @@ export function SettingsScreen() {
     ? ''
     : profileQuery.data?.email || t('settings.profileFallback.email');
 
-  const handleNavChange = (value: string) => {
-    if (value === 'home') {
-      router.navigate('/(tabs)');
-      return;
-    }
-
-    if (value === 'setting') {
-      router.navigate('/settings');
-      return;
-    }
-
-    router.navigate('/schedule');
-  };
+  const handleNavChange = useTabNavigation();
 
   return (
     <ScreenLayout

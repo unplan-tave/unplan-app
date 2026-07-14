@@ -1,27 +1,31 @@
 import { StyleSheet, View } from 'react-native';
 
 import { colors, radius } from '@/constants/theme';
+import { t } from '@/lib/i18n';
 
 import { type GNBItems, type GNBProps } from './gnb.types';
 import { GNBAddButton } from './GNBAddButton';
 import { GNBItem } from './GNBItem';
 
-const DEFAULT_ITEMS: GNBItems = [
-  { label: '홈', value: 'home', iconName: 'home' },
-  { label: '카드', value: 'list', iconName: 'list' },
-  { label: '컨디션', value: 'condition', iconName: 'condition' },
-  { label: '설정', value: 'setting', iconName: 'setting' },
-];
+function createDefaultItems(): GNBItems {
+  return [
+    { label: t('navigation.home'), value: 'home', iconName: 'home' },
+    { label: t('navigation.cardList'), value: 'list', iconName: 'list' },
+    { label: t('navigation.condition'), value: 'condition', iconName: 'condition' },
+    { label: t('navigation.setting'), value: 'setting', iconName: 'setting' },
+  ];
+}
 
 export function GNB({
-  items = DEFAULT_ITEMS,
+  items,
   value = 'home',
   onChange,
   onAddPress,
   addAccessibilityLabel,
   style,
 }: GNBProps) {
-  const [homeItem, listItem, conditionItem, settingItem] = items;
+  const gnbItems = items ?? createDefaultItems();
+  const [homeItem, listItem, conditionItem, settingItem] = gnbItems;
 
   return (
     <View style={[styles.container, style]}>
