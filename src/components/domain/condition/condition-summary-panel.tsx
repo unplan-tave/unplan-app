@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, fontFamilyWeight, spacing } from '@/constants/theme';
+import { t } from '@/lib/i18n';
 
 import { ConditionMeter } from './condition-meter';
 
@@ -13,6 +14,7 @@ interface ConditionSummaryPanelProps {
   dateLabel: string;
   summary: ConditionSummary;
   memoLabel?: string;
+  memoCount?: number;
   onDatePress?: () => void;
   onMemoPress?: () => void;
 }
@@ -26,7 +28,8 @@ export function ConditionSummaryPanel({
   year,
   dateLabel,
   summary,
-  memoLabel = '날짜별 메모 작성',
+  memoLabel = t('home.dailyMemo.emptyLabel'),
+  memoCount = 0,
   onDatePress,
   onMemoPress,
 }: ConditionSummaryPanelProps) {
@@ -42,10 +45,20 @@ export function ConditionSummaryPanel({
         <Icon name="chevronDown" size={20} color={colors.gray.white} />
       </Pressable>
       <Pressable style={styles.memoRow} onPress={onMemoPress} disabled={onMemoPress == null}>
-        <Icon name="plus" size={16} color={colors.alpha.white50} />
-        <Typography variant="caption" color={colors.alpha.white50}>
+        <Icon name={memoCount > 0 ? 'edit' : 'plus'} size={16} color={colors.alpha.white50} />
+        <Typography
+          variant="caption"
+          color={colors.alpha.white50}
+          numberOfLines={1}
+          style={styles.memoLabel}
+        >
           {memoLabel}
         </Typography>
+        {memoCount > 1 ? (
+          <Typography variant="caption" color={colors.alpha.white50} style={styles.memoCount}>
+            1/{memoCount}
+          </Typography>
+        ) : null}
       </Pressable>
       <View style={styles.divider} />
       <Typography variant="titleL" color={colors.gray.white} style={styles.conditionScore}>
@@ -68,6 +81,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[1],
+  },
+  memoLabel: {
+    minWidth: 0,
+    flexShrink: 1,
+  },
+  memoCount: {
+    flexShrink: 0,
   },
   divider: {
     width: PANEL_DIVIDER_WIDTH,

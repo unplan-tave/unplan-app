@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { useDailyMemosQuery } from '@/domains/daily-memo/api/queries';
 import {
   useDailyMeasurementQuery,
   useMeasurementAveragesQuery,
@@ -87,6 +88,7 @@ export function useHomePageData({
   const dailyMeasurementQuery = useDailyMeasurementQuery(selectedDateValue, {
     enabled: viewMode === 'daily',
   });
+  const dailyMemosQuery = useDailyMemosQuery(selectedDateValue);
   const measurementAveragesQuery = useMeasurementAveragesQuery(averageInput, {
     enabled: viewMode !== 'daily',
   });
@@ -146,6 +148,8 @@ export function useHomePageData({
     timelineCards,
     recommendations,
     conditionSummary,
+    dailyMemos: dailyMemosQuery.data ?? [],
+    dailyMemosQuery,
     isLoading:
       (viewMode === 'daily' && schedulesByDateQuery.isLoading) ||
       (viewMode === 'daily' && dailyMeasurementQuery.isLoading) ||
@@ -190,7 +194,6 @@ function buildHomeCalendarDays({
       inCurrentMonth: date.getMonth() === selectedDate.getMonth(),
       isToday: isSameDate(date, today),
       isSelected: isSameDate(date, selectedDate),
-      // 날짜별 메모(밑줄 표시)는 daily-memo API 연동 전까지 비활성.
       hasMemo: false,
       scheduleCount: viewMode === 'weekly' ? weekSchedulesForDate.length : monthScheduleCount,
       previewTitles: weekSchedulesForDate.map((schedule) => schedule.title),
