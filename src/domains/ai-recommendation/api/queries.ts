@@ -12,13 +12,10 @@ import type { ConditionRecommendationResult } from './client';
 import type { RecommendationCriteriaSettings } from '../model';
 import type { UseQueryOptions } from '@tanstack/react-query';
 
-type RecommendationCriteriaQueryOptions<TData> = Omit<
-  UseQueryOptions<TData>,
-  'queryKey' | 'queryFn'
->;
+type AiRecommendationQueryOptions<TData> = Omit<UseQueryOptions<TData>, 'queryKey' | 'queryFn'>;
 
 export function useRecommendationCriteriaSettingsQuery(
-  options?: RecommendationCriteriaQueryOptions<RecommendationCriteriaSettings>,
+  options?: AiRecommendationQueryOptions<RecommendationCriteriaSettings>,
 ) {
   return useQuery({
     queryKey: recommendationCriteriaQueryKeys.settings(),
@@ -29,7 +26,7 @@ export function useRecommendationCriteriaSettingsQuery(
 
 export function useConditionRecommendationsQuery(
   date: string,
-  options?: RecommendationCriteriaQueryOptions<ConditionRecommendationResult>,
+  options?: AiRecommendationQueryOptions<ConditionRecommendationResult>,
 ) {
   return useQuery({
     ...options,
