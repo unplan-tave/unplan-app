@@ -1,3 +1,5 @@
+import type { ConditionRecordEntry } from '@/domains/condition/model';
+
 export type MeasurementAverageType = 'ALL' | 'CONDITION' | 'SLEEP';
 export type MeasurementAverageGroupBy = 'DAY' | 'WEEK' | 'MONTH';
 
@@ -10,6 +12,7 @@ export interface DailyMeasurementSummary {
   mindScorePercent: number;
   sleepScore: number;
   sleepDurationMinutes: number;
+  conditionRecords: ConditionRecordEntry[];
 }
 
 export interface MeasurementAverageItem {

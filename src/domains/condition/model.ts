@@ -8,6 +8,22 @@ export type ConditionPeriodMode = 'daily' | 'weekly' | 'monthly';
 
 export type ConditionMetricKey = 'body' | 'mind' | 'sleep';
 
+export interface ConditionRecordEntry {
+  id: number;
+  bodyScore: number;
+  mindScore: number;
+  bodyScorePercent: number;
+  mindScorePercent: number;
+  dateTime: string;
+}
+
+export interface ConditionRecordInput {
+  id?: number;
+  bodyScore: number;
+  mindScore: number;
+  dateTime: string;
+}
+
 /** 게이지 카드 한 장(Body/Mind/Sleep)에 필요한 표시 값. */
 export interface ConditionMetricCard {
   key: ConditionMetricKey;
@@ -30,6 +46,7 @@ export interface ConditionFreeSlot {
 export interface QueueConditionRecommendation {
   kind: 'queue';
   id: string;
+  recommendId?: number;
   title: string;
   conditionTagId: ConditionTagId;
   reason: string;
@@ -41,6 +58,7 @@ export interface QueueConditionRecommendation {
 export interface RecoveryConditionRecommendation {
   kind: 'recovery';
   id: string;
+  recommendId?: number;
   reason: string;
   durationLabel: string;
   options: RecoveryRecommendationOption[];
