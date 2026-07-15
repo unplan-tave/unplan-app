@@ -6,8 +6,7 @@
  * OpenAPI spec version: v1.0.0
  */
 
-export type GetDailyRecordParams = {
-  date: string;
-  conditionPage?: number;
-  sleepPage?: number;
-};
+export interface RecommendationAcceptRequest {
+  keep_queue_card?: boolean;
+  recovery_mean?: string;
+}

@@ -6,8 +6,8 @@
  * OpenAPI spec version: v1.0.0
  */
 
-export type GetDailyRecordParams = {
-  date: string;
-  conditionPage?: number;
-  sleepPage?: number;
-};
+export interface EmptyTime {
+  start_time?: string;
+  end_time?: string;
+  duration_minutes?: number;
+}

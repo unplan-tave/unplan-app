@@ -6,8 +6,4 @@
  * OpenAPI spec version: v1.0.0
  */
 
-export type GetDailyRecordParams = {
-  date: string;
-  conditionPage?: number;
-  sleepPage?: number;
-};
+export type GetQueueCardRecommendations200 = { [key: string]: unknown };

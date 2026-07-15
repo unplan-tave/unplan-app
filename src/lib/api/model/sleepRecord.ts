@@ -9,9 +9,14 @@
 export interface SleepRecord {
   sleep_id?: number;
   duration_minutes?: number;
+  total_duration_minutes?: number;
   bed_time?: string;
   wake_up_time?: string;
+  original_bed_time?: string;
+  original_wake_up_time?: string;
   isNap?: boolean;
   isAllNight?: boolean;
+  isContinuousSleep?: boolean;
+  continuous_sleep_group_id?: string;
   created_at?: string;
 }

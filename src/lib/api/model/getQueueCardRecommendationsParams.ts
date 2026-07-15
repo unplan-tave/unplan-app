@@ -6,8 +6,9 @@
  * OpenAPI spec version: v1.0.0
  */
 
-export type GetDailyRecordParams = {
-  date: string;
-  conditionPage?: number;
-  sleepPage?: number;
+export type GetQueueCardRecommendationsParams = {
+  /**
+   * 탐색 범위(일). 7(기본) 또는 14(확장)
+   */
+  days?: number;
 };

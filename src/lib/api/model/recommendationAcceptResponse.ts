@@ -6,13 +6,13 @@
  * OpenAPI spec version: v1.0.0
  */
 
-export interface ScheduleCreateResponse {
+export interface RecommendationAcceptResponse {
+  recommend_id?: number;
   schedule_id?: number;
   title?: string;
   date?: string;
   start_time?: string;
   end_time?: string;
-  estimated_time?: number;
-  is_queue?: boolean;
-  personal_tags?: string[];
+  source_type?: string;
+  created?: boolean;
 }

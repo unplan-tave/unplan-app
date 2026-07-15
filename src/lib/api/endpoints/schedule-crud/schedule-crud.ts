@@ -25,6 +25,7 @@ import type {
   GetSchedulesByDateParams,
   GetSchedulesByMonthParams,
   GetSchedulesByWeekParams,
+  PersonalTagResponse,
   ScheduleCreateRequest,
   ScheduleCreateResponse,
   ScheduleDetailResponse,
@@ -448,7 +449,7 @@ export const useDeleteSchedule = <TError = ErrorType<unknown>, TContext = unknow
   return useMutation(mutationOptions, queryClient);
 };
 /**
- * 특정 일정의 정보를 수정합니다. 전달한 필드만 업데이트됩니다.
+ * 특정 일정의 정보를 수정합니다. 전달한 필드만 업데이트됩니다. personalTags를 전달하면 태그 전체가 해당 목록으로 교체됩니다.
  * @summary 일정 수정
  */
 export const updateSchedule = (
@@ -646,6 +647,119 @@ export function useGetSchedulesByWeek<
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getGetSchedulesByWeekQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * 로그인한 멤버가 등록한 개인 태그 전체를 조회합니다. (태그 검색/재사용 화면용)
+ * @summary 개인 태그 목록 조회
+ */
+export const getPersonalTags = (
+  options?: SecondParameter<typeof apiMutator>,
+  signal?: AbortSignal,
+) => {
+  return apiMutator<PersonalTagResponse[]>(
+    { url: `/schedule/tags`, method: 'GET', signal },
+    options,
+  );
+};
+
+export const getGetPersonalTagsQueryKey = () => {
+  return [`/schedule/tags`] as const;
+};
+
+export const getGetPersonalTagsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPersonalTags>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPersonalTags>>, TError, TData>>;
+  request?: SecondParameter<typeof apiMutator>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetPersonalTagsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPersonalTags>>> = ({ signal }) =>
+    getPersonalTags(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPersonalTags>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetPersonalTagsQueryResult = NonNullable<Awaited<ReturnType<typeof getPersonalTags>>>;
+export type GetPersonalTagsQueryError = ErrorType<unknown>;
+
+export function useGetPersonalTags<
+  TData = Awaited<ReturnType<typeof getPersonalTags>>,
+  TError = ErrorType<unknown>,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPersonalTags>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPersonalTags>>,
+          TError,
+          Awaited<ReturnType<typeof getPersonalTags>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetPersonalTags<
+  TData = Awaited<ReturnType<typeof getPersonalTags>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPersonalTags>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPersonalTags>>,
+          TError,
+          Awaited<ReturnType<typeof getPersonalTags>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetPersonalTags<
+  TData = Awaited<ReturnType<typeof getPersonalTags>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPersonalTags>>, TError, TData>>;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 개인 태그 목록 조회
+ */
+
+export function useGetPersonalTags<
+  TData = Awaited<ReturnType<typeof getPersonalTags>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPersonalTags>>, TError, TData>>;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetPersonalTagsQueryOptions(options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;

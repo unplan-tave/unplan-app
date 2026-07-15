@@ -6,8 +6,10 @@
  * OpenAPI spec version: v1.0.0
  */
 
-export type GetDailyRecordParams = {
-  date: string;
-  conditionPage?: number;
-  sleepPage?: number;
-};
+export interface TagRecommendationRequestDto {
+  /**
+   * @minLength 0
+   * @maxLength 50
+   */
+  title: string;
+}

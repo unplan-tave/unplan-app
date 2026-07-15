@@ -38,13 +38,13 @@ export const getEmptyTimeRecommendSetting = (
   signal?: AbortSignal,
 ) => {
   return apiMutator<ApiResponseEmptyTimeSettingResponseDto>(
-    { url: `/api/member-settings/empty-time`, method: 'GET', signal },
+    { url: `/member-settings/empty-time`, method: 'GET', signal },
     options,
   );
 };
 
 export const getGetEmptyTimeRecommendSettingQueryKey = () => {
-  return [`/api/member-settings/empty-time`] as const;
+  return [`/member-settings/empty-time`] as const;
 };
 
 export const getGetEmptyTimeRecommendSettingQueryOptions = <
@@ -158,7 +158,7 @@ export const updateEmptyTimeRecommendSetting = (
 ) => {
   return apiMutator<ApiResponseEmptyTimeSettingResponseDto>(
     {
-      url: `/api/member-settings/empty-time`,
+      url: `/member-settings/empty-time`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: emptyTimeSettingRequestDto,
@@ -235,13 +235,13 @@ export const getAlarmSetting = (
   signal?: AbortSignal,
 ) => {
   return apiMutator<ApiResponseAlarmSettingResponseDto>(
-    { url: `/api/member-settings/alarm-setting`, method: 'GET', signal },
+    { url: `/member-settings/alarm-setting`, method: 'GET', signal },
     options,
   );
 };
 
 export const getGetAlarmSettingQueryKey = () => {
-  return [`/api/member-settings/alarm-setting`] as const;
+  return [`/member-settings/alarm-setting`] as const;
 };
 
 export const getGetAlarmSettingQueryOptions = <
@@ -342,7 +342,7 @@ export const updateAlarmSetting = (
 ) => {
   return apiMutator<ApiResponseAlarmSettingResponseDto>(
     {
-      url: `/api/member-settings/alarm-setting`,
+      url: `/member-settings/alarm-setting`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: alarmSettingRequestDto,

@@ -6,8 +6,9 @@
  * OpenAPI spec version: v1.0.0
  */
 
-export type GetDailyRecordParams = {
+export type GetRecommendationsParams = {
+  /**
+   * 추천 대상 날짜 (yyyy-MM-dd)
+   */
   date: string;
-  conditionPage?: number;
-  sleepPage?: number;
 };
