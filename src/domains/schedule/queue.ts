@@ -1,3 +1,7 @@
+/**
+ * queue card를 pin card로 전환할 때 필요한 순수 변환 로직입니다.
+ * 추천 수락이나 수동 시간 지정에서 기존 queue 정보를 유지하며 pin form 값으로 바꿉니다.
+ */
 import type { CardFormValues, CardItem } from './model';
 
 export const UNKNOWN_DURATION_LABEL = '시간 미정';

@@ -30,4 +30,5 @@ export interface ScheduleDetailResponse {
   is_conflict?: boolean;
   latitude?: number;
   longitude?: number;
+  personal_tags?: string[];
 }

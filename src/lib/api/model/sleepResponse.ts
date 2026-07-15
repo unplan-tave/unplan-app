@@ -9,9 +9,14 @@
 export interface SleepResponse {
   sleepId?: number;
   durationMinutes?: number;
+  totalDurationMinutes?: number;
   bedTime?: string;
   wakeUpTime?: string;
+  originalBedTime?: string;
+  originalWakeUpTime?: string;
   isNap?: boolean;
   isAllNight?: boolean;
+  isContinuousSleep?: boolean;
+  continuousSleepGroupId?: string;
   createdAt?: string;
 }

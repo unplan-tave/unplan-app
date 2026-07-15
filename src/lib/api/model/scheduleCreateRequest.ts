@@ -14,6 +14,11 @@ export interface ScheduleCreateRequest {
   /** @minLength 1 */
   title: string;
   condition_tag: ScheduleCreateRequestConditionTag;
+  /**
+   * 개인 태그 이름 목록 (선택, 일정당 최대 10개, 각 1~25자). 같은 이름은 대소문자 무시하고 재사용됨
+   * @minItems 0
+   * @maxItems 10
+   */
   personal_tags?: string[];
   date?: string;
   start_time?: string;

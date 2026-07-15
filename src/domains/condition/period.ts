@@ -1,3 +1,7 @@
+/**
+ * condition 화면의 기간 전환과 캘린더 날짜 계산을 담당하는 순수 로직입니다.
+ * 선택 가능 날짜, 캘린더 title, daily/weekly/monthly 모드 전환 규칙을 화면 밖에 둡니다.
+ */
 import { addDays, getWeekStart, isSameDate } from '@/lib/utils/date';
 
 import { type ConditionPeriodMode } from './model';

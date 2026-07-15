@@ -1,3 +1,7 @@
+/**
+ * card form 값과 schedule card item 사이의 변환 로직입니다.
+ * create/edit 화면의 draft를 store/list 표현으로 바꿀 때 사용하는 순수 mapper입니다.
+ */
 import { createDefaultCardFormValues } from './model';
 
 import type {

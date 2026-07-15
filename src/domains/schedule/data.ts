@@ -1,3 +1,7 @@
+/**
+ * schedule 도메인의 정적 옵션 데이터입니다.
+ * condition tag, 기본 날짜/시간 범위처럼 여러 화면이 공유하는 선택지를 정의합니다.
+ */
 import { colors } from '@/constants/theme';
 
 import { type ConditionTagOption } from './model';

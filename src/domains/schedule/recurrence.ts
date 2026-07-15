@@ -1,3 +1,7 @@
+/**
+ * schedule 반복 일정 모델과 변환 로직입니다.
+ * UI preset, 종료 조건, 요일 선택 값을 API recurrence 요청과 화면 label로 이어 줍니다.
+ */
 export type RecurrencePreset = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
 
 export type RecurrenceEndType = 'never' | 'count' | 'until';

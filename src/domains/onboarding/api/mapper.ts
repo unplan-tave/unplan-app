@@ -1,3 +1,7 @@
+/**
+ * onboarding API DTO와 앱 내부 설정 모델 사이의 변환을 담당합니다.
+ * 서버 enum, 시간 범위, transport/recovery 옵션을 화면 모델로 정규화합니다.
+ */
 import {
   ConditionType,
   OnboardingRequestTransportationsItem,

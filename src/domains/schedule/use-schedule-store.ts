@@ -1,3 +1,7 @@
+/**
+ * schedule/card 작성 flow의 클라이언트 draft 저장소입니다.
+ * 서버 API로 이동하기 전까지 form draft, card list, 최근 검색어 같은 로컬 UI 상태를 관리합니다.
+ */
 import { create } from 'zustand';
 
 import { addLocationRecentSearch, removeLocationRecentSearch } from './location';

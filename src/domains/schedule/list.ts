@@ -1,3 +1,7 @@
+/**
+ * schedule list/card 표시용 파생 값을 만드는 순수 로직입니다.
+ * 일정 기간, due date, condition tag label 등 리스트 UI에 필요한 계산을 제공합니다.
+ */
 import { getConditionTagById } from './model';
 import {
   formatDurationDisplay,

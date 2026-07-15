@@ -1,3 +1,7 @@
+/**
+ * onboarding settings mutation hook 모음입니다.
+ * settings 화면의 recovery/sleep/activity/transport 수정 요청을 optimistic cache 갱신과 함께 처리합니다.
+ */
 import { useOptimisticQueryMutation } from '@/lib/api/optimistic-query-mutation';
 
 import {

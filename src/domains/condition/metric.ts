@@ -1,3 +1,7 @@
+/**
+ * measurement 요약 값을 condition 화면의 Body/Mind/Sleep 카드 모델로 변환합니다.
+ * 표시 라벨, 진행률, 짧은 코멘트 계산은 UI가 아니라 이 도메인 함수에서 고정합니다.
+ */
 import { type ConditionSummary } from '@/domains/measurement/model';
 
 import { type ConditionMetricCard, type ConditionMetricKey } from './model';

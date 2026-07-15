@@ -1,3 +1,7 @@
+/**
+ * condition 도메인의 화면 독립 모델입니다.
+ * 컨디션 기록, 그래프/기간 모드, 추천 카드에 필요한 데이터 구조를 정의합니다.
+ */
 import { type ConditionTagId } from '@/domains/schedule/model';
 
 /** 컨디션 그래프 상단 토글. `flow`(흐름 보기)는 Figma 기준 발표 이후 구현 예정입니다. */
@@ -7,6 +11,22 @@ export type ConditionGraphMode = 'average' | 'flow';
 export type ConditionPeriodMode = 'daily' | 'weekly' | 'monthly';
 
 export type ConditionMetricKey = 'body' | 'mind' | 'sleep';
+
+export interface ConditionRecordEntry {
+  id: number;
+  bodyScore: number;
+  mindScore: number;
+  bodyScorePercent: number;
+  mindScorePercent: number;
+  dateTime: string;
+}
+
+export interface ConditionRecordInput {
+  id?: number;
+  bodyScore: number;
+  mindScore: number;
+  dateTime: string;
+}
 
 /** 게이지 카드 한 장(Body/Mind/Sleep)에 필요한 표시 값. */
 export interface ConditionMetricCard {
@@ -30,6 +50,7 @@ export interface ConditionFreeSlot {
 export interface QueueConditionRecommendation {
   kind: 'queue';
   id: string;
+  recommendId?: number;
   title: string;
   conditionTagId: ConditionTagId;
   reason: string;
@@ -41,6 +62,7 @@ export interface QueueConditionRecommendation {
 export interface RecoveryConditionRecommendation {
   kind: 'recovery';
   id: string;
+  recommendId?: number;
   reason: string;
   durationLabel: string;
   options: RecoveryRecommendationOption[];

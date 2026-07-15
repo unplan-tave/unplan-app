@@ -1,3 +1,7 @@
+/**
+ * daily-memo 도메인의 서버 API 경계입니다.
+ * 홈 화면은 generated memo endpoint를 직접 호출하지 않고, 날짜별 조회/생성/삭제 함수를 통해 접근합니다.
+ */
 import { createMemo, deleteMemos, getMemos } from '@/lib/api/endpoints/daily-memo/daily-memo';
 
 import { toDailyMemo, toDailyMemos } from './mapper';

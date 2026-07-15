@@ -1,3 +1,7 @@
+/**
+ * schedule query key factory입니다.
+ * list/search/detail 캐시 계층을 고정해 mutation 후 invalidate 범위를 명확히 합니다.
+ */
 export const scheduleQueryKeys = {
   all: ['schedule'] as const,
   lists: () => [...scheduleQueryKeys.all, 'list'] as const,

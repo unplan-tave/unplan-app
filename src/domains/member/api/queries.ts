@@ -1,3 +1,7 @@
+/**
+ * member 조회 hook 모음입니다.
+ * 사용자 프로필과 알림 설정을 settings/home 화면에서 공유할 수 있도록 query key를 분리합니다.
+ */
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchAlarmSettings, fetchMemberProfile } from './client';

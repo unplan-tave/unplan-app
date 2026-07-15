@@ -1,3 +1,7 @@
+/**
+ * member 도메인 mutation hook 모음입니다.
+ * 프로필과 알림 설정 변경을 optimistic query mutation으로 처리해 settings 화면의 즉시 반영을 지원합니다.
+ */
 import { useOptimisticQueryMutation } from '@/lib/api/optimistic-query-mutation';
 
 import { submitAlarmSettings, submitMemberProfileUpdate } from './client';

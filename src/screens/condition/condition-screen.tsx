@@ -9,6 +9,7 @@ import { ConditionGraphCard } from '@/components/features/condition/condition-gr
 import { ConditionGraphModeToggle } from '@/components/features/condition/condition-graph-mode-toggle';
 import { ConditionMetricCard } from '@/components/features/condition/condition-metric-card';
 import { ConditionRecommendationSheet } from '@/components/features/condition/condition-recommendation-sheet';
+import { ConditionRecordSheet } from '@/components/features/condition/condition-record-sheet';
 import { AppBackground } from '@/components/ui/AppBackground';
 import { Button } from '@/components/ui/Button';
 import { GNB } from '@/components/ui/GNB';
@@ -18,6 +19,7 @@ import { colors, spacing } from '@/constants/theme';
 import { useTabNavigation } from '@/hooks/use-tab-navigation';
 
 import { useConditionRecommendation } from './hooks/use-condition-recommendation';
+import { useConditionRecordForm } from './hooks/use-condition-record-form';
 import { useConditionView } from './hooks/use-condition-view';
 
 const CONTENT_MAX_WIDTH = 393;
@@ -27,6 +29,7 @@ export function ConditionScreen() {
   const insets = useSafeAreaInsets();
   const view = useConditionView();
   const recommendation = useConditionRecommendation(view.selectedDate);
+  const conditionRecordForm = useConditionRecordForm(view.selectedDate, view.conditionRecord);
 
   const handleNavChange = useTabNavigation();
 
@@ -73,11 +76,12 @@ export function ConditionScreen() {
             <ConditionMetricCard key={metric.key} metric={metric} />
           ))}
           <Button label="컨디션 기반 추천 일정" fullWidth onPress={recommendation.openSheet} />
-          {/*
-            TODO(condition-detail): "기록 추가/수정"이 여는 컨디션 기록 화면(Figma ConditionDetail
-            섹션의 MeasureEnergy·MeasureSleep)은 후속 PR 범위라 현재는 비활성화 상태로만 노출합니다.
-          */}
-          <Button label="기록 추가/수정" variant="primary" fullWidth disabled />
+          <Button
+            label="기록 추가/수정"
+            variant="primary"
+            fullWidth
+            onPress={conditionRecordForm.open}
+          />
         </ScrollView>
 
         <View style={[styles.footer, { bottom: insets.bottom + spacing[2] }]}>
@@ -112,6 +116,19 @@ export function ConditionScreen() {
         onKeepQueuePress={recommendation.keepQueueCard}
         onManualTimePress={recommendation.openManualTime}
         onAccept={recommendation.acceptRecommendation}
+      />
+
+      <ConditionRecordSheet
+        visible={conditionRecordForm.visible}
+        mode={conditionRecordForm.mode}
+        dateLabel={conditionRecordForm.dateLabel}
+        bodyScore={conditionRecordForm.bodyScore}
+        mindScore={conditionRecordForm.mindScore}
+        saving={conditionRecordForm.saving}
+        onBodyScoreChange={conditionRecordForm.setBodyScore}
+        onMindScoreChange={conditionRecordForm.setMindScore}
+        onClose={conditionRecordForm.close}
+        onSave={conditionRecordForm.save}
       />
     </ScreenLayout>
   );

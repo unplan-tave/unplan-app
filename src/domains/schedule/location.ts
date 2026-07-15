@@ -1,3 +1,7 @@
+/**
+ * schedule 위치 검색의 클라이언트 규칙과 최근 검색어 로직입니다.
+ * 검색어 길이 제한, 최근 항목 개수, 중복 제거 기준을 한곳에 둡니다.
+ */
 export const LOCATION_SEARCH_MIN_LENGTH = 1;
 export const LOCATION_SEARCH_MAX_LENGTH = 25;
 export const LOCATION_RECENT_VISIBLE_COUNT = 5;

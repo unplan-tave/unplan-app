@@ -14,4 +14,5 @@ export interface ScheduleCreateResponse {
   end_time?: string;
   estimated_time?: number;
   is_queue?: boolean;
+  personal_tags?: string[];
 }

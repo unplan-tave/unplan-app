@@ -1,3 +1,7 @@
+/**
+ * 인증 세션의 클라이언트 상태 저장소입니다.
+ * 앱 부팅 시 token storage를 hydrate하고, 로그아웃 시 서버 호출과 로컬 세션 정리를 함께 수행합니다.
+ */
 import { produce } from 'immer';
 import { create } from 'zustand';
 

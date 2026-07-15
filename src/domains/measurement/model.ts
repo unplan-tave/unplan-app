@@ -1,3 +1,9 @@
+/**
+ * measurement 도메인의 화면 요약 모델입니다.
+ * 서버 기록을 condition summary, metric card, home header에서 재사용할 수 있는 형태로 정규화합니다.
+ */
+import type { ConditionRecordEntry } from '@/domains/condition/model';
+
 export type MeasurementAverageType = 'ALL' | 'CONDITION' | 'SLEEP';
 export type MeasurementAverageGroupBy = 'DAY' | 'WEEK' | 'MONTH';
 
@@ -10,6 +16,7 @@ export interface DailyMeasurementSummary {
   mindScorePercent: number;
   sleepScore: number;
   sleepDurationMinutes: number;
+  conditionRecords: ConditionRecordEntry[];
 }
 
 export interface MeasurementAverageItem {

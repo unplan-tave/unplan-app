@@ -13,6 +13,12 @@ import type { ScheduleUpdateRequestRemindSoundType } from './scheduleUpdateReque
 export interface ScheduleUpdateRequest {
   title?: string;
   condition_tag?: ScheduleUpdateRequestConditionTag;
+  /**
+   * 개인 태그 이름 목록 (일정당 최대 10개, 각 1~25자). 전달하면 일정의 태그 전체가 이 목록으로 교체됨 — 미전송(null)이면 기존 유지, 빈 배열이면 전체 해제
+   * @minItems 0
+   * @maxItems 10
+   */
+  personal_tags?: string[];
   date?: string;
   start_time?: string;
   end_time?: string;

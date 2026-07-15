@@ -1,3 +1,7 @@
+/**
+ * measurement 조회 hook 모음입니다.
+ * 과거 날짜와 현재 기간의 stale time 정책을 분리해 홈/컨디션 화면의 불필요한 재요청을 줄입니다.
+ */
 import { useQuery } from '@tanstack/react-query';
 
 import { isMeasurementRangeCurrent } from '../period';

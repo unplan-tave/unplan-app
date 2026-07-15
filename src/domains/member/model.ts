@@ -1,3 +1,7 @@
+/**
+ * member 도메인의 화면 모델입니다.
+ * 프로필, 닉네임 수정 입력, 알림 설정의 기본값과 필드 이름을 앱 기준으로 정의합니다.
+ */
 export interface MemberProfile {
   name: string;
   nickname: string;

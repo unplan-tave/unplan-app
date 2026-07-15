@@ -1,3 +1,7 @@
+/**
+ * 소셜 로그인 SDK와 auth API를 이어 주는 도메인 orchestration입니다.
+ * Kakao/Google SDK 결과를 서버 로그인 요청으로 바꾸고, 성공 시 세션 저장과 provider별 분기를 처리합니다.
+ */
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import {
   isKakaoTalkLoginAvailable,
