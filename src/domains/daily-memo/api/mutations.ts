@@ -1,3 +1,7 @@
+/**
+ * daily-memo 생성/삭제 mutation hook입니다.
+ * 저장 성공 후 해당 날짜 메모 캐시를 갱신해 홈 bottom sheet와 요약 패널이 같은 데이터를 보게 합니다.
+ */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { submitDailyMemo, submitDailyMemoDelete } from './client';

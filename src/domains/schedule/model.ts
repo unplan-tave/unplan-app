@@ -1,3 +1,7 @@
+/**
+ * schedule 도메인의 핵심 화면 모델입니다.
+ * pin/queue 카드, form draft, 일정 상세/목록, tag/reminder/status 타입을 앱 기준으로 정의합니다.
+ */
 import { CONDITION_TAG_OPTIONS, DEFAULT_DATE_RANGE, DEFAULT_TIME_RANGE } from './data';
 import { type RecurrenceValue } from './recurrence';
 

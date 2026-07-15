@@ -1,3 +1,7 @@
+/**
+ * schedule 조회 hook 모음입니다.
+ * 날짜/주/월/검색/상세 조회를 화면 단위에 맞는 query key로 분리합니다.
+ */
 import { useQuery } from '@tanstack/react-query';
 
 import {

@@ -1,3 +1,7 @@
+/**
+ * onboarding 도메인의 서버 API 경계입니다.
+ * 최초 onboarding 저장과 settings 화면에서 수정하는 onboarding 세부 설정 API를 감쌉니다.
+ */
 import { isAxiosError } from 'axios';
 
 import { saveOnboarding } from '@/lib/api/endpoints/onboarding/onboarding';

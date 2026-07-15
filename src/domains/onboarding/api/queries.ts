@@ -1,3 +1,7 @@
+/**
+ * onboarding settings 조회 hook 모음입니다.
+ * settings 화면이 필요한 recovery/sleep/activity/transport 설정을 독립 query로 가져옵니다.
+ */
 import { useQuery } from '@tanstack/react-query';
 
 import {

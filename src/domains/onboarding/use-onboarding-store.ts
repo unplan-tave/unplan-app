@@ -1,3 +1,7 @@
+/**
+ * onboarding flow의 클라이언트 상태 저장소입니다.
+ * 여러 onboarding 화면에서 입력한 draft를 모아 최종 submit 시 onboarding API로 전달합니다.
+ */
 import { produce } from 'immer';
 import { create } from 'zustand';
 

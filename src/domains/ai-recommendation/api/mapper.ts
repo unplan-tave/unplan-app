@@ -1,3 +1,8 @@
+/**
+ * ai-recommendation API DTO를 화면에서 쓰는 도메인 모델로 변환합니다.
+ * 서버 필드명과 추천 source_type 같은 계약 차이는 이 파일에서 흡수해
+ * condition 화면과 settings 화면이 generated DTO 구조에 의존하지 않게 합니다.
+ */
 import { formatDurationCaption } from '@/domains/condition/recommendation';
 
 import { parseClockToMinutes, toClockTime } from '../model';

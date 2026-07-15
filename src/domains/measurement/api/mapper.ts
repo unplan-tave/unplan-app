@@ -1,3 +1,7 @@
+/**
+ * measurement API DTO를 home/condition 화면에서 쓰는 요약 모델로 변환합니다.
+ * paginated condition/sleep 기록 구조와 평균 응답의 null/percent 보정은 이 파일에서 처리합니다.
+ */
 import { toConditionRecordEntry } from '@/domains/condition/api/mapper';
 
 import type {

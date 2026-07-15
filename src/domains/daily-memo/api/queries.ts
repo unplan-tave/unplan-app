@@ -1,3 +1,7 @@
+/**
+ * daily-memo 조회 hook 모음입니다.
+ * 단일 날짜와 여러 날짜 조회를 분리해 홈 daily/monthly 화면에서 필요한 캐시 단위를 제공합니다.
+ */
 import { useQueries, useQuery } from '@tanstack/react-query';
 
 import { fetchDailyMemos } from './client';

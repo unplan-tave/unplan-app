@@ -1,3 +1,8 @@
+/**
+ * auth 도메인의 서버 API 경계입니다.
+ * 소셜 로그인, 토큰 재발급, 로그아웃, 탈퇴 호출을 감싸고
+ * token storage와 화면이 사용할 세션 모델로 변환합니다.
+ */
 import {
   googleLogin,
   kakaoLogin,

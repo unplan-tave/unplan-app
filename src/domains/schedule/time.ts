@@ -1,3 +1,7 @@
+/**
+ * schedule 시간 문자열과 분 단위 값을 변환하는 순수 유틸입니다.
+ * card form, duration sheet, 추천 시간 배치에서 같은 HH:MM 규칙을 공유합니다.
+ */
 const MINUTES_PER_DAY = 24 * 60;
 
 /** "HH:MM" 문자열을 자정 기준 분으로 변환합니다. 형식이 잘못되면 null. */

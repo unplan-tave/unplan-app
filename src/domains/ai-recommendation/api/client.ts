@@ -1,3 +1,8 @@
+/**
+ * ai-recommendation 도메인의 서버 API 경계입니다.
+ * 화면은 generated endpoint를 직접 호출하지 않고 이 파일의 함수만 통해
+ * 추천 기준 설정, 컨디션 기반 추천 조회, 추천 수락 요청을 수행합니다.
+ */
 import {
   acceptRecommendation,
   getConditionRecommendations,

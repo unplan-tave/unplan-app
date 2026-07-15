@@ -1,3 +1,7 @@
+/**
+ * member 도메인의 서버 API 경계입니다.
+ * 프로필과 알림 설정 조회/수정을 감싸 settings/home 화면이 generated DTO에 의존하지 않게 합니다.
+ */
 import { getProfile, updateProfile } from '@/lib/api/endpoints/member-controller/member-controller';
 import {
   getAlarmSetting,

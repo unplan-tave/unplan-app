@@ -1,3 +1,7 @@
+/**
+ * onboarding/settings의 수면 컨디션 원형 입력을 위한 순수 계산입니다.
+ * 수면 시간 threshold와 목표 수면 시간을 risk/lack/good/excess 상태로 분류합니다.
+ */
 export type SleepCondition = 'risk' | 'lack' | 'good' | 'excess';
 
 export const SLEEP_CONDITION_VISIBLE_MAX_MINUTES = 12 * 60;

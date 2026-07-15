@@ -1,3 +1,7 @@
+/**
+ * schedule API DTO와 앱 내부 schedule 모델 사이의 변환을 담당합니다.
+ * condition tag enum, recurrence, reminder, personal tag 필드 차이는 이 경계에서 흡수합니다.
+ */
 import {
   RecurrenceRequestFreq,
   ScheduleCreateRequestConditionTag,

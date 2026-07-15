@@ -1,3 +1,7 @@
+/**
+ * ai-recommendation 도메인의 화면 독립 모델입니다.
+ * 추천 기준 설정, 제외 시간대, 추천 수락 입력처럼 API와 UI가 공유하는 순수 데이터를 정의합니다.
+ */
 export interface MinuteRange {
   /** 자정 기준 경과 분 (0 ~ 1439) */
   startMinutes: number;

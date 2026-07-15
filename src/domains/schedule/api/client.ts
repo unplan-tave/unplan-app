@@ -1,3 +1,7 @@
+/**
+ * schedule 도메인의 서버 API 경계입니다.
+ * 일정 조회/검색/생성/수정/삭제를 감싸고 화면에는 Schedule 도메인 모델만 반환합니다.
+ */
 import {
   createSchedule,
   deleteSchedule,

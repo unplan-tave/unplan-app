@@ -1,3 +1,7 @@
+/**
+ * schedule/card 검색어 관리용 순수 로직입니다.
+ * 검색어 normalization, 최근 검색어 추가/삭제/중복 제거 규칙을 제공합니다.
+ */
 export const CARD_RECENT_SEARCH_MAX_COUNT = 10;
 
 export function normalizeCardSearchQuery(query: string) {

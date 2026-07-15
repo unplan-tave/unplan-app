@@ -1,3 +1,7 @@
+/**
+ * condition 도메인의 화면 독립 모델입니다.
+ * 컨디션 기록, 그래프/기간 모드, 추천 카드에 필요한 데이터 구조를 정의합니다.
+ */
 import { type ConditionTagId } from '@/domains/schedule/model';
 
 /** 컨디션 그래프 상단 토글. `flow`(흐름 보기)는 Figma 기준 발표 이후 구현 예정입니다. */

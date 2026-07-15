@@ -1,3 +1,7 @@
+/**
+ * schedule 생성/수정/삭제 mutation hook 모음입니다.
+ * 성공 시 list/detail 캐시를 갱신해 card create/view/list 화면이 같은 서버 상태를 보게 합니다.
+ */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { submitScheduleCreate, submitScheduleDelete, submitScheduleUpdate } from './client';

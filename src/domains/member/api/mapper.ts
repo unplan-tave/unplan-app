@@ -1,3 +1,7 @@
+/**
+ * member API DTO를 앱 내부 프로필/알림 설정 모델로 변환합니다.
+ * 서버의 snake_case 설정 필드와 화면의 boolean 설정 이름 차이를 이 파일에서 흡수합니다.
+ */
 import type { AlarmSettings, MemberProfile, MemberProfileUpdateInput } from '../model';
 import type {
   AlarmSettingRequestDto,

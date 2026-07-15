@@ -1,3 +1,7 @@
+/**
+ * condition 기록 저장 mutation hook입니다.
+ * 저장 성공 후 measurement와 추천 캐시를 무효화해 요약 점수와 추천 결과가 최신 기록으로 재계산되게 합니다.
+ */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { aiRecommendationQueryKeys } from '@/domains/ai-recommendation/api/query-keys';

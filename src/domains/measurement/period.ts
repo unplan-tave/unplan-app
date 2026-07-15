@@ -1,3 +1,7 @@
+/**
+ * measurement 평균 조회 기간 계산 로직입니다.
+ * weekly/monthly range와 현재 기간 판별을 화면 밖에서 일관되게 만듭니다.
+ */
 const WEEK_LENGTH = 7;
 
 export function getMeasurementWeekRange(date: Date) {

@@ -1,3 +1,7 @@
+/**
+ * condition 기록 DTO와 화면 입력 모델 사이의 변환을 담당합니다.
+ * 서버는 0~6 원점수와 percent 값을 섞어 내려주므로 화면에서 쓰는 값은 여기서 보정합니다.
+ */
 import type { ConditionRecordEntry, ConditionRecordInput } from '../model';
 import type {
   ConditionCreate,

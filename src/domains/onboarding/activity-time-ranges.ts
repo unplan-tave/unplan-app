@@ -1,3 +1,7 @@
+/**
+ * onboarding 활동 시간대 입력을 다루는 순수 로직입니다.
+ * 하루 범위 안에서 시간대가 유효한지, 서로 겹치는지, 정렬 가능한지를 계산합니다.
+ */
 import type { TimeRange } from './model';
 
 const HOURS_PER_DAY = 24;

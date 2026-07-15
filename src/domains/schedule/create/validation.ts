@@ -1,3 +1,7 @@
+/**
+ * schedule 생성/수정 form의 제출 가능 여부를 판단하는 순수 검증입니다.
+ * pin/queue 카드 타입별 필수 입력 규칙을 화면 컴포넌트 밖에 둡니다.
+ */
 import {
   hasDueDate,
   hasQueueDurationOrUnknown,

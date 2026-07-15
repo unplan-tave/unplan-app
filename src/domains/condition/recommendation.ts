@@ -1,3 +1,7 @@
+/**
+ * condition 추천 UI에 필요한 fallback/표시 로직입니다.
+ * 서버 추천 API가 주는 값과 별도로, 빈 시간 문구·소요 시간 라벨·추천 타입 판별을 제공합니다.
+ */
 import { type RecoveryOptionId } from '@/domains/onboarding/model';
 import { type CardItem } from '@/domains/schedule/model';
 import { formatMinutesToTime, parseTimeToMinutes } from '@/domains/schedule/time';
