@@ -8,23 +8,24 @@ import {
   getNextConditionPeriodMode,
   isConditionDateSelectable,
 } from '@/domains/condition/period';
+import { useDailyMeasurementQuery } from '@/domains/measurement/api/queries';
 import { toConditionSummaryFromDaily } from '@/domains/measurement/model';
-import { formatCalendarDateLabel } from '@/lib/utils/date';
+import { formatCalendarDateLabel, formatDateValue } from '@/lib/utils/date';
 
-/**
- * 컨디션 탭의 기간/그래프 모드/캘린더 상태.
- *
- * TODO(condition-api): 컨디션 요약 값은 measurement API 연동 시
- * `useDailyMeasurementQuery`/`useMeasurementAveragesQuery` 결과로 교체합니다.
- * 지금은 기록이 없는 상태(0%)의 요약을 그대로 사용합니다.
- */
+/** 컨디션 탭의 기간/그래프 모드/캘린더 상태. */
 export function useConditionView() {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [periodMode, setPeriodMode] = useState<ConditionPeriodMode>('daily');
   const [graphMode, setGraphMode] = useState<ConditionGraphMode>('average');
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
 
-  const conditionSummary = useMemo(() => toConditionSummaryFromDaily(), []);
+  const selectedDateValue = useMemo(() => formatDateValue(selectedDate), [selectedDate]);
+  const dailyMeasurementQuery = useDailyMeasurementQuery(selectedDateValue);
+  const conditionSummary = useMemo(
+    () => toConditionSummaryFromDaily(dailyMeasurementQuery.data),
+    [dailyMeasurementQuery.data],
+  );
+  const conditionRecord = dailyMeasurementQuery.data?.conditionRecords?.[0];
   const metrics = useMemo(() => toConditionMetricCards(conditionSummary), [conditionSummary]);
   const dateLabel = useMemo(() => formatCalendarDateLabel(selectedDate), [selectedDate]);
   const calendarDays = useMemo(
@@ -56,9 +57,11 @@ export function useConditionView() {
 
   return {
     selectedDate,
+    selectedDateValue,
     periodMode,
     graphMode,
     conditionSummary,
+    conditionRecord,
     metrics,
     dateLabel,
     calendar: {

@@ -1,76 +1,52 @@
 import { router } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { type ConditionRecommendation } from '@/domains/condition/model';
+import { useAcceptConditionRecommendationMutation } from '@/domains/ai-recommendation/api/mutations';
+import { useConditionRecommendationsQuery } from '@/domains/ai-recommendation/api/queries';
 import {
-  findFreeSlot,
   formatFreeSlotMessage,
   isRecoveryRecommendation,
-  toQueueRecommendations,
-  toRecoveryOptions,
-  toRecoveryRecommendation,
 } from '@/domains/condition/recommendation';
-import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
-import { createQueueToPinValuesFromCandidate } from '@/domains/schedule/queue';
-import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 import { t } from '@/lib/i18n';
 import { formatDateValue } from '@/lib/utils/date';
 
-/** `parseTimeToMinutes`는 24시를 허용하지 않으므로 하루의 끝을 23:59로 둡니다. */
-const DAY_END_TIME = '23:59';
-const MINIMUM_SLOT_MINUTES = 30;
-
-/**
- * "컨디션 기반 추천 일정" 바텀시트의 상태와 액션.
- *
- * TODO(condition-api): 추천 후보와 빈 시간대는 ai-recommendation API가 나오면 그 응답으로 교체합니다.
- * 지금은 클라이언트가 이미 가지고 있는 큐 카드와 회복 수단 설정만으로 후보를 만듭니다.
- */
+/** "컨디션 기반 추천 일정" 바텀시트의 상태와 액션. */
 export function useConditionRecommendation(selectedDate: Date) {
   const [isSheetVisible, setIsSheetVisible] = useState(false);
-  const [recommendationNow, setRecommendationNow] = useState(() => new Date());
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedRecoveryOptionId, setSelectedRecoveryOptionId] = useState<string | null>(null);
-  const cards = useScheduleStore((store) => store.cards);
-  const convertQueueToPinCard = useScheduleStore((store) => store.convertQueueToPinCard);
-  const recoveryOptionIds = useOnboardingStore((store) => store.preferences.recoveryOptionIds);
-  const customRecoveryLabel = useOnboardingStore((store) => store.preferences.customRecoveryLabel);
   const selectedDateValue = formatDateValue(selectedDate);
-  const selectedDateCards = useMemo(
-    () => cards.filter((card) => isCardScheduledOnDate(card, selectedDateValue)),
-    [cards, selectedDateValue],
+
+  const recommendationQuery = useConditionRecommendationsQuery(selectedDateValue, {
+    enabled: isSheetVisible,
+  });
+  const acceptMutation = useAcceptConditionRecommendationMutation({
+    onSuccess: () => {
+      setIsSheetVisible(false);
+    },
+  });
+  const recommendations = useMemo(
+    () => recommendationQuery.data?.recommendations ?? [],
+    [recommendationQuery.data?.recommendations],
   );
-
-  const freeSlot = useMemo(
-    () =>
-      findFreeSlot(
-        selectedDateCards,
-        formatTimeLabel(recommendationNow),
-        DAY_END_TIME,
-        MINIMUM_SLOT_MINUTES,
-      ),
-    [recommendationNow, selectedDateCards],
-  );
-  const recommendations = useMemo<ConditionRecommendation[]>(() => {
-    if (freeSlot == null) {
-      return [];
-    }
-
-    const recovery = toRecoveryRecommendation(
-      toRecoveryOptions(recoveryOptionIds, customRecoveryLabel),
-    );
-
-    return [...toQueueRecommendations(cards, freeSlot), ...(recovery == null ? [] : [recovery])];
-  }, [cards, customRecoveryLabel, freeSlot, recoveryOptionIds]);
-  const slotMessage = freeSlot == null ? null : formatFreeSlotMessage(freeSlot);
-  const emptyDescription =
-    freeSlot == null
+  const freeSlot = recommendationQuery.data?.freeSlot ?? null;
+  const slotMessage =
+    recommendationQuery.data?.summaryMessage ??
+    (freeSlot == null ? null : formatFreeSlotMessage(freeSlot));
+  const emptyDescription = recommendationQuery.isError
+    ? t('condition.recommendation.empty.noCandidate')
+    : freeSlot == null
       ? t('condition.recommendation.empty.noSlot')
       : t('condition.recommendation.empty.noCandidate');
   const activeRecommendation = recommendations[activeIndex];
 
+  useEffect(() => {
+    setActiveIndex((currentIndex) =>
+      recommendations.length === 0 ? 0 : Math.min(currentIndex, recommendations.length - 1),
+    );
+  }, [recommendations.length]);
+
   const openSheet = useCallback(() => {
-    setRecommendationNow(new Date());
     setActiveIndex(0);
     setSelectedRecoveryOptionId(null);
     setIsSheetVisible(true);
@@ -95,57 +71,50 @@ export function useConditionRecommendation(selectedDate: Date) {
       return;
     }
 
+    if (activeRecommendation.recommendId == null) {
+      return;
+    }
+
     if (isRecoveryRecommendation(activeRecommendation)) {
       if (selectedRecoveryOptionId == null) {
         return;
       }
 
-      setIsSheetVisible(false);
+      acceptMutation.mutate({
+        recommendId: activeRecommendation.recommendId,
+        recoveryMean: selectedRecoveryOptionId,
+      });
       return;
     }
 
-    const card = cards.find((item) => item.id === activeRecommendation.id);
-
-    if (card == null) {
-      return;
-    }
-
-    convertQueueToPinCard(
-      card.id,
-      createQueueToPinValuesFromCandidate(card, {
-        id: card.id,
-        date: selectedDateValue,
-        startTime: freeSlot.startTime,
-        endTime: freeSlot.endTime,
-        description: activeRecommendation.reason,
-      }),
-    );
-    setIsSheetVisible(false);
-  }, [
-    activeRecommendation,
-    cards,
-    convertQueueToPinCard,
-    freeSlot,
-    selectedRecoveryOptionId,
-    selectedDateValue,
-  ]);
+    acceptMutation.mutate({
+      recommendId: activeRecommendation.recommendId,
+      keepQueueCard: false,
+    });
+  }, [acceptMutation, activeRecommendation, freeSlot, selectedRecoveryOptionId]);
 
   /** 추천 시간 대신 사용자가 직접 시간을 정하는 경로. */
   const openManualTime = useCallback(() => {
     setIsSheetVisible(false);
 
-    if (activeRecommendation == null || isRecoveryRecommendation(activeRecommendation)) {
-      router.push('/card/new');
+    router.push('/card/new');
+  }, []);
+
+  /** "기존 큐 카드 유지하기" — 원본 큐 카드는 유지하고 핀 카드를 복제 생성합니다. */
+  const keepQueueCard = useCallback(() => {
+    if (
+      activeRecommendation == null ||
+      isRecoveryRecommendation(activeRecommendation) ||
+      activeRecommendation.recommendId == null
+    ) {
       return;
     }
 
-    router.push(`/card/view?cardId=${activeRecommendation.id}`);
-  }, [activeRecommendation]);
-
-  /** "기존 큐 카드 유지하기" — 아무것도 바꾸지 않고 시트를 닫습니다. */
-  const keepQueueCard = useCallback(() => {
-    setIsSheetVisible(false);
-  }, []);
+    acceptMutation.mutate({
+      recommendId: activeRecommendation.recommendId,
+      keepQueueCard: true,
+    });
+  }, [acceptMutation, activeRecommendation]);
 
   return {
     isSheetVisible,
@@ -163,28 +132,4 @@ export function useConditionRecommendation(selectedDate: Date) {
     openManualTime,
     keepQueueCard,
   };
-}
-
-function formatTimeLabel(date: Date) {
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-}
-
-function isCardScheduledOnDate(
-  card: { dateMode: string; dateStart: string; dateEnd: string },
-  selectedDateValue: string,
-) {
-  if (card.dateMode === 'single') {
-    return card.dateStart === selectedDateValue;
-  }
-
-  if (card.dateMode === 'range') {
-    return (
-      card.dateStart.length > 0 &&
-      card.dateEnd.length > 0 &&
-      card.dateStart <= selectedDateValue &&
-      selectedDateValue <= card.dateEnd
-    );
-  }
-
-  return false;
 }
