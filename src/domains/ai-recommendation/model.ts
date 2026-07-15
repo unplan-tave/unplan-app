@@ -14,6 +14,12 @@ export interface RecommendationCriteriaSettings extends RecommendationCriteria {
   isRecommendOn: boolean;
 }
 
+export interface AcceptConditionRecommendationInput {
+  recommendId: number;
+  keepQueueCard?: boolean;
+  recoveryMean?: string;
+}
+
 export const MINUTES_PER_DAY = 24 * 60;
 
 export const DEFAULT_EXCLUDE_RANGE: MinuteRange = {
