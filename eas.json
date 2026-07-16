@@ -6,22 +6,33 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "environment": "development"
     },
     "development-simulator": {
       "developmentClient": true,
       "distribution": "internal",
+      "environment": "development",
       "ios": {
         "simulator": true
       }
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "environment": "preview"
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "environment": "production"
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6791652125"
+      }
     }
   }
 }

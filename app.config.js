@@ -1,5 +1,7 @@
-const kakaoNativeAppKey = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY;
-const googleIosUrlScheme = process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME;
+const normalizeNativeConfigValue = (value) => value?.trim().replace(/\\+$/, '');
+
+const kakaoNativeAppKey = normalizeNativeConfigValue(process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY);
+const googleIosUrlScheme = normalizeNativeConfigValue(process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME);
 
 // TODO: Set EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY in .env.local/EAS env before iOS prebuild/build.
 // The fallback is a non-secret placeholder so Expo config can still be evaluated locally.
@@ -10,7 +12,7 @@ const googleIosUrlSchemeForNativeConfig =
 module.exports = {
   expo: {
     name: 'Unplan',
-    slug: 'scheduler-app',
+    slug: 'unplan',
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/icon.png',
@@ -76,7 +78,7 @@ module.exports = {
     },
     extra: {
       eas: {
-        projectId: 'a6983ac6-260d-4677-90cb-0112e5050b79',
+        projectId: '3d7e4964-b0fe-42d0-99d3-569d2fab8601',
       },
     },
   },
