@@ -41,7 +41,7 @@ module.exports = {
       favicon: './assets/favicon.png',
     },
     updates: {
-      url: 'https://u.expo.dev/a6983ac6-260d-4677-90cb-0112e5050b79',
+      url: 'https://u.expo.dev/3d7e4964-b0fe-42d0-99d3-569d2fab8601',
     },
     runtimeVersion: {
       policy: 'appVersion',
