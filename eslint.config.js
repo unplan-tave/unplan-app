@@ -13,10 +13,10 @@ const reactHooksPlugin = require('eslint-plugin-react-hooks');
 const STORE_QUERY_BOUNDARY = [
   {
     group: [
-      '@/state/*/use-*-store',
-      '@/state/*/use-*-store.*',
-      '**/state/*/use-*-store',
-      '**/state/*/use-*-store.*',
+      '@/domains/*/use-*-store',
+      '@/domains/*/use-*-store.*',
+      '**/domains/*/use-*-store',
+      '**/domains/*/use-*-store.*',
     ],
     message: 'Store hooks belong in screens (or screen hooks). Pass resolved data as props.',
   },

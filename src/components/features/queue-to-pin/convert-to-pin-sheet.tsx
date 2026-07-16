@@ -61,9 +61,9 @@ export function ConvertToPinBottomSheet({
   const [manualEndTime, setManualEndTime] = useState('15:00');
   const [activeTimeField, setActiveTimeField] = useState<'start' | 'end'>('start');
   const [isTimeWheelVisible, setIsTimeWheelVisible] = useState(false);
+  const [useOneHourDuration, setUseOneHourDuration] = useState(false);
   const handleShowCalendar = useCallback(() => setIsTimeWheelVisible(false), []);
   const isReSearchRef = useRef(false);
-  const useOneHourRef = useRef(false);
 
   const candidates = useMemo(() => getMockRecommendationCandidates(), []);
   const currentCandidate = candidates[candidateIndex] ?? candidates[0];
@@ -74,8 +74,8 @@ export function ConvertToPinBottomSheet({
     setLoadingStep(0);
     setCandidateIndex(0);
     setKeepOriginal(true);
+    setUseOneHourDuration(false);
     isReSearchRef.current = false;
-    useOneHourRef.current = false;
 
     if (card.durationUnknown ?? false) {
       setMode('error-no-duration');
@@ -124,7 +124,7 @@ export function ConvertToPinBottomSheet({
       candidate = currentCandidate;
     }
 
-    const baseCard: CardItem = useOneHourRef.current
+    const baseCard: CardItem = useOneHourDuration
       ? { ...card, durationUnknown: false, durationHours: 1, durationMinutes: 0 }
       : card;
 
@@ -136,6 +136,7 @@ export function ConvertToPinBottomSheet({
     manualEndTime,
     currentCandidate,
     card,
+    useOneHourDuration,
     keepOriginal,
     onConvert,
   ]);
@@ -153,7 +154,7 @@ export function ConvertToPinBottomSheet({
   }, [currentCandidate]);
 
   const handleUseOneHour = useCallback(() => {
-    useOneHourRef.current = true;
+    setUseOneHourDuration(true);
     setLoadingStep(0);
     setMode('loading');
   }, []);

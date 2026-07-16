@@ -5,7 +5,7 @@
 > 따라서 더 이상 "확정된 ERD를 보고 타입을 미리 다 짜두는" 접근은 위험하며, 변경에 강한 구조를 우선합니다.
 > 아래 [§0 병행 개발 원칙](#0-병행-개발-원칙-erd가-계속-바뀐다)을 먼저 읽으세요. 이후 Phase 설명은 참고용 히스토리입니다.
 
-[← 문서 목록](../../README.md) · [개요](../../overview.md) · [코어 컨벤션](../../conventions/core.md) · [확장 컨벤션](../../conventions/advanced.md)
+[← 문서 목록](../../README.md) · [개요](../../overview.md) · [코어 컨벤션](../../conventions/core.md)
 
 ---
 
@@ -156,7 +156,7 @@ mkdir -p src/{app,components/{common,schedule,task,ai},hooks,stores,services/{ap
 ```
 
 ### 1-4. ESLint / Prettier / Husky 세팅
-- [코어 컨벤션 §15](../../conventions/core.md#15-eslint--prettier-설정) 설정 그대로 적용
+- 현재 린트/포맷 기준은 `eslint.config.js`, `.prettierrc`, [코어 컨벤션](../../conventions/core.md)을 따른다.
 - `npx husky init` 후 pre-commit 훅 연결
 
 ---
@@ -317,7 +317,7 @@ export const apiClient = axios.create({
   timeout: 10_000,
 });
 
-// 인터셉터 설정 ([코어 컨벤션 §8](../../conventions/core.md#8-api--비동기-처리) 참조)
+// 인터셉터 설정 (현재 API 경계는 docs/architecture/api-boundary.md 참조)
 ```
 
 ### 3-2. API 함수 → Mock 데이터로 먼저 구현
@@ -641,7 +641,7 @@ export function Button({
 > UI 없이도 완성 가능한 부분
 
 ```ts
-// src/stores/scheduleStore.ts - [코어 컨벤션 §6](../../conventions/core.md#6-상태-관리-컨벤션) 패턴 적용
+// src/stores/scheduleStore.ts - 당시 상태 관리 패턴 예시
 
 // src/stores/userStore.ts
 interface UserState {
@@ -741,7 +741,7 @@ export const handlers = [
 
 ```
 Week 1
-├── Day 1-2:  프로젝트 세팅 + CI/CD 구성 (Phase 1, [확장 컨벤션 §17](../../conventions/advanced.md#17-cicd-컨벤션))
+├── Day 1-2:  프로젝트 세팅 + CI/CD 구성 (Phase 1)
 ├── Day 3:    ERD → 타입 정의 (Phase 2)
 ├── Day 4-5:  API 레이어 + Mock 데이터 (Phase 3)
 

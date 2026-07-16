@@ -13,6 +13,7 @@ import {
   sortDateValues,
   type TimeFocus,
 } from '@/domains/schedule/model';
+import { parseTimeToMinutes } from '@/domains/schedule/time';
 
 const DATE_CELL_SIZE = spacing[8];
 const SHEET_HEADER_MAX_WIDTH = 369;
@@ -520,7 +521,14 @@ function isInvalidSameDayTimeRange(draft: DateTimeDraft) {
     return false;
   }
 
-  return draft.timeStart > draft.timeEnd;
+  const startMinutes = parseTimeToMinutes(draft.timeStart);
+  const endMinutes = parseTimeToMinutes(draft.timeEnd);
+
+  if (startMinutes == null || endMinutes == null) {
+    return false;
+  }
+
+  return startMinutes > endMinutes;
 }
 
 function isDateVisibleRangeCell(value: string | undefined, draft: DateTimeDraft) {
