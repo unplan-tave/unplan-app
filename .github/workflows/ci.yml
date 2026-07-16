@@ -108,7 +108,7 @@ jobs:
           repository: ${{ github.repository }}
           run-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-  ios-preview:
+  ios-simulator-preview:
     needs: [quality, detect-preview-changes]
     if: needs.detect-preview-changes.outputs.native == 'true' || inputs.force_native_build
     runs-on: ubuntu-latest
@@ -133,9 +133,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build preview (iOS)
+      - name: Build preview (iOS simulator)
         id: deploy
-        run: eas build --platform ios --profile preview --non-interactive
+        run: eas build --platform ios --profile development-simulator --non-interactive
 
       - name: Notify Discord
         if: always()
@@ -143,7 +143,7 @@ jobs:
         uses: ./.github/actions/notify-discord-deploy
         with:
           webhook-url: ${{ secrets.DISCORD_APP_DEPLOY_WEBHOOK_URL }}
-          deploy-type: iOS Preview Build
+          deploy-type: iOS Simulator Preview Build
           deploy-status: ${{ steps.deploy.outcome }}
           ref-name: ${{ github.ref_name }}
           commit-sha: ${{ github.sha }}
