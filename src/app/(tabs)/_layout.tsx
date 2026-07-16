@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 
 export default function TabsLayout() {
   return (
-    <Tabs>
+    <Tabs screenOptions={{ headerShown: false, tabBarStyle: { display: 'none' } }}>
       <Tabs.Screen
         name="index"
         options={{
@@ -18,6 +18,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="condition"
+        options={{
+          title: '컨디션',
+          tabBarLabel: '컨디션',
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: '설정',
@@ -25,11 +32,10 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="playground"
+        name="settings-ui-primitives"
         options={{
-          title: 'Playground',
-          tabBarLabel: 'Playground',
-          href: __DEV__ ? undefined : null,
+          href: null,
+          title: 'UI 컴포넌트',
         }}
       />
     </Tabs>

@@ -5,6 +5,15 @@ on:
     branches: [develop, main]
   push:
     branches: [develop, main]
+  workflow_dispatch:
+    inputs:
+      force_native_build:
+        description: '네이티브 풀 빌드 강제 실행'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
 
 jobs:
   quality:
@@ -32,3 +41,112 @@ jobs:
 
       - name: Test
         run: npm test --if-present
+
+  detect-preview-changes:
+    if: github.ref == 'refs/heads/develop' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      native: ${{ steps.filter.outputs.native }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            native:
+              - 'android/**'
+              - 'ios/**'
+              - 'app.config.*'
+              - 'app.json'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'eas.json'
+              - 'plugins/**'
+              - 'assets/icon.png'
+              - 'assets/android-icon-*.png'
+
+  ota-update:
+    needs: [quality, detect-preview-changes]
+    if: needs.detect-preview-changes.outputs.native == 'false' && !inputs.force_native_build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: OTA Update (preview channel)
+        id: deploy
+        run: eas update --channel preview --message "$(git log -1 --pretty=%s)" --non-interactive
+
+      - name: Notify Discord
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/notify-discord-deploy
+        with:
+          webhook-url: ${{ secrets.DISCORD_APP_DEPLOY_WEBHOOK_URL }}
+          deploy-type: Preview OTA Update
+          deploy-status: ${{ steps.deploy.outcome }}
+          ref-name: ${{ github.ref_name }}
+          commit-sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          repository: ${{ github.repository }}
+          run-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  ios-simulator-preview:
+    needs: [quality, detect-preview-changes]
+    if: needs.detect-preview-changes.outputs.native == 'true' || inputs.force_native_build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build preview (iOS simulator)
+        id: deploy
+        run: eas build --platform ios --profile development-simulator --non-interactive
+
+      - name: Notify Discord
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/notify-discord-deploy
+        with:
+          webhook-url: ${{ secrets.DISCORD_APP_DEPLOY_WEBHOOK_URL }}
+          deploy-type: iOS Simulator Preview Build
+          deploy-status: ${{ steps.deploy.outcome }}
+          ref-name: ${{ github.ref_name }}
+          commit-sha: ${{ github.sha }}
+          actor: ${{ github.actor }}
+          repository: ${{ github.repository }}
+          run-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

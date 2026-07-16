@@ -1,1 +1,1 @@
-export { ScheduleScreen as default } from '@/features/schedule/schedule-screen';
+export { CardListScreen as default } from '@/screens/schedule/card-list/card-list-screen';

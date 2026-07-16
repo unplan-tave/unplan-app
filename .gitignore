@@ -36,9 +36,14 @@ yarn-error.*
 .env.production
 .env.staging
 
+# Cursor MCP (API keys)
+.mcp.json
+
 # typescript
 *.tsbuildinfo
 
 # generated native folders
 /ios
 /android
+.claude/settings.local.json
+.codex/

@@ -42,17 +42,39 @@ export const colors = {
   },
 
   alpha: {
+    transparent: 'transparent',
     white10: 'rgba(255,255,255,0.1)',
     white20: 'rgba(255,255,255,0.2)',
     white50: 'rgba(255,255,255,0.5)',
     white70: 'rgba(255,255,255,0.7)',
     white80: 'rgba(255,255,255,0.8)',
+    white88: 'rgba(255,255,255,0.88)',
     black05: 'rgba(0,0,0,0.05)',
+    black12: 'rgba(0,0,0,0.12)',
+    black35: 'rgba(0,0,0,0.35)',
+    black50: 'rgba(0,0,0,0.5)',
+    primary20: 'rgba(36,141,254,0.2)',
+    secondary10: 'rgba(241,94,94,0.1)',
+    gray50020: 'rgba(119,127,136,0.2)',
+    gray70050: 'rgba(54,62,70,0.5)',
+  },
+
+  shadow: {
+    blueGray: 'rgb(60,94,103)',
+  },
+
+  // ─── Chip (Figma Chips 컴포넌트 selected 상태) ────────────
+  chip: {
+    selectedBackground: '#D3E8FF',
+    selectedText: '#007BFF',
   },
 
   // ─── Semantic ───────────────────────────────────────────
   background: '#FFFFFF',
+  appIconBackground: '#EAF4FF',
   surface: '#F9FAFB',
+  onboardingBackground: '#F9FAFB',
+  onboardingMutedBackground: '#F1F5F7',
   border: '#D9DFE5',
 
   text: {

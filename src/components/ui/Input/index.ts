@@ -1,2 +1,4 @@
 export { Input } from './Input';
-export type { InputProps } from './input.types';
+export { InputRecommendation } from './InputRecommendation';
+export { InputRow } from './InputRow';
+export type { InputProps, InputRecommendationProps, InputRowProps } from './input.types';

@@ -12,6 +12,7 @@ export function Icon({
   size = 20,
   color = colors.gray[700],
   disabled = false,
+  variant = 'default',
   style,
 }: IconProps) {
   const iconColor = disabled ? colors.gray[300] : color;
@@ -19,14 +20,18 @@ export function Icon({
 
   return (
     <View style={[styles.container, { width, height: size }, style]}>
-      <Svg width={width} height={size} viewBox={getViewBox(name)} fill="none">
-        {renderIcon(name, iconColor)}
+      <Svg width={width} height={size} viewBox={getViewBox(name, variant)} fill="none">
+        {renderIcon(name, iconColor, variant)}
       </Svg>
     </View>
   );
 }
 
-function getViewBox(name: IconProps['name']) {
+function getViewBox(name: IconProps['name'], variant: IconProps['variant']) {
+  if (name === 'warning' && variant === 'badge') {
+    return '0 0 96 96';
+  }
+
   if (name === 'toggle') {
     return '0 0 52 40';
   }
@@ -34,7 +39,7 @@ function getViewBox(name: IconProps['name']) {
   return '0 0 24 24';
 }
 
-function renderIcon(name: IconProps['name'], color: string) {
+function renderIcon(name: IconProps['name'], color: string, variant: IconProps['variant']) {
   switch (name) {
     case 'plus':
       return <Plus color={color} />;
@@ -52,6 +57,8 @@ function renderIcon(name: IconProps['name'], color: string) {
       return <ArrowDown color={color} />;
     case 'chevronDown':
       return <ChevronDown color={color} />;
+    case 'chevronUp':
+      return <ChevronUp color={color} />;
     case 'bell':
       return <Bell color={color} />;
     case 'cancel':
@@ -64,6 +71,18 @@ function renderIcon(name: IconProps['name'], color: string) {
       return <Sort color={color} />;
     case 'toggle':
       return <Toggle color={color} />;
+    case 'home':
+      return <Home color={color} />;
+    case 'list':
+      return <List color={color} />;
+    case 'condition':
+      return <Condition color={color} />;
+    case 'setting':
+      return <Setting color={color} />;
+    case 'warning':
+      return variant === 'badge' ? <WarningBadge /> : <Warning color={color} />;
+    case 'refresh':
+      return <Refresh color={color} />;
     default:
       return null;
   }
@@ -182,9 +201,21 @@ function ArrowDown({ color }: { color: string }) {
 function ChevronDown({ color }: { color: string }) {
   return (
     <Polyline
-      points="6.5 9 12 14.5 17.5 9"
+      points="5 8.5 12 15.5 19 8.5"
       stroke={color}
-      strokeWidth={2}
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  );
+}
+
+function ChevronUp({ color }: { color: string }) {
+  return (
+    <Polyline
+      points="5 15.5 12 8.5 19 15.5"
+      stroke={color}
+      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
     />
@@ -246,6 +277,89 @@ function Toggle({ color }: { color: string }) {
       <Rect x={1} y={1} width={50} height={38} rx={19} stroke={color} strokeWidth={1.8} />
       <Circle cx={20} cy={20} r={10} fill={color} />
     </>
+  );
+}
+
+function Home({ color }: { color: string }) {
+  return (
+    <G stroke={color} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M4.8 10.8L12 4.8L19.2 10.8" />
+      <Path d="M7.2 10.2V19.2H16.8V10.2" />
+      <Path d="M10 19.2V14.3H14V19.2" />
+    </G>
+  );
+}
+
+function List({ color }: { color: string }) {
+  return (
+    <G fill={color}>
+      <Rect x={5} y={5} width={6} height={6} rx={1.2} />
+      <Rect x={13} y={5} width={6} height={6} rx={1.2} />
+      <Rect x={5} y={13} width={6} height={6} rx={1.2} />
+      <Rect x={13} y={13} width={6} height={6} rx={1.2} />
+    </G>
+  );
+}
+
+function Condition({ color }: { color: string }) {
+  return (
+    <G fill={color}>
+      <Path d="M12 4.5C10 6.2 9 8.1 9 10.2C9 12.1 10.3 13.4 12 13.4C13.7 13.4 15 12.1 15 10.2C15 8.1 14 6.2 12 4.5Z" />
+      <Path
+        d="M6.4 11.1C5.2 12.2 4.6 13.4 4.6 14.7C4.6 16.2 5.7 17.3 7.1 17.3C8.5 17.3 9.6 16.2 9.6 14.7C9.6 13.4 8.5 12.1 6.4 11.1Z"
+        opacity={0.75}
+      />
+      <Path
+        d="M17.6 11.1C15.5 12.1 14.4 13.4 14.4 14.7C14.4 16.2 15.5 17.3 16.9 17.3C18.3 17.3 19.4 16.2 19.4 14.7C19.4 13.4 18.8 12.2 17.6 11.1Z"
+        opacity={0.75}
+      />
+    </G>
+  );
+}
+
+function Warning({ color }: { color: string }) {
+  return (
+    <G stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <SvgLine x1={12} y1={9} x2={12} y2={13} color={color} strokeWidth={1.8} />
+      <Circle cx={12} cy={17} r={0.5} fill={color} stroke={color} strokeWidth={1} />
+    </G>
+  );
+}
+
+function WarningBadge() {
+  return (
+    <>
+      <Circle cx={48} cy={48} r={36} fill={colors.secondary} />
+      <Line
+        x1={48}
+        y1={29}
+        x2={48}
+        y2={49}
+        stroke={colors.gray.white}
+        strokeWidth={7}
+        strokeLinecap="round"
+      />
+      <Circle cx={48} cy={63} r={3.5} fill={colors.gray.white} />
+    </>
+  );
+}
+
+function Setting({ color }: { color: string }) {
+  return (
+    <G stroke={color} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
+      <Circle cx={12} cy={12} r={3.2} />
+      <Path d="M12 4.4V6.1M12 17.9V19.6M4.4 12H6.1M17.9 12H19.6M6.6 6.6L7.8 7.8M16.2 16.2L17.4 17.4M17.4 6.6L16.2 7.8M7.8 16.2L6.6 17.4" />
+    </G>
+  );
+}
+
+function Refresh({ color }: { color: string }) {
+  return (
+    <G stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M20 12a8 8 0 1 0-2.3 5.6" />
+      <Polyline points="20 4 20 12 12 12" />
+    </G>
   );
 }
 
