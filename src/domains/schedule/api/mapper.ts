@@ -4,6 +4,8 @@
  */
 import {
   RecurrenceRequestFreq,
+  SearchSchedulesConditionTagsItem,
+  SearchSchedulesStatusItem,
   ScheduleCreateRequestConditionTag,
   ScheduleCreateRequestRemindSoundType,
   ScheduleCreateRequestRemindType,
@@ -24,6 +26,7 @@ import { getMonthDayFromDate } from '../recurrence';
 import type {
   ConditionTagId,
   DailyScheduleGroup,
+  DailyMessage,
   DailyScheduleSummary,
   MonthlyScheduleCount,
   ReminderSoundType,
@@ -39,6 +42,8 @@ import type {
 import type { RecurrenceValue } from '../recurrence';
 import type {
   DailyCount,
+  ApiResponseDailyMessageResponseDto,
+  ApiResponsePageResponseScheduleSearchResponse,
   DailySchedules,
   RecurrenceRequest,
   ScheduleCreateRequest,
@@ -46,32 +51,12 @@ import type {
   ScheduleDetailResponse,
   ScheduleGetResponse,
   ScheduleMonthlyResponse,
+  ScheduleSearchResponse,
   ScheduleSummary,
   ScheduleUpdateRequest,
   ScheduleWeeklyResponse,
+  SearchSchedulesParams,
 } from '@/lib/api/model';
-
-export interface ScheduleSearchResponse {
-  data?: {
-    totalCount?: number;
-    schedules?: ScheduleSearchItemResponse[];
-  } | null;
-}
-
-interface ScheduleSearchItemResponse {
-  scheduleId?: number;
-  title?: string;
-  date?: string;
-  startTime?: string | null;
-  endTime?: string | null;
-  estimatedTime?: number | null;
-  conditionTag?: string;
-  personalTags?: string[];
-  status?: string;
-  isQueue?: boolean;
-  isRecommended?: boolean;
-  isConflict?: boolean;
-}
 
 const API_WEEKDAY_CODES = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const;
 
@@ -140,24 +125,56 @@ export function toScheduleListItem(response: ScheduleGetResponse): ScheduleListI
   };
 }
 
-export function toScheduleSearchListItems(response?: ScheduleSearchResponse): ScheduleListItem[] {
-  return (response?.data?.schedules ?? []).map(toScheduleSearchListItem);
+export function toScheduleSearchListItems(
+  response?: ApiResponsePageResponseScheduleSearchResponse,
+): ScheduleListItem[] {
+  return (response?.data?.data ?? []).map(toScheduleSearchListItem);
 }
 
-function toScheduleSearchListItem(response: ScheduleSearchItemResponse): ScheduleListItem {
-  const isQueue = response.isQueue ?? (response.startTime == null && response.endTime == null);
+function toScheduleSearchListItem(response: ScheduleSearchResponse): ScheduleListItem {
+  const isQueue = response.start_time == null && response.end_time == null;
 
   return {
-    id: response.scheduleId ?? 0,
+    id: response.schedule_id ?? 0,
     title: response.title ?? '',
     date: normalizeDateForView(response.date),
-    startTime: response.startTime ?? '',
-    endTime: response.endTime ?? '',
-    estimatedMinutes: response.estimatedTime ?? null,
+    startTime: response.start_time ?? '',
+    endTime: response.end_time ?? '',
+    estimatedMinutes: response.estimated_time ?? null,
     isQueue,
     status: toScheduleStatus(response.status),
-    conditionTagId: toConditionTagId(response.conditionTag),
-    personalTags: response.personalTags ?? [],
+    conditionTagId: toConditionTagId(response.condition_tag),
+    personalTags: response.personal_tags ?? [],
+  };
+}
+
+export function toScheduleSearchParams(input: {
+  keyword?: string;
+  isQueue?: boolean;
+  status?: ScheduleStatus[];
+  conditionTagIds?: ConditionTagId[];
+  personalTags?: string[];
+  page?: number;
+}): SearchSchedulesParams {
+  return {
+    keyword: normalizeOptionalParam(input.keyword),
+    isQueue: input.isQueue,
+    status: input.status?.map(toSearchScheduleStatus),
+    conditionTags: input.conditionTagIds?.map(toSearchConditionTag),
+    personalTags: input.personalTags?.filter((tag) => tag.trim().length > 0),
+    page: input.page,
+  };
+}
+
+export function toDailyMessage(response?: ApiResponseDailyMessageResponseDto): DailyMessage {
+  const message = response?.data;
+
+  return {
+    date: normalizeDateForView(message?.date),
+    conditionTagId: toConditionTagId(message?.condition),
+    message: message?.message ?? '',
+    isEnergyRecorded: message?.is_energy_recorded ?? false,
+    isSleepRecorded: message?.is_sleep_recorded ?? false,
   };
 }
 
@@ -337,6 +354,34 @@ function toScheduleStatus(
   }
 }
 
+function toSearchScheduleStatus(status: ScheduleStatus): SearchSchedulesStatusItem {
+  switch (status) {
+    case 'done':
+      return SearchSchedulesStatusItem.DONE;
+    case 'inProgress':
+      return SearchSchedulesStatusItem.IN_PROGRESS;
+    case 'todo':
+      return SearchSchedulesStatusItem.TODO;
+  }
+}
+
+function toSearchConditionTag(tagId: ConditionTagId): SearchSchedulesConditionTagsItem {
+  switch (tagId) {
+    case 'urgent':
+      return SearchSchedulesConditionTagsItem.URGENT;
+    case 'core':
+      return SearchSchedulesConditionTagsItem.CORE_TASK;
+    case 'brain':
+      return SearchSchedulesConditionTagsItem.BRAIN_WORK;
+    case 'labor':
+      return SearchSchedulesConditionTagsItem.SIMPLE_TASK;
+    case 'rest':
+      return SearchSchedulesConditionTagsItem.RECOVERY;
+    case 'daily':
+      return SearchSchedulesConditionTagsItem.DAILY_TASK;
+  }
+}
+
 function toReminderType(type?: ScheduleDetailResponseRemindType): ReminderType | null {
   switch (type) {
     case ScheduleDetailResponseRemindType.AFTER:
@@ -450,6 +495,12 @@ function normalizeDateForView(value?: string) {
 
 function normalizeDateForRequest(value?: string) {
   return value?.replace(/\./g, '-');
+}
+
+function normalizeOptionalParam(value: string | undefined) {
+  const normalized = value?.trim();
+
+  return normalized == null || normalized.length === 0 ? undefined : normalized;
 }
 
 export { normalizeDateForRequest };

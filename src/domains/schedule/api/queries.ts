@@ -5,6 +5,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import {
+  fetchDailyMessage,
   fetchScheduleDetail,
   fetchSchedulesByDate,
   fetchSchedulesByMonth,
@@ -15,6 +16,7 @@ import { scheduleQueryKeys } from './query-keys';
 
 import type { SearchSchedulesInput } from './client';
 import type {
+  DailyMessage,
   DailyScheduleGroup,
   ScheduleDetail,
   ScheduleListItem,
@@ -43,6 +45,15 @@ export function useScheduleSearchQuery(
   return useQuery({
     queryKey: scheduleQueryKeys.search(input),
     queryFn: () => searchSchedules(input),
+    ...options,
+  });
+}
+
+export function useDailyMessageQuery(date: string, options?: ScheduleQueryOptions<DailyMessage>) {
+  return useQuery({
+    queryKey: scheduleQueryKeys.dailyMessage(date),
+    queryFn: () => fetchDailyMessage({ date }),
+    enabled: date.length > 0,
     ...options,
   });
 }

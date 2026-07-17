@@ -5,16 +5,18 @@
 import {
   createSchedule,
   deleteSchedule,
+  getDailyMessage,
   getScheduleDetail,
   getSchedulesByDate,
   getSchedulesByMonth,
   getSchedulesByWeek,
+  searchSchedules as searchScheduleEndpoints,
   updateSchedule,
 } from '@/lib/api/endpoints/schedule-crud/schedule-crud';
-import { apiMutator } from '@/lib/api/mutator/orval-mutator';
 
 import {
   normalizeDateForRequest,
+  toDailyMessage,
   toDailyScheduleGroups,
   toScheduleCreateRequest,
   toScheduleCreateResult,
@@ -22,17 +24,20 @@ import {
   toScheduleListItems,
   toScheduleMonthlyOverview,
   toScheduleSearchListItems,
+  toScheduleSearchParams,
   toScheduleUpdateRequest,
-  type ScheduleSearchResponse,
 } from './mapper';
 
 import type {
   DailyScheduleGroup,
+  DailyMessage,
+  ConditionTagId,
   ScheduleCreateInput,
   ScheduleCreateResult,
   ScheduleDetail,
   ScheduleListItem,
   ScheduleMonthlyOverview,
+  ScheduleStatus,
   ScheduleUpdateInput,
 } from '../model';
 
@@ -51,10 +56,14 @@ export interface GetSchedulesByMonthInput {
 export interface SearchSchedulesInput {
   keyword?: string;
   isQueue?: boolean;
-  status?: string;
-  conditionTags?: string[];
+  status?: ScheduleStatus[];
+  conditionTagIds?: ConditionTagId[];
   personalTags?: string[];
-  sortBy: string;
+  page?: number;
+}
+
+export interface GetDailyMessageInput {
+  date: string;
 }
 
 export async function fetchSchedulesByDate(
@@ -90,13 +99,15 @@ export async function fetchSchedulesByMonth(
 }
 
 export async function searchSchedules(input: SearchSchedulesInput): Promise<ScheduleListItem[]> {
-  const response = await apiMutator<ScheduleSearchResponse>({
-    url: '/schedule/search',
-    method: 'GET',
-    params: toScheduleSearchParams(input),
-  });
+  const response = await searchScheduleEndpoints(toScheduleSearchParams(input));
 
   return toScheduleSearchListItems(response);
+}
+
+export async function fetchDailyMessage(input: GetDailyMessageInput): Promise<DailyMessage> {
+  const response = await getDailyMessage({ date: normalizeDateForRequest(input.date) ?? '' });
+
+  return toDailyMessage(response);
 }
 
 export async function submitScheduleCreate(
@@ -118,21 +129,4 @@ export async function submitScheduleUpdate(
 
 export async function submitScheduleDelete(scheduleId: number): Promise<void> {
   await deleteSchedule(scheduleId);
-}
-
-function toScheduleSearchParams(input: SearchSchedulesInput) {
-  return {
-    keyword: normalizeOptionalParam(input.keyword),
-    isQueue: input.isQueue,
-    status: input.status,
-    conditionTags: input.conditionTags?.length ? input.conditionTags : undefined,
-    personalTags: input.personalTags?.length ? input.personalTags : undefined,
-    sortBy: input.sortBy,
-  };
-}
-
-function normalizeOptionalParam(value: string | undefined) {
-  const normalized = value?.trim();
-
-  return normalized == null || normalized.length === 0 ? undefined : normalized;
 }

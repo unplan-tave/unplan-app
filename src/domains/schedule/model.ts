@@ -78,6 +78,13 @@ export interface PersonalTagOption {
   createdAt: string;
 }
 
+/** 홈 등 화면에서 추천 카드와 함께 표시할 태그 정보를 표현합니다. */
+export interface HomeRecommendationItem {
+  card: CardItem;
+  conditionTag: ConditionTagOption;
+  personalTags: PersonalTagOption[];
+}
+
 export interface CalendarCell {
   key: string;
   label: string;
@@ -139,6 +146,14 @@ export interface MonthlyScheduleCount {
 export interface ScheduleMonthlyOverview {
   yearMonth: string;
   schedules: MonthlyScheduleCount[];
+}
+
+export interface DailyMessage {
+  date: string;
+  conditionTagId: ConditionTagId;
+  message: string;
+  isEnergyRecorded: boolean;
+  isSleepRecorded: boolean;
 }
 
 export interface ScheduleCreateInput {

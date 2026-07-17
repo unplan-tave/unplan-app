@@ -29,7 +29,7 @@ export function toDailyMeasurementSummary(
     mindScorePercent: normalizePercent(response?.mind_score_percent),
     sleepScore: normalizePercent(response?.sleep_score),
     sleepDurationMinutes: response?.sleep_duration_minutes ?? 0,
-    conditionRecords: (response?.conditions?.data ?? []).map(toConditionRecordEntry),
+    conditionRecords: (response?.conditions ?? []).map(toConditionRecordEntry),
   };
 }
 
