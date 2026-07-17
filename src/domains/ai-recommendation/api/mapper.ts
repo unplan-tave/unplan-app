@@ -7,7 +7,12 @@ import { formatDurationCaption } from '@/domains/condition/recommendation';
 
 import { parseClockToMinutes, toClockTime } from '../model';
 
-import type { MinuteRange, RecommendationCriteriaSettings } from '../model';
+import type {
+  MinuteRange,
+  QueueTimeRecommendationResult,
+  RecommendationCriteriaSettings,
+  ScheduleRecommendation,
+} from '../model';
 import type {
   ConditionFreeSlot,
   ConditionRecommendation,
@@ -83,6 +88,45 @@ export function toRecommendationAcceptRequest(input: {
     keep_queue_card: input.keepQueueCard,
     recovery_mean: input.recoveryMean,
   };
+}
+
+/** 일반 추천 목록 DTO를 화면 독립 추천 모델로 변환합니다. */
+export function toScheduleRecommendations(response?: { recommendations?: RecommendationItem[] }) {
+  return (response?.recommendations ?? []).flatMap(toScheduleRecommendation);
+}
+
+/** 불완전한 큐 시간 추천 응답을 검증한 값만 domain model로 노출합니다. */
+export function toQueueTimeRecommendationResult(response: unknown): QueueTimeRecommendationResult {
+  const value = isRecord(response) ? response : {};
+  const items = Array.isArray(value.recommendations) ? value.recommendations : [];
+
+  return {
+    candidates: items.flatMap((item) =>
+      isRecord(item) ? toScheduleRecommendation(item as RecommendationItem) : [],
+    ),
+    canExtendTo14Days: value.canExtendTo14Days === true,
+    mustChangeDuration: value.mustChangeDuration === true,
+  };
+}
+
+function toScheduleRecommendation(item: RecommendationItem): ScheduleRecommendation[] {
+  if (item.recommend_id == null || !item.title || !item.start_time || !item.end_time) return [];
+
+  return [
+    {
+      recommendId: item.recommend_id,
+      title: item.title,
+      date: item.deadline ?? '',
+      startTime: item.start_time,
+      endTime: item.end_time,
+      estimatedMinutes: item.estimated_time ?? null,
+      deadline: item.deadline ?? null,
+    },
+  ];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
 }
 
 function toConditionFreeSlot(emptyTime: EmptyTime | undefined): ConditionFreeSlot | null {

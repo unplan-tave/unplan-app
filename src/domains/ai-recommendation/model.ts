@@ -24,6 +24,24 @@ export interface AcceptConditionRecommendationInput {
   recoveryMean?: string;
 }
 
+/** 빈 시간에 배치할 수 있는 큐 카드 추천입니다. */
+export interface ScheduleRecommendation {
+  recommendId: number;
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  estimatedMinutes: number | null;
+  deadline: string | null;
+}
+
+/** 큐 카드별 시간 후보 API의 안전한 해석 결과입니다. */
+export interface QueueTimeRecommendationResult {
+  candidates: ScheduleRecommendation[];
+  canExtendTo14Days: boolean;
+  mustChangeDuration: boolean;
+}
+
 export const MINUTES_PER_DAY = 24 * 60;
 
 export const DEFAULT_EXCLUDE_RANGE: MinuteRange = {

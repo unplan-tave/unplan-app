@@ -6,6 +6,8 @@
 import {
   acceptRecommendation,
   getConditionRecommendations,
+  getQueueCardRecommendations,
+  getRecommendations,
 } from '@/lib/api/endpoints/recommendation/recommendation';
 import {
   getEmptyTimeRecommendSetting as getRecommendationCriteriaSetting,
@@ -17,9 +19,16 @@ import {
   toEmptyTimeSettingRequest,
   toRecommendationAcceptRequest,
   toRecommendationCriteriaSettings,
+  toQueueTimeRecommendationResult,
+  toScheduleRecommendations,
 } from './mapper';
 
-import type { AcceptConditionRecommendationInput, RecommendationCriteriaSettings } from '../model';
+import type {
+  AcceptConditionRecommendationInput,
+  QueueTimeRecommendationResult,
+  RecommendationCriteriaSettings,
+  ScheduleRecommendation,
+} from '../model';
 import type { ConditionFreeSlot, ConditionRecommendation } from '@/domains/condition/model';
 
 export interface ConditionRecommendationResult {
@@ -58,4 +67,19 @@ export async function submitAcceptConditionRecommendation(
       recoveryMean: input.recoveryMean,
     }),
   );
+}
+
+/** 특정 날짜의 일반 큐 카드 추천을 조회합니다. */
+export async function fetchScheduleRecommendations(
+  date: string,
+): Promise<ScheduleRecommendation[]> {
+  return toScheduleRecommendations(await getRecommendations({ date }));
+}
+
+/** 특정 큐 카드의 추천 시간대를 조회합니다. */
+export async function fetchQueueTimeRecommendations(
+  scheduleId: number,
+  days = 7,
+): Promise<QueueTimeRecommendationResult> {
+  return toQueueTimeRecommendationResult(await getQueueCardRecommendations(scheduleId, { days }));
 }
