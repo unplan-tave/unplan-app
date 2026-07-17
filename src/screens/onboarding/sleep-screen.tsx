@@ -1,21 +1,16 @@
-import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { OnboardingStepLayout } from '@/components/features/onboarding/onboarding-step-layout';
 import { SleepConditionCircle } from '@/components/features/onboarding/sleep-condition-circle';
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
-import { onboardingRoutes } from '@/domains/onboarding/routes';
-import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
 import { t } from '@/lib/i18n';
 
+import { useSleepScreen } from './hooks/use-sleep-screen';
+
 export function SleepScreen() {
-  const router = useRouter();
-  const preferences = useOnboardingStore((state) => state.preferences);
-  const setTargetSleepMinutes = useOnboardingStore((state) => state.setTargetSleepMinutes);
-  const setSleepConditionThresholds = useOnboardingStore(
-    (state) => state.setSleepConditionThresholds,
-  );
+  const { preferences, setTargetSleepMinutes, setSleepConditionThresholds, handleConfirm } =
+    useSleepScreen();
 
   return (
     <OnboardingStepLayout
@@ -34,7 +29,7 @@ export function SleepScreen() {
       ctaCaption={null}
       backgroundColor={colors.onboardingMutedBackground}
       titleMinHeight={34}
-      onConfirm={() => router.push(onboardingRoutes.activity)}
+      onConfirm={handleConfirm}
     >
       <SleepConditionCircle
         targetSleepMinutes={preferences.targetSleepMinutes}

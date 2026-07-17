@@ -1,63 +1,23 @@
-import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { OnboardingOptionGrid } from '@/components/features/onboarding/onboarding-option-grid';
 import { OnboardingStepLayout } from '@/components/features/onboarding/onboarding-step-layout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
-import { type TransportOptionId } from '@/domains/onboarding/model';
-import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
 import { t } from '@/lib/i18n';
-import { type TranslationKey } from '@/translations/ko';
 
-const transportOptionDefinitions = [
-  { id: 'walk', labelKey: 'onboarding.transport.walk', icon: '🚶' },
-  { id: 'bicycle', labelKey: 'onboarding.transport.bicycle', icon: '🚲' },
-  { id: 'publicTransit', labelKey: 'onboarding.transport.publicTransit', icon: '🚆' },
-  { id: 'car', labelKey: 'onboarding.transport.car', icon: '🚗' },
-] satisfies ReadonlyArray<{ id: TransportOptionId; labelKey: TranslationKey; icon: string }>;
-
-const HOME_WITH_NOTIFICATION_PROMPT = {
-  pathname: '/(tabs)',
-  params: { onboardingNotification: '1' },
-} as const;
+import { useTransportScreen } from './hooks/use-transport-screen';
 
 export function TransportScreen() {
-  const router = useRouter();
-  const selectedIds = useOnboardingStore((state) => state.preferences.transportOptionIds);
-  const toggleTransportOption = useOnboardingStore((state) => state.toggleTransportOption);
-  const completeOnboarding = useOnboardingStore((state) => state.completeOnboarding);
-  const isSubmitting = useOnboardingStore((state) => state.isSubmitting);
-  const submissionError = useOnboardingStore((state) => state.submissionError);
-  const transportOptions = transportOptionDefinitions.map((option) => ({
-    id: option.id,
-    icon: option.icon,
-    label: t(option.labelKey),
-  }));
-
-  const handleConfirm = async () => {
-    if (isSubmitting) {
-      return;
-    }
-
-    const didComplete = await completeOnboarding();
-
-    if (didComplete) {
-      router.replace(HOME_WITH_NOTIFICATION_PROMPT);
-    }
-  };
-
-  const handleSkip = async () => {
-    if (isSubmitting) {
-      return;
-    }
-
-    const didComplete = await completeOnboarding({ skipTransport: true });
-
-    if (didComplete) {
-      router.replace(HOME_WITH_NOTIFICATION_PROMPT);
-    }
-  };
+  const {
+    selectedIds,
+    toggleTransportOption,
+    isSubmitting,
+    submissionError,
+    handleConfirm,
+    handleSkip,
+    transportOptions,
+  } = useTransportScreen();
 
   return (
     <OnboardingStepLayout
