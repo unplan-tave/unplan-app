@@ -7,6 +7,7 @@ import type { ConditionRecordEntry } from '@/domains/condition/model';
 
 const DEFAULT_SCORE = 3;
 
+/** 컨디션 기록 sheet의 입력값과 저장 상태를 관리합니다. */
 export function useConditionRecordForm(selectedDate: Date, record?: ConditionRecordEntry) {
   const [visible, setVisible] = useState(false);
   const [bodyScore, setBodyScore] = useState(DEFAULT_SCORE);

@@ -1,7 +1,5 @@
-import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ConditionSummaryPanel } from '@/components/domain/condition/condition-summary-panel';
 import { ConditionCalendarModal } from '@/components/features/condition/condition-calendar-modal';
@@ -16,22 +14,15 @@ import { GNB } from '@/components/ui/GNB';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { ViewModeButton } from '@/components/ui/ViewModeButton';
 import { colors, spacing } from '@/constants/theme';
-import { useTabNavigation } from '@/hooks/use-tab-navigation';
 
-import { useConditionRecommendation } from './hooks/use-condition-recommendation';
-import { useConditionRecordForm } from './hooks/use-condition-record-form';
-import { useConditionView } from './hooks/use-condition-view';
+import { useConditionScreen } from './hooks/use-condition-screen';
 
 const CONTENT_MAX_WIDTH = 393;
 const HEADER_STATUS_COLUMN_WIDTH = 112;
 
 export function ConditionScreen() {
-  const insets = useSafeAreaInsets();
-  const view = useConditionView();
-  const recommendation = useConditionRecommendation(view.selectedDate);
-  const conditionRecordForm = useConditionRecordForm(view.selectedDate, view.conditionRecord);
-
-  const handleNavChange = useTabNavigation();
+  const { insets, view, recommendation, conditionRecordForm, handleNavChange, handleCreateCard } =
+    useConditionScreen();
 
   return (
     <ScreenLayout
@@ -85,11 +76,7 @@ export function ConditionScreen() {
         </ScrollView>
 
         <View style={[styles.footer, { bottom: insets.bottom + spacing[2] }]}>
-          <GNB
-            value="condition"
-            onChange={handleNavChange}
-            onAddPress={() => router.push('/card/new')}
-          />
+          <GNB value="condition" onChange={handleNavChange} onAddPress={handleCreateCard} />
         </View>
       </View>
 
