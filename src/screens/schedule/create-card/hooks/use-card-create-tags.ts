@@ -19,6 +19,7 @@ interface UseCardCreateTagsParams {
   syncTagSheetSelectedId: (tagId: ConditionTagId) => void;
 }
 
+/** 카드 생성 form의 컨디션·개인 태그 선택을 관리합니다. */
 export function useCardCreateTags({
   title,
   initializedTitle,

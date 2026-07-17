@@ -10,6 +10,7 @@ interface UseCardCreateDateOnlyGuideParams {
   setSheet: Dispatch<SetStateAction<CardCreateSheetState>>;
 }
 
+/** 날짜만 입력된 카드의 안내 문구와 sheet 상태를 관리합니다. */
 export function useCardCreateDateOnlyGuide({
   changeDraftCardType,
   setActiveTab,

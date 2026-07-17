@@ -20,6 +20,7 @@ import { useCardCreateScroll } from './use-card-create-scroll';
 import { useCardCreateSheets } from './use-card-create-sheets';
 import { useCardCreateTags } from './use-card-create-tags';
 
+/** 카드 생성 화면의 세부 hook을 조합해 form controller를 반환합니다. */
 export function useCardCreateForm() {
   const { cardId, type } = useLocalSearchParams<{ cardId?: string; type?: 'queue' }>();
   const numericCardId = useMemo(() => parseNumericCardId(cardId), [cardId]);

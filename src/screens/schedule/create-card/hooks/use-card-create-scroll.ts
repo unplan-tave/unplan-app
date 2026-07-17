@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Keyboard, Platform, type ScrollView } from 'react-native';
 
+/** 카드 생성 화면의 스크롤 ref와 스크롤 이동을 관리합니다. */
 export function useCardCreateScroll() {
   const scrollRef = useRef<ScrollView>(null);
   const isMemoFocusedRef = useRef(false);

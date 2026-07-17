@@ -18,6 +18,7 @@ interface UseCardCreateTagSheetParams {
   setSheet: Dispatch<SetStateAction<CardCreateSheetState>>;
 }
 
+/** 태그 선택 sheet의 선택·편집 상태를 관리합니다. */
 export function useCardCreateTagSheet({
   sheet,
   conditionTagId,

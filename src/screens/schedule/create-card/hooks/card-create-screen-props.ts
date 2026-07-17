@@ -28,6 +28,7 @@ interface CreateCardCreateScreenPropsParams {
   tagFeedback: ReturnType<typeof useCardCreateTags>['tagFeedback'];
 }
 
+/** 카드 생성 화면 JSX에 전달할 props를 조합합니다. */
 export function createCardCreateScreenProps({
   control,
   activeTab,
