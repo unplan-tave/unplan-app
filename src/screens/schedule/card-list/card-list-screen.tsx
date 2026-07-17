@@ -1,11 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CardListEmptyState } from '@/components/features/card-list/card-list-empty-state';
 import { CardListFilterChips } from '@/components/features/card-list/card-list-filter-chips';
 import { CardListSearchBar } from '@/components/features/card-list/card-list-search-bar';
 import { CardListSections } from '@/components/features/card-list/card-list-sections';
+import { CardListStatusMessage } from '@/components/features/card-list/card-list-status-message';
 import { HomeBottomNav } from '@/components/features/home/home-bottom-nav';
 import { AppBackground } from '@/components/ui/AppBackground';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
@@ -19,8 +19,8 @@ const CONTENT_MAX_WIDTH = 353;
 const BOTTOM_NAV_HEIGHT = 66;
 
 export function CardListScreen() {
-  const insets = useSafeAreaInsets();
   const {
+    insets,
     filters,
     expandedFilter,
     personalTags,
@@ -113,16 +113,6 @@ export function CardListScreen() {
   );
 }
 
-function CardListStatusMessage({ message }: { message: string }) {
-  return (
-    <View style={styles.statusMessage}>
-      <Typography variant="bodyM" color={colors.gray.white} align="center">
-        {message}
-      </Typography>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   screenContent: {
     flex: 1,
@@ -159,12 +149,5 @@ const styles = StyleSheet.create({
     bottom: spacing[2],
     alignItems: 'center',
     paddingHorizontal: spacing[5],
-  },
-  statusMessage: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing[10],
-    paddingHorizontal: spacing[4],
   },
 });
