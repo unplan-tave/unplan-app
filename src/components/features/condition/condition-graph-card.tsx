@@ -3,11 +3,13 @@ import Svg, { Defs, Line, Path, RadialGradient, Stop } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
+import { getConditionScoreTheme } from '@/domains/condition/score-theme';
 
 import type { ConditionMetricCard } from '@/domains/condition/model';
 
 interface ConditionGraphCardProps {
   metrics: [ConditionMetricCard, ConditionMetricCard, ConditionMetricCard];
+  score: number;
 }
 
 const GRAPH_WIDTH = 305;
@@ -25,7 +27,8 @@ const LABEL_OFFSET = 14;
  * Body(위) / Mind(아래) / Sleep(오른쪽) 축 위에 컨디션 값을 얹은 방사형 그래프.
  * 세 지표의 비율에 따라 blob 모양이 달라집니다.
  */
-export function ConditionGraphCard({ metrics }: ConditionGraphCardProps) {
+export function ConditionGraphCard({ metrics, score }: ConditionGraphCardProps) {
+  const scoreTheme = getConditionScoreTheme(score);
   const [body, mind, sleep] = metrics;
   const bodyPoint = { x: CENTER_X, y: CENTER_Y - toRadius(body.progress, AXIS_HALF_HEIGHT) };
   const sleepPoint = { x: CENTER_X + toRadius(sleep.progress, AXIS_HALF_WIDTH), y: CENTER_Y };
@@ -37,11 +40,16 @@ export function ConditionGraphCard({ metrics }: ConditionGraphCardProps) {
 
   return (
     <View style={styles.card}>
-      <Svg width="100%" height={GRAPH_HEIGHT} viewBox={`0 0 ${GRAPH_WIDTH} ${GRAPH_HEIGHT}`}>
+      <Svg
+        width="100%"
+        height={GRAPH_HEIGHT}
+        preserveAspectRatio="xMidYMid meet"
+        viewBox={`0 0 ${GRAPH_WIDTH} ${GRAPH_HEIGHT}`}
+      >
         <Defs>
           <RadialGradient id="conditionBlob" cx="33%" cy="45%">
-            <Stop offset="0" stopColor={colors.gradient.sky} stopOpacity={0.35} />
-            <Stop offset="1" stopColor={colors.gradient.blue} stopOpacity={0.85} />
+            <Stop offset="0" stopColor={scoreTheme.secondary} stopOpacity={0.35} />
+            <Stop offset="1" stopColor={scoreTheme.primary} stopOpacity={0.85} />
           </RadialGradient>
         </Defs>
         <Line
@@ -128,7 +136,7 @@ const styles = StyleSheet.create({
   card: {
     height: CARD_HEIGHT,
     justifyContent: 'center',
-    paddingHorizontal: spacing[4],
+    paddingHorizontal: spacing[8],
     borderRadius: radius.panel,
     borderWidth: 1,
     borderColor: colors.gray.white,

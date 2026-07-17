@@ -7,7 +7,6 @@ import { CardToast } from '@/components/domain/schedule/card-toast';
 import { DueDurationSheet } from '@/components/domain/schedule/due-duration-sheet';
 import { DailyMemoBottomSheet } from '@/components/features/home/daily-memo-bottom-sheet';
 import { HomeAddBottomSheet } from '@/components/features/home/home-add-bottom-sheet';
-import { HomeBottomNav } from '@/components/features/home/home-bottom-nav';
 import { HomeCalendarView } from '@/components/features/home/home-calendar-view';
 import { HomeExtendTimeSheet } from '@/components/features/home/home-extend-time-sheet';
 import { HomeProgressSheet } from '@/components/features/home/home-progress-sheet';
@@ -101,12 +100,6 @@ export function HomeScreen() {
                 {home.headerMessage}
               </Typography>
             </View>
-          </View>
-          <View style={styles.footer}>
-            <HomeBottomNav
-              onAddPress={home.handleOpenAddSheet}
-              onItemPress={home.handleNavItemPress}
-            />
           </View>
         </View>
       </GestureDetector>
@@ -244,13 +237,5 @@ const styles = StyleSheet.create({
     width: HOME_CURRENT_TIME_LINE_WIDTH,
     height: 2,
     backgroundColor: colors.secondary,
-  },
-  footer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: spacing[2],
-    zIndex: 3,
-    paddingHorizontal: spacing[5],
   },
 });

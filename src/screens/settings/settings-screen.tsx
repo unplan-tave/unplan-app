@@ -2,7 +2,6 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { CardToast } from '@/components/domain/schedule/card-toast';
 import { SettingsList } from '@/components/features/settings/settings-list';
-import { GNB } from '@/components/ui/GNB';
 import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
@@ -17,23 +16,13 @@ export function SettingsScreen() {
     appVersion,
     alarmSettings,
     isAlarmSettingsDisabled,
-    handleNavChange,
-    handleAddCard,
     handleAccountPress,
     createSettingsNavigation,
     handleTermsPress,
   } = useSettingsScreen();
 
   return (
-    <ScreenLayout
-      backgroundColor={colors.gray[50]}
-      contentStyle={styles.screen}
-      footer={
-        <View style={styles.footer}>
-          <GNB value="setting" onChange={handleNavChange} onAddPress={handleAddCard} />
-        </View>
-      }
-    >
+    <ScreenLayout backgroundColor={colors.gray[50]} contentStyle={styles.screen}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <Pressable
           accessibilityRole="button"
@@ -153,14 +142,6 @@ const styles = StyleSheet.create({
   },
   profileText: {
     gap: 5,
-  },
-  footer: {
-    position: 'absolute',
-    right: 0,
-    bottom: 34,
-    left: 0,
-    alignItems: 'center',
-    paddingHorizontal: spacing[5],
   },
   pressed: {
     opacity: 0.72,

@@ -6,7 +6,6 @@ import { CardListFilterChips } from '@/components/features/card-list/card-list-f
 import { CardListSearchBar } from '@/components/features/card-list/card-list-search-bar';
 import { CardListSections } from '@/components/features/card-list/card-list-sections';
 import { CardListStatusMessage } from '@/components/features/card-list/card-list-status-message';
-import { HomeBottomNav } from '@/components/features/home/home-bottom-nav';
 import { AppBackground } from '@/components/ui/AppBackground';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
@@ -30,10 +29,8 @@ export function CardListScreen() {
     isLoading,
     isError,
     handleCardPress,
-    handleCreateCard,
     handleSearchPress,
     handleSearchClear,
-    handleNavItemPress,
     handleChangeCardType,
     toggleExpandedFilter,
     toggleProgressStatus,
@@ -100,14 +97,6 @@ export function CardListScreen() {
             />
           )}
         </ScrollView>
-
-        <View style={[styles.footer, { bottom: insets.bottom + spacing[2] }]}>
-          <HomeBottomNav
-            value="cardList"
-            onAddPress={handleCreateCard}
-            onItemPress={handleNavItemPress}
-          />
-        </View>
       </View>
     </ScreenLayout>
   );
@@ -141,13 +130,5 @@ const styles = StyleSheet.create({
     textShadowColor: colors.alpha.black35,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 5,
-  },
-  footer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: spacing[2],
-    alignItems: 'center',
-    paddingHorizontal: spacing[5],
   },
 });

@@ -4,7 +4,6 @@ import { type Href, useRouter } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 
 import { useMemberProfileQuery } from '@/domains/member/api/queries';
-import { useTabNavigation } from '@/hooks/use-tab-navigation';
 import { t } from '@/lib/i18n';
 
 import { useAlarmSettings } from './use-alarm-settings';
@@ -25,8 +24,6 @@ export function useSettingsScreen() {
     }),
     [profileQuery.data?.email, profileQuery.data?.nickname, profileQuery.isLoading],
   );
-  /** 새 카드 생성 화면으로 이동합니다. */
-  const handleAddCard = useCallback(() => router.push('/card/new'), [router]);
   /** 계정 화면으로 이동합니다. */
   const handleAccountPress = useCallback(() => router.push('/settings/account'), [router]);
   /** 특정 설정 route로 이동합니다. */
@@ -44,8 +41,6 @@ export function useSettingsScreen() {
     appVersion: Constants.expoConfig?.version ?? '1.0.0',
     alarmSettings,
     isAlarmSettingsDisabled: alarmSettings.isLoading || alarmSettings.isUpdating,
-    handleNavChange: useTabNavigation(),
-    handleAddCard,
     handleAccountPress,
     createSettingsNavigation,
     handleTermsPress,

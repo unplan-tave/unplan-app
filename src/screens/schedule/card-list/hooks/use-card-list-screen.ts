@@ -10,7 +10,6 @@ import {
   progressStatusToScheduleStatus,
 } from '@/domains/schedule/list';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
-import { useTabNavigation } from '@/hooks/use-tab-navigation';
 
 import { useCardListFilters } from './use-card-list-filters';
 
@@ -72,10 +71,6 @@ export function useCardListScreen() {
     router.push(`/card/view?cardId=${cardId}`);
   }, []);
 
-  const handleCreateCard = useCallback(() => {
-    router.push('/card/card-detail');
-  }, []);
-
   const handleSearchPress = useCallback(() => {
     router.push('/card/search');
   }, []);
@@ -83,8 +78,6 @@ export function useCardListScreen() {
   const handleSearchClear = useCallback(() => {
     router.setParams({ q: '' });
   }, []);
-
-  const handleNavItemPress = useTabNavigation();
 
   return {
     insets,
@@ -97,10 +90,8 @@ export function useCardListScreen() {
     isLoading: scheduleSearchQuery.isLoading,
     isError: scheduleSearchQuery.isError,
     handleCardPress,
-    handleCreateCard,
     handleSearchPress,
     handleSearchClear,
-    handleNavItemPress,
     handleChangeCardType,
     toggleExpandedFilter,
     toggleProgressStatus,

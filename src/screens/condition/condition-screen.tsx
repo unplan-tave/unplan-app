@@ -1,16 +1,15 @@
 import { StatusBar } from 'expo-status-bar';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { ConditionSummaryPanel } from '@/components/domain/condition/condition-summary-panel';
+import { ConditionBackground } from '@/components/features/condition/condition-background';
 import { ConditionCalendarModal } from '@/components/features/condition/condition-calendar-modal';
 import { ConditionGraphCard } from '@/components/features/condition/condition-graph-card';
 import { ConditionGraphModeToggle } from '@/components/features/condition/condition-graph-mode-toggle';
+import { ConditionHero } from '@/components/features/condition/condition-hero';
 import { ConditionMetricCard } from '@/components/features/condition/condition-metric-card';
 import { ConditionRecommendationSheet } from '@/components/features/condition/condition-recommendation-sheet';
 import { ConditionRecordSheet } from '@/components/features/condition/condition-record-sheet';
-import { AppBackground } from '@/components/ui/AppBackground';
 import { Button } from '@/components/ui/Button';
-import { GNB } from '@/components/ui/GNB';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { ViewModeButton } from '@/components/ui/ViewModeButton';
 import { colors, spacing } from '@/constants/theme';
@@ -18,11 +17,9 @@ import { colors, spacing } from '@/constants/theme';
 import { useConditionScreen } from './hooks/use-condition-screen';
 
 const CONTENT_MAX_WIDTH = 393;
-const HEADER_STATUS_COLUMN_WIDTH = 112;
 
 export function ConditionScreen() {
-  const { insets, view, recommendation, conditionRecordForm, handleNavChange, handleCreateCard } =
-    useConditionScreen();
+  const { insets, view, recommendation, conditionRecordForm } = useConditionScreen();
 
   return (
     <ScreenLayout
@@ -31,52 +28,43 @@ export function ConditionScreen() {
       useSafeArea={false}
     >
       <StatusBar style="light" />
-      <AppBackground />
+      <ConditionBackground score={view.conditionSummary.finalScore} />
       <View style={styles.canvas}>
         <View style={[styles.header, { paddingTop: insets.top + spacing[2] }]}>
-          <View style={styles.statusColumn}>
-            <ViewModeButton
-              mode={view.periodMode}
-              accessibilityLabel="보기 방식 변경"
-              style={styles.viewModeButton}
-              onPress={view.cyclePeriodMode}
-            />
-            <ConditionSummaryPanel
-              year={view.dateLabel.year}
-              dateLabel={view.dateLabel.date}
-              summary={view.conditionSummary}
-              onDatePress={view.openCalendar}
-            />
-          </View>
+          <ConditionHero
+            score={view.conditionSummary.finalScore}
+            year={view.dateLabel.year}
+            dateLabel={view.dateLabel.date}
+            onDatePress={view.openCalendar}
+          />
+          <ViewModeButton
+            mode={view.periodMode}
+            accessibilityLabel="보기 방식 변경"
+            style={styles.viewModeButton}
+            onPress={view.cyclePeriodMode}
+          />
         </View>
 
-        <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            { paddingBottom: insets.bottom + BOTTOM_INSET },
-          ]}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.main}>
           <ConditionGraphModeToggle
             value={view.graphMode}
             flowDisabled
             onChange={view.setGraphMode}
           />
-          <ConditionGraphCard metrics={view.metrics} />
-          {view.metrics.map((metric) => (
-            <ConditionMetricCard key={metric.key} metric={metric} />
-          ))}
-          <Button label="컨디션 기반 추천 일정" fullWidth onPress={recommendation.openSheet} />
-          <Button
-            label="기록 추가/수정"
-            variant="primary"
-            fullWidth
-            onPress={conditionRecordForm.open}
-          />
-        </ScrollView>
-
-        <View style={[styles.footer, { bottom: insets.bottom + spacing[2] }]}>
-          <GNB value="condition" onChange={handleNavChange} onAddPress={handleCreateCard} />
+          <ConditionGraphCard metrics={view.metrics} score={view.conditionSummary.finalScore} />
+          <View style={styles.conditionList}>
+            {view.metrics.map((metric) => (
+              <ConditionMetricCard key={metric.key} metric={metric} />
+            ))}
+          </View>
+          <View style={styles.actions}>
+            <View style={styles.actionSlot}>
+              <Button label="컨디션 기반 추천 일정" onPress={recommendation.openSheet} />
+            </View>
+            <View style={styles.actionSlot}>
+              <Button label="기록 추가/수정" variant="primary" onPress={conditionRecordForm.open} />
+            </View>
+          </View>
         </View>
       </View>
 
@@ -121,8 +109,8 @@ export function ConditionScreen() {
   );
 }
 
-/** GNB(66) + 하단 여백만큼 스크롤 콘텐츠를 띄웁니다. */
-const BOTTOM_INSET = 90;
+/** Figma 기준 393×852 화면에서 헤더와 본문이 한 화면에 들어가는 높이입니다. */
+const HEADER_HEIGHT = 252;
 
 const styles = StyleSheet.create({
   content: {
@@ -136,26 +124,28 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   header: {
-    flexDirection: 'row',
+    height: HEADER_HEIGHT,
     paddingHorizontal: spacing[3],
   },
-  statusColumn: {
-    width: HEADER_STATUS_COLUMN_WIDTH,
-  },
   viewModeButton: {
-    alignSelf: 'flex-start',
-    marginBottom: spacing[1],
+    position: 'absolute',
+    top: spacing[2],
+    right: spacing[3],
   },
-  scrollContent: {
+  main: {
     gap: spacing[4],
     paddingHorizontal: spacing[3],
     paddingTop: spacing[6],
   },
-  footer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    zIndex: 3,
-    paddingHorizontal: spacing[5],
+  conditionList: {
+    flexDirection: 'row',
+    gap: spacing[1],
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: spacing[1],
+  },
+  actionSlot: {
+    flex: 1,
   },
 });

@@ -15,7 +15,6 @@ import { getCardProgressStatus, progressStatusToScheduleStatus } from '@/domains
 import { type CardItem, type CardProgressStatus } from '@/domains/schedule/model';
 import { type DueDurationDraft } from '@/domains/schedule/queue';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
-import { useTabNavigation } from '@/hooks/use-tab-navigation';
 import {
   createHomeQueueDraft,
   formatHomeDailyMemoDate,
@@ -363,6 +362,5 @@ export function useHomeScreen() {
     updateNotificationSettings,
     closeNotificationModal,
     dismissConflictToast,
-    handleNavItemPress: useTabNavigation(),
   };
 }
