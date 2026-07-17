@@ -1,67 +1,45 @@
-import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { SettingsList } from '@/components/features/settings/settings-list';
 import { Header, HeaderBack, HeaderCancel } from '@/components/ui/Header';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
-import {
-  formatActivityRangeLabel,
-  toContiguousActivityRanges,
-} from '@/domains/onboarding/activity-time-ranges';
-import { useActivityPatternSettingsQuery } from '@/domains/onboarding/api/queries';
 import { t } from '@/lib/i18n';
 
-import type { TimeRange } from '@/domains/onboarding/model';
-
-function toRangesValue(ranges: TimeRange[]): string {
-  const contiguousRanges = toContiguousActivityRanges(ranges);
-
-  if (contiguousRanges.length === 0) {
-    return '-';
-  }
-
-  return contiguousRanges.map(formatActivityRangeLabel).join(', ');
-}
+import { useActivityPatternScreen } from './hooks/use-activity-pattern-screen';
 
 export function ActivityPatternScreen() {
-  const router = useRouter();
-  const settingsQuery = useActivityPatternSettingsQuery();
-  const settings = settingsQuery.data;
+  const { values, handleBack, handleEdit } = useActivityPatternScreen();
 
   return (
     <ScreenLayout backgroundColor={colors.gray[50]} contentStyle={styles.screen}>
       <Header
         title={t('settings.activityPattern')}
-        left={<HeaderBack onPress={router.back} />}
+        left={<HeaderBack onPress={handleBack} />}
         right={
-          <HeaderCancel
-            label={t('settings.edit')}
-            color={colors.primary}
-            onPress={() => router.push('/settings/activity-pattern-edit')}
-          />
+          <HeaderCancel label={t('settings.edit')} color={colors.primary} onPress={handleEdit} />
         }
         style={styles.header}
       />
       <View style={styles.content}>
-        {settings ? (
+        {values ? (
           <SettingsList
             rows={[
               {
                 label: t('onboarding.activity.focusTime'),
-                value: toRangesValue(settings.focusTimeRanges),
+                value: values.focus,
                 type: 'text',
                 muted: true,
               },
               {
                 label: t('onboarding.activity.sleepyTime'),
-                value: toRangesValue(settings.sleepyTimeRanges),
+                value: values.sleepy,
                 type: 'text',
                 muted: true,
               },
               {
                 label: t('onboarding.activity.sleepTime'),
-                value: toRangesValue(settings.sleepTimeRanges),
+                value: values.sleep,
                 type: 'text',
                 muted: true,
               },

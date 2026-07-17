@@ -7,6 +7,7 @@ import { useMemberProfileQuery } from '@/domains/member/api/queries';
 
 type AccountDialog = 'none' | 'logout' | 'deleteAccount';
 
+/** 계정 화면의 탈퇴·로그아웃 이벤트를 관리합니다. */
 export function useSettingsAccount() {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
