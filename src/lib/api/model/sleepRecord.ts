@@ -19,4 +19,6 @@ export interface SleepRecord {
   isContinuousSleep?: boolean;
   continuous_sleep_group_id?: string;
   created_at?: string;
+  /** 개별 수면 기록 상태 문구 */
+  sleep_record_comment?: string;
 }

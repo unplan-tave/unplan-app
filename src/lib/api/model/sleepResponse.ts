@@ -19,4 +19,6 @@ export interface SleepResponse {
   isContinuousSleep?: boolean;
   continuousSleepGroupId?: string;
   createdAt?: string;
+  /** 개별 수면 기록 상태 문구 */
+  sleepRecordComment?: string;
 }

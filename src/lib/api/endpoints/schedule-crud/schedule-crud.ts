@@ -22,6 +22,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ApiResponseDailyMessageResponseDto,
+  ApiResponsePageResponseScheduleSearchResponse,
+  GetDailyMessageParams,
   GetSchedulesByDateParams,
   GetSchedulesByMonthParams,
   GetSchedulesByWeekParams,
@@ -33,6 +36,7 @@ import type {
   ScheduleMonthlyResponse,
   ScheduleUpdateRequest,
   ScheduleWeeklyResponse,
+  SearchSchedulesParams,
 } from '../../model';
 
 import { apiMutator } from '../../mutator/orval-mutator';
@@ -771,6 +775,127 @@ export function useGetPersonalTags<
 }
 
 /**
+ * 저장된 일정 카드를 키워드·필터로 검색해 날짜 오름차순으로 페이지네이션(30개)해 반환합니다. 필터는 넘어온 것만 AND 로 조합되며, status·conditionTags·personalTags 는 복수 지정 시 OR 입니다.
+ * @summary 일정 필터 검색
+ */
+export const searchSchedules = (
+  params?: SearchSchedulesParams,
+  options?: SecondParameter<typeof apiMutator>,
+  signal?: AbortSignal,
+) => {
+  return apiMutator<ApiResponsePageResponseScheduleSearchResponse>(
+    { url: `/schedule/search`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getSearchSchedulesQueryKey = (params?: SearchSchedulesParams) => {
+  return [`/schedule/search`, ...(params ? [params] : [])] as const;
+};
+
+export const getSearchSchedulesQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchSchedules>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: SearchSchedulesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSchedules>>, TError, TData>>;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getSearchSchedulesQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof searchSchedules>>> = ({ signal }) =>
+    searchSchedules(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof searchSchedules>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type SearchSchedulesQueryResult = NonNullable<Awaited<ReturnType<typeof searchSchedules>>>;
+export type SearchSchedulesQueryError = ErrorType<unknown>;
+
+export function useSearchSchedules<
+  TData = Awaited<ReturnType<typeof searchSchedules>>,
+  TError = ErrorType<unknown>,
+>(
+  params: undefined | SearchSchedulesParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSchedules>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchSchedules>>,
+          TError,
+          Awaited<ReturnType<typeof searchSchedules>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useSearchSchedules<
+  TData = Awaited<ReturnType<typeof searchSchedules>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: SearchSchedulesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSchedules>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchSchedules>>,
+          TError,
+          Awaited<ReturnType<typeof searchSchedules>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useSearchSchedules<
+  TData = Awaited<ReturnType<typeof searchSchedules>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: SearchSchedulesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSchedules>>, TError, TData>>;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 일정 필터 검색
+ */
+
+export function useSearchSchedules<
+  TData = Awaited<ReturnType<typeof searchSchedules>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: SearchSchedulesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchSchedules>>, TError, TData>>;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getSearchSchedulesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
  * 해당 월의 캘린더 뷰 기준(첫째 주 일요일 ~ 마지막 주 토요일) 날짜별 일정 개수를 조회합니다.
  * @summary 일정 월별 조회
  */
@@ -893,6 +1018,120 @@ export function useGetSchedulesByMonth<
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getGetSchedulesByMonthQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getDailyMessage = (
+  params: GetDailyMessageParams,
+  options?: SecondParameter<typeof apiMutator>,
+  signal?: AbortSignal,
+) => {
+  return apiMutator<ApiResponseDailyMessageResponseDto>(
+    { url: `/schedule/message`, method: 'GET', params, signal },
+    options,
+  );
+};
+
+export const getGetDailyMessageQueryKey = (params?: GetDailyMessageParams) => {
+  return [`/schedule/message`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetDailyMessageQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDailyMessage>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetDailyMessageParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyMessage>>, TError, TData>>;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetDailyMessageQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getDailyMessage>>> = ({ signal }) =>
+    getDailyMessage(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDailyMessage>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetDailyMessageQueryResult = NonNullable<Awaited<ReturnType<typeof getDailyMessage>>>;
+export type GetDailyMessageQueryError = ErrorType<unknown>;
+
+export function useGetDailyMessage<
+  TData = Awaited<ReturnType<typeof getDailyMessage>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetDailyMessageParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyMessage>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDailyMessage>>,
+          TError,
+          Awaited<ReturnType<typeof getDailyMessage>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetDailyMessage<
+  TData = Awaited<ReturnType<typeof getDailyMessage>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetDailyMessageParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyMessage>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDailyMessage>>,
+          TError,
+          Awaited<ReturnType<typeof getDailyMessage>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetDailyMessage<
+  TData = Awaited<ReturnType<typeof getDailyMessage>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetDailyMessageParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyMessage>>, TError, TData>>;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetDailyMessage<
+  TData = Awaited<ReturnType<typeof getDailyMessage>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetDailyMessageParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyMessage>>, TError, TData>>;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetDailyMessageQueryOptions(params, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;
