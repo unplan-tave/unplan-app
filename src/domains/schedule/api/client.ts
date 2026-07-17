@@ -6,6 +6,7 @@ import {
   createSchedule,
   deleteSchedule,
   getDailyMessage,
+  getPersonalTags,
   getScheduleDetail,
   getSchedulesByDate,
   getSchedulesByMonth,
@@ -13,6 +14,7 @@ import {
   searchSchedules as searchScheduleEndpoints,
   updateSchedule,
 } from '@/lib/api/endpoints/schedule-crud/schedule-crud';
+import { recommendTag } from '@/lib/api/endpoints/tag-controller/tag-controller';
 
 import {
   normalizeDateForRequest,
@@ -26,6 +28,8 @@ import {
   toScheduleSearchListItems,
   toScheduleSearchParams,
   toScheduleUpdateRequest,
+  toPersonalTagOptions,
+  toTagRecommendation,
 } from './mapper';
 
 import type {
@@ -39,6 +43,8 @@ import type {
   ScheduleMonthlyOverview,
   ScheduleStatus,
   ScheduleUpdateInput,
+  PersonalTagOption,
+  TagRecommendation,
 } from '../model';
 
 export interface GetSchedulesByDateInput {
@@ -108,6 +114,18 @@ export async function fetchDailyMessage(input: GetDailyMessageInput): Promise<Da
   const response = await getDailyMessage({ date: normalizeDateForRequest(input.date) ?? '' });
 
   return toDailyMessage(response);
+}
+
+/** 서버에 저장된 개인 태그 목록을 조회합니다. */
+export async function fetchPersonalTags(): Promise<PersonalTagOption[]> {
+  return toPersonalTagOptions(await getPersonalTags());
+}
+
+/** 카드 제목으로 개인 태그 후보를 요청합니다. */
+export async function fetchTagRecommendation(title: string): Promise<TagRecommendation | null> {
+  const response = await recommendTag({ title });
+
+  return toTagRecommendation(response.data);
 }
 
 export async function submitScheduleCreate(

@@ -14,4 +14,7 @@ export const scheduleQueryKeys = {
   dailyMessage: (date: string) => [...scheduleQueryKeys.dailyMessages(), date] as const,
   details: () => [...scheduleQueryKeys.all, 'detail'] as const,
   detail: (scheduleId: number) => [...scheduleQueryKeys.details(), scheduleId] as const,
+  personalTags: () => [...scheduleQueryKeys.all, 'personal-tags'] as const,
+  tagRecommendation: (title: string) =>
+    [...scheduleQueryKeys.all, 'tag-recommendation', title] as const,
 };

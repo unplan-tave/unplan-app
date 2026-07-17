@@ -78,6 +78,11 @@ export interface PersonalTagOption {
   createdAt: string;
 }
 
+/** 일정 제목을 기반으로 서버가 제안한 개인 태그입니다. */
+export interface TagRecommendation {
+  label: string;
+}
+
 /** 홈 등 화면에서 추천 카드와 함께 표시할 태그 정보를 표현합니다. */
 export interface HomeRecommendationItem {
   card: CardItem;

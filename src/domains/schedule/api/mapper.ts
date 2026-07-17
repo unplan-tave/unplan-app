@@ -56,9 +56,27 @@ import type {
   ScheduleUpdateRequest,
   ScheduleWeeklyResponse,
   SearchSchedulesParams,
+  PersonalTagResponse,
+  TagRecommendationResponseDto,
 } from '@/lib/api/model';
 
 const API_WEEKDAY_CODES = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const;
+
+/** 서버 개인 태그를 화면에서 쓰는 태그 option으로 변환합니다. */
+export function toPersonalTagOptions(response?: PersonalTagResponse[]) {
+  return (response ?? []).flatMap((tag) => {
+    if (tag.personal_tag_id == null || !tag.name?.trim()) return [];
+
+    return [{ id: String(tag.personal_tag_id), label: tag.name, createdAt: '' }];
+  });
+}
+
+/** 서버 태그 추천 응답을 빈 값 없는 domain model로 변환합니다. */
+export function toTagRecommendation(response?: TagRecommendationResponseDto | null) {
+  const label = response?.recommended_tag?.trim() ?? '';
+
+  return label ? { label } : null;
+}
 
 const conditionTagToCreateDtoMap: Record<ConditionTagId, ScheduleCreateRequestConditionTag> = {
   urgent: ScheduleCreateRequestConditionTag.URGENT,
