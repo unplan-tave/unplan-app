@@ -1,5 +1,3 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { SocialLoginButton } from '@/components/features/auth/social-login-button';
@@ -8,61 +6,22 @@ import { HomeIndicator } from '@/components/ui/Footer';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
-import {
-  getSocialLoginErrorMessage,
-  loginWithGoogle,
-  loginWithKakao,
-} from '@/domains/auth/social-login';
-import { onboardingRoutes } from '@/domains/onboarding/routes';
-import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
 import { t } from '@/lib/i18n';
 
-import type { SocialProvider } from '@/domains/auth/model';
+import { useLoginScreen } from './hooks/use-login-screen';
 
 const loginBackground = require('../../../assets/login-background.jpg');
 
 export function LoginScreen() {
-  const router = useRouter();
-  const setOnboardingCompleted = useOnboardingStore((state) => state.setOnboardingCompleted);
-  const [isGoogleLoginLoading, setIsGoogleLoginLoading] = useState(false);
-  const [isKakaoLoginLoading, setIsKakaoLoginLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const isSocialLoginLoading = isGoogleLoginLoading || isKakaoLoginLoading;
-
-  const handleUnavailableLogin = () => {
-    setErrorMessage(t('auth.login.unavailable'));
-  };
-
-  const handleTermsPress = (type: 'service' | 'privacy') => {
-    router.push({
-      pathname: '/terms',
-      params: { type },
-    });
-  };
-
-  const handleSocialLogin = async (provider: SocialProvider) => {
-    if (isSocialLoginLoading) {
-      return;
-    }
-
-    const setLoading = provider === 'kakao' ? setIsKakaoLoginLoading : setIsGoogleLoginLoading;
-    const login = provider === 'kakao' ? loginWithKakao : loginWithGoogle;
-
-    setLoading(true);
-    setErrorMessage(null);
-
-    try {
-      const session = await login();
-      const hasCompletedOnboarding = session.hasCompletedOnboarding === true;
-
-      setOnboardingCompleted(hasCompletedOnboarding);
-      router.replace(hasCompletedOnboarding ? '/(tabs)' : onboardingRoutes.intro);
-    } catch (error) {
-      setErrorMessage(getSocialLoginErrorMessage(error));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    errorMessage,
+    isGoogleLoginLoading,
+    isKakaoLoginLoading,
+    isSocialLoginLoading,
+    handleSocialLogin,
+    handleTermsPress,
+    handleUnavailableLogin,
+  } = useLoginScreen();
 
   return (
     <View style={styles.screen}>

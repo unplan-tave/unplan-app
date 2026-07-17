@@ -1,4 +1,3 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { HeaderBack } from '@/components/ui/Header';
@@ -6,33 +5,15 @@ import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 
-const TERMS_COPY = {
-  service: {
-    title: 'terms.service.title',
-    body: 'terms.service.body',
-  },
-  privacy: {
-    title: 'terms.privacy.title',
-    body: 'terms.privacy.body',
-  },
-} as const;
-
-type TermsType = keyof typeof TERMS_COPY;
-
-function isTermsType(value: unknown): value is TermsType {
-  return value === 'service' || value === 'privacy';
-}
+import { useTermsScreen } from './hooks/use-terms-screen';
 
 export function TermsScreen() {
-  const router = useRouter();
-  const { type } = useLocalSearchParams<{ type?: string }>();
-  const termsType = isTermsType(type) ? type : 'service';
-  const copy = TERMS_COPY[termsType];
+  const { copy, handleBack } = useTermsScreen();
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <HeaderBack onPress={router.back} />
+        <HeaderBack onPress={handleBack} />
         <View pointerEvents="none" style={styles.titleWrapper}>
           <Typography variant="titleS" color={colors.gray[900]} align="center" numberOfLines={1}>
             {t(copy.title)}
