@@ -1,128 +1,237 @@
-import { StyleSheet, Switch, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ConditionQuadrantPlot } from '@/components/features/condition/condition-quadrant-plot';
+import { ConditionSummaryRow } from '@/components/features/condition/condition-summary-row';
+import { RecordHistoryTabs } from '@/components/features/sleep/record-history-tabs';
+import { SleepDateRail } from '@/components/features/sleep/sleep-date-rail';
+import { SleepRecordCard } from '@/components/features/sleep/sleep-record-card';
+import { AppBackground } from '@/components/ui/AppBackground';
+import { BottomCTA } from '@/components/ui/BottomCTA';
+import { ActionListBottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
 import { Header, HeaderBack } from '@/components/ui/Header';
-import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 
 import { useSleepRecordScreen } from './hooks/use-sleep-record-screen';
 
-/** Figma 수면 기록 화면의 JSX와 스타일을 렌더링합니다. */
+const CONTENT_MAX_WIDTH = 393;
+
 export function SleepRecordScreen() {
   const sleep = useSleepRecordScreen();
+  const isSleepTab = sleep.tab === 'sleep';
+  const isEditing = sleep.selectedRecordId != null;
+
   return (
-    <ScreenLayout backgroundColor={colors.gray[50]} contentStyle={styles.screen}>
-      <Header
-        title="수면 기록"
-        left={<HeaderBack onPress={sleep.goBack} />}
-        right={<View style={styles.headerSide} />}
-      />
-      <View style={styles.content}>
-        <View style={styles.hero}>
-          <Typography variant="titleL" color={colors.gray[900]} align="center">
-            오늘의 수면을 기록해요
-          </Typography>
-          <Typography variant="bodyM" color={colors.gray[500]} align="center">
-            수면 시간은 컨디션 분석에 반영돼요.
-          </Typography>
-        </View>
-        <View style={styles.card}>
-          <TimeField label="잠든 시간" value={sleep.bedTime} onChangeText={sleep.setBedTime} />
-          <View style={styles.divider} />
-          <TimeField
-            label="일어난 시간"
-            value={sleep.wakeUpTime}
-            onChangeText={sleep.setWakeUpTime}
-          />
-        </View>
-        <View style={styles.card}>
-          <SettingRow label="낮잠" value={sleep.isNap} onValueChange={sleep.toggleNap} />
-          <View style={styles.divider} />
-          <SettingRow label="밤샘" value={sleep.isAllNight} onValueChange={sleep.toggleAllNight} />
-        </View>
-        {sleep.error ? (
-          <Typography variant="bodyS" color={colors.secondary} align="center">
-            수면 기록을 저장하지 못했어요.
-          </Typography>
-        ) : null}
-        <Button
-          label={sleep.isSaving ? '저장 중' : '기록 완료'}
-          variant="primary"
-          fullWidth
-          disabled={sleep.isSaving}
-          onPress={sleep.save}
+    <View style={styles.screen}>
+      <AppBackground />
+      <SafeAreaView style={styles.safeArea}>
+        <Header
+          left={<HeaderBack onPress={sleep.goBack} />}
+          title="컨디션 기록 내역"
+          right={
+            isSleepTab ? undefined : (
+              <Pressable
+                accessibilityLabel="Body/Mind 기록 편집"
+                accessibilityRole="button"
+                accessibilityState={{ selected: sleep.isBodyMindEditing }}
+                hitSlop={8}
+                style={({ pressed }) => [styles.editHeader, pressed && styles.pressed]}
+                onPress={sleep.toggleBodyMindEdit}
+              >
+                <Typography
+                  variant="bodyM"
+                  color={sleep.isBodyMindEditing ? colors.gray[500] : colors.primary}
+                >
+                  편집
+                </Typography>
+              </Pressable>
+            )
+          }
         />
-      </View>
-    </ScreenLayout>
+
+        <View style={styles.canvas}>
+          <View style={styles.padded}>
+            <RecordHistoryTabs value={sleep.tab} onChange={sleep.changeTab} />
+          </View>
+
+          <Typography variant="titleL" align="center" color={colors.gray[600]} style={styles.month}>
+            {sleep.monthLabel}
+          </Typography>
+          <SleepDateRail items={sleep.dateItems} onSelect={sleep.selectDate} />
+
+          {isSleepTab ? (
+            <>
+              <Typography
+                variant="bodyM"
+                align="center"
+                color={colors.gray[700]}
+                style={styles.total}
+              >
+                {sleep.totalLabel}
+              </Typography>
+
+              <ScrollView
+                style={styles.list}
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={false}
+              >
+                {sleep.records.map((record) => (
+                  <SleepRecordCard
+                    key={record.id}
+                    record={record}
+                    selected={sleep.selectedRecordId === record.id}
+                    onPress={() => sleep.selectRecord(record.id)}
+                  />
+                ))}
+              </ScrollView>
+            </>
+          ) : (
+            <ScrollView
+              style={styles.list}
+              contentContainerStyle={styles.bodyMindContent}
+              showsVerticalScrollIndicator={false}
+            >
+              <ConditionSummaryRow
+                bodyPercent={sleep.bodyMind.bodyPercent}
+                mindPercent={sleep.bodyMind.mindPercent}
+              />
+              <ConditionQuadrantPlot
+                points={sleep.bodyMind.points}
+                activeMarkerId={
+                  sleep.isBodyMindEditing ? sleep.selectedMarkerId : sleep.activeMarkerId
+                }
+                onMarkerPress={sleep.pressBodyMindMarker}
+              />
+            </ScrollView>
+          )}
+        </View>
+
+        <View style={styles.footer}>
+          {isSleepTab && isEditing ? (
+            <EditActions
+              deleting={sleep.isDeleting}
+              onDelete={sleep.deleteSelectedRecord}
+              onEdit={sleep.editSelectedRecord}
+            />
+          ) : !isSleepTab && sleep.isBodyMindEditing && sleep.hasSelectedMarker ? (
+            <EditActions
+              deleting={sleep.isDeletingBodyMind}
+              onDelete={sleep.deleteSelectedBodyMind}
+              onEdit={sleep.editSelectedBodyMind}
+            />
+          ) : (
+            <BottomCTA
+              label="기록 추가"
+              caption={null}
+              onPress={isSleepTab ? sleep.addRecord : sleep.addBodyMindRecord}
+            />
+          )}
+        </View>
+      </SafeAreaView>
+
+      <ActionListBottomSheet
+        visible={sleep.markerSheet.visible}
+        title={sleep.markerSheet.title}
+        items={sleep.markerSheet.items}
+        onClose={sleep.closeMarkerSheet}
+      />
+    </View>
   );
 }
 
-function TimeField({
-  label,
-  value,
-  onChangeText,
+function EditActions({
+  deleting,
+  onDelete,
+  onEdit,
 }: {
-  label: string;
-  value: string;
-  onChangeText: (value: string) => void;
+  deleting: boolean;
+  onDelete: () => void;
+  onEdit: () => void;
 }) {
   return (
-    <View style={styles.row}>
-      <Typography variant="bodyM" color={colors.gray[700]}>
-        {label}
-      </Typography>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder="00:00"
-        keyboardType="numbers-and-punctuation"
-        maxLength={5}
-        style={styles.input}
-      />
+    <View style={styles.editActions}>
+      <View style={styles.editSlot}>
+        <Button
+          label="기록 삭제"
+          variant="glass"
+          disabled={deleting}
+          style={styles.editButton}
+          onPress={onDelete}
+        />
+      </View>
+      <View style={styles.editSlot}>
+        <Button label="기록 수정" variant="primary" style={styles.editButton} onPress={onEdit} />
+      </View>
     </View>
   );
 }
-function SettingRow({
-  label,
-  value,
-  onValueChange,
-}: {
-  label: string;
-  value: boolean;
-  onValueChange: () => void;
-}) {
-  return (
-    <View style={styles.row}>
-      <Typography variant="bodyM" color={colors.gray[700]}>
-        {label}
-      </Typography>
-      <Switch
-        value={value}
-        onValueChange={onValueChange}
-        trackColor={{ false: colors.gray[300], true: colors.primary }}
-        thumbColor={colors.gray.white}
-      />
-    </View>
-  );
-}
+
 const styles = StyleSheet.create({
-  screen: { paddingHorizontal: 0 },
-  headerSide: { width: 44, height: 44 },
-  content: { flex: 1, gap: spacing[4], padding: spacing[5] },
-  hero: { gap: spacing[2], paddingVertical: spacing[4] },
-  card: {
+  screen: {
+    flex: 1,
+    backgroundColor: colors.onboardingMutedBackground,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  canvas: {
+    width: '100%',
+    maxWidth: CONTENT_MAX_WIDTH,
+    flex: 1,
+    alignSelf: 'center',
+    gap: spacing[4],
+    paddingTop: spacing[2],
+  },
+  padded: {
+    paddingHorizontal: spacing[5],
+  },
+  month: {
+    marginTop: spacing[2],
+  },
+  total: {
+    marginTop: spacing[2],
+  },
+  list: {
+    flex: 1,
+  },
+  listContent: {
     gap: spacing[3],
-    padding: spacing[4],
-    borderRadius: radius.md,
-    backgroundColor: colors.gray.white,
+    paddingHorizontal: spacing[5],
+    paddingBottom: spacing[6],
   },
-  row: {
+  bodyMindContent: {
+    gap: spacing[4],
+    paddingHorizontal: spacing[5],
+    paddingBottom: spacing[6],
+  },
+  editHeader: {
+    minWidth: 44,
     minHeight: 44,
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
   },
-  divider: { height: 1, backgroundColor: colors.gray[200] },
-  input: { minWidth: 72, paddingVertical: spacing[1], color: colors.gray[800], textAlign: 'right' },
+  pressed: {
+    opacity: 0.72,
+  },
+  footer: {
+    width: '100%',
+    maxWidth: CONTENT_MAX_WIDTH,
+    alignSelf: 'center',
+    paddingHorizontal: spacing[5],
+    paddingBottom: spacing[2],
+  },
+  editActions: {
+    flexDirection: 'row',
+    gap: spacing[2],
+  },
+  editSlot: {
+    flex: 1,
+  },
+  editButton: {
+    height: 56,
+    maxWidth: '100%',
+    borderRadius: radius.full,
+  },
 });
