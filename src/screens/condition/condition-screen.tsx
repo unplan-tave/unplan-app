@@ -8,10 +8,8 @@ import { ConditionGraphModeToggle } from '@/components/features/condition/condit
 import { ConditionHero } from '@/components/features/condition/condition-hero';
 import { ConditionMetricCard } from '@/components/features/condition/condition-metric-card';
 import { ConditionRecommendationSheet } from '@/components/features/condition/condition-recommendation-sheet';
-import { ConditionRecordSheet } from '@/components/features/condition/condition-record-sheet';
 import { Button } from '@/components/ui/Button';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
-import { ViewModeButton } from '@/components/ui/ViewModeButton';
 import { colors, spacing } from '@/constants/theme';
 
 import { useConditionScreen } from './hooks/use-condition-screen';
@@ -19,7 +17,7 @@ import { useConditionScreen } from './hooks/use-condition-screen';
 const CONTENT_MAX_WIDTH = 393;
 
 export function ConditionScreen() {
-  const { insets, view, recommendation, conditionRecordForm } = useConditionScreen();
+  const { insets, view, recommendation, openRecordScreen } = useConditionScreen();
 
   return (
     <ScreenLayout
@@ -35,22 +33,14 @@ export function ConditionScreen() {
             score={view.conditionSummary.finalScore}
             year={view.dateLabel.year}
             dateLabel={view.dateLabel.date}
+            viewMode={view.periodMode}
             onDatePress={view.openCalendar}
-          />
-          <ViewModeButton
-            mode={view.periodMode}
-            accessibilityLabel="보기 방식 변경"
-            style={styles.viewModeButton}
-            onPress={view.cyclePeriodMode}
+            onViewModePress={view.cyclePeriodMode}
           />
         </View>
 
         <View style={styles.main}>
-          <ConditionGraphModeToggle
-            value={view.graphMode}
-            flowDisabled
-            onChange={view.setGraphMode}
-          />
+          <ConditionGraphModeToggle />
           <ConditionGraphCard metrics={view.metrics} score={view.conditionSummary.finalScore} />
           <View style={styles.conditionList}>
             {view.metrics.map((metric) => (
@@ -62,7 +52,7 @@ export function ConditionScreen() {
               <Button label="컨디션 기반 추천 일정" onPress={recommendation.openSheet} />
             </View>
             <View style={styles.actionSlot}>
-              <Button label="기록 추가/수정" variant="primary" onPress={conditionRecordForm.open} />
+              <Button label="기록 추가/수정" variant="primary" onPress={openRecordScreen} />
             </View>
           </View>
         </View>
@@ -92,19 +82,6 @@ export function ConditionScreen() {
         onManualTimePress={recommendation.openManualTime}
         onAccept={recommendation.acceptRecommendation}
       />
-
-      <ConditionRecordSheet
-        visible={conditionRecordForm.visible}
-        mode={conditionRecordForm.mode}
-        dateLabel={conditionRecordForm.dateLabel}
-        bodyScore={conditionRecordForm.bodyScore}
-        mindScore={conditionRecordForm.mindScore}
-        saving={conditionRecordForm.saving}
-        onBodyScoreChange={conditionRecordForm.setBodyScore}
-        onMindScoreChange={conditionRecordForm.setMindScore}
-        onClose={conditionRecordForm.close}
-        onSave={conditionRecordForm.save}
-      />
     </ScreenLayout>
   );
 }
@@ -126,11 +103,6 @@ const styles = StyleSheet.create({
   header: {
     height: HEADER_HEIGHT,
     paddingHorizontal: spacing[3],
-  },
-  viewModeButton: {
-    position: 'absolute',
-    top: spacing[2],
-    right: spacing[3],
   },
   main: {
     gap: spacing[4],

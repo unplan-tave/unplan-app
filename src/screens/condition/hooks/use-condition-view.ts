@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import { toConditionMetricCards } from '@/domains/condition/metric';
-import { type ConditionGraphMode, type ConditionPeriodMode } from '@/domains/condition/model';
+import { type ConditionPeriodMode } from '@/domains/condition/model';
 import {
   buildConditionCalendarDays,
   getConditionCalendarTitle,
@@ -23,7 +23,6 @@ import { formatCalendarDateLabel, formatDateValue } from '@/lib/utils/date';
 export function useConditionView() {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [periodMode, setPeriodMode] = useState<ConditionPeriodMode>('daily');
-  const [graphMode, setGraphMode] = useState<ConditionGraphMode>('average');
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
 
   const selectedDateValue = useMemo(() => formatDateValue(selectedDate), [selectedDate]);
@@ -90,7 +89,6 @@ export function useConditionView() {
     selectedDate,
     selectedDateValue,
     periodMode,
-    graphMode,
     conditionSummary,
     conditionRecord,
     metrics,
@@ -100,7 +98,6 @@ export function useConditionView() {
       title: calendarTitle,
       days: calendarDays,
     },
-    setGraphMode,
     cyclePeriodMode,
     openCalendar,
     closeCalendar,
