@@ -13,13 +13,18 @@ import type {
 } from '../model';
 import type {
   AverageItem,
+  ConditionRecord,
   MeasurementAverageResponse,
   MeasurementRecordResponse,
+  SleepRecord,
 } from '@/lib/api/model';
 
 export function toDailyMeasurementSummary(
   response?: MeasurementRecordResponse,
 ): DailyMeasurementSummary {
+  const latestCondition = latestByTime(response?.conditions, (record) => record.date_time);
+  const latestSleep = latestByTime(response?.sleeps, (record) => record.created_at);
+
   return {
     date: response?.date ?? '',
     finalConditionScore: response?.final_condition_score ?? null,
@@ -29,8 +34,23 @@ export function toDailyMeasurementSummary(
     mindScorePercent: normalizePercent(response?.mind_score_percent),
     sleepScore: normalizePercent(response?.sleep_score),
     sleepDurationMinutes: response?.sleep_duration_minutes ?? 0,
+    bodyComment: latestCondition?.body_comment ?? '',
+    mindComment: latestCondition?.mind_comment ?? '',
+    sleepComment: latestSleep?.sleep_record_comment ?? '',
     conditionRecords: (response?.conditions ?? []).map(toConditionRecordEntry),
   };
+}
+
+/** 하루에 여러 기록이 있을 때 가장 최근 기록을 대표 문구로 씁니다. */
+function latestByTime<T extends ConditionRecord | SleepRecord>(
+  records: T[] | undefined,
+  getTime: (record: T) => string | undefined,
+): T | undefined {
+  if (records == null || records.length === 0) {
+    return undefined;
+  }
+
+  return [...records].sort((a, b) => (getTime(b) ?? '').localeCompare(getTime(a) ?? ''))[0];
 }
 
 export function toMeasurementAverages(response?: MeasurementAverageResponse): MeasurementAverages {
@@ -53,6 +73,9 @@ function toMeasurementAverageItem(item: AverageItem): MeasurementAverageItem {
     mindScorePercent: normalizePercent(item.mind_score_percent_average),
     sleepScore: normalizePercent(item.sleep_score_average),
     sleepDurationMinutes: Math.round(item.sleep_duration_minutes_average ?? 0),
+    bodyComment: item.body_comment ?? '',
+    mindComment: item.mind_comment ?? '',
+    sleepComment: item.sleep_comment ?? '',
   };
 }
 

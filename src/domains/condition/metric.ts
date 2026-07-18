@@ -20,9 +20,9 @@ export function toConditionMetricCards(
   summary: ConditionSummary,
 ): [ConditionMetricCard, ConditionMetricCard, ConditionMetricCard] {
   return [
-    toMetricCard('body', summary.body.value, summary.body.progress),
-    toMetricCard('mind', summary.mind.value, summary.mind.progress),
-    toMetricCard('sleep', summary.sleep.value, summary.sleep.progress),
+    toMetricCard('body', summary.body.value, summary.body.progress, summary.body.comment),
+    toMetricCard('mind', summary.mind.value, summary.mind.progress, summary.mind.comment),
+    toMetricCard('sleep', summary.sleep.value, summary.sleep.progress, summary.sleep.comment),
   ];
 }
 
@@ -30,13 +30,18 @@ function toMetricCard(
   key: ConditionMetricKey,
   value: string,
   progress: number,
+  comment: string,
 ): ConditionMetricCard {
+  // API가 내려준 개별 기록 문구를 우선 쓰고, 기록이 없으면 게이지 기준 문구로 대체합니다.
+  const resolvedComment =
+    comment.trim().length > 0 ? comment : getConditionMetricComment(key, progress);
+
   return {
     key,
     label: METRIC_LABEL[key],
     value,
     progress: clampProgress(progress),
-    comment: getConditionMetricComment(key, progress),
+    comment: resolvedComment,
   };
 }
 
