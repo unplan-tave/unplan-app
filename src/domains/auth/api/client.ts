@@ -10,7 +10,6 @@ import {
   reissue,
   withdraw,
 } from '@/lib/api/endpoints/auth-controller/auth-controller';
-import { getAccessToken } from '@/lib/api/endpoints/test-controller/test-controller';
 import { tokenStorage } from '@/lib/auth/token-storage';
 
 import { toAuthSession, toReissuedAuthSession } from './mapper';
@@ -68,11 +67,4 @@ export async function submitLogout({ deviceId }: AuthDeviceRequest): Promise<voi
 
 export async function submitWithdraw(): Promise<void> {
   await withdraw();
-}
-
-/** 개발·검증 환경에서 특정 member의 소셜 로그인 세션을 발급합니다. */
-export async function requestDevelopmentAccessToken(memberId: number): Promise<AuthSession> {
-  const response = await getAccessToken({ memberId });
-
-  return toAuthSession(response);
 }
