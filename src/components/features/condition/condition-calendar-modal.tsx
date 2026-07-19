@@ -82,7 +82,7 @@ export function ConditionCalendarModal({
         <View style={styles.dateGrid}>
           {toConditionCalendarWeeks(days).map((week) => (
             <View
-              key={week.map((day) => day?.date.toISOString() ?? 'empty').join('-')}
+              key={week.map((day) => day?.date?.toISOString() ?? 'empty').join('-')}
               style={styles.dateRow}
             >
               {week.map((day, index) => {

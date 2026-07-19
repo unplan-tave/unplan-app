@@ -361,7 +361,7 @@ function toApiDateTime(dateId: string, time: string): string {
 function durationLimitForDateRange(bedDateId: string, wakeDateId: string): number {
   const dateDistance = differenceInCalendarDays(parseISO(wakeDateId), parseISO(bedDateId));
 
-  return Math.max(1, dateDistance) * MINUTES_PER_DAY;
+  return Math.max(1, dateDistance + 1) * MINUTES_PER_DAY;
 }
 
 /** 완성된 취침·기상 시각에서만 화면에 표시할 수면시간을 계산합니다. */
