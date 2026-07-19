@@ -1,25 +1,13 @@
-import { useState } from 'react';
-import {
-  type DimensionValue,
-  type GestureResponderEvent,
-  type LayoutChangeEvent,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { type DimensionValue, Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Defs, G, Line, Marker, Path, Rect } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useConditionQuadrantInteraction } from '@/hooks/use-condition-quadrant-interaction';
 
-/** 정규화 좌표(-1~1). x는 오른쪽(+)이 높은 Mind, y는 위(+)가 높은 Body입니다. */
-export interface QuadrantPoint {
-  id: string;
-  x: number;
-  y: number;
-  /** 같은 자리에 겹친 기록 수. 2 이상이면 배지로 표시합니다. */
-  count?: number;
-}
+import type { QuadrantPoint } from '@/domains/condition/quadrant';
+
+export type { QuadrantPoint } from '@/domains/condition/quadrant';
 
 interface ConditionQuadrantPlotProps {
   points?: QuadrantPoint[];
@@ -64,21 +52,10 @@ export function ConditionQuadrantPlot({
   onBackgroundPress,
   showOrigin = true,
 }: ConditionQuadrantPlotProps) {
-  const [size, setSize] = useState(0);
-
-  const handleLayout = (event: LayoutChangeEvent) => setSize(event.nativeEvent.layout.width);
-
-  const handleSelectPress = (event: GestureResponderEvent) => {
-    if (onSelect == null || size === 0) return;
-
-    const { locationX, locationY } = event.nativeEvent;
-    const x = clampUnit(((locationX / size) * VIEW - CENTER) / MARKER_SPAN);
-    const y = clampUnit(-(((locationY / size) * VIEW - CENTER) / MARKER_SPAN));
-    onSelect(x, y);
-  };
+  const interaction = useConditionQuadrantInteraction(onSelect);
 
   return (
-    <View style={styles.container} onLayout={handleLayout}>
+    <View style={styles.container} onLayout={interaction.onLayout}>
       <Svg style={StyleSheet.absoluteFill} viewBox={`0 0 ${VIEW} ${VIEW}`}>
         <Defs>
           <Marker id="axisArrow" markerWidth={6} markerHeight={6} refX={3} refY={3} orient="auto">
@@ -152,7 +129,7 @@ export function ConditionQuadrantPlot({
           accessibilityLabel="에너지 상태 선택"
           accessibilityRole="adjustable"
           style={StyleSheet.absoluteFill}
-          onPress={handleSelectPress}
+          onPress={interaction.onPress}
         />
       ) : null}
       {onSelect == null && onBackgroundPress != null ? (
@@ -282,10 +259,6 @@ function historyListPosition(
     ...(x <= 0 ? { left: MARKER_SIZE / 2 } : { right: MARKER_SIZE / 2 }),
     ...(y >= 0 ? { top: MARKER_SIZE / 2 } : { bottom: MARKER_SIZE / 2 }),
   };
-}
-
-function clampUnit(value: number): number {
-  return Math.max(-1, Math.min(1, value));
 }
 
 const MARKER_SIZE = 16;
