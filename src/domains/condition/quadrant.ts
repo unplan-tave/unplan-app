@@ -8,16 +8,19 @@ export interface QuadrantPoint {
 export const CONDITION_QUADRANT = {
   view: 100,
   center: 50,
-  axisExtent: 40,
+  gridInset: 5.94,
+  gridSize: 88.32,
   markerSpan: 44.16,
   gridDivisions: 6,
-  markerSize: 16,
+  markerSize: 20,
   valueSize: 22,
 } as const;
 
 export const CONDITION_QUADRANT_GRID_LINES = Array.from(
   { length: CONDITION_QUADRANT.gridDivisions - 1 },
-  (_, index) => ((index + 1) * CONDITION_QUADRANT.view) / CONDITION_QUADRANT.gridDivisions,
+  (_, index) =>
+    CONDITION_QUADRANT.gridInset +
+    ((index + 1) * CONDITION_QUADRANT.gridSize) / CONDITION_QUADRANT.gridDivisions,
 );
 
 export function toConditionQuadrantPosition(

@@ -1,11 +1,16 @@
-import { type DimensionValue, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Defs, G, Line, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
+import {
+  CONDITION_QUADRANT,
+  CONDITION_QUADRANT_GRID_LINES,
+  toConditionHistoryListPosition,
+  toConditionQuadrantPosition,
+  type QuadrantPoint,
+} from '@/domains/condition/quadrant';
 import { useConditionQuadrantInteraction } from '@/hooks/use-condition-quadrant-interaction';
-
-import type { QuadrantPoint } from '@/domains/condition/quadrant';
 
 export type { QuadrantPoint } from '@/domains/condition/quadrant';
 
@@ -29,12 +34,9 @@ interface ConditionQuadrantPlotProps {
   showOrigin?: boolean;
 }
 
-const VIEW = 100;
-const CENTER = VIEW / 2;
-const GRID_INSET = 5.94;
-const GRID_SIZE = 88.32;
-const MARKER_SPAN = GRID_SIZE / 2;
-const GRID_DIVISIONS = 6;
+const VIEW = CONDITION_QUADRANT.view;
+const GRID_INSET = CONDITION_QUADRANT.gridInset;
+const GRID_SIZE = CONDITION_QUADRANT.gridSize;
 const FIGMA_TO_VIEW_SCALE = VIEW / 313.515;
 const HORIZONTAL_AXIS = {
   x: 68.2575,
@@ -46,11 +48,6 @@ const VERTICAL_AXIS = {
   y: 56.59,
   path: 'M0.146447 3.32843C-0.0488155 3.52369 -0.0488155 3.84027 0.146447 4.03553L3.32843 7.21751C3.52369 7.41278 3.84027 7.41278 4.03553 7.21751C4.2308 7.02225 4.2308 6.70567 4.03553 6.51041L1.20711 3.68198L4.03553 0.853554C4.2308 0.658291 4.2308 0.341709 4.03553 0.146447C3.84027 -0.0488155 3.52369 -0.0488155 3.32843 0.146447L0.146447 3.32843ZM201.91 4.03553C202.105 3.84027 202.105 3.52369 201.91 3.32843L198.728 0.146447C198.533 -0.0488155 198.216 -0.0488155 198.021 0.146447C197.826 0.341709 197.826 0.658291 198.021 0.853554L200.85 3.68198L198.021 6.51041C197.826 6.70567 197.826 7.02225 198.021 7.21751C198.216 7.41278 198.533 7.41278 198.728 7.21751L201.91 4.03553ZM0.5 3.68198V4.18198H201.557V3.68198V3.18198H0.5V3.68198Z',
 } as const;
-
-const GRID_LINES = Array.from(
-  { length: GRID_DIVISIONS - 1 },
-  (_, index) => GRID_INSET + ((index + 1) * GRID_SIZE) / GRID_DIVISIONS,
-);
 
 /** Body(세로)·Mind(가로) 2축 사분면에 컨디션 기록을 찍는 플롯입니다. */
 export function ConditionQuadrantPlot({
@@ -109,7 +106,7 @@ export function ConditionQuadrantPlot({
           strokeWidth={0.6}
         />
 
-        {GRID_LINES.map((offset) => (
+        {CONDITION_QUADRANT_GRID_LINES.map((offset) => (
           <G key={`grid-${offset}`}>
             <Line
               x1={offset}
@@ -199,7 +196,7 @@ export function ConditionQuadrantPlot({
       </Typography>
 
       {showOrigin && value == null && points.length === 0 ? (
-        <View style={[styles.dot, positionStyle(0, 0)]} pointerEvents="none" />
+        <View style={[styles.dot, toConditionQuadrantPosition(0, 0)]} pointerEvents="none" />
       ) : null}
 
       {points.map((point) => {
@@ -213,7 +210,10 @@ export function ConditionQuadrantPlot({
 
         if (onMarkerPress) {
           return (
-            <View key={point.id} style={[styles.markerAnchor, positionStyle(point.x, point.y)]}>
+            <View
+              key={point.id}
+              style={[styles.markerAnchor, toConditionQuadrantPosition(point.x, point.y)]}
+            >
               <Pressable
                 accessibilityLabel="Body Mind 기록"
                 accessibilityRole="button"
@@ -230,7 +230,9 @@ export function ConditionQuadrantPlot({
                 </Typography>
               ) : null}
               {active && badge && activeMarkerTimes.length > 0 ? (
-                <View style={[styles.historyList, historyListPosition(point.x, point.y)]}>
+                <View
+                  style={[styles.historyList, toConditionHistoryListPosition(point.x, point.y)]}
+                >
                   {activeMarkerTimes.map((time, index) => (
                     <View key={`${time}-${index}`}>
                       {index > 0 ? <View style={styles.historyDivider} /> : null}
@@ -249,7 +251,11 @@ export function ConditionQuadrantPlot({
           <View
             key={point.id}
             pointerEvents="none"
-            style={[styles.marker, badge && styles.markerBadge, positionStyle(point.x, point.y)]}
+            style={[
+              styles.marker,
+              badge && styles.markerBadge,
+              toConditionQuadrantPosition(point.x, point.y),
+            ]}
           >
             {content}
           </View>
@@ -257,36 +263,17 @@ export function ConditionQuadrantPlot({
       })}
 
       {value != null ? (
-        <View style={[styles.valueDot, positionStyle(value.x, value.y)]} pointerEvents="none" />
+        <View
+          style={[styles.valueDot, toConditionQuadrantPosition(value.x, value.y)]}
+          pointerEvents="none"
+        />
       ) : null}
     </View>
   );
 }
 
-function positionStyle(x: number, y: number): { left: DimensionValue; top: DimensionValue } {
-  return {
-    left: `${CENTER + x * MARKER_SPAN}%`,
-    top: `${CENTER - y * MARKER_SPAN}%`,
-  };
-}
-
-function historyListPosition(
-  x: number,
-  y: number,
-): {
-  left?: DimensionValue;
-  right?: DimensionValue;
-  top?: DimensionValue;
-  bottom?: DimensionValue;
-} {
-  return {
-    ...(x <= 0 ? { left: MARKER_SIZE / 2 } : { right: MARKER_SIZE / 2 }),
-    ...(y >= 0 ? { top: MARKER_SIZE / 2 } : { bottom: MARKER_SIZE / 2 }),
-  };
-}
-
-const MARKER_SIZE = 20;
-const VALUE_SIZE = 22;
+const MARKER_SIZE = CONDITION_QUADRANT.markerSize;
+const VALUE_SIZE = CONDITION_QUADRANT.valueSize;
 
 const styles = StyleSheet.create({
   container: {
