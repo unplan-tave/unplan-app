@@ -32,11 +32,16 @@ export function useDailyMeasurementQuery(
   date: string,
   options?: MeasurementQueryOptions<DailyMeasurementSummary>,
 ) {
+  const isCurrentDate = isMeasurementRangeCurrent(date, date);
+
   return useQuery({
     queryKey: measurementQueryKeys.daily(date),
     queryFn: () => fetchDailyMeasurement(date),
     ...options,
     enabled: date.length > 0 && (options?.enabled ?? true),
+    // /measurements 응답에는 해당 날짜의 condition·sleep 기록이 함께 포함됩니다.
+    // 지난 날짜는 두 기록을 동일한 daily key로 계속 재사용하고, 오늘만 짧게 신선도를 둡니다.
+    staleTime: isCurrentDate ? CURRENT_PERIOD_STALE_TIME : PAST_DATE_STALE_TIME,
   });
 }
 

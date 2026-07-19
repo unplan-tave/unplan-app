@@ -1,6 +1,8 @@
 /** 수면 기록 생성·수정·삭제 hook입니다. */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { measurementQueryKeys } from '@/domains/measurement/api/query-keys';
+
 import { submitSleepRecord, submitSleepRecordDelete, submitSleepRecordUpdate } from './client';
 import { sleepQueryKeys } from './query-keys';
 
@@ -12,7 +14,10 @@ export function useCreateSleepRecordMutation() {
 
   return useMutation({
     mutationFn: submitSleepRecord,
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: sleepQueryKeys.all }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: sleepQueryKeys.all });
+      void queryClient.invalidateQueries({ queryKey: measurementQueryKeys.all });
+    },
   });
 }
 
@@ -23,7 +28,10 @@ export function useUpdateSleepRecordMutation() {
   return useMutation({
     mutationFn: ({ sleepId, input }: { sleepId: number; input: SleepRecordInput }) =>
       submitSleepRecordUpdate(sleepId, input),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: sleepQueryKeys.all }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: sleepQueryKeys.all });
+      void queryClient.invalidateQueries({ queryKey: measurementQueryKeys.all });
+    },
   });
 }
 
@@ -35,6 +43,7 @@ export function useDeleteSleepRecordMutation() {
     mutationFn: submitSleepRecordDelete,
     onSuccess: (_, sleepId) => {
       void queryClient.invalidateQueries({ queryKey: sleepQueryKeys.all });
+      void queryClient.invalidateQueries({ queryKey: measurementQueryKeys.all });
       queryClient.removeQueries({ queryKey: sleepQueryKeys.detail(sleepId) });
     },
   });
