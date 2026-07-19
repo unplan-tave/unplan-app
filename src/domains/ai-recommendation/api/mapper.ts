@@ -21,6 +21,7 @@ import type {
 } from '@/domains/condition/model';
 import type { ConditionTagId } from '@/domains/schedule/model';
 import type {
+  ConditionRecommendationItem,
   ConditionRecommendationResponse,
   EmptyTime,
   EmptyTimeSettingRequestDto,
@@ -29,16 +30,6 @@ import type {
   RecommendationAcceptRequest,
   RecommendationItem,
 } from '@/lib/api/model';
-
-/**
- * 서버에 이미 추가됐지만 현재 Orval 산출물에는 아직 반영되지 않은 추천 후보 필드입니다.
- * generated 모델을 수정하지 않고 API boundary에서만 확장 계약을 흡수합니다.
- */
-interface ConditionRecommendationItem extends RecommendationItem {
-  condition_tag_label?: string;
-  suitability_message?: string;
-  time_margin_message?: string;
-}
 
 function toMinuteRange(banTime: RecommendBanTime): MinuteRange {
   return {

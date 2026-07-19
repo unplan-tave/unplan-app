@@ -7,7 +7,7 @@
  */
 import type { EmptyTime } from './emptyTime';
 import type { SummaryTag } from './summaryTag';
-import type { RecommendationItem } from './recommendationItem';
+import type { ConditionRecommendationItem } from './conditionRecommendationItem';
 
 export interface ConditionRecommendationResponse {
   date?: string;
@@ -17,5 +17,6 @@ export interface ConditionRecommendationResponse {
   empty_time?: EmptyTime;
   summary_message?: string;
   summary_tags?: SummaryTag[];
-  recommendations?: RecommendationItem[];
+  /** 추천 일정 목록 */
+  recommendations?: ConditionRecommendationItem[];
 }
