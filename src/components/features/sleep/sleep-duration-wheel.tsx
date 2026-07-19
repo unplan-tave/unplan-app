@@ -13,7 +13,8 @@ import { colors, radius, spacing } from '@/constants/theme';
 import { SLEEP_HOUR_OPTIONS, SLEEP_MINUTE_OPTIONS, splitDuration } from '@/domains/sleep/measure';
 
 interface SleepDurationWheelProps {
-  durationMinutes: number;
+  durationMinutes: number | null;
+  error?: boolean;
   onChange: (durationMinutes: number) => void;
 }
 
@@ -23,17 +24,22 @@ const PADDING_ROWS = (VISIBLE_ROWS - 1) / 2;
 const WHEEL_HEIGHT = ITEM_HEIGHT * VISIBLE_ROWS;
 
 /** 취침 길이를 HH시간 MM분으로 고르는 휠 피커입니다. */
-export function SleepDurationWheel({ durationMinutes, onChange }: SleepDurationWheelProps) {
-  const { hours, minutes } = splitDuration(durationMinutes);
+export function SleepDurationWheel({
+  durationMinutes,
+  error = false,
+  onChange,
+}: SleepDurationWheelProps) {
+  const hasDuration = durationMinutes != null;
+  const { hours, minutes } = splitDuration(durationMinutes ?? 0);
 
   return (
     <View style={styles.wheel}>
-      <View pointerEvents="none" style={styles.centerBand} />
+      <View pointerEvents="none" style={[styles.centerBand, error && styles.centerBandError]} />
       <View style={styles.row}>
         <WheelColumn
           accessibilityLabel="수면 시간"
           options={SLEEP_HOUR_OPTIONS}
-          value={hours}
+          value={hasDuration ? hours : null}
           onChange={(next) => onChange(next * 60 + minutes)}
         />
         <Typography variant="titleM" color={colors.gray[500]} style={styles.unit}>
@@ -42,7 +48,7 @@ export function SleepDurationWheel({ durationMinutes, onChange }: SleepDurationW
         <WheelColumn
           accessibilityLabel="수면 분"
           options={SLEEP_MINUTE_OPTIONS}
-          value={minutes}
+          value={hasDuration ? minutes : null}
           onChange={(next) => onChange(hours * 60 + next)}
         />
         <Typography variant="titleM" color={colors.gray[500]} style={styles.unit}>
@@ -61,12 +67,12 @@ function WheelColumn({
 }: {
   accessibilityLabel: string;
   options: number[];
-  value: number;
+  value: number | null;
   onChange: (value: number) => void;
 }) {
   const scrollRef = useRef<ScrollView>(null);
   const settledIndex = useRef(-1);
-  const index = Math.max(0, options.indexOf(value));
+  const index = Math.max(0, options.indexOf(value ?? 0));
 
   useEffect(() => {
     if (settledIndex.current === index) return;
@@ -107,9 +113,13 @@ function WheelColumn({
           <Typography
             variant="titleL"
             align="center"
-            color={option === value ? colors.primary : colors.gray[400]}
+            color={
+              option === value || (value == null && option === 0)
+                ? colors.primary
+                : colors.gray[400]
+            }
           >
-            {option.toString().padStart(2, '0')}
+            {value == null && option === 0 ? '--' : option.toString().padStart(2, '0')}
           </Typography>
         </Pressable>
       ))}
@@ -130,6 +140,11 @@ const styles = StyleSheet.create({
     height: ITEM_HEIGHT,
     borderRadius: radius.panel,
     backgroundColor: colors.alpha.white70,
+  },
+  centerBandError: {
+    borderWidth: 1,
+    borderColor: colors.secondary,
+    backgroundColor: colors.alpha.transparent,
   },
   row: {
     flexDirection: 'row',
