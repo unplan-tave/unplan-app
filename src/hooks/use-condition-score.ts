@@ -2,10 +2,9 @@
 import { useMemo } from 'react';
 
 import { useMeasurementAveragesQuery } from '@/domains/measurement/api/queries';
-import { toConditionSummaryFromAverage } from '@/domains/measurement/model';
 import { formatDateValue } from '@/lib/utils/date';
 
-export function useTodayConditionScore(): number {
+export function useTodayConditionScore(): number | null {
   const averageInput = useMemo(() => {
     const todayValue = formatDateValue(new Date());
 
@@ -13,5 +12,7 @@ export function useTodayConditionScore(): number {
   }, []);
   const averagesQuery = useMeasurementAveragesQuery(averageInput);
 
-  return toConditionSummaryFromAverage(averagesQuery.data?.items[0]).finalScore;
+  const finalScore = averagesQuery.data?.items[0]?.finalConditionScore;
+
+  return finalScore == null ? null : Math.round(finalScore);
 }

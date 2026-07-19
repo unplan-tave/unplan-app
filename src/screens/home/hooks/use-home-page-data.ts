@@ -131,6 +131,7 @@ export function useHomePageData({
     () => toConditionSummaryFromAverage(measurementAveragesQuery.data?.items[0]),
     [measurementAveragesQuery.data?.items],
   );
+  const conditionScore = measurementAveragesQuery.data?.items[0]?.finalConditionScore ?? null;
 
   return {
     calendarDays,
@@ -138,6 +139,7 @@ export function useHomePageData({
     timelineCards,
     recommendations,
     conditionSummary,
+    conditionScore,
     dailyMessage: viewMode === 'daily' ? dailyMessageQuery.data : undefined,
     dailyMemos: dailyMemosQuery.data ?? [],
     dailyMemosQuery,

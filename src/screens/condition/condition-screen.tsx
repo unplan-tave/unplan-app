@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { ConditionScoreBackground } from '@/components/domain/condition/condition-score-background';
 import { ConditionCalendarModal } from '@/components/features/condition/condition-calendar-modal';
@@ -15,6 +15,7 @@ import { colors, spacing } from '@/constants/theme';
 import { useConditionScreen } from './hooks/use-condition-screen';
 
 const CONTENT_MAX_WIDTH = 393;
+const BOTTOM_NAV_HEIGHT = 66;
 
 export function ConditionScreen() {
   const { insets, view, recommendation, openRecordScreen } = useConditionScreen();
@@ -26,8 +27,16 @@ export function ConditionScreen() {
       useSafeArea={false}
     >
       <StatusBar style="light" />
-      <ConditionScoreBackground score={view.conditionSummary.finalScore} />
-      <View style={styles.canvas}>
+      <ConditionScoreBackground score={view.conditionScore} />
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: insets.bottom + BOTTOM_NAV_HEIGHT + spacing[8] },
+        ]}
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
+        style={styles.canvas}
+      >
         <View style={[styles.header, { paddingTop: insets.top + spacing[2] }]}>
           <ConditionHero
             score={view.conditionSummary.finalScore}
@@ -56,7 +65,7 @@ export function ConditionScreen() {
             </View>
           </View>
         </View>
-      </View>
+      </ScrollView>
 
       <ConditionCalendarModal
         visible={view.calendar.visible}
@@ -99,6 +108,9 @@ const styles = StyleSheet.create({
     maxWidth: CONTENT_MAX_WIDTH,
     flex: 1,
     alignSelf: 'center',
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   header: {
     height: HEADER_HEIGHT,

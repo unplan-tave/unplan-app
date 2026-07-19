@@ -42,7 +42,7 @@ export function HomeScreen() {
       useSafeArea={false}
     >
       <StatusBar style="light" />
-      <ConditionScoreBackground score={home.conditionSummary.finalScore} />
+      <ConditionScoreBackground score={home.conditionScore} />
       <GestureDetector gesture={home.pinchGesture}>
         <View style={styles.canvas}>
           {home.viewMode === 'daily' ? (

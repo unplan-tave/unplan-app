@@ -46,6 +46,7 @@ export function useConditionView() {
     () => toConditionSummaryFromAverage(measurementAveragesQuery.data?.items[0]),
     [measurementAveragesQuery.data?.items],
   );
+  const conditionScore = measurementAveragesQuery.data?.items[0]?.finalConditionScore ?? null;
   const metrics = useMemo(() => toConditionMetricCards(conditionSummary), [conditionSummary]);
   const dateLabel = useMemo(() => formatCalendarDateLabel(selectedDate), [selectedDate]);
   const calendarDays = useMemo(
@@ -80,6 +81,7 @@ export function useConditionView() {
     selectedDateValue,
     periodMode,
     conditionSummary,
+    conditionScore,
     metrics,
     dateLabel,
     calendar: {
