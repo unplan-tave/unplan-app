@@ -1,10 +1,10 @@
 import { Pressable, StyleSheet } from 'react-native';
 
-import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
 
 import { type GNBItemProps } from './gnb.types';
+import { GNBIcon } from './GNBIcons';
 
 export function GNBItem({ item, selected = false, style, ...props }: GNBItemProps) {
   const color = colors.gray.white;
@@ -24,7 +24,7 @@ export function GNBItem({ item, selected = false, style, ...props }: GNBItemProp
       ]}
       {...props}
     >
-      {item.iconName ? <Icon name={item.iconName} size={40} color={color} /> : null}
+      {item.iconName ? <GNBIcon name={item.iconName} size={32} /> : null}
       <Typography
         variant="caption"
         color={color}
