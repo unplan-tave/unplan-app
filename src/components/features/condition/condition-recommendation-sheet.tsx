@@ -6,6 +6,7 @@ import { Chip } from '@/components/ui/Chip';
 import { Icon } from '@/components/ui/Icon';
 import { Tag } from '@/components/ui/Tag';
 import { Typography } from '@/components/ui/Typography';
+import { CONDITION_RECOMMENDATION_HEADER_SPACER_WIDTH } from '@/constants/condition-ui';
 import { colors, radius, spacing } from '@/constants/theme';
 import { isRecoveryRecommendation } from '@/domains/condition/recommendation';
 import { getConditionTagById } from '@/domains/schedule/model';
@@ -270,8 +271,6 @@ function RecoveryRecommendationCard({
   );
 }
 
-const HEADER_SPACER_WIDTH = 32;
-
 const styles = StyleSheet.create({
   content: {
     gap: spacing[4],
@@ -282,7 +281,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   headerSpacer: {
-    width: HEADER_SPACER_WIDTH,
+    width: CONDITION_RECOMMENDATION_HEADER_SPACER_WIDTH,
   },
   emptyCard: {
     alignItems: 'center',

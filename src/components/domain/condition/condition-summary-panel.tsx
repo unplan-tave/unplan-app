@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
+import { CONDITION_SUMMARY_PANEL } from '@/constants/condition-ui';
 import { colors, fontFamilyWeight, spacing } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 
@@ -18,11 +19,6 @@ interface ConditionSummaryPanelProps {
   onDatePress?: () => void;
   onMemoPress?: () => void;
 }
-
-const PANEL_DIVIDER_WIDTH = 107;
-const CONDITION_SCORE_FONT_SIZE = 56;
-const CONDITION_SCORE_LINE_HEIGHT = 84;
-const CONDITION_SCORE_LETTER_SPACING = -4.48;
 
 export function ConditionSummaryPanel({
   year,
@@ -90,16 +86,16 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   divider: {
-    width: PANEL_DIVIDER_WIDTH,
+    width: CONDITION_SUMMARY_PANEL.dividerWidth,
     height: 1,
     marginTop: spacing[1],
     backgroundColor: colors.alpha.white50,
   },
   conditionScore: {
     fontFamily: fontFamilyWeight.medium,
-    fontSize: CONDITION_SCORE_FONT_SIZE,
+    fontSize: CONDITION_SUMMARY_PANEL.scoreFontSize,
     fontWeight: '500',
-    lineHeight: CONDITION_SCORE_LINE_HEIGHT,
-    letterSpacing: CONDITION_SCORE_LETTER_SPACING,
+    lineHeight: CONDITION_SUMMARY_PANEL.scoreLineHeight,
+    letterSpacing: CONDITION_SUMMARY_PANEL.scoreLetterSpacing,
   },
 });

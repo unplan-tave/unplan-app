@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { ViewModeButton } from '@/components/ui/ViewModeButton';
+import { CONDITION_HERO_SCORE } from '@/constants/condition-ui';
 import { colors, fontFamilyWeight, spacing } from '@/constants/theme';
 import { getConditionHeroCopy } from '@/domains/condition/hero-copy';
 
@@ -59,10 +60,6 @@ export function ConditionHero({
   );
 }
 
-const SCORE_FONT_SIZE = 84;
-const SCORE_LINE_HEIGHT = 84;
-const SCORE_LETTER_SPACING = -4;
-
 const styles = StyleSheet.create({
   scoreRow: {
     flexDirection: 'row',
@@ -70,10 +67,10 @@ const styles = StyleSheet.create({
   },
   score: {
     fontFamily: fontFamilyWeight.medium,
-    fontSize: SCORE_FONT_SIZE,
+    fontSize: CONDITION_HERO_SCORE.fontSize,
     fontWeight: '500',
-    lineHeight: SCORE_LINE_HEIGHT,
-    letterSpacing: SCORE_LETTER_SPACING,
+    lineHeight: CONDITION_HERO_SCORE.lineHeight,
+    letterSpacing: CONDITION_HERO_SCORE.letterSpacing,
   },
   divider: {
     width: 1,
