@@ -21,6 +21,7 @@ import type {
 } from '@/domains/condition/model';
 import type { ConditionTagId } from '@/domains/schedule/model';
 import type {
+  ConditionRecommendationItem,
   ConditionRecommendationResponse,
   EmptyTime,
   EmptyTimeSettingRequestDto,
@@ -69,14 +70,27 @@ export function toEmptyTimeSettingRequest(
 export function toConditionRecommendationViewModel(
   response: ConditionRecommendationResponse | undefined,
 ): {
+  conditionTagId: ConditionTagId | null;
+  conditionTagLabel: string | null;
   freeSlot: ConditionFreeSlot | null;
   summaryMessage: string | null;
   recommendations: ConditionRecommendation[];
 } {
   return {
+    conditionTagId: response?.condition_tag ? toConditionTagId(response.condition_tag) : null,
+    conditionTagLabel: response?.condition_tag_label ?? null,
     freeSlot: toConditionFreeSlot(response?.empty_time),
     summaryMessage: response?.summary_message ?? null,
-    recommendations: (response?.recommendations ?? []).flatMap(toConditionRecommendation),
+    recommendations: [...(response?.recommendations ?? [])]
+      .sort((first, second) => {
+        // display_order가 없는 항목은 순서를 뒤로 미루고, 둘 다 없으면 원래 순서를 유지합니다.
+        if (first.display_order == null && second.display_order == null) return 0;
+        if (first.display_order == null) return 1;
+        if (second.display_order == null) return -1;
+
+        return first.display_order - second.display_order;
+      })
+      .flatMap(toConditionRecommendation),
   };
 }
 
@@ -145,7 +159,7 @@ function toConditionFreeSlot(emptyTime: EmptyTime | undefined): ConditionFreeSlo
   };
 }
 
-function toConditionRecommendation(item: RecommendationItem): ConditionRecommendation[] {
+function toConditionRecommendation(item: ConditionRecommendationItem): ConditionRecommendation[] {
   const sourceType = item.source_type?.toUpperCase();
 
   if (sourceType === 'RECOVERY') {
@@ -155,7 +169,7 @@ function toConditionRecommendation(item: RecommendationItem): ConditionRecommend
   return [toQueueRecommendation(item)];
 }
 
-function toQueueRecommendation(item: RecommendationItem): QueueConditionRecommendation {
+function toQueueRecommendation(item: ConditionRecommendationItem): QueueConditionRecommendation {
   const estimatedMinutes = item.estimated_time ?? 0;
 
   return {
@@ -164,14 +178,19 @@ function toQueueRecommendation(item: RecommendationItem): QueueConditionRecommen
     recommendId: item.recommend_id,
     title: item.title ?? '',
     conditionTagId: toConditionTagId(item.condition_tag),
-    reason: item.match_tier ?? '',
+    conditionTagLabel: item.condition_tag_label,
+    reasonMessages: [item.suitability_message, item.time_margin_message].filter(
+      (message): message is string => message != null && message.length > 0,
+    ),
     dueLabel: item.deadline == null || item.deadline.length === 0 ? null : `마감 ${item.deadline}`,
     durationLabel:
       estimatedMinutes > 0 ? formatDurationCaption(estimatedMinutes) : '소요 시간 미정',
   };
 }
 
-function toRecoveryRecommendation(item: RecommendationItem): RecoveryConditionRecommendation {
+function toRecoveryRecommendation(
+  item: ConditionRecommendationItem,
+): RecoveryConditionRecommendation {
   const options = (item.recovery_means ?? []).map((label) => ({
     id: label,
     label,
@@ -181,7 +200,9 @@ function toRecoveryRecommendation(item: RecommendationItem): RecoveryConditionRe
     kind: 'recovery',
     id: String(item.recommend_id ?? item.display_order ?? 'recovery'),
     recommendId: item.recommend_id,
-    reason: item.title ?? item.match_tier ?? '',
+    reasonMessages: [item.suitability_message, item.time_margin_message].filter(
+      (message): message is string => message != null && message.length > 0,
+    ),
     durationLabel:
       item.estimated_time != null && item.estimated_time > 0
         ? formatDurationCaption(item.estimated_time)

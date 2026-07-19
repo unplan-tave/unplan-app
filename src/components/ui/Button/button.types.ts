@@ -1,6 +1,13 @@
 import { type PressableProps, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 
-export type ButtonVariant = 'default' | 'primary' | 'glass';
+export type ButtonVariant =
+  | 'default'
+  | 'primary'
+  | 'glass'
+  | 'conditionSecondary'
+  | 'conditionPrimary'
+  | 'conditionRecommendationSecondary'
+  | 'conditionRecommendationPrimary';
 
 export interface ButtonProps extends Omit<PressableProps, 'style' | 'children'> {
   label: string;

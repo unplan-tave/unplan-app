@@ -52,16 +52,11 @@ export function joinDuration(hours: number, minutes: number): number {
   return hours * MINUTES_PER_HOUR + minutes;
 }
 
-/** 길이 휠에서 고를 수 있는 시간 값(0~23)입니다. */
-export const SLEEP_HOUR_OPTIONS = Array.from({ length: 24 }, (_, index) => index);
+/** 길이 휠에서 고를 수 있는 시간 값(0~99)입니다. */
+export const SLEEP_HOUR_OPTIONS = Array.from({ length: 100 }, (_, index) => index);
 
 /** 길이 휠에서 고를 수 있는 분 값(0~59)입니다. */
 export const SLEEP_MINUTE_OPTIONS = Array.from({ length: 60 }, (_, index) => index);
-
-/** 시각 선택 시트에서 고를 수 있는 'HH:mm' 값(10분 간격)입니다. */
-export const SLEEP_TIME_OPTIONS = Array.from({ length: MINUTES_PER_DAY / 10 }, (_, index) =>
-  minutesToTime(index * 10),
-);
 
 function pad2(value: number): string {
   return value.toString().padStart(2, '0');

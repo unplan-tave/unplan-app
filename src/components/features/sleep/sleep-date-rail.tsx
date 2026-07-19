@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { type LayoutChangeEvent, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
@@ -21,10 +22,29 @@ interface SleepDateRailProps {
 
 /** 기록 내역 화면의 가로 스크롤 날짜 레일입니다. */
 export function SleepDateRail({ items, onSelect }: SleepDateRailProps) {
+  const scrollRef = useRef<ScrollView>(null);
+  const [viewportWidth, setViewportWidth] = useState(0);
+  const selectedIndex = useMemo(() => items.findIndex((item) => item.selected), [items]);
+
+  useEffect(() => {
+    if (viewportWidth === 0 || selectedIndex < 0) return;
+
+    const itemOffset = selectedIndex * (CARD_WIDTH + RAIL_GAP);
+    const centeredOffset = Math.max(0, itemOffset - (viewportWidth - CARD_WIDTH) / 2);
+
+    scrollRef.current?.scrollTo({ x: centeredOffset, animated: false });
+  }, [selectedIndex, viewportWidth]);
+
+  const handleLayout = (event: LayoutChangeEvent) => {
+    setViewportWidth(event.nativeEvent.layout.width);
+  };
+
   return (
     <ScrollView
+      ref={scrollRef}
       horizontal
       showsHorizontalScrollIndicator={false}
+      onLayout={handleLayout}
       style={styles.scroll}
       contentContainerStyle={styles.rail}
     >
@@ -59,14 +79,12 @@ export function SleepDateRail({ items, onSelect }: SleepDateRailProps) {
             <Typography variant="caption" align="center" color={weekdayColor}>
               {item.weekday}
             </Typography>
-            <View
-              style={[
-                styles.dot,
-                item.isToday && {
-                  backgroundColor: item.selected ? colors.gray.white : colors.primary,
-                },
-              ]}
-            />
+            {item.isToday ? (
+              <View
+                pointerEvents="none"
+                style={[styles.dot, item.selected ? styles.dotSelected : styles.dotToday]}
+              />
+            ) : null}
           </Pressable>
         );
       })}
@@ -74,8 +92,9 @@ export function SleepDateRail({ items, onSelect }: SleepDateRailProps) {
   );
 }
 
-const CARD_WIDTH = 44;
-const CARD_HEIGHT = 60;
+const CARD_WIDTH = 40;
+const CARD_HEIGHT = 57;
+const RAIL_GAP = spacing[3];
 
 const styles = StyleSheet.create({
   scroll: {
@@ -83,27 +102,34 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   rail: {
-    gap: spacing[2],
+    gap: RAIL_GAP,
     alignItems: 'center',
-    paddingHorizontal: spacing[4],
   },
   card: {
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
-    borderRadius: radius.md,
-    backgroundColor: colors.alpha.white70,
+    gap: spacing.px,
+    borderRadius: radius['2xs'],
+    backgroundColor: colors.gray.white,
   },
   cardSelected: {
     backgroundColor: colors.primary,
   },
   dot: {
-    width: 3,
-    height: 3,
+    position: 'absolute',
+    top: 29,
+    left: 18,
+    width: 4,
+    height: 4,
     borderRadius: radius.full,
-    backgroundColor: colors.alpha.transparent,
+  },
+  dotSelected: {
+    backgroundColor: colors.gray.white,
+  },
+  dotToday: {
+    backgroundColor: colors.primary,
   },
   pressed: {
     opacity: 0.72,

@@ -35,7 +35,7 @@ export function RecordHistoryTabs({ value, onChange }: RecordHistoryTabsProps) {
             onPress={() => onChange(tab.key)}
           >
             <Typography
-              variant="bodyM"
+              variant="bodyS"
               align="center"
               color={selected ? colors.gray[800] : colors.gray[600]}
             >
@@ -60,10 +60,15 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius['2xs'],
+    borderRadius: radius.sm,
   },
   tabSelected: {
     backgroundColor: colors.alpha.white80,
+    shadowColor: colors.gray[400],
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 1,
   },
   pressed: {
     opacity: 0.72,

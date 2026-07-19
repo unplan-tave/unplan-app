@@ -6,7 +6,7 @@ export interface BottomCTAProps extends Omit<PressableProps, 'style' | 'children
   onCaptionPress?: () => void;
   disabled?: boolean;
   captionDisabled?: boolean;
-  variant?: 'default' | 'primary';
+  variant?: 'default' | 'primary' | 'record';
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
 }

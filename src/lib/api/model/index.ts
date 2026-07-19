@@ -33,6 +33,7 @@ export * from './averageItem';
 export * from './biorhythmRequest';
 export * from './condition';
 export * from './conditionCreate';
+export * from './conditionRecommendationItem';
 export * from './conditionRecommendationResponse';
 export * from './conditionRecord';
 export * from './conditionResponse';

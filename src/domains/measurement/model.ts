@@ -3,6 +3,7 @@
  * 서버 기록을 condition summary, metric card, home header에서 재사용할 수 있는 형태로 정규화합니다.
  */
 import type { ConditionRecordEntry } from '@/domains/condition/model';
+import type { SleepDayRecord } from '@/domains/sleep/model';
 
 export type MeasurementAverageType = 'ALL' | 'CONDITION' | 'SLEEP';
 export type MeasurementAverageGroupBy = 'DAY' | 'WEEK' | 'MONTH';
@@ -20,6 +21,8 @@ export interface DailyMeasurementSummary {
   bodyComment: string;
   mindComment: string;
   sleepComment: string;
+  /** 선택 일자에 속한 개별 수면 기록 카드입니다. */
+  sleepRecords: SleepDayRecord[];
   conditionRecords: ConditionRecordEntry[];
 }
 

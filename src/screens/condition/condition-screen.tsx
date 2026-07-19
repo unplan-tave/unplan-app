@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import { GestureDetector } from 'react-native-gesture-handler';
 
 import { ConditionScoreBackground } from '@/components/domain/condition/condition-score-background';
 import { ConditionCalendarModal } from '@/components/features/condition/condition-calendar-modal';
@@ -15,7 +16,6 @@ import { colors, spacing } from '@/constants/theme';
 import { useConditionScreen } from './hooks/use-condition-screen';
 
 const CONTENT_MAX_WIDTH = 393;
-const BOTTOM_NAV_HEIGHT = 66;
 
 export function ConditionScreen() {
   const { insets, view, recommendation, openRecordScreen } = useConditionScreen();
@@ -28,57 +28,77 @@ export function ConditionScreen() {
     >
       <StatusBar style="light" />
       <ConditionScoreBackground score={view.conditionScore} />
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: insets.bottom + BOTTOM_NAV_HEIGHT + spacing[8] },
-        ]}
-        contentInsetAdjustmentBehavior="automatic"
-        showsVerticalScrollIndicator={false}
-        style={styles.canvas}
-      >
-        <View style={[styles.header, { paddingTop: insets.top + spacing[2] }]}>
-          <ConditionHero
-            score={view.conditionSummary.finalScore}
-            year={view.dateLabel.year}
-            dateLabel={view.dateLabel.date}
-            viewMode={view.periodMode}
-            onDatePress={view.openCalendar}
-            onViewModePress={view.cyclePeriodMode}
-          />
-        </View>
+      <GestureDetector gesture={view.periodSwipeGesture}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[styles.canvas, { paddingBottom: insets.bottom + spacing[6] }]}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={[styles.header, { paddingTop: insets.top + spacing[2] }]}>
+            <ConditionHero
+              score={view.conditionSummary.finalScore}
+              year={view.dateLabel.year}
+              dateLabel={view.dateLabel.date}
+              message={view.message}
+              viewMode={view.periodMode}
+              onDatePress={view.openCalendar}
+              onViewModePress={view.cyclePeriodMode}
+            />
+          </View>
 
-        <View style={styles.main}>
-          <ConditionGraphModeToggle />
-          <ConditionGraphCard metrics={view.metrics} score={view.conditionSummary.finalScore} />
-          <View style={styles.conditionList}>
-            {view.metrics.map((metric) => (
-              <ConditionMetricCard key={metric.key} metric={metric} />
-            ))}
-          </View>
-          <View style={styles.actions}>
-            <View style={styles.actionSlot}>
-              <Button label="컨디션 기반 추천 일정" onPress={recommendation.openSheet} />
+          <View style={styles.main}>
+            <View style={styles.dataSection}>
+              <View style={styles.graphSection}>
+                <ConditionGraphModeToggle />
+                <ConditionGraphCard metrics={view.metrics} score={view.conditionScore} />
+              </View>
+              <View style={styles.conditionList}>
+                {view.metrics.map((metric) => (
+                  <ConditionMetricCard key={metric.key} metric={metric} />
+                ))}
+              </View>
             </View>
-            <View style={styles.actionSlot}>
-              <Button label="기록 추가/수정" variant="primary" onPress={openRecordScreen} />
+            <View style={styles.actions}>
+              <View style={styles.actionSlot}>
+                <Button
+                  label="컨디션 기반 추천 일정"
+                  variant="conditionSecondary"
+                  textStyle={styles.actionLabel}
+                  onPress={recommendation.openSheet}
+                />
+              </View>
+              <View style={styles.actionSlot}>
+                <Button
+                  label="기록 추가/수정"
+                  variant="conditionPrimary"
+                  textStyle={styles.actionLabel}
+                  onPress={openRecordScreen}
+                />
+              </View>
             </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </GestureDetector>
 
       <ConditionCalendarModal
         visible={view.calendar.visible}
         title={view.calendar.title}
         days={view.calendar.days}
         selectedDate={view.selectedDate}
+        periodMode={view.periodMode}
         onSelectDate={view.selectDate}
+        canGoNext={view.calendar.canGoNext}
+        onPreviousMonth={() => view.moveCalendarMonth('previous')}
+        onNextMonth={() => view.moveCalendarMonth('next')}
         onClose={view.closeCalendar}
       />
 
       <ConditionRecommendationSheet
         visible={recommendation.isSheetVisible}
         slotMessage={recommendation.slotMessage}
+        conditionTagId={recommendation.conditionTagId}
+        conditionTagLabel={recommendation.conditionTagLabel}
+        recommendationReasonMessages={recommendation.recommendationReasonMessages}
         recommendations={recommendation.recommendations}
         activeIndex={recommendation.activeIndex}
         selectedRecoveryOptionId={recommendation.selectedRecoveryOptionId}
@@ -95,31 +115,37 @@ export function ConditionScreen() {
   );
 }
 
-/** Figma 기준 393×852 화면에서 헤더와 본문이 한 화면에 들어가는 높이입니다. */
-const HEADER_HEIGHT = 252;
+const HEADER_HEIGHT = 251;
 
 const styles = StyleSheet.create({
   content: {
     flex: 1,
-    overflow: 'hidden',
+  },
+  scrollView: {
+    flex: 1,
   },
   canvas: {
     width: '100%',
     maxWidth: CONTENT_MAX_WIDTH,
-    flex: 1,
-    alignSelf: 'center',
-  },
-  scrollContent: {
     flexGrow: 1,
+    alignSelf: 'center',
   },
   header: {
     height: HEADER_HEIGHT,
     paddingHorizontal: spacing[3],
   },
   main: {
-    gap: spacing[4],
+    gap: spacing[6],
     paddingHorizontal: spacing[3],
     paddingTop: spacing[6],
+  },
+  dataSection: {
+    gap: spacing[4],
+  },
+  graphSection: {
+    width: '100%',
+    alignItems: 'flex-end',
+    gap: spacing[2],
   },
   conditionList: {
     flexDirection: 'row',
@@ -131,5 +157,10 @@ const styles = StyleSheet.create({
   },
   actionSlot: {
     flex: 1,
+  },
+  actionLabel: {
+    fontSize: 14,
+    lineHeight: 22.4,
+    letterSpacing: -0.28,
   },
 });

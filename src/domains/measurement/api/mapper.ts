@@ -3,6 +3,7 @@
  * paginated condition/sleep 기록 구조와 평균 응답의 null/percent 보정은 이 파일에서 처리합니다.
  */
 import { toConditionRecordEntry } from '@/domains/condition/api/mapper';
+import { toSleepDayRecord } from '@/domains/sleep/api/mapper';
 
 import type {
   DailyMeasurementSummary,
@@ -24,6 +25,9 @@ export function toDailyMeasurementSummary(
 ): DailyMeasurementSummary {
   const latestCondition = latestByTime(response?.conditions, (record) => record.date_time);
   const latestSleep = latestByTime(response?.sleeps, (record) => record.created_at);
+  const sleepRecords = (response?.sleeps ?? []).map((record) =>
+    toSleepDayRecord(record, response?.date ?? ''),
+  );
 
   return {
     date: response?.date ?? '',
@@ -37,6 +41,7 @@ export function toDailyMeasurementSummary(
     bodyComment: latestCondition?.body_comment ?? '',
     mindComment: latestCondition?.mind_comment ?? '',
     sleepComment: latestSleep?.sleep_record_comment ?? '',
+    sleepRecords,
     conditionRecords: (response?.conditions ?? []).map(toConditionRecordEntry),
   };
 }

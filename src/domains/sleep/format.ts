@@ -5,7 +5,10 @@ const MINUTES_PER_HOUR = 60;
 
 /** 종류별 카드 라벨입니다. */
 export function sleepKindLabel(kind: SleepRecordKind): string {
-  return kind === 'nap' ? '낮잠' : '수면';
+  if (kind === 'nap') return '낮잠';
+  if (kind === 'allNight') return '밤샘';
+
+  return '수면';
 }
 
 /**
@@ -50,11 +53,12 @@ export function formatSleepTimeRange(record: SleepDayRecord): string {
 }
 
 /**
- * 카드 제목입니다. 연속수면이면 '(전체 …)' 접미사를 붙입니다.
+ * 카드 제목입니다. Figma 표기에 맞춰 1시간 미만도 '0시간 N분'으로 표시합니다.
+ * 연속수면이면 '(전체 …)' 접미사를 붙입니다.
  * (예: 24시간 0분 (전체 32시간 30분))
  */
 export function formatSleepCardTitle(record: SleepDayRecord): string {
-  const duration = formatSleepDuration(record.durationMinutes);
+  const duration = formatSleepDurationLong(record.durationMinutes);
 
   if (record.isContinuousSleep && record.totalDurationMinutes !== record.durationMinutes) {
     return `${duration} (전체 ${formatSleepDurationLong(record.totalDurationMinutes)})`;
@@ -63,9 +67,30 @@ export function formatSleepCardTitle(record: SleepDayRecord): string {
   return duration;
 }
 
+/** 연속수면은 각 날짜 카드에서도 원래의 수면 구간을 안내합니다. */
+export function formatSleepCardComment(record: SleepDayRecord): string {
+  if (!record.isContinuousSleep) return record.comment;
+
+  const bedDate = formatSleepDate(record.originalBedTime);
+  const wakeDate = formatSleepDate(record.originalWakeUpTime);
+
+  if (bedDate == null || wakeDate == null) return record.comment;
+
+  return `${bedDate}~${wakeDate}까지의 연속수면이에요`;
+}
+
 /** 헤더 합계 라벨입니다. (예: Sleep 8시간 50분 (연속수면)) */
 export function formatSleepTotalLabel(totalMinutes: number, isContinuousSleep: boolean): string {
   const base = `Sleep ${formatSleepDurationLong(totalMinutes)}`;
 
   return isContinuousSleep ? `${base} (연속수면)` : base;
+}
+
+function formatSleepDate(value: string | null): string | null {
+  if (value == null) return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return `${date.getMonth() + 1}월 ${date.getDate()}일`;
 }

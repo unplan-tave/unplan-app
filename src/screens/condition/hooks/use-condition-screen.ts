@@ -13,7 +13,7 @@ export function useConditionScreen() {
   const recommendation = useConditionRecommendation(view.selectedDate);
   /** 컨디션·수면 기록 내역 전체 화면으로 이동합니다. */
   const openRecordScreen = useCallback(() => {
-    router.push('/sleep/record');
+    router.push({ pathname: '/sleep/record', params: { tab: 'bodyMind' } });
   }, []);
 
   return {

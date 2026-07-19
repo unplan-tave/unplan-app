@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet } from 'react-native';
+import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius } from '@/constants/theme';
@@ -15,6 +16,16 @@ export function Button({
   accessibilityLabel,
   ...props
 }: ButtonProps) {
+  const isConditionButton =
+    variant === 'conditionSecondary' ||
+    variant === 'conditionPrimary' ||
+    variant === 'conditionRecommendationSecondary' ||
+    variant === 'conditionRecommendationPrimary';
+  const isRecommendationButton =
+    variant === 'conditionRecommendationSecondary' || variant === 'conditionRecommendationPrimary';
+  const isConditionPrimary =
+    variant === 'conditionPrimary' || variant === 'conditionRecommendationPrimary';
+
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel ?? label}
@@ -31,10 +42,33 @@ export function Button({
       ]}
       {...props}
     >
+      {isConditionPrimary && !disabled ? (
+        <Svg
+          pointerEvents="none"
+          style={StyleSheet.absoluteFill}
+          width="100%"
+          height="100%"
+          preserveAspectRatio="none"
+        >
+          <Defs>
+            <RadialGradient id="conditionPrimaryButton" cx="50%" cy="50%" r="50%">
+              <Stop offset="0" stopColor={colors.primary} stopOpacity={0.2} />
+              <Stop offset="1" stopColor={colors.primary} stopOpacity={1} />
+            </RadialGradient>
+          </Defs>
+          <Rect width="100%" height="100%" fill="url(#conditionPrimaryButton)" />
+        </Svg>
+      ) : null}
       <Typography
-        variant="bodyM"
+        variant={isRecommendationButton ? 'titleS' : isConditionButton ? 'bodyS' : 'bodyM'}
         color={
-          disabled ? colors.gray[300] : variant === 'primary' ? colors.gray.white : colors.gray[800]
+          disabled
+            ? colors.gray[300]
+            : variant === 'conditionSecondary'
+              ? colors.gray[600]
+              : variant === 'primary' || isConditionPrimary
+                ? colors.gray.white
+                : colors.gray[800]
         }
         align="center"
         style={textStyle}
@@ -54,6 +88,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.xl,
+    overflow: 'hidden',
   },
   default: {
     backgroundColor: colors.alpha.white50,
@@ -65,6 +100,26 @@ const styles = StyleSheet.create({
   },
   glass: {
     backgroundColor: colors.alpha.white10,
+  },
+  conditionSecondary: {
+    height: 36,
+    borderRadius: radius.sm,
+    backgroundColor: colors.gray[200],
+  },
+  conditionPrimary: {
+    height: 36,
+    borderRadius: radius.sm,
+    backgroundColor: colors.alpha.transparent,
+  },
+  conditionRecommendationSecondary: {
+    height: 48,
+    borderRadius: radius.md,
+    backgroundColor: colors.gray.white,
+  },
+  conditionRecommendationPrimary: {
+    height: 48,
+    borderRadius: radius.md,
+    backgroundColor: colors.alpha.transparent,
   },
   fullWidth: {
     width: '100%',

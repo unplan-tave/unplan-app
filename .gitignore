@@ -39,6 +39,9 @@ yarn-error.*
 # Cursor MCP (API keys)
 .mcp.json
 
+# local design / scratch notes
+scratchpad/
+
 # typescript
 *.tsbuildinfo
 
