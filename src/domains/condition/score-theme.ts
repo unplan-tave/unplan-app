@@ -1,7 +1,7 @@
 import { colors } from '@/constants/theme';
 
 /** 컨디션 점수를 Figma의 다섯 가지 색상 상태로 정규화합니다. */
-export type ConditionScoreTone = 'excellent' | 'good' | 'steady' | 'low' | 'critical';
+export type ConditionScoreTone = 'neutral' | 'excellent' | 'good' | 'steady' | 'low' | 'critical';
 
 /** 점수별 배경과 방사형 그래프가 공유하는 색상 조합입니다. */
 export function getConditionScoreTheme(score: number | null | undefined): {
@@ -9,7 +9,11 @@ export function getConditionScoreTheme(score: number | null | undefined): {
   primary: string;
   secondary: string;
 } {
-  if (score == null || score >= 81) {
+  if (score == null) {
+    return { tone: 'neutral', primary: colors.gradient.blue, secondary: colors.gradient.sky };
+  }
+
+  if (score >= 81) {
     return { tone: 'excellent', primary: colors.gradient.blue, secondary: colors.gradient.sky };
   }
 

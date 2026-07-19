@@ -28,4 +28,7 @@ export const CONDITION_SCORE_BACKGROUND_SOURCES = {
   steady: require('../../assets/images/condition/condition-60.png'),
   low: require('../../assets/images/condition/condition-40.png'),
   critical: require('../../assets/images/condition/condition-20.png'),
-} satisfies Record<ReturnType<typeof getConditionScoreTheme>['tone'], ImageSourcePropType>;
+} satisfies Record<
+  Exclude<ReturnType<typeof getConditionScoreTheme>['tone'], 'neutral'>,
+  ImageSourcePropType
+>;
