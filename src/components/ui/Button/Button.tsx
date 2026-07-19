@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet } from 'react-native';
+import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius } from '@/constants/theme';
@@ -15,6 +16,8 @@ export function Button({
   accessibilityLabel,
   ...props
 }: ButtonProps) {
+  const isConditionButton = variant === 'conditionSecondary' || variant === 'conditionPrimary';
+
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel ?? label}
@@ -31,8 +34,25 @@ export function Button({
       ]}
       {...props}
     >
+      {variant === 'conditionPrimary' && !disabled ? (
+        <Svg
+          pointerEvents="none"
+          style={StyleSheet.absoluteFill}
+          width="100%"
+          height="100%"
+          preserveAspectRatio="none"
+        >
+          <Defs>
+            <RadialGradient id="conditionPrimaryButton" cx="50%" cy="50%" r="50%">
+              <Stop offset="0" stopColor={colors.primary} stopOpacity={0.2} />
+              <Stop offset="1" stopColor={colors.primary} stopOpacity={1} />
+            </RadialGradient>
+          </Defs>
+          <Rect width="100%" height="100%" fill="url(#conditionPrimaryButton)" />
+        </Svg>
+      ) : null}
       <Typography
-        variant="bodyM"
+        variant={isConditionButton ? 'bodyS' : 'bodyM'}
         color={
           disabled
             ? colors.gray[300]
@@ -60,6 +80,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.xl,
+    overflow: 'hidden',
   },
   default: {
     backgroundColor: colors.alpha.white50,
@@ -80,7 +101,7 @@ const styles = StyleSheet.create({
   conditionPrimary: {
     height: 36,
     borderRadius: radius.sm,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.alpha.transparent,
   },
   fullWidth: {
     width: '100%',
