@@ -1,4 +1,14 @@
-import Svg, { Defs, Line, Path, RadialGradient, Stop, Text as SvgText } from 'react-native-svg';
+import Svg, {
+  Defs,
+  Line,
+  Path,
+  Polyline,
+  RadialGradient,
+  Stop,
+  Text as SvgText,
+  TSpan,
+  SvgXml,
+} from 'react-native-svg';
 
 import { colors, fontFamilyWeight } from '@/constants/theme';
 import {
@@ -18,6 +28,7 @@ interface ConditionBlobGraphProps {
   };
   primaryColor: string;
   secondaryColor: string;
+  isEmpty?: boolean;
 }
 
 const DEFAULT_LABELS = { body: 'Body', mind: 'Mind', sleep: 'Sleep' };
@@ -30,6 +41,26 @@ const AXIS_RIGHT = origin.x + axisLength.sleep;
 const AXIS_LEFT = 4;
 const LABEL_FONT_SIZE = 14;
 const LABEL_OPACITY = 0.8;
+const EMPTY_MESSAGE_X = 24;
+const EMPTY_MESSAGE_Y = 106;
+const EMPTY_MESSAGE_LINE_HEIGHT = 22.4;
+const ARROW_SIZE = 5;
+const EMPTY_BLOB_X = -27;
+const EMPTY_BLOB_Y = 9;
+const EMPTY_BLOB_WIDTH = 268;
+const EMPTY_BLOB_HEIGHT = 207;
+const EMPTY_BLOB_SVG = `<svg width="268" height="207" viewBox="0 0 268 207" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g filter="url(#filter0_f_2124_164072)">
+<path d="M56.1094 45.9374L36.9568 70.6173C23.2184 88.3205 22.7184 112.939 35.7266 131.185L55.8471 159.408C68.3997 177.015 90.7312 184.734 111.477 178.636L204.814 151.199C253.955 136.754 253.181 66.8779 203.732 53.5246L109.428 28.0584C89.6758 22.7246 68.6528 29.7741 56.1094 45.9374Z" fill="url(#paint0_radial_2124_164072)"/>
+<path d="M56.1094 45.9374L36.9568 70.6173C23.2184 88.3205 22.7184 112.939 35.7266 131.185L55.8471 159.408C68.3997 177.015 90.7312 184.734 111.477 178.636L204.814 151.199C253.955 136.754 253.181 66.8779 203.732 53.5246L109.428 28.0584C89.6758 22.7246 68.6528 29.7741 56.1094 45.9374Z" fill="white" fill-opacity="0.5" style="mix-blend-mode:overlay"/>
+<path d="M56.1094 45.9374L36.9568 70.6173C23.2184 88.3205 22.7184 112.939 35.7266 131.185L55.8471 159.408C68.3997 177.015 90.7312 184.734 111.477 178.636L204.814 151.199C253.955 136.754 253.181 66.8779 203.732 53.5246L109.428 28.0584C89.6758 22.7246 68.6528 29.7741 56.1094 45.9374Z" fill="url(#paint1_linear_2124_164072)" fill-opacity="0.2"/>
+</g>
+<defs>
+<filter id="filter0_f_2124_164072" x="-0.00019456" y="-0.00019456" width="267.549" height="207" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur stdDeviation="13.15" result="effect1_foregroundBlur_2124_164072"/></filter>
+<radialGradient id="paint0_radial_2124_164072" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(96.1895 96.5457) rotate(77.1039) scale(81.6137 175.032)"><stop stop-color="#777F88" stop-opacity="0"/><stop offset="0.5" stop-color="#777F88" stop-opacity="0.3"/><stop offset="1" stop-color="#777F88"/></radialGradient>
+<linearGradient id="paint1_linear_2124_164072" x1="74.8516" y1="74.0763" x2="133.774" y2="180.699" gradientUnits="userSpaceOnUse"><stop stop-color="white"/><stop offset="1" stop-color="#B9C1C9"/></linearGradient>
+</defs>
+</svg>`;
 
 /**
  * Body(y축 위) / Mind(y축 아래) / Sleep(x축 오른쪽) 값을 축 위의 통과 지점으로만 사용해
@@ -42,6 +73,7 @@ export function ConditionBlobGraph({
   labels = DEFAULT_LABELS,
   primaryColor,
   secondaryColor,
+  isEmpty = false,
 }: ConditionBlobGraphProps) {
   const anchors = toConditionAxisAnchors({ body, mind, sleep });
   const blobPath = toAxisCrossingBlobPath(anchors);
@@ -76,8 +108,37 @@ export function ConditionBlobGraph({
         stroke={colors.gray[300]}
         strokeWidth={1}
       />
+      {isEmpty ? (
+        <>
+          <SvgXml
+            xml={EMPTY_BLOB_SVG}
+            x={EMPTY_BLOB_X}
+            y={EMPTY_BLOB_Y}
+            width={EMPTY_BLOB_WIDTH}
+            height={EMPTY_BLOB_HEIGHT}
+          />
+          <Polyline
+            points={`${origin.x - ARROW_SIZE},${AXIS_TOP + ARROW_SIZE} ${origin.x},${AXIS_TOP} ${origin.x + ARROW_SIZE},${AXIS_TOP + ARROW_SIZE}`}
+            fill="none"
+            stroke={colors.gray[300]}
+            strokeWidth={1}
+          />
+          <Polyline
+            points={`${origin.x - ARROW_SIZE},${AXIS_BOTTOM - ARROW_SIZE} ${origin.x},${AXIS_BOTTOM} ${origin.x + ARROW_SIZE},${AXIS_BOTTOM - ARROW_SIZE}`}
+            fill="none"
+            stroke={colors.gray[300]}
+            strokeWidth={1}
+          />
+          <Polyline
+            points={`${AXIS_RIGHT - ARROW_SIZE},${origin.y - ARROW_SIZE} ${AXIS_RIGHT},${origin.y} ${AXIS_RIGHT - ARROW_SIZE},${origin.y + ARROW_SIZE}`}
+            fill="none"
+            stroke={colors.gray[300]}
+            strokeWidth={1}
+          />
+        </>
+      ) : null}
 
-      <Path d={blobPath} fill="url(#conditionBlob)" />
+      {!isEmpty ? <Path d={blobPath} fill="url(#conditionBlob)" /> : null}
 
       <SvgText
         x={origin.x}
@@ -112,6 +173,23 @@ export function ConditionBlobGraph({
       >
         {labels.sleep}
       </SvgText>
+      {isEmpty ? (
+        <SvgText
+          x={EMPTY_MESSAGE_X}
+          y={EMPTY_MESSAGE_Y}
+          fill={colors.gray[900]}
+          fontSize={LABEL_FONT_SIZE}
+          fontFamily={fontFamilyWeight.light}
+          letterSpacing={-0.28}
+        >
+          <TSpan x={EMPTY_MESSAGE_X} dy={0}>
+            컨디션 분석을 위해
+          </TSpan>
+          <TSpan x={EMPTY_MESSAGE_X} dy={EMPTY_MESSAGE_LINE_HEIGHT}>
+            에너지와 수면 데이터를 입력해주세요!
+          </TSpan>
+        </SvgText>
+      ) : null}
     </Svg>
   );
 }

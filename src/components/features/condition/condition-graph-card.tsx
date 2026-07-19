@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
+import { CONDITION_GRAPH_CARD_HEIGHT } from '@/constants/condition-ui';
 import { colors, radius, spacing } from '@/constants/theme';
 import { getConditionScoreTheme } from '@/domains/condition/score-theme';
 
@@ -11,8 +12,6 @@ interface ConditionGraphCardProps {
   metrics: [ConditionMetricCard, ConditionMetricCard, ConditionMetricCard];
   score: number | null;
 }
-
-const CARD_HEIGHT = 260;
 
 /**
  * 컨디션 그래프 카드 껍데기. padding/border/background와 라벨·그래프 배치만 담당하고,
@@ -31,6 +30,7 @@ export function ConditionGraphCard({ metrics, score }: ConditionGraphCardProps) 
         labels={{ body: body.label, mind: mind.label, sleep: sleep.label }}
         primaryColor={primary}
         secondaryColor={secondary}
+        isEmpty={score == null}
       />
     </View>
   );
@@ -39,7 +39,7 @@ export function ConditionGraphCard({ metrics, score }: ConditionGraphCardProps) 
 const styles = StyleSheet.create({
   card: {
     width: '100%',
-    height: CARD_HEIGHT,
+    height: CONDITION_GRAPH_CARD_HEIGHT,
     justifyContent: 'center',
     paddingHorizontal: spacing[8],
     borderRadius: radius.panel,
