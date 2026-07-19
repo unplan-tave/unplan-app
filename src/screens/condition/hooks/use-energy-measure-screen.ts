@@ -53,16 +53,18 @@ export function useEnergyMeasureScreen() {
     ? { x: scoreToNormalized(mindScore), y: scoreToNormalized(bodyScore) }
     : null;
 
+  const dateLabel = format(parse(dateId, DATE_ID, now), DATE_LABEL);
+
   const dateOptions = useMemo(() => {
-    return Array.from({ length: DAY_OPTIONS }, (_, index) => {
+    const options = Array.from({ length: DAY_OPTIONS }, (_, index) => {
       const date = new Date(now);
       date.setDate(date.getDate() - index);
 
       return format(date, DATE_LABEL);
     });
-  }, [now]);
 
-  const dateLabel = format(parse(dateId, DATE_ID, now), DATE_LABEL);
+    return options.includes(dateLabel) ? options : [dateLabel, ...options];
+  }, [dateLabel, now]);
 
   const selectPoint = useCallback((x: number, y: number) => {
     setMindScore(normalizedToScore(x));
