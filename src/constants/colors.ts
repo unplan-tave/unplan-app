@@ -8,6 +8,14 @@ export const colors = {
   primary: '#248DFE', // Main
   secondary: '#F15E5E', // Sub
 
+  conditionGraph: {
+    center: '#248DFE',
+    inner: '#3F9BFE',
+    middle: '#5BAAFE',
+    outer: '#92C6FF',
+    edge: '#C8E3FF',
+  },
+
   // ─── Condition (태그 dot 색상) ───────────────────────────
   condition: {
     brain: '#F89F3A', // 두뇌 활동

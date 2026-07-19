@@ -30,15 +30,22 @@ export function useConditionRecommendation(selectedDate: Date) {
     [recommendationQuery.data?.recommendations],
   );
   const freeSlot = recommendationQuery.data?.freeSlot ?? null;
-  const slotMessage =
-    recommendationQuery.data?.summaryMessage ??
-    (freeSlot == null ? null : formatFreeSlotMessage(freeSlot));
+  const slotMessage = freeSlot == null ? null : formatFreeSlotMessage(freeSlot);
+  const conditionTagId = recommendationQuery.data?.conditionTagId ?? null;
+  const conditionTagLabel = recommendationQuery.data?.conditionTagLabel ?? null;
   const emptyDescription = recommendationQuery.isError
     ? t('condition.recommendation.empty.noCandidate')
     : freeSlot == null
       ? t('condition.recommendation.empty.noSlot')
       : t('condition.recommendation.empty.noCandidate');
   const activeRecommendation = recommendations[activeIndex];
+  const recommendationReasonMessages = useMemo(() => {
+    if (activeRecommendation == null) {
+      return [];
+    }
+
+    return activeRecommendation.reasonMessages;
+  }, [activeRecommendation]);
 
   useEffect(() => {
     setActiveIndex((currentIndex) =>
@@ -122,6 +129,9 @@ export function useConditionRecommendation(selectedDate: Date) {
     recommendations,
     selectedRecoveryOptionId,
     slotMessage,
+    conditionTagId,
+    conditionTagLabel,
+    recommendationReasonMessages,
     emptyDescription,
     openSheet,
     closeSheet,

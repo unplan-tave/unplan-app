@@ -5,6 +5,7 @@ import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 
 type TimelineCardStatus = 'complete' | 'default' | 'recommendation';
+type TimelineCardKind = 'schedule' | 'placeholder' | 'add';
 
 const HOME_CARD_MIN_HEIGHT = 108;
 const HOME_CARD_PADDING_HORIZONTAL = 15;
@@ -23,6 +24,7 @@ interface TimelineCardProps {
   status?: TimelineCardStatus;
   tags?: CardTagItem[];
   helperText?: string;
+  kind?: TimelineCardKind;
   compact?: boolean;
   cardStyle?: StyleProp<ViewStyle>;
   onPress?: () => void;
@@ -37,6 +39,7 @@ export function TimelineCard({
   status = 'default',
   tags = [],
   helperText,
+  kind = 'schedule',
   compact = false,
   cardStyle,
   onPress,
@@ -45,76 +48,83 @@ export function TimelineCard({
 }: TimelineCardProps) {
   const isComplete = status === 'complete';
   const isRecommendation = status === 'recommendation';
+  const isPlaceholder = kind === 'placeholder';
+  const isAddCard = kind === 'add';
 
   const card = (
     <Card
       variant="glass"
-      accessibilityLabel={`${title} 카드`}
+      accessible={!isPlaceholder}
+      accessibilityLabel={isAddCard ? '일정 추가' : `${title} 카드`}
+      disabled={isPlaceholder}
       style={[
         styles.card,
         compact && styles.cardCompact,
         isComplete && styles.cardComplete,
         isRecommendation && styles.cardRecommendation,
+        isPlaceholder && styles.cardPlaceholder,
         cardStyle,
       ]}
-      onPress={onPress}
+      onPress={isPlaceholder ? undefined : onPress}
     >
-      <View style={styles.contentGroup}>
-        {helperText ? (
-          <View style={styles.helperRow}>
-            <Typography variant="caption" color={colors.gray[400]}>
-              ✦
+      {isPlaceholder ? null : (
+        <View style={styles.contentGroup}>
+          {helperText ? (
+            <View style={styles.helperRow}>
+              <Typography variant="caption" color={colors.gray[400]}>
+                ✦
+              </Typography>
+              <Typography variant="caption" color={colors.gray[400]}>
+                {helperText}
+              </Typography>
+            </View>
+          ) : null}
+          <View style={styles.textStack}>
+            <Typography
+              variant="titleM"
+              color={colors.gray[800]}
+              style={[styles.title, isComplete && styles.completedTitle]}
+            >
+              {title}
             </Typography>
-            <Typography variant="caption" color={colors.gray[400]}>
-              {helperText}
+            <Typography
+              variant="bodyM"
+              color={isRecommendation ? colors.secondary : colors.gray[500]}
+            >
+              {range}
             </Typography>
           </View>
-        ) : null}
-        <View style={styles.textStack}>
-          <Typography
-            variant="titleM"
-            color={colors.gray[800]}
-            style={[styles.title, isComplete && styles.completedTitle]}
-          >
-            {title}
-          </Typography>
-          <Typography
-            variant="bodyM"
-            color={isRecommendation ? colors.secondary : colors.gray[500]}
-          >
-            {range}
-          </Typography>
+          <CardTagList tags={tags} />
+          {isRecommendation ? (
+            <View style={styles.actions}>
+              <Pressable
+                accessibilityLabel="추천 삭제"
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.actionButton, pressed && styles.pressed]}
+                onPress={onDismissPress}
+              >
+                <Typography variant="bodyS" color={colors.gray[400]} align="center">
+                  추천 삭제
+                </Typography>
+              </Pressable>
+              <Pressable
+                accessibilityLabel="추천 일정 추가"
+                accessibilityRole="button"
+                style={({ pressed }) => [
+                  styles.actionButton,
+                  styles.addActionButton,
+                  pressed && styles.pressed,
+                ]}
+                onPress={onAddPress}
+              >
+                <Typography variant="bodyS" color={colors.gray.white} align="center">
+                  일정 추가
+                </Typography>
+              </Pressable>
+            </View>
+          ) : null}
         </View>
-        <CardTagList tags={tags} />
-        {isRecommendation ? (
-          <View style={styles.actions}>
-            <Pressable
-              accessibilityLabel="추천 삭제"
-              accessibilityRole="button"
-              style={({ pressed }) => [styles.actionButton, pressed && styles.pressed]}
-              onPress={onDismissPress}
-            >
-              <Typography variant="bodyS" color={colors.gray[400]} align="center">
-                추천 삭제
-              </Typography>
-            </Pressable>
-            <Pressable
-              accessibilityLabel="추천 일정 추가"
-              accessibilityRole="button"
-              style={({ pressed }) => [
-                styles.actionButton,
-                styles.addActionButton,
-                pressed && styles.pressed,
-              ]}
-              onPress={onAddPress}
-            >
-              <Typography variant="bodyS" color={colors.gray.white} align="center">
-                일정 추가
-              </Typography>
-            </Pressable>
-          </View>
-        ) : null}
-      </View>
+      )}
     </Card>
   );
 
@@ -170,6 +180,9 @@ const styles = StyleSheet.create({
   },
   cardRecommendation: {
     backgroundColor: colors.alpha.transparent,
+  },
+  cardPlaceholder: {
+    backgroundColor: colors.alpha.white50,
   },
   contentGroup: {
     gap: HOME_CARD_CONTENT_GAP,

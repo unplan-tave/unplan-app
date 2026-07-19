@@ -21,7 +21,7 @@ export interface SleepRecordInput {
 }
 
 /** 기록 내역 카드가 구분하는 수면 종류입니다. */
-export type SleepRecordKind = 'sleep' | 'nap';
+export type SleepRecordKind = 'sleep' | 'nap' | 'allNight';
 
 /**
  * 기록 내역(조회) 화면의 카드 한 장이 필요로 하는 값입니다.
@@ -40,6 +40,9 @@ export interface SleepDayRecord {
   totalDurationMinutes: number;
   isContinuousSleep: boolean;
   comment: string;
+  /** 연속수면 안내 문구를 만들기 위한 실제 취침·기상 시각입니다. */
+  originalBedTime: string | null;
+  originalWakeUpTime: string | null;
 }
 
 /** 선택한 날짜 하루치 수면 기록 묶음입니다. */

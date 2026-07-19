@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { ConditionScoreBackground } from '@/components/domain/condition/condition-score-background';
 import { ConditionSummaryPanel } from '@/components/domain/condition/condition-summary-panel';
@@ -28,7 +29,6 @@ const HOME_TIMELINE_LEFT = 108;
 const HOME_TIMELINE_LINE_LEFT = 43;
 const HOME_TIMELINE_CARD_LIST_TOP = 107;
 const HOME_TIMELINE_CARD_LIST_BOTTOM = 160;
-const HOME_CURRENT_TIME_TOP = 252;
 const HOME_CURRENT_TIME_LINE_WIDTH = 13;
 
 /** 홈 화면의 JSX와 화면 전용 스타일만 렌더링합니다. */
@@ -72,37 +72,56 @@ export function HomeScreen() {
               onSelectDate={home.handleSelectDate}
             />
           )}
-          <View style={styles.header}>
-            <View style={styles.statusColumn}>
-              <ViewModeButton
-                mode={home.viewMode}
-                accessibilityLabel="보기 방식 변경"
-                style={styles.viewModeButton}
-                onPress={home.handleCycleViewMode}
-              />
-              <ConditionSummaryPanel
-                year={home.homeDate.year}
-                dateLabel={home.homeDate.date}
-                summary={home.conditionSummary}
-                memoLabel={home.dailyMemos[0]?.content ?? t('home.dailyMemo.emptyLabel')}
-                memoCount={home.dailyMemos.length}
-                onMemoPress={home.handleOpenMemoSheet}
-              />
-            </View>
-            <View style={styles.messageBox}>
-              <Icon name="bell" size={24} color={colors.gray.white} />
-              <Typography
-                variant="titleM"
-                color={colors.gray.white}
-                align="right"
-                style={styles.message}
-              >
-                {home.headerMessage}
-              </Typography>
-            </View>
-          </View>
         </View>
       </GestureDetector>
+      {home.viewMode === 'daily' ? (
+        <Svg
+          pointerEvents="none"
+          preserveAspectRatio="none"
+          viewBox="0 0 393 320"
+          width="100%"
+          height={320}
+          style={styles.headerOverlay}
+        >
+          <Defs>
+            <LinearGradient id="homeHeaderOverlay" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor={colors.gradient.blue} stopOpacity="0.72" />
+              <Stop offset="0.68" stopColor={colors.gradient.blue} stopOpacity="0.52" />
+              <Stop offset="1" stopColor={colors.gradient.blue} stopOpacity="0" />
+            </LinearGradient>
+          </Defs>
+          <Rect width={393} height={320} fill="url(#homeHeaderOverlay)" />
+        </Svg>
+      ) : null}
+      <View style={styles.header}>
+        <View style={styles.statusColumn}>
+          <ViewModeButton
+            mode={home.viewMode}
+            accessibilityLabel="보기 방식 변경"
+            style={styles.viewModeButton}
+            onPress={home.handleCycleViewMode}
+          />
+          <ConditionSummaryPanel
+            year={home.homeDate.year}
+            dateLabel={home.homeDate.date}
+            summary={home.conditionSummary}
+            memoLabel={home.dailyMemos[0]?.content ?? t('home.dailyMemo.emptyLabel')}
+            memoCount={home.dailyMemos.length}
+            onMemoPress={home.handleOpenMemoSheet}
+          />
+        </View>
+        <View style={styles.messageBox}>
+          <Icon name="bell" size={24} color={colors.gray.white} />
+          <Typography
+            variant="titleM"
+            color={colors.gray.white}
+            align="right"
+            style={styles.message}
+          >
+            {home.headerMessage}
+          </Typography>
+        </View>
+      </View>
       <HomeAddBottomSheet
         visible={home.isAddSheetVisible}
         recommendations={home.visibleRecommendations}
@@ -193,15 +212,27 @@ const styles = StyleSheet.create({
     top: spacing[16],
     left: 0,
     right: 0,
-    zIndex: 2,
+    zIndex: 3,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: spacing[3],
   },
   statusColumn: { width: HOME_STATUS_COLUMN_WIDTH },
   viewModeButton: { alignSelf: 'flex-start', marginBottom: spacing[1] },
-  messageBox: { width: HOME_MESSAGE_BOX_WIDTH, alignItems: 'flex-end', gap: spacing[2] },
-  message: { width: '100%' },
+  messageBox: {
+    width: HOME_MESSAGE_BOX_WIDTH,
+    alignItems: 'flex-end',
+    gap: spacing[2],
+  },
+  message: { width: '100%', zIndex: 1 },
+  headerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 320,
+    zIndex: 0,
+  },
   timeline: { position: 'absolute', top: 0, bottom: 0, left: HOME_TIMELINE_LEFT, right: 0 },
   timelineLine: {
     position: 'absolute',
@@ -220,7 +251,7 @@ const styles = StyleSheet.create({
   },
   currentTime: {
     position: 'absolute',
-    top: HOME_CURRENT_TIME_TOP,
+    top: '58%',
     left: 0,
     flexDirection: 'row',
     alignItems: 'center',

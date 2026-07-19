@@ -6,11 +6,11 @@ import { useQuery } from '@tanstack/react-query';
 
 import { isMeasurementRangeCurrent } from '../period';
 
-import { fetchMeasurementAverages } from './client';
+import { fetchDailyMeasurement, fetchMeasurementAverages } from './client';
 import { measurementQueryKeys } from './query-keys';
 
 import type { FetchMeasurementAveragesInput } from './client';
-import type { MeasurementAverages } from '../model';
+import type { DailyMeasurementSummary, MeasurementAverages } from '../model';
 import type { UseQueryOptions } from '@tanstack/react-query';
 
 type MeasurementQueryOptions<TData> = Omit<UseQueryOptions<TData>, 'queryKey' | 'queryFn'>;
@@ -26,6 +26,24 @@ const PAST_DATE_STALE_TIME = Infinity;
  * 여기서는 짧은 stale time만 둬 잦은 뷰 이동에서 캐시를 재사용한다.
  */
 const CURRENT_PERIOD_STALE_TIME = 5 * 60 * 1000;
+
+/** 선택 날짜의 개별 컨디션·수면 기록을 조회합니다. */
+export function useDailyMeasurementQuery(
+  date: string,
+  options?: MeasurementQueryOptions<DailyMeasurementSummary>,
+) {
+  const isCurrentDate = isMeasurementRangeCurrent(date, date);
+
+  return useQuery({
+    queryKey: measurementQueryKeys.daily(date),
+    queryFn: () => fetchDailyMeasurement(date),
+    ...options,
+    enabled: date.length > 0 && (options?.enabled ?? true),
+    // /measurements 응답에는 해당 날짜의 condition·sleep 기록이 함께 포함됩니다.
+    // 지난 날짜는 두 기록을 동일한 daily key로 계속 재사용하고, 오늘만 짧게 신선도를 둡니다.
+    staleTime: isCurrentDate ? CURRENT_PERIOD_STALE_TIME : PAST_DATE_STALE_TIME,
+  });
+}
 
 export function useMeasurementAveragesQuery(
   input: FetchMeasurementAveragesInput | null,

@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ConditionQuadrantPlot } from '@/components/features/condition/condition-quadrant-plot';
@@ -8,7 +8,6 @@ import { SleepDateRail } from '@/components/features/sleep/sleep-date-rail';
 import { SleepRecordCard } from '@/components/features/sleep/sleep-record-card';
 import { AppBackground } from '@/components/ui/AppBackground';
 import { BottomCTA } from '@/components/ui/BottomCTA';
-import { ActionListBottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
 import { Header, HeaderBack } from '@/components/ui/Header';
 import { Typography } from '@/components/ui/Typography';
@@ -21,35 +20,13 @@ const CONTENT_MAX_WIDTH = 393;
 export function SleepRecordScreen() {
   const sleep = useSleepRecordScreen();
   const isSleepTab = sleep.tab === 'sleep';
-  const isEditing = sleep.isRecordActionsAvailable && sleep.selectedRecordId != null;
+  const hasSelectedRecord = isSleepTab ? sleep.hasSelectedSleepRecord : sleep.hasSelectedMarker;
 
   return (
     <View style={styles.screen}>
       <AppBackground />
       <SafeAreaView style={styles.safeArea}>
-        <Header
-          left={<HeaderBack onPress={sleep.goBack} />}
-          title="컨디션 기록 내역"
-          right={
-            isSleepTab || !sleep.isRecordActionsAvailable ? undefined : (
-              <Pressable
-                accessibilityLabel="Body/Mind 기록 편집"
-                accessibilityRole="button"
-                accessibilityState={{ selected: sleep.isBodyMindEditing }}
-                hitSlop={8}
-                style={({ pressed }) => [styles.editHeader, pressed && styles.pressed]}
-                onPress={sleep.toggleBodyMindEdit}
-              >
-                <Typography
-                  variant="bodyM"
-                  color={sleep.isBodyMindEditing ? colors.gray[500] : colors.primary}
-                >
-                  편집
-                </Typography>
-              </Pressable>
-            )
-          }
-        />
+        <Header left={<HeaderBack onPress={sleep.goBack} />} title="컨디션 기록 내역" />
 
         <View style={styles.canvas}>
           <View style={styles.padded}>
@@ -97,49 +74,37 @@ export function SleepRecordScreen() {
                 bodyPercent={sleep.bodyMind.bodyPercent}
                 mindPercent={sleep.bodyMind.mindPercent}
               />
-              <ConditionQuadrantPlot
-                points={sleep.bodyMind.points}
-                activeMarkerId={
-                  sleep.isBodyMindEditing ? sleep.selectedMarkerId : sleep.activeMarkerId
-                }
-                onMarkerPress={sleep.pressBodyMindMarker}
-              />
+              <View style={styles.quadrant}>
+                <ConditionQuadrantPlot
+                  points={sleep.bodyMind.points}
+                  activeMarkerId={sleep.selectedMarkerId ?? sleep.activeMarkerId}
+                  activeMarkerTime={sleep.selectedMarkerTime}
+                  activeMarkerTimes={sleep.activeMarkerTimes}
+                  onMarkerPress={sleep.pressBodyMindMarker}
+                  onBackgroundPress={sleep.clearMarkerState}
+                />
+              </View>
             </ScrollView>
           )}
         </View>
 
         <View style={styles.footer}>
-          {isSleepTab && isEditing ? (
+          {hasSelectedRecord ? (
             <EditActions
-              deleting={sleep.isDeleting}
-              onDelete={sleep.deleteSelectedRecord}
-              onEdit={sleep.editSelectedRecord}
-            />
-          ) : !isSleepTab &&
-            sleep.isRecordActionsAvailable &&
-            sleep.isBodyMindEditing &&
-            sleep.hasSelectedMarker ? (
-            <EditActions
-              deleting={sleep.isDeletingBodyMind}
-              onDelete={sleep.deleteSelectedBodyMind}
-              onEdit={sleep.editSelectedBodyMind}
+              deleting={isSleepTab ? sleep.isDeletingSleep : sleep.isDeletingBodyMind}
+              onDelete={isSleepTab ? sleep.deleteSelectedSleep : sleep.deleteSelectedBodyMind}
+              onEdit={isSleepTab ? sleep.editSelectedSleep : sleep.editSelectedBodyMind}
             />
           ) : (
             <BottomCTA
               label="기록 추가"
               caption={null}
+              variant="record"
               onPress={isSleepTab ? sleep.addRecord : sleep.addBodyMindRecord}
             />
           )}
         </View>
       </SafeAreaView>
-
-      <ActionListBottomSheet
-        visible={sleep.markerSheet.visible}
-        title={sleep.markerSheet.title}
-        items={sleep.markerSheet.items}
-        onClose={sleep.closeMarkerSheet}
-      />
     </View>
   );
 }
@@ -209,11 +174,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[5],
     paddingBottom: spacing[6],
   },
-  editHeader: {
-    minWidth: 44,
-    minHeight: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
+  quadrant: {
+    width: '100%',
+    maxWidth: 314,
+    alignSelf: 'center',
   },
   pressed: {
     opacity: 0.72,

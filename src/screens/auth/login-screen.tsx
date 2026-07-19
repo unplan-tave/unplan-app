@@ -1,6 +1,7 @@
 import { ActivityIndicator, Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { SocialLoginButton } from '@/components/features/auth/social-login-button';
+import { TermsAgreementSheet } from '@/components/features/auth/terms-agreement-sheet';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { HomeIndicator } from '@/components/ui/Footer';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
@@ -18,9 +19,11 @@ export function LoginScreen() {
     isGoogleLoginLoading,
     isKakaoLoginLoading,
     isSocialLoginLoading,
+    isTermsSheetVisible,
     handleSocialLogin,
     handleTermsPress,
-    handleUnavailableLogin,
+    openTermsSheet,
+    closeTermsSheet,
   } = useLoginScreen();
 
   return (
@@ -36,12 +39,7 @@ export function LoginScreen() {
         </View>
         <View style={styles.bottomArea}>
           <View style={styles.buttonGroup}>
-            <SocialLoginButton
-              provider="apple"
-              label={t('auth.login.apple')}
-              disabled={isSocialLoginLoading}
-              onPress={handleUnavailableLogin}
-            />
+            {/* TODO: Apple 로그인을 구현할 때 이 위치에 로그인 버튼을 다시 노출합니다. */}
             <SocialLoginButton
               provider="google"
               label={isGoogleLoginLoading ? t('auth.login.loading') : t('auth.login.google')}
@@ -72,7 +70,13 @@ export function LoginScreen() {
               {errorMessage}
             </Typography>
           ) : null}
-          <View style={styles.termsBlock}>
+          <Pressable
+            accessibilityLabel={t('auth.login.termsNotice')}
+            accessibilityRole="button"
+            hitSlop={8}
+            style={styles.termsBlock}
+            onPress={openTermsSheet}
+          >
             <Typography
               variant="caption"
               color={colors.gray[600]}
@@ -81,31 +85,14 @@ export function LoginScreen() {
             >
               {t('auth.login.termsNotice')}
             </Typography>
-            <View style={styles.termsLinks}>
-              <Pressable
-                accessibilityLabel={t('terms.service.title')}
-                accessibilityRole="button"
-                hitSlop={8}
-                onPress={() => handleTermsPress('service')}
-              >
-                <Typography variant="caption" color={colors.gray[700]} style={styles.termsLink}>
-                  {t('terms.service.link')}
-                </Typography>
-              </Pressable>
-              <Pressable
-                accessibilityLabel={t('terms.privacy.title')}
-                accessibilityRole="button"
-                hitSlop={8}
-                onPress={() => handleTermsPress('privacy')}
-              >
-                <Typography variant="caption" color={colors.gray[700]} style={styles.termsLink}>
-                  {t('terms.privacy.link')}
-                </Typography>
-              </Pressable>
-            </View>
-          </View>
+          </Pressable>
         </View>
       </ScreenLayout>
+      <TermsAgreementSheet
+        visible={isTermsSheetVisible}
+        onClose={closeTermsSheet}
+        onSelect={handleTermsPress}
+      />
     </View>
   );
 }
@@ -145,14 +132,5 @@ const styles = StyleSheet.create({
   termsBlock: {
     width: '100%',
     alignItems: 'center',
-    gap: spacing[2],
-  },
-  termsLinks: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: spacing[4],
-  },
-  termsLink: {
-    textDecorationLine: 'underline',
   },
 });

@@ -30,8 +30,11 @@ import type {
   ScheduleRecommendation,
 } from '../model';
 import type { ConditionFreeSlot, ConditionRecommendation } from '@/domains/condition/model';
+import type { ConditionTagId } from '@/domains/schedule/model';
 
 export interface ConditionRecommendationResult {
+  conditionTagId: ConditionTagId | null;
+  conditionTagLabel: string | null;
   freeSlot: ConditionFreeSlot | null;
   summaryMessage: string | null;
   recommendations: ConditionRecommendation[];

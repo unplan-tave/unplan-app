@@ -1,23 +1,30 @@
 import { useCallback, useMemo, useState } from 'react';
+import { Gesture } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 
 import { toConditionMetricCards } from '@/domains/condition/metric';
 import { type ConditionPeriodMode } from '@/domains/condition/model';
 import {
   buildConditionCalendarDays,
   getConditionCalendarTitle,
+  getConditionPeriodLabel,
   getNextConditionPeriodMode,
   isConditionDateSelectable,
 } from '@/domains/condition/period';
 import { useMeasurementAveragesQuery } from '@/domains/measurement/api/queries';
 import { toConditionSummaryFromAverage } from '@/domains/measurement/model';
 import { getMeasurementMonthRange, getMeasurementWeekRange } from '@/domains/measurement/period';
-import { formatCalendarDateLabel, formatDateValue } from '@/lib/utils/date';
+import { useDailyMessageQuery } from '@/domains/schedule/api/queries';
+import { addDays, formatDateValue, getWeekStart } from '@/lib/utils/date';
+
+const WEEK_LENGTH = 7;
 
 /** 컨디션 탭의 기간/그래프 모드/캘린더 상태. */
 export function useConditionView() {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [periodMode, setPeriodMode] = useState<ConditionPeriodMode>('daily');
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date());
 
   const selectedDateValue = useMemo(() => formatDateValue(selectedDate), [selectedDate]);
   // 데일리/위클리/먼슬리 모두 /measurements/averages를 사용합니다. (데일리는 from=to=선택 날짜, groupBy DAY)
@@ -42,39 +49,131 @@ export function useConditionView() {
     };
   }, [periodMode, selectedDate, selectedDateValue]);
   const measurementAveragesQuery = useMeasurementAveragesQuery(averageInput);
+  const dailyMessageQuery = useDailyMessageQuery(selectedDateValue);
   const conditionSummary = useMemo(
     () => toConditionSummaryFromAverage(measurementAveragesQuery.data?.items[0]),
     [measurementAveragesQuery.data?.items],
   );
   const conditionScore = measurementAveragesQuery.data?.items[0]?.finalConditionScore ?? null;
   const metrics = useMemo(() => toConditionMetricCards(conditionSummary), [conditionSummary]);
-  const dateLabel = useMemo(() => formatCalendarDateLabel(selectedDate), [selectedDate]);
-  const calendarDays = useMemo(
-    () => buildConditionCalendarDays(selectedDate, periodMode),
+  const message = dailyMessageQuery.data?.message?.trim() ?? '';
+  const dateLabel = useMemo(
+    () => getConditionPeriodLabel(selectedDate, periodMode),
     [periodMode, selectedDate],
   );
-  const calendarTitle = useMemo(() => getConditionCalendarTitle(selectedDate), [selectedDate]);
+  const calendarDays = useMemo(
+    () => buildConditionCalendarDays(calendarMonth, periodMode),
+    [calendarMonth, periodMode],
+  );
+  const calendarTitle = useMemo(() => getConditionCalendarTitle(calendarMonth), [calendarMonth]);
 
   const cyclePeriodMode = useCallback(() => {
     setPeriodMode(getNextConditionPeriodMode);
   }, []);
 
   const openCalendar = useCallback(() => {
+    setCalendarMonth(selectedDate);
     setIsCalendarVisible(true);
-  }, []);
+  }, [selectedDate]);
 
   const closeCalendar = useCallback(() => {
     setIsCalendarVisible(false);
   }, []);
 
-  const selectDate = useCallback((date: Date) => {
-    if (!isConditionDateSelectable(date)) {
-      return;
-    }
+  const moveCalendarMonth = useCallback((direction: 'previous' | 'next') => {
+    setCalendarMonth((previous) => {
+      const next = new Date(
+        previous.getFullYear(),
+        previous.getMonth() + (direction === 'previous' ? -1 : 1),
+        1,
+      );
+      const currentMonth = new Date();
 
-    setSelectedDate(date);
-    setIsCalendarVisible(false);
+      if (
+        next.getFullYear() > currentMonth.getFullYear() ||
+        (next.getFullYear() === currentMonth.getFullYear() &&
+          next.getMonth() > currentMonth.getMonth())
+      ) {
+        return previous;
+      }
+
+      return next;
+    });
   }, []);
+
+  const selectDate = useCallback(
+    (date: Date) => {
+      if (!isConditionDateSelectable(date)) {
+        return;
+      }
+
+      setSelectedDate(date);
+      // 주차 달력의 날짜 선택은 해당 일자의 데일리 뷰로 진입합니다.
+      if (periodMode === 'weekly') {
+        setPeriodMode('daily');
+      }
+      setIsCalendarVisible(false);
+    },
+    [periodMode],
+  );
+
+  const movePeriod = useCallback(
+    (direction: 'previous' | 'next') => {
+      if (periodMode === 'weekly') {
+        const currentWeekStart = getWeekStart(selectedDate);
+        const nextDate = addDays(
+          currentWeekStart,
+          direction === 'previous' ? -WEEK_LENGTH : WEEK_LENGTH,
+        );
+
+        if (!isConditionDateSelectable(nextDate)) {
+          return;
+        }
+
+        setSelectedDate(nextDate);
+        return;
+      }
+
+      if (periodMode !== 'monthly') {
+        return;
+      }
+
+      const nextDate = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth() + (direction === 'previous' ? -1 : 1),
+        1,
+      );
+      const currentDate = new Date();
+
+      if (
+        nextDate.getFullYear() > currentDate.getFullYear() ||
+        (nextDate.getFullYear() === currentDate.getFullYear() &&
+          nextDate.getMonth() > currentDate.getMonth())
+      ) {
+        return;
+      }
+
+      setSelectedDate(nextDate);
+    },
+    [periodMode, selectedDate],
+  );
+
+  const periodSwipeGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .enabled(periodMode === 'weekly' || periodMode === 'monthly')
+        .activeOffsetX([-20, 20])
+        .failOffsetY([-20, 20])
+        .onEnd((event) => {
+          if (event.translationX <= -40) {
+            runOnJS(movePeriod)('next');
+          }
+          if (event.translationX >= 40) {
+            runOnJS(movePeriod)('previous');
+          }
+        }),
+    [movePeriod, periodMode],
+  );
 
   return {
     selectedDate,
@@ -83,15 +182,21 @@ export function useConditionView() {
     conditionSummary,
     conditionScore,
     metrics,
+    message,
     dateLabel,
     calendar: {
       visible: isCalendarVisible,
       title: calendarTitle,
       days: calendarDays,
+      canGoNext:
+        calendarMonth.getFullYear() < new Date().getFullYear() ||
+        calendarMonth.getMonth() < new Date().getMonth(),
     },
     cyclePeriodMode,
+    periodSwipeGesture,
     openCalendar,
     closeCalendar,
+    moveCalendarMonth,
     selectDate,
   };
 }

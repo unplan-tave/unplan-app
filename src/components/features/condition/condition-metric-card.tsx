@@ -1,6 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Typography } from '@/components/ui/Typography';
+import {
+  CONDITION_METRIC_CARD_HEIGHT,
+  CONDITION_METRIC_GAUGE_HEIGHT,
+} from '@/constants/condition-ui';
 import { colors, radius, spacing } from '@/constants/theme';
 
 import type { ConditionMetricCard as ConditionMetricCardModel } from '@/domains/condition/model';
@@ -8,9 +12,6 @@ import type { ConditionMetricCard as ConditionMetricCardModel } from '@/domains/
 interface ConditionMetricCardProps {
   metric: ConditionMetricCardModel;
 }
-
-const CARD_HEIGHT = 83;
-const GAUGE_HEIGHT = 6;
 
 /** Body / Mind / Sleep 각각의 값·게이지·코멘트를 보여주는 카드. */
 export function ConditionMetricCard({ metric }: ConditionMetricCardProps) {
@@ -38,14 +39,14 @@ export function ConditionMetricCard({ metric }: ConditionMetricCardProps) {
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    height: CARD_HEIGHT,
+    height: CONDITION_METRIC_CARD_HEIGHT,
     justifyContent: 'center',
-    gap: spacing[1],
+    gap: spacing[2],
     padding: spacing[3],
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.gray.white,
-    backgroundColor: colors.alpha.white50,
+    backgroundColor: colors.alpha.white20,
     shadowColor: colors.shadow.blueGray,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.15,
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gray[300],
   },
   gaugeTrack: {
-    height: GAUGE_HEIGHT,
+    height: CONDITION_METRIC_GAUGE_HEIGHT,
     borderRadius: radius.full,
     backgroundColor: colors.alpha.gray50020,
     overflow: 'hidden',
