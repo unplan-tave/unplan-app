@@ -42,6 +42,7 @@ export function useDeleteConditionRecordMutation() {
     onSuccess: (_, conditionId) => {
       void queryClient.invalidateQueries({ queryKey: measurementQueryKeys.all });
       void queryClient.invalidateQueries({ queryKey: aiRecommendationQueryKeys.all });
+      void queryClient.invalidateQueries({ queryKey: conditionQueryKeys.all });
       queryClient.removeQueries({ queryKey: conditionQueryKeys.detail(conditionId) });
     },
   });
