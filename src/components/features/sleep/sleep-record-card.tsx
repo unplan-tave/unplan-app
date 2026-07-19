@@ -4,7 +4,12 @@ import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { formatSleepCardTitle, formatSleepTimeRange, sleepKindLabel } from '@/domains/sleep/format';
+import {
+  formatSleepCardComment,
+  formatSleepCardTitle,
+  formatSleepTimeRange,
+  sleepKindLabel,
+} from '@/domains/sleep/format';
 
 import type { SleepDayRecord } from '@/domains/sleep/model';
 
@@ -42,7 +47,7 @@ export function SleepRecordCard({ record, selected = false, onPress }: SleepReco
           {formatSleepCardTitle(record)}
         </Typography>
         <Typography variant="caption" color={colors.gray[600]}>
-          {record.comment}
+          {formatSleepCardComment(record)}
         </Typography>
       </View>
     </Pressable>

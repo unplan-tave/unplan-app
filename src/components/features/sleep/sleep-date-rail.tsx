@@ -79,14 +79,12 @@ export function SleepDateRail({ items, onSelect }: SleepDateRailProps) {
             <Typography variant="caption" align="center" color={weekdayColor}>
               {item.weekday}
             </Typography>
-            <View
-              style={[
-                styles.dot,
-                item.isToday && {
-                  backgroundColor: item.selected ? colors.gray.white : colors.primary,
-                },
-              ]}
-            />
+            {item.isToday ? (
+              <View
+                pointerEvents="none"
+                style={[styles.dot, item.selected ? styles.dotSelected : styles.dotToday]}
+              />
+            ) : null}
           </Pressable>
         );
       })}
@@ -95,7 +93,7 @@ export function SleepDateRail({ items, onSelect }: SleepDateRailProps) {
 }
 
 const CARD_WIDTH = 40;
-const CARD_HEIGHT = 52;
+const CARD_HEIGHT = 57;
 const RAIL_GAP = spacing[3];
 
 const styles = StyleSheet.create({
@@ -112,18 +110,26 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
-    borderRadius: radius.md,
-    backgroundColor: colors.alpha.white70,
+    gap: spacing.px,
+    borderRadius: radius['2xs'],
+    backgroundColor: colors.gray.white,
   },
   cardSelected: {
     backgroundColor: colors.primary,
   },
   dot: {
-    width: 3,
-    height: 3,
+    position: 'absolute',
+    top: 29,
+    left: 18,
+    width: 4,
+    height: 4,
     borderRadius: radius.full,
-    backgroundColor: colors.alpha.transparent,
+  },
+  dotSelected: {
+    backgroundColor: colors.gray.white,
+  },
+  dotToday: {
+    backgroundColor: colors.primary,
   },
   pressed: {
     opacity: 0.72,

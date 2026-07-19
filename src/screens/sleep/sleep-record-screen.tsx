@@ -20,6 +20,7 @@ const CONTENT_MAX_WIDTH = 393;
 export function SleepRecordScreen() {
   const sleep = useSleepRecordScreen();
   const isSleepTab = sleep.tab === 'sleep';
+  const hasSelectedRecord = isSleepTab ? sleep.hasSelectedSleepRecord : sleep.hasSelectedMarker;
 
   return (
     <View style={styles.screen}>
@@ -73,24 +74,26 @@ export function SleepRecordScreen() {
                 bodyPercent={sleep.bodyMind.bodyPercent}
                 mindPercent={sleep.bodyMind.mindPercent}
               />
-              <ConditionQuadrantPlot
-                points={sleep.bodyMind.points}
-                activeMarkerId={sleep.selectedMarkerId ?? sleep.activeMarkerId}
-                activeMarkerTime={sleep.selectedMarkerTime}
-                activeMarkerTimes={sleep.activeMarkerTimes}
-                onMarkerPress={sleep.pressBodyMindMarker}
-                onBackgroundPress={sleep.clearMarkerState}
-              />
+              <View style={styles.quadrant}>
+                <ConditionQuadrantPlot
+                  points={sleep.bodyMind.points}
+                  activeMarkerId={sleep.selectedMarkerId ?? sleep.activeMarkerId}
+                  activeMarkerTime={sleep.selectedMarkerTime}
+                  activeMarkerTimes={sleep.activeMarkerTimes}
+                  onMarkerPress={sleep.pressBodyMindMarker}
+                  onBackgroundPress={sleep.clearMarkerState}
+                />
+              </View>
             </ScrollView>
           )}
         </View>
 
         <View style={styles.footer}>
-          {!isSleepTab && sleep.hasSelectedMarker ? (
+          {hasSelectedRecord ? (
             <EditActions
-              deleting={sleep.isDeletingBodyMind}
-              onDelete={sleep.deleteSelectedBodyMind}
-              onEdit={sleep.editSelectedBodyMind}
+              deleting={isSleepTab ? sleep.isDeletingSleep : sleep.isDeletingBodyMind}
+              onDelete={isSleepTab ? sleep.deleteSelectedSleep : sleep.deleteSelectedBodyMind}
+              onEdit={isSleepTab ? sleep.editSelectedSleep : sleep.editSelectedBodyMind}
             />
           ) : (
             <BottomCTA
@@ -170,6 +173,11 @@ const styles = StyleSheet.create({
     gap: spacing[4],
     paddingHorizontal: spacing[5],
     paddingBottom: spacing[6],
+  },
+  quadrant: {
+    width: '100%',
+    maxWidth: 314,
+    alignSelf: 'center',
   },
   pressed: {
     opacity: 0.72,

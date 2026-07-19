@@ -13,9 +13,8 @@ import {
   toConditionHistoryMarkers,
 } from '@/domains/condition/history';
 import { useDailyMeasurementQuery } from '@/domains/measurement/api/queries';
+import { useDeleteSleepRecordMutation } from '@/domains/sleep/api/mutations';
 import { formatSleepTotalLabel } from '@/domains/sleep/format';
-
-import type { SleepDayRecord } from '@/domains/sleep/model';
 
 const RAIL_DAYS_BEFORE = 21;
 const RAIL_DAYS_AFTER = 3;
@@ -35,6 +34,7 @@ export function useSleepRecordScreen() {
 
   const dailyMeasurementQuery = useDailyMeasurementQuery(selectedDateId);
   const deleteConditionMutation = useDeleteConditionRecordMutation();
+  const deleteSleepMutation = useDeleteSleepRecordMutation();
   const dateItems = useMemo<SleepDateItem[]>(() => {
     const start = addDays(today, -RAIL_DAYS_BEFORE);
 
@@ -70,8 +70,13 @@ export function useSleepRecordScreen() {
   const selectedMarker = markers.find((marker) => marker.id === selectedMarkerId) ?? null;
   const selectedBodyMindRecord = selectedMarker?.records[0] ?? null;
   const monthLabel = useMemo(() => format(parseISO(selectedDateId), 'yyyy.MM'), [selectedDateId]);
-  const sleepSummary = dailyMeasurementQuery.data;
-  const totalLabel = formatSleepTotalLabel(sleepSummary?.sleepDurationMinutes ?? 0, false);
+  const records = dailyMeasurementQuery.data?.sleepRecords ?? [];
+  const selectedSleepRecord = records.find((record) => record.id === selectedRecordId) ?? null;
+  const totalMinutes = records.reduce((total, record) => total + record.durationMinutes, 0);
+  const totalLabel = formatSleepTotalLabel(
+    totalMinutes,
+    records.some((record) => record.isContinuousSleep),
+  );
 
   const clearMarkerState = useCallback(() => {
     setSelectedMarkerId(null);
@@ -136,6 +141,20 @@ export function useSleepRecordScreen() {
     router.push('/sleep/measure');
   }, []);
 
+  const editSelectedSleep = useCallback(() => {
+    if (selectedSleepRecord == null) return;
+
+    router.push({ pathname: '/sleep/measure', params: { id: String(selectedSleepRecord.id) } });
+  }, [selectedSleepRecord]);
+
+  const deleteSelectedSleep = useCallback(() => {
+    if (selectedSleepRecord == null) return;
+
+    deleteSleepMutation.mutate(selectedSleepRecord.id, {
+      onSuccess: () => setSelectedRecordId(null),
+    });
+  }, [deleteSleepMutation, selectedSleepRecord]);
+
   const goBack = useCallback(() => router.back(), []);
 
   return {
@@ -143,9 +162,10 @@ export function useSleepRecordScreen() {
     monthLabel,
     dateItems,
     totalLabel,
-    records: [] as SleepDayRecord[],
+    records,
     selectedRecordId,
-    isDeleting: false,
+    hasSelectedSleepRecord: selectedSleepRecord != null,
+    isDeletingSleep: deleteSleepMutation.isPending,
     bodyMind: {
       bodyPercent: bodyMindAverage.bodyPercent,
       mindPercent: bodyMindAverage.mindPercent,
@@ -165,6 +185,8 @@ export function useSleepRecordScreen() {
     selectDate,
     selectRecord,
     addRecord,
+    editSelectedSleep,
+    deleteSelectedSleep,
     pressBodyMindMarker,
     addBodyMindRecord,
     editSelectedBodyMind,
