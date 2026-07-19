@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 
+import { ConditionScoreBackground } from '@/components/domain/condition/condition-score-background';
 import { ConditionSummaryPanel } from '@/components/domain/condition/condition-summary-panel';
 import { CardToast } from '@/components/domain/schedule/card-toast';
 import { DueDurationSheet } from '@/components/domain/schedule/due-duration-sheet';
@@ -12,7 +13,6 @@ import { HomeExtendTimeSheet } from '@/components/features/home/home-extend-time
 import { HomeProgressSheet } from '@/components/features/home/home-progress-sheet';
 import { TimelineCard } from '@/components/features/home/timeline-card';
 import { OnboardingNotificationModal } from '@/components/features/onboarding/onboarding-notification-modal';
-import { AppBackground } from '@/components/ui/AppBackground';
 import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
@@ -42,7 +42,7 @@ export function HomeScreen() {
       useSafeArea={false}
     >
       <StatusBar style="light" />
-      <AppBackground />
+      <ConditionScoreBackground score={home.conditionSummary.finalScore} />
       <GestureDetector gesture={home.pinchGesture}>
         <View style={styles.canvas}>
           {home.viewMode === 'daily' ? (

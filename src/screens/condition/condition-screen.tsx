@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 
-import { ConditionBackground } from '@/components/features/condition/condition-background';
+import { ConditionScoreBackground } from '@/components/domain/condition/condition-score-background';
 import { ConditionCalendarModal } from '@/components/features/condition/condition-calendar-modal';
 import { ConditionGraphCard } from '@/components/features/condition/condition-graph-card';
 import { ConditionGraphModeToggle } from '@/components/features/condition/condition-graph-mode-toggle';
@@ -26,7 +26,7 @@ export function ConditionScreen() {
       useSafeArea={false}
     >
       <StatusBar style="light" />
-      <ConditionBackground score={view.conditionSummary.finalScore} />
+      <ConditionScoreBackground score={view.conditionSummary.finalScore} />
       <View style={styles.canvas}>
         <View style={[styles.header, { paddingTop: insets.top + spacing[2] }]}>
           <ConditionHero

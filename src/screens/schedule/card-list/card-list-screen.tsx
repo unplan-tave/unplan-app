@@ -1,15 +1,16 @@
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
+import { ConditionScoreBackground } from '@/components/domain/condition/condition-score-background';
 import { CardListEmptyState } from '@/components/features/card-list/card-list-empty-state';
 import { CardListFilterChips } from '@/components/features/card-list/card-list-filter-chips';
 import { CardListSearchBar } from '@/components/features/card-list/card-list-search-bar';
 import { CardListSections } from '@/components/features/card-list/card-list-sections';
 import { CardListStatusMessage } from '@/components/features/card-list/card-list-status-message';
-import { AppBackground } from '@/components/ui/AppBackground';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
+import { useTodayConditionScore } from '@/hooks/use-condition-score';
 
 import { useCardListScreen } from './hooks/use-card-list-screen';
 
@@ -37,6 +38,7 @@ export function CardListScreen() {
     toggleConditionTag,
     togglePersonalTag,
   } = useCardListScreen();
+  const conditionScore = useTodayConditionScore();
 
   return (
     <ScreenLayout
@@ -45,7 +47,7 @@ export function CardListScreen() {
       useSafeArea={false}
     >
       <StatusBar style="light" />
-      <AppBackground />
+      <ConditionScoreBackground score={conditionScore} />
       <View style={styles.canvas}>
         <ScrollView
           style={styles.scrollView}
