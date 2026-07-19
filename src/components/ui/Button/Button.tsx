@@ -34,7 +34,13 @@ export function Button({
       <Typography
         variant="bodyM"
         color={
-          disabled ? colors.gray[300] : variant === 'primary' ? colors.gray.white : colors.gray[800]
+          disabled
+            ? colors.gray[300]
+            : variant === 'conditionSecondary'
+              ? colors.gray[600]
+              : variant === 'primary' || variant === 'conditionPrimary'
+                ? colors.gray.white
+                : colors.gray[800]
         }
         align="center"
         style={textStyle}
@@ -65,6 +71,16 @@ const styles = StyleSheet.create({
   },
   glass: {
     backgroundColor: colors.alpha.white10,
+  },
+  conditionSecondary: {
+    height: 36,
+    borderRadius: radius.sm,
+    backgroundColor: colors.gray[200],
+  },
+  conditionPrimary: {
+    height: 36,
+    borderRadius: radius.sm,
+    backgroundColor: colors.primary,
   },
   fullWidth: {
     width: '100%',

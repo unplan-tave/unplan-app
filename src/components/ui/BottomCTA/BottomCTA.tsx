@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
-import { colors } from '@/constants/theme';
+import { colors, radius } from '@/constants/theme';
 
 import { type BottomCTAProps } from './bottomCTA.types';
 
@@ -23,7 +23,14 @@ export function BottomCTA({
   ...props
 }: BottomCTAProps) {
   const isPrimary = variant === 'primary';
-  const textColor = disabled ? colors.gray[300] : isPrimary ? colors.gray.white : colors.gray[800];
+  const isRecord = variant === 'record';
+  const textColor = disabled
+    ? colors.gray[300]
+    : isPrimary
+      ? colors.gray.white
+      : isRecord
+        ? colors.primary
+        : colors.gray[800];
   const captionContent =
     caption != null ? (
       <Typography variant="bodyS" color={colors.gray[500]} align="center" style={styles.caption}>
@@ -41,6 +48,7 @@ export function BottomCTA({
         style={({ pressed }) => [
           styles.button,
           isPrimary && styles.primaryButton,
+          isRecord && styles.recordButton,
           disabled && styles.disabledButton,
           pressed && !disabled && styles.pressed,
         ]}
@@ -51,7 +59,12 @@ export function BottomCTA({
             <PrimaryButtonFill />
           </View>
         ) : null}
-        <Typography variant="titleL" color={textColor} align="center" style={textStyle}>
+        <Typography
+          variant={isRecord ? 'titleS' : 'titleL'}
+          color={textColor}
+          align="center"
+          style={textStyle}
+        >
           {label}
         </Typography>
       </Pressable>
@@ -132,6 +145,12 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     backgroundColor: colors.alpha.transparent,
+    borderWidth: 0,
+  },
+  recordButton: {
+    height: 48,
+    borderRadius: radius.md,
+    backgroundColor: colors.gray.white,
     borderWidth: 0,
   },
   disabledButton: {
