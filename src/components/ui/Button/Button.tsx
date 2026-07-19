@@ -16,7 +16,15 @@ export function Button({
   accessibilityLabel,
   ...props
 }: ButtonProps) {
-  const isConditionButton = variant === 'conditionSecondary' || variant === 'conditionPrimary';
+  const isConditionButton =
+    variant === 'conditionSecondary' ||
+    variant === 'conditionPrimary' ||
+    variant === 'conditionRecommendationSecondary' ||
+    variant === 'conditionRecommendationPrimary';
+  const isRecommendationButton =
+    variant === 'conditionRecommendationSecondary' || variant === 'conditionRecommendationPrimary';
+  const isConditionPrimary =
+    variant === 'conditionPrimary' || variant === 'conditionRecommendationPrimary';
 
   return (
     <Pressable
@@ -34,7 +42,7 @@ export function Button({
       ]}
       {...props}
     >
-      {variant === 'conditionPrimary' && !disabled ? (
+      {isConditionPrimary && !disabled ? (
         <Svg
           pointerEvents="none"
           style={StyleSheet.absoluteFill}
@@ -52,13 +60,13 @@ export function Button({
         </Svg>
       ) : null}
       <Typography
-        variant={isConditionButton ? 'bodyS' : 'bodyM'}
+        variant={isRecommendationButton ? 'titleS' : isConditionButton ? 'bodyS' : 'bodyM'}
         color={
           disabled
             ? colors.gray[300]
             : variant === 'conditionSecondary'
               ? colors.gray[600]
-              : variant === 'primary' || variant === 'conditionPrimary'
+              : variant === 'primary' || isConditionPrimary
                 ? colors.gray.white
                 : colors.gray[800]
         }
@@ -101,6 +109,16 @@ const styles = StyleSheet.create({
   conditionPrimary: {
     height: 36,
     borderRadius: radius.sm,
+    backgroundColor: colors.alpha.transparent,
+  },
+  conditionRecommendationSecondary: {
+    height: 48,
+    borderRadius: radius.md,
+    backgroundColor: colors.gray.white,
+  },
+  conditionRecommendationPrimary: {
+    height: 48,
+    borderRadius: radius.md,
     backgroundColor: colors.alpha.transparent,
   },
   fullWidth: {

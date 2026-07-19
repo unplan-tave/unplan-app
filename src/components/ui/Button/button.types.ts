@@ -5,7 +5,9 @@ export type ButtonVariant =
   | 'primary'
   | 'glass'
   | 'conditionSecondary'
-  | 'conditionPrimary';
+  | 'conditionPrimary'
+  | 'conditionRecommendationSecondary'
+  | 'conditionRecommendationPrimary';
 
 export interface ButtonProps extends Omit<PressableProps, 'style' | 'children'> {
   label: string;
