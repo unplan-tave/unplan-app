@@ -28,8 +28,10 @@ export function SleepMeasureScreen() {
             <Pressable
               accessibilityLabel="수면 기록 저장"
               accessibilityRole="button"
-              accessibilityState={{ disabled: sleep.isSaving }}
-              disabled={sleep.isSaving}
+              accessibilityState={{
+                disabled: sleep.isSaving || sleep.isRecordLoading || sleep.isRecordLoadError,
+              }}
+              disabled={sleep.isSaving || sleep.isRecordLoading || sleep.isRecordLoadError}
               hitSlop={8}
               style={({ pressed }) => [styles.done, pressed && styles.pressed]}
               onPress={sleep.submit}
@@ -56,45 +58,69 @@ export function SleepMeasureScreen() {
             ) : null}
           </View>
 
-          <View style={styles.card}>
-            <SleepWeekPicker
-              monthLabel={sleep.monthLabel}
-              days={sleep.weekDays}
-              onSelect={sleep.selectDate}
-            />
-
-            <View style={styles.timeRange}>
-              <TimePill
-                time={sleep.bedTime}
-                accessibilityLabel="취침 시각 선택"
-                onPress={() => sleep.openTimeField('bed')}
-              />
-              <Typography variant="bodyM" color={colors.gray[400]}>
-                –
+          {sleep.isRecordLoading ? (
+            <View style={styles.card}>
+              <Typography variant="bodyM" align="center" color={colors.gray[500]}>
+                수면 기록을 불러오는 중이에요.
               </Typography>
-              <TimePill
-                time={sleep.wakeUpTime}
-                accessibilityLabel="기상 시각 선택"
-                onPress={() => sleep.openTimeField('wake')}
+            </View>
+          ) : sleep.isRecordLoadError ? (
+            <View style={styles.card}>
+              <Typography variant="bodyM" align="center" color={colors.secondary}>
+                수면 기록을 불러오지 못했어요. 다시 시도해 주세요.
+              </Typography>
+              <Pressable
+                accessibilityLabel="수면 기록 다시 불러오기"
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.retryButton, pressed && styles.pressed]}
+                onPress={sleep.retryRecordLoad}
+              >
+                <Typography variant="bodyM" color={colors.primary}>
+                  다시 시도
+                </Typography>
+              </Pressable>
+            </View>
+          ) : (
+            <View style={styles.card}>
+              <SleepWeekPicker
+                monthLabel={sleep.monthLabel}
+                days={sleep.weekDays}
+                onSelect={sleep.selectDate}
+              />
+
+              <View style={styles.timeRange}>
+                <TimePill
+                  time={sleep.bedTime}
+                  accessibilityLabel="취침 시각 선택"
+                  onPress={() => sleep.openTimeField('bed')}
+                />
+                <Typography variant="bodyM" color={colors.gray[400]}>
+                  –
+                </Typography>
+                <TimePill
+                  time={sleep.wakeUpTime}
+                  accessibilityLabel="기상 시각 선택"
+                  onPress={() => sleep.openTimeField('wake')}
+                />
+              </View>
+
+              <View style={styles.divider} />
+
+              <ToggleRow label="낮잠으로 기록" value={sleep.isNap} onChange={sleep.toggleNap} />
+              <ToggleRow
+                label="밤샘으로 기록"
+                value={sleep.isAllNight}
+                onChange={sleep.toggleAllNight}
+              />
+
+              <View style={styles.divider} />
+
+              <SleepDurationWheel
+                durationMinutes={sleep.durationMinutes}
+                onChange={sleep.changeDuration}
               />
             </View>
-
-            <View style={styles.divider} />
-
-            <ToggleRow label="낮잠으로 기록" value={sleep.isNap} onChange={sleep.toggleNap} />
-            <ToggleRow
-              label="밤샘으로 기록"
-              value={sleep.isAllNight}
-              onChange={sleep.toggleAllNight}
-            />
-
-            <View style={styles.divider} />
-
-            <SleepDurationWheel
-              durationMinutes={sleep.durationMinutes}
-              onChange={sleep.changeDuration}
-            />
-          </View>
+          )}
         </View>
       </SafeAreaView>
 
@@ -191,6 +217,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.gray.white,
     backgroundColor: colors.alpha.white50,
+  },
+  retryButton: {
+    alignSelf: 'center',
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   timeRange: {
     flexDirection: 'row',

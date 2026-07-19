@@ -93,6 +93,7 @@ function WheelColumn({
       decelerationRate="fast"
       contentContainerStyle={styles.columnContent}
       onMomentumScrollEnd={handleMomentumEnd}
+      onScrollEndDrag={handleMomentumEnd}
     >
       {options.map((option) => (
         <Pressable

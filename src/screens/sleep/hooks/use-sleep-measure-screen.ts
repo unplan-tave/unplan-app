@@ -37,6 +37,8 @@ export function useSleepMeasureScreen() {
   const recordQuery = useSleepRecordQuery(isEditMode ? sleepId : null);
   const createMutation = useCreateSleepRecordMutation();
   const updateMutation = useUpdateSleepRecordMutation();
+  const isRecordLoading = isEditMode && recordQuery.isPending;
+  const isRecordLoadError = isEditMode && recordQuery.isError;
 
   // 수정 모드: 기록된 정보대로 폼을 채웁니다.
   const loadedRecord = recordQuery.data;
@@ -117,6 +119,8 @@ export function useSleepMeasureScreen() {
   }, []);
 
   const submit = useCallback(() => {
+    if (isEditMode && (recordQuery.isPending || recordQuery.isError)) return;
+
     const input = { bedTime, wakeUpTime, isNap, isAllNight };
     const onSuccess = () => router.back();
     const onError = () => setIsSaveErrorVisible(true);
@@ -128,9 +132,21 @@ export function useSleepMeasureScreen() {
     } else {
       createMutation.mutate(input, { onSuccess, onError });
     }
-  }, [bedTime, createMutation, isAllNight, isEditMode, isNap, sleepId, updateMutation, wakeUpTime]);
+  }, [
+    bedTime,
+    createMutation,
+    isAllNight,
+    isEditMode,
+    isNap,
+    recordQuery.isError,
+    recordQuery.isPending,
+    sleepId,
+    updateMutation,
+    wakeUpTime,
+  ]);
 
   const cancel = useCallback(() => router.back(), []);
+  const retryRecordLoad = useCallback(() => void recordQuery.refetch(), [recordQuery]);
 
   return {
     title: '얼마나 잠들었나요?',
@@ -145,6 +161,8 @@ export function useSleepMeasureScreen() {
     activeTimeField,
     timeOptionValue: activeTimeField === 'wake' ? wakeUpTime : bedTime,
     isSaveErrorVisible,
+    isRecordLoading,
+    isRecordLoadError,
     isSaving: createMutation.isPending || updateMutation.isPending,
     selectDate,
     changeDuration,
@@ -155,5 +173,6 @@ export function useSleepMeasureScreen() {
     toggleAllNight,
     submit,
     cancel,
+    retryRecordLoad,
   };
 }
