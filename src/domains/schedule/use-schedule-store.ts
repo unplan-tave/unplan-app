@@ -31,6 +31,7 @@ interface ScheduleStoreState {
   cardRecentSearches: string[];
   createCard: (cardType: CardTab, values: CardFormValues) => CardItem;
   createPersonalTag: (label: string) => PersonalTagOption | null;
+  setPersonalTags: (serverTags: PersonalTagOption[]) => void;
   addLocationRecentSearch: (label: string) => void;
   deleteLocationRecentSearch: (label: string) => void;
   deleteAllLocationRecentSearches: () => void;
@@ -79,6 +80,11 @@ export const useScheduleStore = create<ScheduleStoreState>()((set, get) => ({
     }));
 
     return tag;
+  },
+  setPersonalTags: (serverTags) => {
+    set({
+      personalTags: sortPersonalTags(serverTags),
+    });
   },
   addLocationRecentSearch: (label) => {
     set((state) => ({

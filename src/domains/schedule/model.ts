@@ -78,6 +78,18 @@ export interface PersonalTagOption {
   createdAt: string;
 }
 
+/** 일정 제목을 기반으로 서버가 제안한 개인 태그입니다. */
+export interface TagRecommendation {
+  label: string;
+}
+
+/** 홈 등 화면에서 추천 카드와 함께 표시할 태그 정보를 표현합니다. */
+export interface HomeRecommendationItem {
+  card: CardItem;
+  conditionTag: ConditionTagOption;
+  personalTags: PersonalTagOption[];
+}
+
 export interface CalendarCell {
   key: string;
   label: string;
@@ -139,6 +151,14 @@ export interface MonthlyScheduleCount {
 export interface ScheduleMonthlyOverview {
   yearMonth: string;
   schedules: MonthlyScheduleCount[];
+}
+
+export interface DailyMessage {
+  date: string;
+  conditionTagId: ConditionTagId;
+  message: string;
+  isEnergyRecorded: boolean;
+  isSleepRecorded: boolean;
 }
 
 export interface ScheduleCreateInput {
@@ -284,6 +304,32 @@ export function getConditionTagById(tagId: ConditionTagId) {
   return CONDITION_TAG_OPTIONS.find((tag) => tag.id === tagId) ?? CONDITION_TAG_OPTIONS[3];
 }
 
+/** 서버 태그 추천 문자열(라벨 또는 enum)을 컨디션 태그 id로 매핑합니다. 매칭 실패 시 null. */
+const CONDITION_TAG_RECOMMENDATION_ALIASES: Record<string, ConditionTagId> = {
+  URGENT: 'urgent',
+  CORE_TASK: 'core',
+  BRAIN_WORK: 'brain',
+  SIMPLE_TASK: 'labor',
+  DAILY_TASK: 'daily',
+  RECOVERY: 'rest',
+};
+
+export function getConditionTagIdByRecommendation(recommendedTag: string): ConditionTagId | null {
+  const value = recommendedTag.trim();
+
+  if (value.length === 0) {
+    return null;
+  }
+
+  const byLabel = CONDITION_TAG_OPTIONS.find((tag) => tag.label === value);
+
+  if (byLabel != null) {
+    return byLabel.id;
+  }
+
+  return CONDITION_TAG_RECOMMENDATION_ALIASES[value.toUpperCase()] ?? null;
+}
+
 export function getConditionTagDescription(tagId: ConditionTagId) {
   switch (tagId) {
     case 'urgent':
@@ -317,31 +363,6 @@ export function getConditionTagDescription(tagId: ConditionTagId) {
         examples: '낮잠, 산책, 명상',
       };
   }
-}
-
-export function getSuggestedConditionTag(title: string = '') {
-  if (title.includes('아르바이트') || title.includes('청소') || title.includes('정리')) {
-    return getConditionTagById('labor');
-  }
-
-  if (
-    title.includes('회의') ||
-    title.includes('독서') ||
-    title.includes('공부') ||
-    title.includes('기획')
-  ) {
-    return getConditionTagById('brain');
-  }
-
-  if (title.includes('휴식') || title.includes('산책') || title.includes('회복')) {
-    return getConditionTagById('rest');
-  }
-
-  if (title.includes('과제') || title.includes('프로젝트') || title.includes('마감')) {
-    return getConditionTagById('core');
-  }
-
-  return null;
 }
 
 export function normalizePersonalTagLabel(label: string) {

@@ -239,6 +239,9 @@ export function DateTimeSheet({
               setShowTimeOrderError(false);
             }}
           />
+          {isWheelVisible && activeTimeField === 'start' ? (
+            <DrumTimePicker value={draft.timeStart} onSelectPart={handleSelectTimePart} />
+          ) : null}
           <View style={styles.divider} />
           <TimeDraftRow
             label="종료 시간"
@@ -255,6 +258,9 @@ export function DateTimeSheet({
               setShowTimeOrderError(false);
             }}
           />
+          {isWheelVisible && activeTimeField === 'end' ? (
+            <DrumTimePicker value={draft.timeEnd} onSelectPart={handleSelectTimePart} />
+          ) : null}
           {showTimeOrderError ? (
             <View style={styles.errorBox}>
               <Typography variant="bodyS" color={colors.gray.white} style={styles.errorText}>
@@ -271,12 +277,6 @@ export function DateTimeSheet({
                 </Typography>
               </Pressable>
             </View>
-          ) : null}
-          {isWheelVisible ? (
-            <DrumTimePicker
-              value={activeTimeField === 'start' ? draft.timeStart : draft.timeEnd}
-              onSelectPart={handleSelectTimePart}
-            />
           ) : null}
         </Card>
       </View>
@@ -378,6 +378,14 @@ function TimeDraftRow({
   error: boolean;
   onPress: () => void;
 }) {
+  const valueColor = error
+    ? colors.secondary
+    : filled && selected
+      ? colors.primary
+      : filled
+        ? colors.gray[600]
+        : colors.gray[400];
+
   return (
     <Pressable
       accessibilityLabel={`${label} 선택`}
@@ -390,23 +398,14 @@ function TimeDraftRow({
       ]}
       onPress={onPress}
     >
-      <Typography variant="bodyM" color={colors.gray[800]}>
+      <Typography variant="bodyM" color={colors.gray[900]}>
         {label}
       </Typography>
-      <Typography
-        variant="bodyM"
-        color={
-          error
-            ? colors.secondary
-            : filled && selected
-              ? colors.primary
-              : filled
-                ? colors.gray[600]
-                : colors.gray[300]
-        }
-      >
-        {filled ? value : '--:--'}
-      </Typography>
+      <View style={[styles.timeValueChip, error && styles.timeValueChipError]}>
+        <Typography variant="bodyM" color={valueColor}>
+          {filled ? value : '00:00'}
+        </Typography>
+      </View>
     </Pressable>
   );
 }
@@ -668,6 +667,21 @@ const styles = StyleSheet.create({
   },
   timeDraftRowSelected: {
     backgroundColor: colors.alpha.white70,
+  },
+  timeValueChip: {
+    minWidth: spacing[12],
+    minHeight: spacing[7],
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing[2],
+    borderRadius: radius['2xs'],
+    borderWidth: 1,
+    borderColor: colors.alpha.transparent,
+    backgroundColor: colors.alpha.white50,
+  },
+  timeValueChipError: {
+    borderColor: colors.secondary,
+    backgroundColor: colors.alpha.secondary10,
   },
   errorBox: {
     minHeight: spacing[10],

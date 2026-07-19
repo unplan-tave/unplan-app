@@ -20,6 +20,7 @@ const TOAST_DURATION_MS = 3000;
 
 type RangeSheetState = { mode: 'add' } | { mode: 'edit'; index: number } | null;
 
+/** 추천 조건 조회·수정과 관련 sheet 상태를 관리합니다. */
 export function useRecommendationCriteria() {
   const settingsQuery = useRecommendationCriteriaSettingsQuery();
   const [isMinFreeSheetVisible, setIsMinFreeSheetVisible] = useState(false);

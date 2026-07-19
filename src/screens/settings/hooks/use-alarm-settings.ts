@@ -9,6 +9,7 @@ import type { AlarmSettings } from '@/domains/member/model';
 
 const TOAST_DURATION_MS = 3000;
 
+/** 알림 설정 조회·저장 mutation과 오류 상태를 관리합니다. */
 export function useAlarmSettings() {
   const settingsQuery = useAlarmSettingsQuery();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

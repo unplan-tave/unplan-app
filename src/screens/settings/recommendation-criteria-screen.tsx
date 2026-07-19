@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 
 import { CardToast } from '@/components/domain/schedule/card-toast';
@@ -9,13 +8,11 @@ import { Header, HeaderBack } from '@/components/ui/Header';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { formatDurationLabel } from '@/domains/ai-recommendation/model';
 import { t } from '@/lib/i18n';
 
-import { useRecommendationCriteria } from './hooks/use-recommendation-criteria';
+import { useRecommendationCriteriaScreen } from './hooks/use-recommendation-criteria-screen';
 
 export function RecommendationCriteriaScreen() {
-  const router = useRouter();
   const {
     criteria,
     setExcludeEnabled,
@@ -35,13 +32,15 @@ export function RecommendationCriteriaScreen() {
     dismissToast,
     isLoading,
     isUpdating,
-  } = useRecommendationCriteria();
+    minFreeTimeLabel,
+    handleBack,
+  } = useRecommendationCriteriaScreen();
 
   return (
     <ScreenLayout backgroundColor={colors.gray[50]} contentStyle={styles.screen}>
       <Header
         title={t('settings.scheduleRecommendationCriteria')}
-        left={<HeaderBack onPress={router.back} />}
+        left={<HeaderBack onPress={handleBack} />}
         right={<View style={styles.headerSide} />}
         style={styles.header}
       />
@@ -69,7 +68,7 @@ export function RecommendationCriteriaScreen() {
                       {t('settings.recommendation.minFreeTime')}
                     </Typography>
                     <Typography variant="bodyM" color={colors.gray[500]}>
-                      {`${formatDurationLabel(criteria.minFreeMinutes)} ${t('settings.recommendation.minFreeTimeSuffix')}`}
+                      {`${minFreeTimeLabel} ${t('settings.recommendation.minFreeTimeSuffix')}`}
                     </Typography>
                   </Pressable>
                   <Typography variant="bodyS" color={colors.gray[400]}>

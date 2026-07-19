@@ -13,6 +13,7 @@ interface UseCardCreateDueDurationParams {
   setSheet: Dispatch<SetStateAction<CardCreateSheetState>>;
 }
 
+/** 카드의 마감일과 예상 소요 시간 입력 상태를 관리합니다. */
 export function useCardCreateDueDuration({
   hasSubmitted,
   setValue,

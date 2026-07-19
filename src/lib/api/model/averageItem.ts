@@ -15,4 +15,10 @@ export interface AverageItem {
   mind_score_percent_average?: number;
   sleep_score_average?: number;
   sleep_duration_minutes_average?: number;
+  /** Body 평균 점수 기반 상태 문구 */
+  body_comment?: string;
+  /** Mind 평균 점수 기반 상태 문구 */
+  mind_comment?: string;
+  /** 평균 수면 시간 기반 상태 문구 */
+  sleep_comment?: string;
 }

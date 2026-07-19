@@ -1,14 +1,19 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useTagRecommendationQuery } from '@/domains/schedule/api/queries';
 import {
-  getSuggestedConditionTag,
+  getConditionTagIdByRecommendation,
   type CardFormValues,
   type ConditionTagId,
 } from '@/domains/schedule/model';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
 import type { UseFormSetValue } from 'react-hook-form';
 
 type TagFeedbackState = 'none' | 'success' | 'error';
+
+const TAG_RECOMMENDATION_DEBOUNCE_MS = 400;
+const TAG_FEEDBACK_VISIBLE_MS = 3_000;
 
 interface UseCardCreateTagsParams {
   title: string;
@@ -19,6 +24,10 @@ interface UseCardCreateTagsParams {
   syncTagSheetSelectedId: (tagId: ConditionTagId) => void;
 }
 
+/**
+ * 카드 생성 form의 컨디션 태그 자동 선택을 관리합니다.
+ * 제목 입력이 멈추면 /schedules/tag-recommendation 응답으로 컨디션 태그를 골라줍니다.
+ */
 export function useCardCreateTags({
   title,
   initializedTitle,
@@ -27,74 +36,96 @@ export function useCardCreateTags({
   updateDraftValues,
   syncTagSheetSelectedId,
 }: UseCardCreateTagsParams) {
-  const previousTitleRef = useRef('');
-  const skipNextTitleEffectRef = useRef(false);
-  const [showTagFeedback, setShowTagFeedback] = useState(false);
-  const [showTagErrorFeedback, setShowTagErrorFeedback] = useState(false);
+  const trimmedTitle = title.trim();
+  const debouncedTitle = useDebouncedValue(trimmedTitle, TAG_RECOMMENDATION_DEBOUNCE_MS);
+  const initializedTitleValue = initializedTitle?.trim() ?? null;
+  const isInitializedTitle =
+    initializedTitleValue != null && debouncedTitle === initializedTitleValue;
 
-  useEffect(() => {
-    if (initializedTitle == null) return;
-    previousTitleRef.current = initializedTitle;
-    skipNextTitleEffectRef.current = true;
-  }, [initializedTitle]);
+  const [feedback, setFeedback] = useState<TagFeedbackState>('none');
 
+  const conditionTagIdRef = useRef(conditionTagId);
+  conditionTagIdRef.current = conditionTagId;
+
+  const applyConditionTag = useCallback(
+    (nextId: ConditionTagId) => {
+      if (conditionTagIdRef.current === nextId) {
+        return;
+      }
+
+      setValue('conditionTagId', nextId, { shouldDirty: true });
+      updateDraftValues({ conditionTagId: nextId });
+      syncTagSheetSelectedId(nextId);
+    },
+    [setValue, syncTagSheetSelectedId, updateDraftValues],
+  );
+
+  const recommendationQuery = useTagRecommendationQuery(debouncedTitle, {
+    enabled: debouncedTitle.length > 0 && !isInitializedTitle,
+  });
+  const recommendationData = recommendationQuery.data;
+  const recommendationStatus = recommendationQuery.status;
+  const isRecommendationFetching = recommendationQuery.isFetching;
+
+  // 제목을 비우면 기본 컨디션 태그로 되돌리고 피드백을 숨깁니다.
   useEffect(() => {
-    if (skipNextTitleEffectRef.current) {
-      skipNextTitleEffectRef.current = false;
+    if (trimmedTitle.length > 0) {
       return;
     }
 
-    if (title === previousTitleRef.current) return;
-    previousTitleRef.current = title;
+    applyConditionTag('daily');
+    setFeedback('none');
+  }, [applyConditionTag, trimmedTitle]);
 
-    if (title.trim().length === 0) {
-      setShowTagFeedback(false);
-      setShowTagErrorFeedback(false);
-      setValue('conditionTagId', 'daily', { shouldDirty: true });
-      updateDraftValues({ conditionTagId: 'daily' });
-      syncTagSheetSelectedId('daily');
+  // 추천 응답이 도착하면 컨디션 태그와 피드백을 반영합니다.
+  useEffect(() => {
+    if (isInitializedTitle || debouncedTitle.length === 0 || isRecommendationFetching) {
       return;
     }
 
-    const nextTag = getSuggestedConditionTag(title);
-
-    if (nextTag == null) {
-      setValue('conditionTagId', 'daily', { shouldDirty: true });
-      updateDraftValues({ conditionTagId: 'daily' });
-      syncTagSheetSelectedId('daily');
-      setShowTagFeedback(false);
-      setShowTagErrorFeedback(true);
+    if (recommendationStatus === 'error') {
+      applyConditionTag('daily');
+      setFeedback('error');
       return;
     }
 
-    if (conditionTagId !== nextTag.id) {
-      setValue('conditionTagId', nextTag.id, { shouldDirty: true });
-      updateDraftValues({ conditionTagId: nextTag.id });
-      syncTagSheetSelectedId(nextTag.id);
-      setShowTagErrorFeedback(false);
-      setShowTagFeedback(true);
+    if (recommendationStatus !== 'success') {
+      return;
     }
-  }, [conditionTagId, setValue, syncTagSheetSelectedId, title, updateDraftValues]);
+
+    const nextId =
+      recommendationData == null
+        ? null
+        : getConditionTagIdByRecommendation(recommendationData.label);
+
+    if (nextId == null) {
+      applyConditionTag('daily');
+      setFeedback('error');
+      return;
+    }
+
+    applyConditionTag(nextId);
+    setFeedback('success');
+  }, [
+    applyConditionTag,
+    debouncedTitle,
+    isInitializedTitle,
+    isRecommendationFetching,
+    recommendationData,
+    recommendationStatus,
+  ]);
 
   useEffect(() => {
-    if (!showTagFeedback) return;
-    const id = setTimeout(() => setShowTagFeedback(false), 3_000);
-    return () => clearTimeout(id);
-  }, [showTagFeedback]);
+    if (feedback === 'none') {
+      return;
+    }
 
-  useEffect(() => {
-    if (!showTagErrorFeedback) return;
-    const id = setTimeout(() => setShowTagErrorFeedback(false), 3_000);
-    return () => clearTimeout(id);
-  }, [showTagErrorFeedback]);
+    const timer = setTimeout(() => setFeedback('none'), TAG_FEEDBACK_VISIBLE_MS);
 
-  const tagFeedback: TagFeedbackState = showTagErrorFeedback
-    ? 'error'
-    : showTagFeedback
-      ? 'success'
-      : 'none';
+    return () => clearTimeout(timer);
+  }, [feedback]);
 
   return {
-    tagFeedback,
+    tagFeedback: feedback,
   };
 }

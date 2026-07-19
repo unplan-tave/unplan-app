@@ -5,10 +5,16 @@
  */
 import { useQuery } from '@tanstack/react-query';
 
-import { fetchConditionRecommendations, fetchRecommendationCriteriaSettings } from './client';
+import {
+  fetchConditionRecommendations,
+  fetchQueueTimeRecommendations,
+  fetchRecommendationCriteriaSettings,
+  fetchScheduleRecommendations,
+} from './client';
 import { aiRecommendationQueryKeys, recommendationCriteriaQueryKeys } from './query-keys';
 
 import type { ConditionRecommendationResult } from './client';
+import type { QueueTimeRecommendationResult, ScheduleRecommendation } from '../model';
 import type { RecommendationCriteriaSettings } from '../model';
 import type { UseQueryOptions } from '@tanstack/react-query';
 
@@ -33,5 +39,30 @@ export function useConditionRecommendationsQuery(
     queryKey: aiRecommendationQueryKeys.condition(date),
     queryFn: () => fetchConditionRecommendations(date),
     enabled: date.length > 0 && (options?.enabled ?? true),
+  });
+}
+
+/** 특정 날짜의 일반 일정 추천을 조회합니다. */
+export function useScheduleRecommendationsQuery(date: string) {
+  return useQuery<ScheduleRecommendation[]>({
+    queryKey: aiRecommendationQueryKeys.schedules(date),
+    queryFn: () => fetchScheduleRecommendations(date),
+    enabled: date.length > 0,
+  });
+}
+
+/** 큐 카드별 추천 시간대를 조회합니다. */
+export function useQueueTimeRecommendationsQuery(scheduleId: number | null, days = 7) {
+  return useQuery<QueueTimeRecommendationResult>({
+    queryKey:
+      scheduleId == null
+        ? aiRecommendationQueryKeys.all
+        : aiRecommendationQueryKeys.queueTimes(scheduleId, days),
+    queryFn: () => {
+      if (scheduleId == null) throw new Error('scheduleId is required');
+
+      return fetchQueueTimeRecommendations(scheduleId, days);
+    },
+    enabled: scheduleId != null,
   });
 }

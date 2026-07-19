@@ -12,5 +12,9 @@ export interface ConditionRecord {
   mind_score?: number;
   body_score_percent?: number;
   mind_score_percent?: number;
+  /** 개별 Body 기록 점수 기반 상태 문구 */
+  body_comment?: string;
+  /** 개별 Mind 기록 점수 기반 상태 문구 */
+  mind_comment?: string;
   date_time?: string;
 }

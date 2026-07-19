@@ -1,56 +1,36 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { SleepConditionCircle } from '@/components/features/onboarding/sleep-condition-circle';
 import { Header, HeaderCancel } from '@/components/ui/Header';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
-import { useUpdateSleepConditionSettingsMutation } from '@/domains/onboarding/api/mutations';
-import { useSleepConditionSettingsQuery } from '@/domains/onboarding/api/queries';
-import { DEFAULT_SLEEP_CONDITION_THRESHOLDS } from '@/domains/onboarding/sleep-condition';
 import { t } from '@/lib/i18n';
 
-import type { SleepConditionSettings } from '@/domains/onboarding/model';
-
-const FALLBACK_SETTINGS: SleepConditionSettings = {
-  targetSleepMinutes: 450,
-  dangerThresholdMinutes: DEFAULT_SLEEP_CONDITION_THRESHOLDS.dangerMinutes,
-  lackThresholdMinutes: DEFAULT_SLEEP_CONDITION_THRESHOLDS.lackMinutes,
-  optimalThresholdMinutes: DEFAULT_SLEEP_CONDITION_THRESHOLDS.optimalMinutes,
-};
+import { useSleepConditionEditScreen } from './hooks/use-sleep-condition-edit-screen';
 
 export function SleepConditionEditScreen() {
-  const router = useRouter();
-  const settingsQuery = useSleepConditionSettingsQuery();
-  const updateMutation = useUpdateSleepConditionSettingsMutation();
-  const [draft, setDraft] = useState<SleepConditionSettings | null>(null);
-  const settings = draft ?? settingsQuery.data ?? FALLBACK_SETTINGS;
-
-  const handleConfirm = () => {
-    if (updateMutation.isPending) {
-      return;
-    }
-
-    updateMutation.mutate(settings, {
-      onSuccess: () => router.back(),
-      onError: () => Alert.alert(t('settings.updateError')),
-    });
-  };
+  const {
+    settings,
+    isSubmitting,
+    handleTargetSleepMinutesChange,
+    handleThresholdsChange,
+    handleConfirm,
+    handleCancel,
+  } = useSleepConditionEditScreen();
 
   return (
     <ScreenLayout backgroundColor={colors.onboardingMutedBackground} contentStyle={styles.screen}>
       <Header
         title={t('settings.sleepCondition.title')}
         left={
-          <HeaderCancel label={t('common.cancel')} color={colors.primary} onPress={router.back} />
+          <HeaderCancel label={t('common.cancel')} color={colors.primary} onPress={handleCancel} />
         }
         right={
           <HeaderCancel
-            label={updateMutation.isPending ? t('common.saving') : t('common.done')}
+            label={isSubmitting ? t('common.saving') : t('common.done')}
             color={colors.primary}
-            disabled={updateMutation.isPending}
+            disabled={isSubmitting}
             onPress={handleConfirm}
           />
         }
@@ -75,17 +55,8 @@ export function SleepConditionEditScreen() {
           dangerThresholdMinutes={settings.dangerThresholdMinutes}
           lackThresholdMinutes={settings.lackThresholdMinutes}
           optimalThresholdMinutes={settings.optimalThresholdMinutes}
-          onTargetSleepMinutesChange={(minutes) =>
-            setDraft({ ...settings, targetSleepMinutes: minutes })
-          }
-          onThresholdsChange={(thresholds) =>
-            setDraft({
-              ...settings,
-              dangerThresholdMinutes: thresholds.dangerMinutes,
-              lackThresholdMinutes: thresholds.lackMinutes,
-              optimalThresholdMinutes: thresholds.optimalMinutes,
-            })
-          }
+          onTargetSleepMinutesChange={handleTargetSleepMinutesChange}
+          onThresholdsChange={handleThresholdsChange}
         />
       </View>
     </ScreenLayout>

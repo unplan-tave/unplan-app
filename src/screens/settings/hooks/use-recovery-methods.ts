@@ -14,6 +14,7 @@ const EMPTY_SETTINGS: RecoveryMethodsSettings = {
   customMethods: [],
 };
 
+/** 회복 방법 설정의 조회·수정 상태를 관리합니다. */
 export function useRecoveryMethods() {
   const settingsQuery = useRecoveryMethodsSettingsQuery();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

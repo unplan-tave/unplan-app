@@ -12,6 +12,7 @@ interface UseCardCreateLocationParams {
   setSheet: Dispatch<SetStateAction<CardCreateSheetState>>;
 }
 
+/** 카드 생성 form의 장소 입력과 장소 sheet 상태를 관리합니다. */
 export function useCardCreateLocation({
   setValue,
   updateDraftValues,

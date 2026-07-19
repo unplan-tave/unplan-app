@@ -24,6 +24,7 @@ interface UseCardCreateRepeatParams {
   setSheet: Dispatch<SetStateAction<CardCreateSheetState>>;
 }
 
+/** 카드 반복 설정의 입력·검증·sheet 상태를 관리합니다. */
 export function useCardCreateRepeat({
   sheet,
   repeatEnabled,

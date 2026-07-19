@@ -10,6 +10,11 @@ export const scheduleQueryKeys = {
   byMonth: (month: string) => [...scheduleQueryKeys.lists(), 'month', month] as const,
   searches: () => [...scheduleQueryKeys.all, 'search'] as const,
   search: (params: unknown) => [...scheduleQueryKeys.searches(), params] as const,
+  dailyMessages: () => [...scheduleQueryKeys.all, 'daily-message'] as const,
+  dailyMessage: (date: string) => [...scheduleQueryKeys.dailyMessages(), date] as const,
   details: () => [...scheduleQueryKeys.all, 'detail'] as const,
   detail: (scheduleId: number) => [...scheduleQueryKeys.details(), scheduleId] as const,
+  personalTags: () => [...scheduleQueryKeys.all, 'personal-tags'] as const,
+  tagRecommendation: (title: string) =>
+    [...scheduleQueryKeys.all, 'tag-recommendation', title] as const,
 };

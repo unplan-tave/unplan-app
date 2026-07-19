@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { CardToast } from '@/components/domain/schedule/card-toast';
@@ -8,28 +7,25 @@ import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, radius, spacing } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 
-import { useTransportSettings } from './hooks/use-transport-settings';
-
-import type { TransportOptionId } from '@/domains/onboarding/model';
-import type { TranslationKey } from '@/translations/ko';
-
-const TRANSPORT_OPTION_DEFINITIONS = [
-  { id: 'walk', labelKey: 'settings.transport.walk' },
-  { id: 'bicycle', labelKey: 'settings.transport.bicycle' },
-  { id: 'publicTransit', labelKey: 'settings.transport.publicTransit' },
-  { id: 'car', labelKey: 'settings.transport.car' },
-] satisfies ReadonlyArray<{ id: TransportOptionId; labelKey: TranslationKey }>;
+import { useTransportScreen } from './hooks/use-transport-screen';
 
 export function TransportScreen() {
-  const router = useRouter();
-  const { selectedOptionIds, toggleOption, isLoading, isUpdating, errorMessage, dismissError } =
-    useTransportSettings();
+  const {
+    selectedOptionIds,
+    toggleOption,
+    isLoading,
+    isUpdating,
+    errorMessage,
+    dismissError,
+    options,
+    handleBack,
+  } = useTransportScreen();
 
   return (
     <ScreenLayout backgroundColor={colors.gray[50]} contentStyle={styles.screen}>
       <Header
         title={t('settings.defaultTransport')}
-        left={<HeaderBack onPress={router.back} />}
+        left={<HeaderBack onPress={handleBack} />}
         right={<View style={styles.headerSide} />}
         style={styles.header}
       />
@@ -40,10 +36,10 @@ export function TransportScreen() {
               <ActivityIndicator color={colors.primary} />
             </View>
           ) : (
-            TRANSPORT_OPTION_DEFINITIONS.map((option) => (
+            options.map((option) => (
               <SettingsCheckboxRow
                 key={option.id}
-                label={t(option.labelKey)}
+                label={option.label}
                 checked={selectedOptionIds.includes(option.id)}
                 disabled={isUpdating}
                 onToggle={() => toggleOption(option.id)}

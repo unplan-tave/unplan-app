@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
@@ -6,20 +5,14 @@ import { BrandLogo } from '@/components/ui/BrandLogo';
 import { HomeIndicator } from '@/components/ui/Footer';
 import { colors } from '@/constants/theme';
 
+import { useSplashScreen } from './hooks/use-splash-screen';
+
 interface SplashScreenProps {
   onFinish?: () => void;
 }
 
 export function SplashScreen({ onFinish }: SplashScreenProps) {
-  useEffect(() => {
-    if (!onFinish) {
-      return undefined;
-    }
-
-    const timer = setTimeout(onFinish, 900);
-
-    return () => clearTimeout(timer);
-  }, [onFinish]);
+  useSplashScreen(onFinish);
 
   return (
     <View style={styles.container}>

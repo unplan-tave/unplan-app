@@ -1,10 +1,14 @@
-import { StyleSheet } from 'react-native';
+import { Image, StyleSheet, type ImageSourcePropType } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { colors } from '@/constants/theme';
 
 /** 홈·카드 리스트·컨디션 탭이 공유하는 전면 그라디언트 배경. */
-export function AppBackground() {
+export function AppBackground({ imageSource }: { imageSource?: ImageSourcePropType }) {
+  if (imageSource != null) {
+    return <Image source={imageSource} resizeMode="cover" style={StyleSheet.absoluteFill} />;
+  }
+
   return (
     <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" preserveAspectRatio="none">
       <Defs>

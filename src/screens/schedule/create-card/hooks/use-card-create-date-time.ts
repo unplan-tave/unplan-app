@@ -20,6 +20,7 @@ interface UseCardCreateDateTimeParams {
   setSheet: Dispatch<SetStateAction<CardCreateSheetState>>;
 }
 
+/** 카드 생성 form의 날짜·시간 입력 상태를 관리합니다. */
 export function useCardCreateDateTime({
   activeTab,
   hasSubmitted,

@@ -13,7 +13,7 @@ export function GNBAddButton({ style, accessibilityLabel = '추가', ...props }:
       style={({ pressed }) => [styles.button, pressed && styles.pressed, style]}
       {...props}
     >
-      <Icon name="plus" size={30} color={colors.gray[600]} />
+      <Icon name="plus" size={30} color={colors.gray[700]} />
     </Pressable>
   );
 }
@@ -25,11 +25,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.full,
-    backgroundColor: colors.alpha.white88,
-    shadowColor: colors.gray[900],
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.24,
-    shadowRadius: 12,
+    backgroundColor: colors.gray.white,
+    shadowColor: colors.shadow.blueGray,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.28,
+    shadowRadius: 10,
     elevation: 6,
   },
   pressed: {

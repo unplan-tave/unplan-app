@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 
 import {
   useCreateScheduleMutation,
@@ -13,12 +13,9 @@ import {
   type PersonalTagOption,
 } from '@/domains/schedule/model';
 
-import type { UseFormHandleSubmit } from 'react-hook-form';
+import { useCardCreateFeedback } from './use-card-create-feedback';
 
-type ToastState = {
-  message: string;
-  variant: 'warning' | 'confirm';
-} | null;
+import type { UseFormHandleSubmit } from 'react-hook-form';
 
 interface UseCardCreateActionsParams {
   cardId: string | undefined;
@@ -34,6 +31,7 @@ interface UseCardCreateActionsParams {
   setHasSubmitted: (value: boolean) => void;
 }
 
+/** 카드 생성 form의 저장·취소·라우팅 이벤트를 관리합니다. */
 export function useCardCreateActions({
   cardId,
   activeTab,
@@ -47,18 +45,12 @@ export function useCardCreateActions({
   setActiveTab,
   setHasSubmitted,
 }: UseCardCreateActionsParams) {
-  const [toast, setToast] = useState<ToastState>(null);
+  const { toast, showToast, closeToast } = useCardCreateFeedback();
   const createScheduleMutation = useCreateScheduleMutation();
   const updateScheduleMutation = useUpdateScheduleMutation();
   const isSubmitting = createScheduleMutation.isPending || updateScheduleMutation.isPending;
   const numericCardId = cardId == null ? null : Number(cardId);
   const canSubmitUpdate = numericCardId != null && Number.isFinite(numericCardId);
-
-  useEffect(() => {
-    if (toast == null) return;
-    const id = setTimeout(() => setToast(null), 3_000);
-    return () => clearTimeout(id);
-  }, [toast]);
 
   const handleClose = useCallback(() => {
     if (isSubmitting) {
@@ -87,7 +79,7 @@ export function useCardCreateActions({
               router.replace(`/card/view?cardId=${numericCardId}`);
             },
             onError: () => {
-              setToast({
+              showToast({
                 message: '카드 저장에 실패했어요. 다시 시도해 주세요.',
                 variant: 'warning',
               });
@@ -103,7 +95,7 @@ export function useCardCreateActions({
         try {
           createInput = toScheduleCreateInput(activeTab, values, personalTags);
         } catch {
-          setToast({
+          showToast({
             message: '핀카드 날짜와 시간을 다시 확인해 주세요.',
             variant: 'warning',
           });
@@ -116,7 +108,7 @@ export function useCardCreateActions({
             router.replace(`/card/view?cardId=${created.id}`);
           },
           onError: () => {
-            setToast({
+            showToast({
               message: '카드 저장에 실패했어요. 다시 시도해 주세요.',
               variant: 'warning',
             });
@@ -143,13 +135,14 @@ export function useCardCreateActions({
       personalTags,
       saveDraft,
       updateScheduleMutation,
+      showToast,
     ],
   );
 
   const handleInvalidSubmit = useCallback(() => {
     setHasSubmitted(true);
-    setToast({ message: '아직 입력되지 않은 필수 정보가 있어요!', variant: 'warning' });
-  }, [setHasSubmitted]);
+    showToast({ message: '아직 입력되지 않은 필수 정보가 있어요!', variant: 'warning' });
+  }, [setHasSubmitted, showToast]);
 
   const handleDone = useCallback(() => {
     if (isSubmitting) {
@@ -182,16 +175,12 @@ export function useCardCreateActions({
   }, [cardId, deleteCard, isSubmitting]);
 
   const handleDurationUnknown = useCallback(() => {
-    setToast({ message: '시간대 추천이 어려울 수 있어요!', variant: 'confirm' });
-  }, []);
+    showToast({ message: '시간대 추천이 어려울 수 있어요!', variant: 'confirm' });
+  }, [showToast]);
 
   const handleMemoReachLimit = useCallback(() => {
-    setToast({ message: `${MEMO_MAX_LENGTH}자까지만 입력 가능해요!`, variant: 'warning' });
-  }, []);
-
-  const closeToast = useCallback(() => {
-    setToast(null);
-  }, []);
+    showToast({ message: `${MEMO_MAX_LENGTH}자까지만 입력 가능해요!`, variant: 'warning' });
+  }, [showToast]);
 
   return {
     toast,

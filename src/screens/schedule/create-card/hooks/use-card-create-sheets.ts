@@ -35,6 +35,7 @@ interface UseCardCreateSheetsParams {
   dateStart: string;
 }
 
+/** 카드 생성 화면의 보조 sheet 열림 상태를 관리합니다. */
 export function useCardCreateSheets(params: UseCardCreateSheetsParams) {
   const {
     setValue,

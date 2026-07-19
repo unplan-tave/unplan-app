@@ -8,6 +8,4 @@
 
 export type GetDailyRecordParams = {
   date: string;
-  conditionPage?: number;
-  sleepPage?: number;
 };

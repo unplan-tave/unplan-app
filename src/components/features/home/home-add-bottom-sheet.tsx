@@ -4,11 +4,6 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 import {
-  type ConditionTagOption,
-  type PersonalTagOption,
-  type CardItem,
-} from '@/domains/schedule/model';
-import {
   formatDueCountdown,
   formatDueDateDisplay,
   formatDurationInline,
@@ -18,15 +13,11 @@ import {
 
 import { TimelineCard } from './timeline-card';
 
-export interface RecommendationItem {
-  card: CardItem;
-  conditionTag: ConditionTagOption;
-  personalTags: PersonalTagOption[];
-}
+import type { CardItem, HomeRecommendationItem } from '@/domains/schedule/model';
 
 interface HomeAddBottomSheetProps {
   visible: boolean;
-  recommendations: RecommendationItem[];
+  recommendations: HomeRecommendationItem[];
   onClose: () => void;
   onCreatePress: () => void;
   onDismissRecommendation: (cardId: string) => void;

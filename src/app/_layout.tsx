@@ -59,6 +59,8 @@ export default function RootLayout() {
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="card" options={{ headerShown: false }} />
+          <Stack.Screen name="sleep" options={{ headerShown: false }} />
+          <Stack.Screen name="energy" options={{ headerShown: false }} />
           <Stack.Screen name="settings" options={{ headerShown: false }} />
         </Stack>
       </QueryClientProvider>

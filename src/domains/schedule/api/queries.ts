@@ -5,6 +5,9 @@
 import { useQuery } from '@tanstack/react-query';
 
 import {
+  fetchDailyMessage,
+  fetchPersonalTags,
+  fetchTagRecommendation,
   fetchScheduleDetail,
   fetchSchedulesByDate,
   fetchSchedulesByMonth,
@@ -15,10 +18,13 @@ import { scheduleQueryKeys } from './query-keys';
 
 import type { SearchSchedulesInput } from './client';
 import type {
+  DailyMessage,
   DailyScheduleGroup,
   ScheduleDetail,
   ScheduleListItem,
   ScheduleMonthlyOverview,
+  PersonalTagOption,
+  TagRecommendation,
 } from '../model';
 import type { UseQueryOptions } from '@tanstack/react-query';
 
@@ -43,6 +49,15 @@ export function useScheduleSearchQuery(
   return useQuery({
     queryKey: scheduleQueryKeys.search(input),
     queryFn: () => searchSchedules(input),
+    ...options,
+  });
+}
+
+export function useDailyMessageQuery(date: string, options?: ScheduleQueryOptions<DailyMessage>) {
+  return useQuery({
+    queryKey: scheduleQueryKeys.dailyMessage(date),
+    queryFn: () => fetchDailyMessage({ date }),
+    enabled: date.length > 0,
     ...options,
   });
 }
@@ -86,6 +101,28 @@ export function useSchedulesByMonthQuery(
     queryKey: scheduleQueryKeys.byMonth(month),
     queryFn: () => fetchSchedulesByMonth({ month }),
     enabled: month.length > 0,
+    ...options,
+  });
+}
+
+/** 개인 태그 목록을 조회합니다. */
+export function usePersonalTagsQuery(options?: ScheduleQueryOptions<PersonalTagOption[]>) {
+  return useQuery({
+    queryKey: scheduleQueryKeys.personalTags(),
+    queryFn: fetchPersonalTags,
+    ...options,
+  });
+}
+
+/** 제목 입력이 있을 때 태그 추천을 조회합니다. */
+export function useTagRecommendationQuery(
+  title: string,
+  options?: ScheduleQueryOptions<TagRecommendation | null>,
+) {
+  return useQuery({
+    queryKey: scheduleQueryKeys.tagRecommendation(title),
+    queryFn: () => fetchTagRecommendation(title),
+    enabled: title.trim().length > 0,
     ...options,
   });
 }
