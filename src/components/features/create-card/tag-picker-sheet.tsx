@@ -137,7 +137,7 @@ export function TagPickerSheet({
   const canDone = activeTab === 'condition' ? canDoneCondition : true;
 
   return (
-    <BottomSheet visible={visible} contentStyle={styles.sheet} onClose={onClose}>
+    <BottomSheet visible={visible} avoidKeyboard contentStyle={styles.sheet} onClose={onClose}>
       <View style={styles.header}>
         <Pressable
           accessibilityLabel="태그 선택 취소"
