@@ -104,7 +104,7 @@ export function toQueueRecommendations(
       id: card.id,
       title: card.title,
       conditionTagId: card.conditionTagId,
-      reason: t('condition.recommendation.queue.reason'),
+      reasonMessages: [],
       dueLabel: card.dueDate
         ? `${t('condition.recommendation.dueDatePrefix')} ${formatDueDate(card.dueDate)}`
         : null,
@@ -147,7 +147,7 @@ export function toRecoveryRecommendation(
   return {
     kind: 'recovery',
     id: RECOVERY_RECOMMENDATION_ID,
-    reason: t('condition.recommendation.recovery.reason'),
+    reasonMessages: [],
     durationLabel: formatDurationCaption(RECOVERY_SLOT_MINUTES),
     options,
   };

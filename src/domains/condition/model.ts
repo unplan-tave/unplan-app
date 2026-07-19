@@ -53,7 +53,10 @@ export interface QueueConditionRecommendation {
   recommendId?: number;
   title: string;
   conditionTagId: ConditionTagId;
-  reason: string;
+  /** 서버 condition_tag_label. 없으면 conditionTagId의 기본 라벨을 사용합니다. */
+  conditionTagLabel?: string;
+  /** 비회복 추천의 후보별 추천 근거입니다. */
+  reasonMessages: string[];
   dueLabel: string | null;
   durationLabel: string;
 }
@@ -63,7 +66,7 @@ export interface RecoveryConditionRecommendation {
   kind: 'recovery';
   id: string;
   recommendId?: number;
-  reason: string;
+  reasonMessages: string[];
   durationLabel: string;
   options: RecoveryRecommendationOption[];
 }

@@ -6,7 +6,13 @@ import { Chip } from '@/components/ui/Chip';
 import { Icon } from '@/components/ui/Icon';
 import { Tag } from '@/components/ui/Tag';
 import { Typography } from '@/components/ui/Typography';
-import { CONDITION_RECOMMENDATION_HEADER_SPACER_WIDTH } from '@/constants/condition-ui';
+import {
+  CONDITION_RECOMMENDATION_EMPTY_CARD_HEIGHT,
+  CONDITION_RECOMMENDATION_EMPTY_CARD_GAP,
+  CONDITION_RECOMMENDATION_EMPTY_DESCRIPTION_MAX_WIDTH,
+  CONDITION_RECOMMENDATION_EMPTY_ICON_SIZE,
+  CONDITION_RECOMMENDATION_HEADER_SPACER_WIDTH,
+} from '@/constants/condition-ui';
 import { colors, radius, spacing } from '@/constants/theme';
 import { isRecoveryRecommendation } from '@/domains/condition/recommendation';
 import { getConditionTagById } from '@/domains/schedule/model';
@@ -17,11 +23,17 @@ import type {
   QueueConditionRecommendation,
   RecoveryConditionRecommendation,
 } from '@/domains/condition/model';
+import type { ConditionTagId } from '@/domains/schedule/model';
 
 interface ConditionRecommendationSheetProps {
   visible: boolean;
   /** 빈 시간대 안내 문구. 추천이 없을 때는 비어 있을 수 있습니다. */
   slotMessage: string | null;
+  /** API 응답 최상위 condition_tag. 상단 컨디션 문구에만 사용합니다. */
+  conditionTagId: ConditionTagId | null;
+  conditionTagLabel: string | null;
+  /** 현재 추천 후보의 추천 이유 목록입니다. */
+  recommendationReasonMessages: string[];
   recommendations: ConditionRecommendation[];
   activeIndex: number;
   selectedRecoveryOptionId: string | null;
@@ -39,6 +51,9 @@ interface ConditionRecommendationSheetProps {
 export function ConditionRecommendationSheet({
   visible,
   slotMessage,
+  conditionTagId,
+  conditionTagLabel,
+  recommendationReasonMessages,
   recommendations,
   activeIndex,
   selectedRecoveryOptionId,
@@ -60,11 +75,11 @@ export function ConditionRecommendationSheet({
     <BottomSheet visible={visible} onClose={onClose} contentStyle={styles.content}>
       <View style={styles.header}>
         <Pressable accessibilityRole="button" hitSlop={8} onPress={onClose}>
-          <Typography variant="bodyM" color={colors.gray[500]}>
+          <Typography variant="bodyM" color={colors.primary}>
             {t('common.cancel')}
           </Typography>
         </Pressable>
-        <Typography variant="bodyM" color={colors.gray[600]}>
+        <Typography variant="bodyM" color={colors.gray[900]}>
           {t('condition.recommendation.sheet.title')}
         </Typography>
         {isEmpty ? (
@@ -80,10 +95,16 @@ export function ConditionRecommendationSheet({
 
       {isEmpty ? (
         <View style={styles.emptyCard}>
-          <Typography variant="titleS" color={colors.gray[800]} align="center">
+          <Icon name="warning" variant="badge" size={CONDITION_RECOMMENDATION_EMPTY_ICON_SIZE} />
+          <Typography variant="titleS" color={colors.secondary} align="center">
             {t('condition.recommendation.empty.title')}
           </Typography>
-          <Typography variant="bodyS" color={colors.gray[600]} align="center">
+          <Typography
+            variant="bodyS"
+            color={colors.gray[600]}
+            align="center"
+            style={styles.emptyDescription}
+          >
             {emptyDescription}
           </Typography>
         </View>
@@ -95,9 +116,15 @@ export function ConditionRecommendationSheet({
                 {slotMessage}
               </Typography>
               <View style={styles.introTagRow}>
-                <RecommendationTag recommendation={recommendation} />
+                {conditionTagId ? (
+                  <Tag
+                    variant="condition"
+                    condition={conditionTagId}
+                    label={conditionTagLabel ?? getConditionTagById(conditionTagId).label}
+                  />
+                ) : null}
                 <Typography variant="bodyS" color={colors.gray[700]}>
-                  {isRecovery
+                  {conditionTagId === 'rest'
                     ? t('condition.recommendation.recovery.conditionSuffix')
                     : t('condition.recommendation.queue.conditionSuffix')}
                 </Typography>
@@ -108,7 +135,7 @@ export function ConditionRecommendationSheet({
 
             <View style={styles.recommendationHead}>
               <View style={styles.recommendationTitleRow}>
-                <Typography variant="bodyS" color={colors.gray[800]}>
+                <Typography variant="titleS" color={colors.gray[900]}>
                   {t('condition.recommendation.itemTitle')} {activeIndex + 1}
                 </Typography>
                 <View style={styles.pagination}>
@@ -149,9 +176,11 @@ export function ConditionRecommendationSheet({
                   </Pressable>
                 </View>
               </View>
-              <Typography variant="bodyS" color={colors.gray[600]}>
-                {recommendation.reason}
-              </Typography>
+              {recommendationReasonMessages.map((message) => (
+                <Typography key={message} variant="bodyS" color={colors.gray[600]}>
+                  {message}
+                </Typography>
+              ))}
             </View>
 
             {isRecovery ? (
@@ -169,18 +198,23 @@ export function ConditionRecommendationSheet({
           </View>
 
           <View style={styles.actions}>
-            <Button
-              label={t('condition.recommendation.manualTime')}
-              fullWidth
-              onPress={onManualTimePress}
-            />
-            <Button
-              label={t('condition.recommendation.accept')}
-              variant="primary"
-              fullWidth
-              disabled={needsRecoveryOption}
-              onPress={onAccept}
-            />
+            <View style={styles.actionButton}>
+              <Button
+                label={t('condition.recommendation.manualTime')}
+                variant="conditionRecommendationSecondary"
+                fullWidth
+                onPress={onManualTimePress}
+              />
+            </View>
+            <View style={styles.actionButton}>
+              <Button
+                label={t('condition.recommendation.accept')}
+                variant="conditionRecommendationPrimary"
+                fullWidth
+                disabled={needsRecoveryOption}
+                onPress={onAccept}
+              />
+            </View>
           </View>
         </>
       )}
@@ -190,8 +224,12 @@ export function ConditionRecommendationSheet({
 
 function RecommendationTag({ recommendation }: { recommendation: ConditionRecommendation }) {
   const tagId = recommendation.kind === 'queue' ? recommendation.conditionTagId : 'rest';
+  const label =
+    recommendation.kind === 'queue'
+      ? (recommendation.conditionTagLabel ?? getConditionTagById(tagId).label)
+      : getConditionTagById(tagId).label;
 
-  return <Tag variant="condition" condition={tagId} label={getConditionTagById(tagId).label} />;
+  return <Tag variant="condition" condition={tagId} label={label} />;
 }
 
 function QueueRecommendationCard({
@@ -244,7 +282,7 @@ function RecoveryRecommendationCard({
   onSelectOption: (optionId: string) => void;
 }) {
   return (
-    <View style={styles.detailCard}>
+    <View style={[styles.detailCard, styles.recoveryDetailCard]}>
       <View style={styles.recoveryOptions}>
         {recommendation.options.map((option) => (
           <Chip
@@ -284,12 +322,18 @@ const styles = StyleSheet.create({
     width: CONDITION_RECOMMENDATION_HEADER_SPACER_WIDTH,
   },
   emptyCard: {
+    minHeight: CONDITION_RECOMMENDATION_EMPTY_CARD_HEIGHT,
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing[2],
-    padding: spacing[4],
+    gap: CONDITION_RECOMMENDATION_EMPTY_CARD_GAP,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[3],
     borderRadius: radius.md,
     backgroundColor: colors.alpha.white50,
+  },
+  emptyDescription: {
+    maxWidth: CONDITION_RECOMMENDATION_EMPTY_DESCRIPTION_MAX_WIDTH,
   },
   contentCard: {
     gap: spacing[3],
@@ -352,7 +396,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   actions: {
+    flexDirection: 'row',
     gap: spacing[4],
+  },
+  actionButton: {
+    flex: 1,
+  },
+  recoveryDetailCard: {
+    backgroundColor: colors.alpha.white50,
   },
   pressed: {
     opacity: 0.72,

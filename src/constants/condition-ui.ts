@@ -17,6 +17,10 @@ export const CONDITION_SUMMARY_PANEL = {
   scoreLetterSpacing: -4.48,
 } as const;
 export const CONDITION_RECOMMENDATION_HEADER_SPACER_WIDTH = 32;
+export const CONDITION_RECOMMENDATION_EMPTY_CARD_HEIGHT = 202;
+export const CONDITION_RECOMMENDATION_EMPTY_CARD_GAP = 10;
+export const CONDITION_RECOMMENDATION_EMPTY_ICON_SIZE = 96;
+export const CONDITION_RECOMMENDATION_EMPTY_DESCRIPTION_MAX_WIDTH = 276;
 
 export const CONDITION_SCORE_BACKGROUND_SOURCES = {
   excellent: require('../../assets/images/condition/condition-100.png'),

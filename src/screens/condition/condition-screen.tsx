@@ -91,6 +91,9 @@ export function ConditionScreen() {
       <ConditionRecommendationSheet
         visible={recommendation.isSheetVisible}
         slotMessage={recommendation.slotMessage}
+        conditionTagId={recommendation.conditionTagId}
+        conditionTagLabel={recommendation.conditionTagLabel}
+        recommendationReasonMessages={recommendation.recommendationReasonMessages}
         recommendations={recommendation.recommendations}
         activeIndex={recommendation.activeIndex}
         selectedRecoveryOptionId={recommendation.selectedRecoveryOptionId}
