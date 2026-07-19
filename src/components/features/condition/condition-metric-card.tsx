@@ -10,7 +10,7 @@ interface ConditionMetricCardProps {
 }
 
 const CARD_HEIGHT = 83;
-const GAUGE_HEIGHT = 6;
+const GAUGE_HEIGHT = 4;
 
 /** Body / Mind / Sleep 각각의 값·게이지·코멘트를 보여주는 카드. */
 export function ConditionMetricCard({ metric }: ConditionMetricCardProps) {
@@ -40,12 +40,12 @@ const styles = StyleSheet.create({
     flex: 1,
     height: CARD_HEIGHT,
     justifyContent: 'center',
-    gap: spacing[1],
+    gap: spacing[2],
     padding: spacing[3],
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.gray.white,
-    backgroundColor: colors.alpha.white50,
+    backgroundColor: colors.alpha.white20,
     shadowColor: colors.shadow.blueGray,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.15,

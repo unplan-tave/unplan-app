@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ConditionScoreBackground } from '@/components/domain/condition/condition-score-background';
 import { ConditionCalendarModal } from '@/components/features/condition/condition-calendar-modal';
@@ -15,7 +15,6 @@ import { colors, spacing } from '@/constants/theme';
 import { useConditionScreen } from './hooks/use-condition-screen';
 
 const CONTENT_MAX_WIDTH = 393;
-const BOTTOM_NAV_HEIGHT = 66;
 
 export function ConditionScreen() {
   const { insets, view, recommendation, openRecordScreen } = useConditionScreen();
@@ -28,15 +27,7 @@ export function ConditionScreen() {
     >
       <StatusBar style="light" />
       <ConditionScoreBackground score={view.conditionScore} />
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: insets.bottom + BOTTOM_NAV_HEIGHT + spacing[8] },
-        ]}
-        contentInsetAdjustmentBehavior="automatic"
-        showsVerticalScrollIndicator={false}
-        style={styles.canvas}
-      >
+      <View style={styles.canvas}>
         <View style={[styles.header, { paddingTop: insets.top + spacing[2] }]}>
           <ConditionHero
             score={view.conditionSummary.finalScore}
@@ -49,23 +40,37 @@ export function ConditionScreen() {
         </View>
 
         <View style={styles.main}>
-          <ConditionGraphModeToggle />
-          <ConditionGraphCard metrics={view.metrics} score={view.conditionSummary.finalScore} />
-          <View style={styles.conditionList}>
-            {view.metrics.map((metric) => (
-              <ConditionMetricCard key={metric.key} metric={metric} />
-            ))}
+          <View style={styles.dataSection}>
+            <View style={styles.graphSection}>
+              <ConditionGraphModeToggle />
+              <ConditionGraphCard metrics={view.metrics} score={view.conditionScore} />
+            </View>
+            <View style={styles.conditionList}>
+              {view.metrics.map((metric) => (
+                <ConditionMetricCard key={metric.key} metric={metric} />
+              ))}
+            </View>
           </View>
           <View style={styles.actions}>
             <View style={styles.actionSlot}>
-              <Button label="컨디션 기반 추천 일정" onPress={recommendation.openSheet} />
+              <Button
+                label="컨디션 기반 추천 일정"
+                variant="conditionSecondary"
+                textStyle={styles.actionLabel}
+                onPress={recommendation.openSheet}
+              />
             </View>
             <View style={styles.actionSlot}>
-              <Button label="기록 추가/수정" variant="primary" onPress={openRecordScreen} />
+              <Button
+                label="기록 추가/수정"
+                variant="conditionPrimary"
+                textStyle={styles.actionLabel}
+                onPress={openRecordScreen}
+              />
             </View>
           </View>
         </View>
-      </ScrollView>
+      </View>
 
       <ConditionCalendarModal
         visible={view.calendar.visible}
@@ -96,7 +101,7 @@ export function ConditionScreen() {
 }
 
 /** Figma 기준 393×852 화면에서 헤더와 본문이 한 화면에 들어가는 높이입니다. */
-const HEADER_HEIGHT = 252;
+const HEADER_HEIGHT = 251;
 
 const styles = StyleSheet.create({
   content: {
@@ -109,17 +114,22 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'center',
   },
-  scrollContent: {
-    flexGrow: 1,
-  },
   header: {
     height: HEADER_HEIGHT,
     paddingHorizontal: spacing[3],
   },
   main: {
-    gap: spacing[4],
+    gap: spacing[6],
     paddingHorizontal: spacing[3],
     paddingTop: spacing[6],
+  },
+  dataSection: {
+    gap: spacing[4],
+  },
+  graphSection: {
+    width: '100%',
+    alignItems: 'flex-end',
+    gap: spacing[2],
   },
   conditionList: {
     flexDirection: 'row',
@@ -131,5 +141,10 @@ const styles = StyleSheet.create({
   },
   actionSlot: {
     flex: 1,
+  },
+  actionLabel: {
+    fontSize: 14,
+    lineHeight: 22.4,
+    letterSpacing: -0.28,
   },
 });

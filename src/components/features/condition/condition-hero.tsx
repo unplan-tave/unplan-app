@@ -44,7 +44,7 @@ export function ConditionHero({
               {year}
             </Typography>
             <View style={styles.dateRow}>
-              <Typography variant="bodyS" color={colors.gray.white}>
+              <Typography variant="bodyM" color={colors.gray.white}>
                 {dateLabel}
               </Typography>
               <Icon name="chevronDown" size={16} color={colors.gray.white} />
@@ -59,9 +59,9 @@ export function ConditionHero({
   );
 }
 
-const SCORE_FONT_SIZE = 56;
+const SCORE_FONT_SIZE = 84;
 const SCORE_LINE_HEIGHT = 84;
-const SCORE_LETTER_SPACING = -4.48;
+const SCORE_LETTER_SPACING = -4;
 
 const styles = StyleSheet.create({
   scoreRow: {
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     width: 1,
-    height: spacing[16],
+    height: 72,
     marginLeft: spacing[2],
     backgroundColor: colors.alpha.white50,
   },
@@ -95,6 +95,11 @@ const styles = StyleSheet.create({
     gap: spacing[1],
   },
   message: {
-    marginTop: spacing[3],
+    marginTop: spacing[2],
+    fontFamily: fontFamilyWeight.bold,
+    fontSize: 24,
+    fontWeight: '700',
+    lineHeight: 33.6,
+    letterSpacing: -0.48,
   },
 });

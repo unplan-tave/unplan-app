@@ -9,7 +9,7 @@ import type { ConditionMetricCard } from '@/domains/condition/model';
 
 interface ConditionGraphCardProps {
   metrics: [ConditionMetricCard, ConditionMetricCard, ConditionMetricCard];
-  score: number;
+  score: number | null;
 }
 
 const CARD_HEIGHT = 260;
@@ -38,12 +38,13 @@ export function ConditionGraphCard({ metrics, score }: ConditionGraphCardProps) 
 
 const styles = StyleSheet.create({
   card: {
+    width: '100%',
     height: CARD_HEIGHT,
     justifyContent: 'center',
     paddingHorizontal: spacing[8],
     borderRadius: radius.panel,
     borderWidth: 1,
     borderColor: colors.gray.white,
-    backgroundColor: colors.alpha.white50,
+    backgroundColor: colors.alpha.white20,
   },
 });
