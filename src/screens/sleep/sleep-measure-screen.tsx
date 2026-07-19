@@ -1,7 +1,6 @@
 import { Pressable, StyleSheet, Switch, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { SleepConflictSheet } from '@/components/features/sleep/sleep-conflict-sheet';
 import { SleepDurationWheel } from '@/components/features/sleep/sleep-duration-wheel';
 import { SleepWeekPicker } from '@/components/features/sleep/sleep-week-picker';
 import { AppBackground } from '@/components/ui/AppBackground';
@@ -50,6 +49,11 @@ export function SleepMeasureScreen() {
             <Typography variant="bodyS" align="center" color={colors.gray[500]}>
               {sleep.subtitle}
             </Typography>
+            {sleep.isSaveErrorVisible ? (
+              <Typography variant="caption" align="center" color={colors.secondary}>
+                저장하지 못했어요. 네트워크 연결을 확인한 뒤 다시 시도해 주세요.
+              </Typography>
+            ) : null}
           </View>
 
           <View style={styles.card}>
@@ -101,12 +105,6 @@ export function SleepMeasureScreen() {
         options={SLEEP_TIME_OPTIONS}
         onSelect={sleep.selectTime}
         onClose={sleep.closeTimeField}
-      />
-
-      <SleepConflictSheet
-        visible={sleep.conflictVisible}
-        onOverwrite={sleep.overwriteConflict}
-        onClose={sleep.closeConflict}
       />
     </View>
   );

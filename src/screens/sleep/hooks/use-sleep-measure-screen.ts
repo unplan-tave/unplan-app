@@ -1,5 +1,5 @@
 /** 수면 측정(기록 추가·수정) 화면의 폼 상태와 저장 로직을 조합합니다. */
-import { addDays, format, isAfter, parseISO, startOfDay, startOfWeek } from 'date-fns';
+import { addDays, format, parseISO, startOfDay, startOfWeek } from 'date-fns';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -24,13 +24,15 @@ export function useSleepMeasureScreen() {
   const isEditMode = sleepId != null && !Number.isNaN(sleepId);
 
   const today = useMemo(() => startOfDay(new Date()), []);
-  const [startDateId, setStartDateId] = useState(() => format(addDays(today, -1), DATE_ID));
+  // TODO(api): SleepCreate DTO에 날짜가 추가되면 선택 날짜를 함께 전송합니다.
+  // 현재 서버 계약에는 날짜가 없으므로 화면에서도 날짜를 변경할 수 없게 둡니다.
+  const [startDateId] = useState(() => format(today, DATE_ID));
   const [bedTime, setBedTime] = useState(DEFAULT_BED_TIME);
   const [durationMinutes, setDurationMinutes] = useState(DEFAULT_DURATION);
   const [isNap, setIsNap] = useState(false);
   const [isAllNight, setIsAllNight] = useState(false);
   const [activeTimeField, setActiveTimeField] = useState<TimeField | null>(null);
-  const [conflictVisible, setConflictVisible] = useState(false);
+  const [isSaveErrorVisible, setIsSaveErrorVisible] = useState(false);
 
   const recordQuery = useSleepRecordQuery(isEditMode ? sleepId : null);
   const createMutation = useCreateSleepRecordMutation();
@@ -77,12 +79,12 @@ export function useSleepMeasureScreen() {
         inRange: id >= startDateId && id <= endDateId,
         isStart: id === startDateId,
         isEnd: id === endDateId,
-        disabled: isAfter(startOfDay(date), today),
+        disabled: true,
       };
     });
-  }, [startDateId, endDateId, today]);
+  }, [startDateId, endDateId]);
 
-  const selectDate = useCallback((id: string) => setStartDateId(id), []);
+  const selectDate = useCallback((_id: string) => {}, []);
 
   const changeDuration = useCallback((next: number) => {
     setDurationMinutes(Math.max(0, next));
@@ -117,8 +119,9 @@ export function useSleepMeasureScreen() {
   const submit = useCallback(() => {
     const input = { bedTime, wakeUpTime, isNap, isAllNight };
     const onSuccess = () => router.back();
-    // TODO(api): 409(에너지 기록 충돌) 신호가 생기면 그때만 충돌 시트를 띄우도록 좁힙니다.
-    const onError = () => setConflictVisible(true);
+    const onError = () => setIsSaveErrorVisible(true);
+
+    setIsSaveErrorVisible(false);
 
     if (isEditMode) {
       updateMutation.mutate({ sleepId, input }, { onSuccess, onError });
@@ -127,13 +130,6 @@ export function useSleepMeasureScreen() {
     }
   }, [bedTime, createMutation, isAllNight, isEditMode, isNap, sleepId, updateMutation, wakeUpTime]);
 
-  const overwriteConflict = useCallback(() => {
-    // TODO(api): 겹치는 에너지 기록 삭제 후 저장하는 force 옵션이 생기면 연결합니다.
-    setConflictVisible(false);
-    router.back();
-  }, []);
-
-  const closeConflict = useCallback(() => setConflictVisible(false), []);
   const cancel = useCallback(() => router.back(), []);
 
   return {
@@ -148,7 +144,7 @@ export function useSleepMeasureScreen() {
     isAllNight,
     activeTimeField,
     timeOptionValue: activeTimeField === 'wake' ? wakeUpTime : bedTime,
-    conflictVisible,
+    isSaveErrorVisible,
     isSaving: createMutation.isPending || updateMutation.isPending,
     selectDate,
     changeDuration,
@@ -158,8 +154,6 @@ export function useSleepMeasureScreen() {
     toggleNap,
     toggleAllNight,
     submit,
-    overwriteConflict,
-    closeConflict,
     cancel,
   };
 }
