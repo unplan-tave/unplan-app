@@ -1,6 +1,5 @@
 import axios, { AxiosHeaders } from 'axios';
 
-import { API_TIMEOUT } from '@/constants';
 import { Config } from '@/constants/config';
 import { applyAuthSession, clearAuthSession } from '@/lib/auth/auth-session-controller';
 import { tokenStorage } from '@/lib/auth/token-storage';
@@ -20,9 +19,9 @@ type AxiosHeadersInput = Parameters<typeof AxiosHeaders.from>[0];
 const AUTH_REISSUE_PATH = '/auth/reissue';
 const AUTH_REFRESH_STATUS_CODES = new Set([401, 403]);
 
+/** 클라이언트 timeout을 두지 않고 서버·네트워크 계층의 응답/종료를 그대로 따릅니다. */
 export const apiClient = axios.create({
   baseURL: Config.apiUrl,
-  timeout: API_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -74,7 +73,6 @@ async function reissueTokens(): Promise<TokenReissueResponseDto> {
           `${Config.apiUrl}${AUTH_REISSUE_PATH}`,
           { device_id: deviceId },
           {
-            timeout: API_TIMEOUT,
             headers: {
               Authorization: `Bearer ${refreshToken}`,
               'Content-Type': 'application/json',
