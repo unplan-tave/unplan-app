@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { BottomSheet } from '@/components/ui/BottomSheet';
@@ -43,7 +43,6 @@ export function DailyMemoBottomSheet({
 }: DailyMemoBottomSheetProps) {
   const [content, setContent] = useState('');
   const [isComposing, setIsComposing] = useState(false);
-  const inputRef = useRef<TextInput>(null);
   const normalizedContent = content.trim();
   const isAtLimit = memos.length >= DAILY_MEMO_MAX_COUNT;
   const canAdd = !isAtLimit && !isCreating;
@@ -56,19 +55,11 @@ export function DailyMemoBottomSheet({
     }
   }, [visible]);
 
-  // 편집 모드로 전환되면 새 초안 행에 포커스를 줘 키보드를 띄운다.
-  useEffect(() => {
-    if (isComposing) {
-      inputRef.current?.focus();
-    }
-  }, [isComposing]);
-
   const handleStartComposing = () => {
     if (!canAdd) {
       return;
     }
     setIsComposing(true);
-    inputRef.current?.focus();
   };
 
   const handleCancelComposing = () => {
@@ -164,9 +155,9 @@ export function DailyMemoBottomSheet({
         {!isLoading && !isError && isComposing && !isAtLimit ? (
           <View style={styles.inputRow}>
             <TextInput
-              ref={inputRef}
               value={content}
               accessibilityLabel={t('home.dailyMemo.inputAccessibilityLabel')}
+              autoFocus
               blurOnSubmit={false}
               maxLength={DAILY_MEMO_MAX_LENGTH}
               placeholder={t('home.dailyMemo.placeholder')}
