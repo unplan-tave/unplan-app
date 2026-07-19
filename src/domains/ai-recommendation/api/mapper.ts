@@ -82,9 +82,14 @@ export function toConditionRecommendationViewModel(
     freeSlot: toConditionFreeSlot(response?.empty_time),
     summaryMessage: response?.summary_message ?? null,
     recommendations: [...(response?.recommendations ?? [])]
-      .sort(
-        (first, second) => (first.display_order ?? Infinity) - (second.display_order ?? Infinity),
-      )
+      .sort((first, second) => {
+        // display_order가 없는 항목은 순서를 뒤로 미루고, 둘 다 없으면 원래 순서를 유지합니다.
+        if (first.display_order == null && second.display_order == null) return 0;
+        if (first.display_order == null) return 1;
+        if (second.display_order == null) return -1;
+
+        return first.display_order - second.display_order;
+      })
       .flatMap(toConditionRecommendation),
   };
 }
