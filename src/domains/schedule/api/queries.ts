@@ -37,8 +37,8 @@ export function useSchedulesByDateQuery(
   return useQuery({
     queryKey: scheduleQueryKeys.byDate(date),
     queryFn: () => fetchSchedulesByDate({ date }),
-    enabled: date.length > 0,
     ...options,
+    enabled: date.length > 0 && (options?.enabled ?? true),
   });
 }
 
@@ -57,8 +57,8 @@ export function useDailyMessageQuery(date: string, options?: ScheduleQueryOption
   return useQuery({
     queryKey: scheduleQueryKeys.dailyMessage(date),
     queryFn: () => fetchDailyMessage({ date }),
-    enabled: date.length > 0,
     ...options,
+    enabled: date.length > 0 && (options?.enabled ?? true),
   });
 }
 
@@ -76,8 +76,8 @@ export function useScheduleDetailQuery(
 
       return fetchScheduleDetail(scheduleId);
     },
-    enabled: scheduleId != null,
     ...options,
+    enabled: scheduleId != null && (options?.enabled ?? true),
   });
 }
 
@@ -88,8 +88,8 @@ export function useSchedulesByWeekQuery(
   return useQuery({
     queryKey: scheduleQueryKeys.byWeek(date),
     queryFn: () => fetchSchedulesByWeek({ date }),
-    enabled: date.length > 0,
     ...options,
+    enabled: date.length > 0 && (options?.enabled ?? true),
   });
 }
 
@@ -100,8 +100,8 @@ export function useSchedulesByMonthQuery(
   return useQuery({
     queryKey: scheduleQueryKeys.byMonth(month),
     queryFn: () => fetchSchedulesByMonth({ month }),
-    enabled: month.length > 0,
     ...options,
+    enabled: month.length > 0 && (options?.enabled ?? true),
   });
 }
 
@@ -122,7 +122,7 @@ export function useTagRecommendationQuery(
   return useQuery({
     queryKey: scheduleQueryKeys.tagRecommendation(title),
     queryFn: () => fetchTagRecommendation(title),
-    enabled: title.trim().length > 0,
     ...options,
+    enabled: title.trim().length > 0 && (options?.enabled ?? true),
   });
 }
