@@ -16,6 +16,7 @@ import {
   toAxisCrossingBlobPath,
   toConditionAxisAnchors,
 } from '@/domains/condition/graph';
+import { t } from '@/lib/i18n';
 
 interface ConditionBlobGraphProps {
   body: number;
@@ -183,10 +184,10 @@ export function ConditionBlobGraph({
           letterSpacing={-0.28}
         >
           <TSpan x={EMPTY_MESSAGE_X} dy={0}>
-            컨디션 분석을 위해
+            {t('condition.blob.empty.line1')}
           </TSpan>
           <TSpan x={EMPTY_MESSAGE_X} dy={EMPTY_MESSAGE_LINE_HEIGHT}>
-            에너지와 수면 데이터를 입력해주세요!
+            {t('condition.blob.empty.line2')}
           </TSpan>
         </SvgText>
       ) : null}

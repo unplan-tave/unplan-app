@@ -16,6 +16,7 @@ import { AppBackground } from '@/components/ui/AppBackground';
 import { Header, HeaderCancel } from '@/components/ui/Header';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
+import { t } from '@/lib/i18n';
 
 import { useSleepMeasureScreen } from './hooks/use-sleep-measure-screen';
 
@@ -83,22 +84,22 @@ export function SleepMeasureScreen() {
               {sleep.isRecordLoading ? (
                 <View style={styles.card}>
                   <Typography variant="bodyM" align="center" color={colors.gray[500]}>
-                    수면 기록을 불러오는 중이에요.
+                    {t('sleep.measure.loading')}
                   </Typography>
                 </View>
               ) : sleep.isRecordLoadError ? (
                 <View style={styles.card}>
                   <Typography variant="bodyM" align="center" color={colors.secondary}>
-                    수면 기록을 불러오지 못했어요. 다시 시도해 주세요.
+                    {t('sleep.measure.loadError')}
                   </Typography>
                   <Pressable
-                    accessibilityLabel="수면 기록 다시 불러오기"
+                    accessibilityLabel={t('sleep.measure.retryAccessibilityLabel')}
                     accessibilityRole="button"
                     style={({ pressed }) => [styles.retryButton, pressed && styles.pressed]}
                     onPress={sleep.retryRecordLoad}
                   >
                     <Typography variant="bodyM" color={colors.primary}>
-                      다시 시도
+                      {t('sleep.measure.retry')}
                     </Typography>
                   </Pressable>
                 </View>
