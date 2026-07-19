@@ -1,14 +1,8 @@
 import { useMemo } from 'react';
 
 import { useDailyMemosQuery } from '@/domains/daily-memo/api/queries';
-import {
-  useDailyMeasurementQuery,
-  useMeasurementAveragesQuery,
-} from '@/domains/measurement/api/queries';
-import {
-  toConditionSummaryFromAverage,
-  toConditionSummaryFromDaily,
-} from '@/domains/measurement/model';
+import { useMeasurementAveragesQuery } from '@/domains/measurement/api/queries';
+import { toConditionSummaryFromAverage } from '@/domains/measurement/model';
 import { getMeasurementMonthRange, getMeasurementWeekRange } from '@/domains/measurement/period';
 import {
   useDailyMessageQuery,
@@ -65,6 +59,7 @@ export function useHomePageData({
   const schedulesByMonthQuery = useSchedulesByMonthQuery(selectedMonthValue, {
     enabled: viewMode === 'monthly',
   });
+  // 데일리/위클리/먼슬리 모두 /measurements/averages를 사용합니다. (데일리는 from=to=선택 날짜, groupBy DAY)
   const averageInput = useMemo(() => {
     if (viewMode === 'weekly') {
       const { from, to } = getMeasurementWeekRange(selectedDate);
@@ -78,18 +73,18 @@ export function useHomePageData({
       return { from, to, type: 'ALL' as const, groupBy: 'MONTH' as const };
     }
 
-    return null;
-  }, [selectedDate, viewMode]);
-  const dailyMeasurementQuery = useDailyMeasurementQuery(selectedDateValue, {
-    enabled: viewMode === 'daily',
-  });
+    return {
+      from: selectedDateValue,
+      to: selectedDateValue,
+      type: 'ALL' as const,
+      groupBy: 'DAY' as const,
+    };
+  }, [selectedDate, selectedDateValue, viewMode]);
   const dailyMessageQuery = useDailyMessageQuery(selectedDateValue, {
     enabled: viewMode === 'daily',
   });
   const dailyMemosQuery = useDailyMemosQuery(selectedDateValue);
-  const measurementAveragesQuery = useMeasurementAveragesQuery(averageInput, {
-    enabled: viewMode !== 'daily',
-  });
+  const measurementAveragesQuery = useMeasurementAveragesQuery(averageInput);
   const canShowRecommendations =
     viewMode === 'daily' &&
     !isPastDate(selectedDate) &&
@@ -132,13 +127,10 @@ export function useHomePageData({
       visibleDateValues,
     ],
   );
-  const conditionSummary = useMemo(() => {
-    if (viewMode === 'daily') {
-      return toConditionSummaryFromDaily(dailyMeasurementQuery.data);
-    }
-
-    return toConditionSummaryFromAverage(measurementAveragesQuery.data?.items[0]);
-  }, [dailyMeasurementQuery.data, measurementAveragesQuery.data?.items, viewMode]);
+  const conditionSummary = useMemo(
+    () => toConditionSummaryFromAverage(measurementAveragesQuery.data?.items[0]),
+    [measurementAveragesQuery.data?.items],
+  );
 
   return {
     calendarDays,
@@ -150,15 +142,13 @@ export function useHomePageData({
     dailyMemos: dailyMemosQuery.data ?? [],
     dailyMemosQuery,
     isLoading:
+      measurementAveragesQuery.isLoading ||
       (viewMode === 'daily' && schedulesByDateQuery.isLoading) ||
-      (viewMode === 'daily' && dailyMeasurementQuery.isLoading) ||
-      (viewMode !== 'daily' && measurementAveragesQuery.isLoading) ||
       (viewMode === 'weekly' && schedulesByWeekQuery.isLoading) ||
       (viewMode === 'monthly' && schedulesByMonthQuery.isLoading),
     isError:
+      measurementAveragesQuery.isError ||
       (viewMode === 'daily' && schedulesByDateQuery.isError) ||
-      (viewMode === 'daily' && dailyMeasurementQuery.isError) ||
-      (viewMode !== 'daily' && measurementAveragesQuery.isError) ||
       (viewMode === 'weekly' && schedulesByWeekQuery.isError) ||
       (viewMode === 'monthly' && schedulesByMonthQuery.isError),
   };

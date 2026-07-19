@@ -8,14 +8,8 @@ import {
   getNextConditionPeriodMode,
   isConditionDateSelectable,
 } from '@/domains/condition/period';
-import {
-  useDailyMeasurementQuery,
-  useMeasurementAveragesQuery,
-} from '@/domains/measurement/api/queries';
-import {
-  toConditionSummaryFromAverage,
-  toConditionSummaryFromDaily,
-} from '@/domains/measurement/model';
+import { useMeasurementAveragesQuery } from '@/domains/measurement/api/queries';
+import { toConditionSummaryFromAverage } from '@/domains/measurement/model';
 import { getMeasurementMonthRange, getMeasurementWeekRange } from '@/domains/measurement/period';
 import { formatCalendarDateLabel, formatDateValue } from '@/lib/utils/date';
 
@@ -26,6 +20,7 @@ export function useConditionView() {
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
 
   const selectedDateValue = useMemo(() => formatDateValue(selectedDate), [selectedDate]);
+  // 데일리/위클리/먼슬리 모두 /measurements/averages를 사용합니다. (데일리는 from=to=선택 날짜, groupBy DAY)
   const averageInput = useMemo(() => {
     if (periodMode === 'weekly') {
       const { from, to } = getMeasurementWeekRange(selectedDate);
@@ -39,23 +34,18 @@ export function useConditionView() {
       return { from, to, type: 'ALL' as const, groupBy: 'MONTH' as const };
     }
 
-    return null;
-  }, [periodMode, selectedDate]);
-  const dailyMeasurementQuery = useDailyMeasurementQuery(selectedDateValue, {
-    enabled: periodMode === 'daily',
-  });
-  const measurementAveragesQuery = useMeasurementAveragesQuery(averageInput, {
-    enabled: periodMode !== 'daily',
-  });
+    return {
+      from: selectedDateValue,
+      to: selectedDateValue,
+      type: 'ALL' as const,
+      groupBy: 'DAY' as const,
+    };
+  }, [periodMode, selectedDate, selectedDateValue]);
+  const measurementAveragesQuery = useMeasurementAveragesQuery(averageInput);
   const conditionSummary = useMemo(
-    () =>
-      periodMode === 'daily'
-        ? toConditionSummaryFromDaily(dailyMeasurementQuery.data)
-        : toConditionSummaryFromAverage(measurementAveragesQuery.data?.items[0]),
-    [dailyMeasurementQuery.data, measurementAveragesQuery.data?.items, periodMode],
+    () => toConditionSummaryFromAverage(measurementAveragesQuery.data?.items[0]),
+    [measurementAveragesQuery.data?.items],
   );
-  const conditionRecord =
-    periodMode === 'daily' ? dailyMeasurementQuery.data?.conditionRecords?.[0] : undefined;
   const metrics = useMemo(() => toConditionMetricCards(conditionSummary), [conditionSummary]);
   const dateLabel = useMemo(() => formatCalendarDateLabel(selectedDate), [selectedDate]);
   const calendarDays = useMemo(
@@ -90,7 +80,6 @@ export function useConditionView() {
     selectedDateValue,
     periodMode,
     conditionSummary,
-    conditionRecord,
     metrics,
     dateLabel,
     calendar: {
