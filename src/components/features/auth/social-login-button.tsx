@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
@@ -35,6 +35,11 @@ const providerStyles = {
   },
 } as const;
 
+const socialLoginIcons = {
+  google: require('../../../../assets/images/auth/google-login.png'),
+  kakao: require('../../../../assets/images/auth/kakao-login.png'),
+} as const;
+
 export function SocialLoginButton({
   label,
   provider,
@@ -42,6 +47,7 @@ export function SocialLoginButton({
   onPress,
 }: SocialLoginButtonProps) {
   const theme = providerStyles[provider];
+  const iconSource = provider === 'apple' ? null : socialLoginIcons[provider];
 
   return (
     <Pressable
@@ -58,14 +64,17 @@ export function SocialLoginButton({
       onPress={onPress}
     >
       <View style={styles.iconBox}>
-        <Typography
-          variant={provider === 'apple' ? 'bodyS' : 'titleS'}
-          color={provider === 'google' ? '#4285F4' : theme.color}
-          align="center"
-          style={provider === 'apple' ? styles.appleIcon : undefined}
-        >
-          {theme.icon}
-        </Typography>
+        {iconSource ? (
+          <Image
+            source={iconSource}
+            resizeMode="contain"
+            style={provider === 'google' ? styles.googleIcon : styles.kakaoIcon}
+          />
+        ) : (
+          <Typography variant="bodyS" color={theme.color} align="center" style={styles.appleIcon}>
+            {theme.icon}
+          </Typography>
+        )}
       </View>
       <Typography variant="titleM" color={theme.color} align="center" style={styles.label}>
         {label}
@@ -91,6 +100,14 @@ const styles = StyleSheet.create({
   appleIcon: {
     fontSize: 13,
     fontWeight: '700',
+  },
+  googleIcon: {
+    width: 20,
+    height: 20,
+  },
+  kakaoIcon: {
+    width: 18,
+    height: 18,
   },
   label: {
     minWidth: 155,
