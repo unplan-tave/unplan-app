@@ -6,11 +6,11 @@ import { useQuery } from '@tanstack/react-query';
 
 import { isMeasurementRangeCurrent } from '../period';
 
-import { fetchDailyMeasurement, fetchMeasurementAverages } from './client';
+import { fetchMeasurementAverages } from './client';
 import { measurementQueryKeys } from './query-keys';
 
 import type { FetchMeasurementAveragesInput } from './client';
-import type { DailyMeasurementSummary, MeasurementAverages } from '../model';
+import type { MeasurementAverages } from '../model';
 import type { UseQueryOptions } from '@tanstack/react-query';
 
 type MeasurementQueryOptions<TData> = Omit<UseQueryOptions<TData>, 'queryKey' | 'queryFn'>;
@@ -26,22 +26,6 @@ const PAST_DATE_STALE_TIME = Infinity;
  * 여기서는 짧은 stale time만 둬 잦은 뷰 이동에서 캐시를 재사용한다.
  */
 const CURRENT_PERIOD_STALE_TIME = 5 * 60 * 1000;
-
-export function useDailyMeasurementQuery(
-  date: string,
-  options?: MeasurementQueryOptions<DailyMeasurementSummary>,
-) {
-  const todayValue = formatDateValue(new Date());
-
-  return useQuery({
-    ...options,
-    queryKey: measurementQueryKeys.daily(date),
-    queryFn: () => fetchDailyMeasurement({ date }),
-    // 미래 날짜는 기록이 존재할 수 없어 요청하지 않는다.
-    enabled: date.length > 0 && date <= todayValue && (options?.enabled ?? true),
-    staleTime: date < todayValue ? PAST_DATE_STALE_TIME : CURRENT_PERIOD_STALE_TIME,
-  });
-}
 
 export function useMeasurementAveragesQuery(
   input: FetchMeasurementAveragesInput | null,
@@ -62,11 +46,4 @@ export function useMeasurementAveragesQuery(
     enabled: input != null && (options?.enabled ?? true),
     staleTime: isCurrentPeriod ? CURRENT_PERIOD_STALE_TIME : PAST_DATE_STALE_TIME,
   });
-}
-
-function formatDateValue(date: Date): string {
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-
-  return `${date.getFullYear()}-${month}-${day}`;
 }
