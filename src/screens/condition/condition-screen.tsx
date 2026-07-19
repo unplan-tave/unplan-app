@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
+import { GestureDetector } from 'react-native-gesture-handler';
 
 import { ConditionScoreBackground } from '@/components/domain/condition/condition-score-background';
 import { ConditionCalendarModal } from '@/components/features/condition/condition-calendar-modal';
@@ -27,57 +28,63 @@ export function ConditionScreen() {
     >
       <StatusBar style="light" />
       <ConditionScoreBackground score={view.conditionScore} />
-      <View style={styles.canvas}>
-        <View style={[styles.header, { paddingTop: insets.top + spacing[2] }]}>
-          <ConditionHero
-            score={view.conditionSummary.finalScore}
-            year={view.dateLabel.year}
-            dateLabel={view.dateLabel.date}
-            viewMode={view.periodMode}
-            onDatePress={view.openCalendar}
-            onViewModePress={view.cyclePeriodMode}
-          />
-        </View>
+      <GestureDetector gesture={view.periodSwipeGesture}>
+        <View style={styles.canvas}>
+          <View style={[styles.header, { paddingTop: insets.top + spacing[2] }]}>
+            <ConditionHero
+              score={view.conditionSummary.finalScore}
+              year={view.dateLabel.year}
+              dateLabel={view.dateLabel.date}
+              viewMode={view.periodMode}
+              onDatePress={view.openCalendar}
+              onViewModePress={view.cyclePeriodMode}
+            />
+          </View>
 
-        <View style={styles.main}>
-          <View style={styles.dataSection}>
-            <View style={styles.graphSection}>
-              <ConditionGraphModeToggle />
-              <ConditionGraphCard metrics={view.metrics} score={view.conditionScore} />
+          <View style={styles.main}>
+            <View style={styles.dataSection}>
+              <View style={styles.graphSection}>
+                <ConditionGraphModeToggle />
+                <ConditionGraphCard metrics={view.metrics} score={view.conditionScore} />
+              </View>
+              <View style={styles.conditionList}>
+                {view.metrics.map((metric) => (
+                  <ConditionMetricCard key={metric.key} metric={metric} />
+                ))}
+              </View>
             </View>
-            <View style={styles.conditionList}>
-              {view.metrics.map((metric) => (
-                <ConditionMetricCard key={metric.key} metric={metric} />
-              ))}
-            </View>
-          </View>
-          <View style={styles.actions}>
-            <View style={styles.actionSlot}>
-              <Button
-                label="컨디션 기반 추천 일정"
-                variant="conditionSecondary"
-                textStyle={styles.actionLabel}
-                onPress={recommendation.openSheet}
-              />
-            </View>
-            <View style={styles.actionSlot}>
-              <Button
-                label="기록 추가/수정"
-                variant="conditionPrimary"
-                textStyle={styles.actionLabel}
-                onPress={openRecordScreen}
-              />
+            <View style={styles.actions}>
+              <View style={styles.actionSlot}>
+                <Button
+                  label="컨디션 기반 추천 일정"
+                  variant="conditionSecondary"
+                  textStyle={styles.actionLabel}
+                  onPress={recommendation.openSheet}
+                />
+              </View>
+              <View style={styles.actionSlot}>
+                <Button
+                  label="기록 추가/수정"
+                  variant="conditionPrimary"
+                  textStyle={styles.actionLabel}
+                  onPress={openRecordScreen}
+                />
+              </View>
             </View>
           </View>
         </View>
-      </View>
+      </GestureDetector>
 
       <ConditionCalendarModal
         visible={view.calendar.visible}
         title={view.calendar.title}
         days={view.calendar.days}
         selectedDate={view.selectedDate}
+        periodMode={view.periodMode}
         onSelectDate={view.selectDate}
+        canGoNext={view.calendar.canGoNext}
+        onPreviousMonth={() => view.moveCalendarMonth('previous')}
+        onNextMonth={() => view.moveCalendarMonth('next')}
         onClose={view.closeCalendar}
       />
 
