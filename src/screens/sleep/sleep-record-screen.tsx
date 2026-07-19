@@ -21,7 +21,7 @@ const CONTENT_MAX_WIDTH = 393;
 export function SleepRecordScreen() {
   const sleep = useSleepRecordScreen();
   const isSleepTab = sleep.tab === 'sleep';
-  const isEditing = sleep.selectedRecordId != null;
+  const isEditing = sleep.isRecordActionsAvailable && sleep.selectedRecordId != null;
 
   return (
     <View style={styles.screen}>
@@ -31,7 +31,7 @@ export function SleepRecordScreen() {
           left={<HeaderBack onPress={sleep.goBack} />}
           title="컨디션 기록 내역"
           right={
-            isSleepTab ? undefined : (
+            isSleepTab || !sleep.isRecordActionsAvailable ? undefined : (
               <Pressable
                 accessibilityLabel="Body/Mind 기록 편집"
                 accessibilityRole="button"
@@ -115,7 +115,10 @@ export function SleepRecordScreen() {
               onDelete={sleep.deleteSelectedRecord}
               onEdit={sleep.editSelectedRecord}
             />
-          ) : !isSleepTab && sleep.isBodyMindEditing && sleep.hasSelectedMarker ? (
+          ) : !isSleepTab &&
+            sleep.isRecordActionsAvailable &&
+            sleep.isBodyMindEditing &&
+            sleep.hasSelectedMarker ? (
             <EditActions
               deleting={sleep.isDeletingBodyMind}
               onDelete={sleep.deleteSelectedBodyMind}

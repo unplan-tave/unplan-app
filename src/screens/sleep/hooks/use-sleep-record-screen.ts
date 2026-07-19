@@ -6,8 +6,6 @@ import { useCallback, useMemo, useState } from 'react';
 import { type QuadrantPoint } from '@/components/features/condition/condition-quadrant-plot';
 import { type RecordHistoryTab } from '@/components/features/sleep/record-history-tabs';
 import { type SleepDateItem } from '@/components/features/sleep/sleep-date-rail';
-import { useDeleteConditionRecordMutation } from '@/domains/condition/api/mutations';
-import { useDeleteSleepRecordMutation } from '@/domains/sleep/api/mutations';
 import { formatSleepTotalLabel } from '@/domains/sleep/format';
 
 import type { SleepDaySummary } from '@/domains/sleep/model';
@@ -85,8 +83,9 @@ export function useSleepRecordScreen() {
   const [isBodyMindEditing, setIsBodyMindEditing] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [activeMarkerId, setActiveMarkerId] = useState<string | null>(null);
-  const deleteMutation = useDeleteSleepRecordMutation();
-  const deleteConditionMutation = useDeleteConditionRecordMutation();
+  // TODO(api): 실제 일별 기록 조회가 연결되기 전까지 데모 id로 서버 기록을 수정하거나
+  // 삭제하지 않습니다. 데모 데이터는 화면 형태 확인용으로만 사용합니다.
+  const isRecordActionsAvailable = false;
 
   const dateItems = useMemo<SleepDateItem[]>(() => {
     const start = addDays(today, -RAIL_DAYS_BEFORE);
@@ -178,24 +177,32 @@ export function useSleepRecordScreen() {
   );
 
   const editSelectedBodyMind = useCallback(() => {
+    if (!isRecordActionsAvailable) return;
+
     const conditionId = selectedMarker?.records[0]?.conditionId;
     if (conditionId == null) return;
 
     router.push({ pathname: '/energy/measure', params: { id: String(conditionId) } });
-  }, [selectedMarker]);
+  }, [isRecordActionsAvailable, selectedMarker]);
 
   const deleteSelectedBodyMind = useCallback(() => {
+    if (!isRecordActionsAvailable) return;
+
     const conditionId = selectedMarker?.records[0]?.conditionId;
     if (conditionId == null) return;
 
     // TODO(api): 겹친 마커의 개별 기록 선택 삭제는 리스트 조회 API 연동 후 확장합니다.
-    deleteConditionMutation.mutate(conditionId, { onSuccess: () => setSelectedMarkerId(null) });
-  }, [deleteConditionMutation, selectedMarker]);
+  }, [isRecordActionsAvailable, selectedMarker]);
 
-  const editMarkerRecord = useCallback((conditionId: number) => {
-    setActiveMarkerId(null);
-    router.push({ pathname: '/energy/measure', params: { id: String(conditionId) } });
-  }, []);
+  const editMarkerRecord = useCallback(
+    (conditionId: number) => {
+      if (!isRecordActionsAvailable) return;
+
+      setActiveMarkerId(null);
+      router.push({ pathname: '/energy/measure', params: { id: String(conditionId) } });
+    },
+    [isRecordActionsAvailable],
+  );
 
   const closeMarkerSheet = useCallback(() => setActiveMarkerId(null), []);
 
@@ -208,16 +215,18 @@ export function useSleepRecordScreen() {
   }, []);
 
   const editSelectedRecord = useCallback(() => {
+    if (!isRecordActionsAvailable) return;
+
     if (selectedRecordId == null) return;
 
     router.push({ pathname: '/sleep/measure', params: { id: String(selectedRecordId) } });
-  }, [selectedRecordId]);
+  }, [isRecordActionsAvailable, selectedRecordId]);
 
   const deleteSelectedRecord = useCallback(() => {
-    if (selectedRecordId == null) return;
+    if (!isRecordActionsAvailable) return;
 
-    deleteMutation.mutate(selectedRecordId, { onSuccess: () => setSelectedRecordId(null) });
-  }, [deleteMutation, selectedRecordId]);
+    if (selectedRecordId == null) return;
+  }, [isRecordActionsAvailable, selectedRecordId]);
 
   const goBack = useCallback(() => router.back(), []);
 
@@ -228,7 +237,8 @@ export function useSleepRecordScreen() {
     totalLabel,
     records: summary.records,
     selectedRecordId,
-    isDeleting: deleteMutation.isPending,
+    isRecordActionsAvailable,
+    isDeleting: false,
     bodyMind: {
       bodyPercent: DEMO_BODY_MIND_SUMMARY.bodyPercent,
       mindPercent: DEMO_BODY_MIND_SUMMARY.mindPercent,
@@ -238,7 +248,7 @@ export function useSleepRecordScreen() {
     selectedMarkerId,
     activeMarkerId,
     hasSelectedMarker: selectedMarker != null,
-    isDeletingBodyMind: deleteConditionMutation.isPending,
+    isDeletingBodyMind: false,
     markerSheet: {
       visible: activeMarker != null,
       title: '기록된 시간대',
@@ -246,6 +256,7 @@ export function useSleepRecordScreen() {
         .sort((a, b) => a.timeLabel.localeCompare(b.timeLabel))
         .map((record) => ({
           label: record.timeLabel,
+          disabled: !isRecordActionsAvailable,
           onPress: () => editMarkerRecord(record.conditionId),
         })),
     },
