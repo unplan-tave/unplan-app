@@ -277,23 +277,54 @@ export function useHomeScreen() {
   /** 연장 충돌 안내 토스트를 닫습니다. */
   const dismissConflictToast = useCallback(() => setIsConflictToastDismissed(true), []);
   /** 타임라인 렌더링에 필요한 카드 props와 이벤트를 조합합니다. */
-  const timelineCardsForView = useMemo(
-    () =>
-      timelineItems.map(({ card, isRecommendation }) => ({
-        ...toHomeTimelineCardViewModel(card, personalTags, isRecommendation),
-        helperText: isRecommendation ? '잠깐 쉬는 게 어떨까요?' : undefined,
-        onPress: isRecommendation ? undefined : () => handleCardPress(card),
-        onAddPress: isRecommendation ? () => handleAddRecommendation(card.id) : undefined,
-        onDismissPress: isRecommendation ? () => handleDismissRecommendation(card.id) : undefined,
-      })),
-    [
-      handleAddRecommendation,
-      handleCardPress,
-      handleDismissRecommendation,
-      personalTags,
-      timelineItems,
-    ],
-  );
+  const timelineCardsForView = useMemo(() => {
+    const cards = timelineItems.map(({ card, isRecommendation }) => ({
+      ...toHomeTimelineCardViewModel(card, personalTags, isRecommendation),
+      helperText: isRecommendation ? '잠깐 쉬는 게 어떨까요?' : undefined,
+      onPress: isRecommendation ? undefined : () => handleCardPress(card),
+      onAddPress: isRecommendation ? () => handleAddRecommendation(card.id) : undefined,
+      onDismissPress: isRecommendation ? () => handleDismissRecommendation(card.id) : undefined,
+    }));
+
+    const placeholderCount = cards.length <= 1 ? 2 : 1;
+    const placeholders = Array.from({ length: placeholderCount }, (_, index) => ({
+      id: `placeholder-${index}`,
+      kind: 'placeholder' as const,
+      time: '00:00',
+      title: '',
+      range: '',
+    }));
+
+    const addCard =
+      cards.length === 0
+        ? [
+            {
+              id: 'add-schedule',
+              kind: 'add' as const,
+              time: '00:00',
+              title: '일정을 추가해 볼까요?',
+              range: '00:00 - 00:00',
+              tags: [
+                {
+                  label: '일상 작업',
+                  variant: 'condition' as const,
+                  condition: 'daily' as const,
+                },
+              ],
+              onPress: handleCreateCard,
+            },
+          ]
+        : [];
+
+    return [...placeholders, ...cards, ...addCard];
+  }, [
+    handleAddRecommendation,
+    handleCardPress,
+    handleDismissRecommendation,
+    handleCreateCard,
+    personalTags,
+    timelineItems,
+  ]);
 
   return {
     ...pageData,
