@@ -147,16 +147,36 @@ export function ConditionQuadrantPlot({
         />
       ) : null}
 
-      <Typography variant="bodyM" color={colors.primary} style={[styles.label, styles.top]}>
+      <Typography
+        variant="bodyM"
+        color={colors.primary}
+        pointerEvents="none"
+        style={[styles.label, styles.top]}
+      >
         Body
       </Typography>
-      <Typography variant="bodyM" color={colors.secondary} style={[styles.label, styles.bottom]}>
+      <Typography
+        variant="bodyM"
+        color={colors.secondary}
+        pointerEvents="none"
+        style={[styles.label, styles.bottom]}
+      >
         Body
       </Typography>
-      <Typography variant="bodyM" color={colors.secondary} style={[styles.label, styles.left]}>
+      <Typography
+        variant="bodyM"
+        color={colors.secondary}
+        pointerEvents="none"
+        style={[styles.label, styles.left]}
+      >
         Mind
       </Typography>
-      <Typography variant="bodyM" color={colors.primary} style={[styles.label, styles.right]}>
+      <Typography
+        variant="bodyM"
+        color={colors.primary}
+        pointerEvents="none"
+        style={[styles.label, styles.right]}
+      >
         Mind
       </Typography>
 
