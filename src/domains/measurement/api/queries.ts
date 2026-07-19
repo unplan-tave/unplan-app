@@ -6,11 +6,11 @@ import { useQuery } from '@tanstack/react-query';
 
 import { isMeasurementRangeCurrent } from '../period';
 
-import { fetchMeasurementAverages } from './client';
+import { fetchDailyMeasurement, fetchMeasurementAverages } from './client';
 import { measurementQueryKeys } from './query-keys';
 
 import type { FetchMeasurementAveragesInput } from './client';
-import type { MeasurementAverages } from '../model';
+import type { DailyMeasurementSummary, MeasurementAverages } from '../model';
 import type { UseQueryOptions } from '@tanstack/react-query';
 
 type MeasurementQueryOptions<TData> = Omit<UseQueryOptions<TData>, 'queryKey' | 'queryFn'>;
@@ -26,6 +26,19 @@ const PAST_DATE_STALE_TIME = Infinity;
  * 여기서는 짧은 stale time만 둬 잦은 뷰 이동에서 캐시를 재사용한다.
  */
 const CURRENT_PERIOD_STALE_TIME = 5 * 60 * 1000;
+
+/** 선택 날짜의 개별 컨디션·수면 기록을 조회합니다. */
+export function useDailyMeasurementQuery(
+  date: string,
+  options?: MeasurementQueryOptions<DailyMeasurementSummary>,
+) {
+  return useQuery({
+    queryKey: measurementQueryKeys.daily(date),
+    queryFn: () => fetchDailyMeasurement(date),
+    ...options,
+    enabled: date.length > 0 && (options?.enabled ?? true),
+  });
+}
 
 export function useMeasurementAveragesQuery(
   input: FetchMeasurementAveragesInput | null,
