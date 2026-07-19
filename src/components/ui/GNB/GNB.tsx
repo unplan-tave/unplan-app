@@ -1,3 +1,4 @@
+import { BlurView } from 'expo-blur';
 import { useState } from 'react';
 import { type LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
@@ -8,19 +9,6 @@ import { t } from '@/lib/i18n';
 import { type GNBItems, type GNBProps } from './gnb.types';
 import { GNBAddButton } from './GNBAddButton';
 import { GNBItem } from './GNBItem';
-
-let BlurView: React.ComponentType<{
-  intensity: number;
-  tint: string;
-  experimentalBlurMethod?: string;
-  style?: object;
-}> | null = null;
-
-try {
-  BlurView = require('expo-blur').BlurView;
-} catch {
-  BlurView = null;
-}
 
 function createDefaultItems(): GNBItems {
   return [
@@ -60,14 +48,12 @@ export function GNB({
     <View style={[styles.container, style]} onLayout={handleLayout}>
       {/* backdrop-filter: blur(3.5px) + background rgba(54,62,70,.5) + inset glow. 알약 모양으로 클립. */}
       <View style={styles.clip}>
-        {BlurView != null ? (
-          <BlurView
-            intensity={BLUR_INTENSITY}
-            tint="default"
-            experimentalBlurMethod="dimezisBlurView"
-            style={StyleSheet.absoluteFill}
-          />
-        ) : null}
+        <BlurView
+          intensity={BLUR_INTENSITY}
+          tint="default"
+          experimentalBlurMethod="dimezisBlurView"
+          style={StyleSheet.absoluteFill}
+        />
         <View style={styles.fill} />
         {size.width > 0 ? (
           <Svg style={StyleSheet.absoluteFill} width={size.width} height={size.height}>
