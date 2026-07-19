@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Icon } from '@/components/ui/Icon';
@@ -22,14 +29,18 @@ interface TagPickerSheetProps {
   visible: boolean;
   activeTab: CardTagTab;
   selectedConditionTagId: ConditionTagId | null;
+  /** 서버에서 조회한 개인 태그 목록만 전달합니다. */
   personalTags: PersonalTagOption[];
   selectedPersonalTagIds: string[];
+  /** 아직 서버에 없는, 카드 저장 시에만 함께 보낼 신규 라벨 */
+  selectedPersonalTagLabels?: string[];
+  isPersonalTagsLoading?: boolean;
+  isPersonalTagsError?: boolean;
   onSwitchTab: (tab: CardTagTab) => void;
   onClose: () => void;
   onSelectConditionTag: (tagId: ConditionTagId) => void;
   onDoneConditionTag: () => void;
-  onCreatePersonalTag: (label: string) => PersonalTagOption | null;
-  onDonePersonalTags: (ids: string[]) => void;
+  onDonePersonalTags: (ids: string[], labels: string[]) => void;
 }
 
 export function TagPickerSheet({
@@ -38,24 +49,29 @@ export function TagPickerSheet({
   selectedConditionTagId,
   personalTags,
   selectedPersonalTagIds,
+  selectedPersonalTagLabels = [],
+  isPersonalTagsLoading = false,
+  isPersonalTagsError = false,
   onSwitchTab,
   onClose,
   onSelectConditionTag,
   onDoneConditionTag,
-  onCreatePersonalTag,
   onDonePersonalTags,
 }: TagPickerSheetProps) {
   const [query, setQuery] = useState('');
   const [draftPersonalIds, setDraftPersonalIds] = useState<string[]>(selectedPersonalTagIds);
+  const [draftPersonalLabels, setDraftPersonalLabels] =
+    useState<string[]>(selectedPersonalTagLabels);
   const [conditionViewMode, setConditionViewMode] = useState<'list' | 'description'>('list');
 
   useEffect(() => {
     if (!visible) return;
     if (activeTab === 'personal') {
       setDraftPersonalIds(selectedPersonalTagIds);
+      setDraftPersonalLabels(selectedPersonalTagLabels);
       setQuery('');
     }
-  }, [selectedPersonalTagIds, visible, activeTab]);
+  }, [selectedPersonalTagIds, selectedPersonalTagLabels, visible, activeTab]);
 
   useEffect(() => {
     if (activeTab === 'condition') {
@@ -71,7 +87,20 @@ export function TagPickerSheet({
       !draftPersonalIds.includes(t.id) &&
       (normalizedQuery.length === 0 || t.label.includes(normalizedQuery)),
   );
-  const canCreate = canCreatePersonalTag(normalizedQuery, personalTags);
+  const draftLabelOptions = useMemo(
+    () =>
+      draftPersonalLabels.map((label) => ({
+        id: `draft-personal-tag:${label}`,
+        label,
+        createdAt: '',
+      })),
+    [draftPersonalLabels],
+  );
+  const catalogForCreateCheck = useMemo(
+    () => [...personalTags, ...draftLabelOptions],
+    [draftLabelOptions, personalTags],
+  );
+  const canCreate = canCreatePersonalTag(normalizedQuery, catalogForCreateCheck);
   const canDoneCondition = selectedConditionTagId != null;
 
   const handleTogglePersonalTag = (tagId: string) => {
@@ -80,10 +109,20 @@ export function TagPickerSheet({
     );
   };
 
+  const handleToggleDraftLabel = (label: string) => {
+    setDraftPersonalLabels((prev) =>
+      prev.includes(label) ? prev.filter((item) => item !== label) : prev,
+    );
+  };
+
   const handleCreatePersonalTag = () => {
-    const tag = onCreatePersonalTag(normalizedQuery);
-    if (tag == null) return;
-    setDraftPersonalIds((prev) => [...prev, tag.id]);
+    if (!canCreate) {
+      return;
+    }
+
+    setDraftPersonalLabels((prev) =>
+      prev.includes(normalizedQuery) ? prev : [...prev, normalizedQuery],
+    );
     setQuery('');
   };
 
@@ -91,7 +130,7 @@ export function TagPickerSheet({
     if (activeTab === 'condition') {
       if (canDoneCondition) onDoneConditionTag();
     } else {
-      onDonePersonalTags(draftPersonalIds);
+      onDonePersonalTags(draftPersonalIds, draftPersonalLabels);
     }
   };
 
@@ -216,7 +255,21 @@ export function TagPickerSheet({
             </Pressable>
           </View>
 
-          {selectedPersonalTags.length > 0 ? (
+          {isPersonalTagsLoading ? (
+            <View style={styles.statusBox}>
+              <ActivityIndicator color={colors.primary} />
+            </View>
+          ) : null}
+
+          {isPersonalTagsError ? (
+            <View style={styles.statusBox}>
+              <Typography variant="bodyS" color={colors.secondary} align="center">
+                개인 태그를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+              </Typography>
+            </View>
+          ) : null}
+
+          {selectedPersonalTags.length > 0 || draftPersonalLabels.length > 0 ? (
             <View style={styles.selectedSection}>
               <View style={styles.tagWrap}>
                 {selectedPersonalTags.map((tag) => (
@@ -225,6 +278,14 @@ export function TagPickerSheet({
                     selected
                     label={tag.label}
                     onPress={() => handleTogglePersonalTag(tag.id)}
+                  />
+                ))}
+                {draftPersonalLabels.map((label) => (
+                  <PersonalTagChip
+                    key={`draft-personal-tag:${label}`}
+                    selected
+                    label={label}
+                    onPress={() => handleToggleDraftLabel(label)}
                   />
                 ))}
               </View>
@@ -584,6 +645,12 @@ const styles = StyleSheet.create({
   },
   selectedSection: {
     gap: spacing[3],
+  },
+  statusBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing[3],
+    paddingHorizontal: spacing[4],
   },
   list: {
     maxHeight: 260,
