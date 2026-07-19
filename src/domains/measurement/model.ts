@@ -16,6 +16,10 @@ export interface DailyMeasurementSummary {
   mindScorePercent: number;
   sleepScore: number;
   sleepDurationMinutes: number;
+  /** GET /measurements 응답의 개별 기록 상태 문구입니다. 기록이 없으면 빈 문자열입니다. */
+  bodyComment: string;
+  mindComment: string;
+  sleepComment: string;
   conditionRecords: ConditionRecordEntry[];
 }
 
@@ -28,6 +32,9 @@ export interface MeasurementAverageItem {
   mindScorePercent: number;
   sleepScore: number;
   sleepDurationMinutes: number;
+  bodyComment: string;
+  mindComment: string;
+  sleepComment: string;
 }
 
 export interface MeasurementAverages {
@@ -40,9 +47,9 @@ export interface MeasurementAverages {
 
 export interface ConditionSummary {
   finalScore: number;
-  body: { value: string; progress: number };
-  mind: { value: string; progress: number };
-  sleep: { value: string; progress: number };
+  body: { value: string; progress: number; comment: string };
+  mind: { value: string; progress: number; comment: string };
+  sleep: { value: string; progress: number; comment: string };
 }
 
 export function toConditionSummaryFromDaily(
@@ -53,14 +60,17 @@ export function toConditionSummaryFromDaily(
     body: {
       value: `${measurement?.bodyScorePercent ?? 0}%`,
       progress: measurement?.bodyScorePercent ?? 0,
+      comment: measurement?.bodyComment ?? '',
     },
     mind: {
       value: `${measurement?.mindScorePercent ?? 0}%`,
       progress: measurement?.mindScorePercent ?? 0,
+      comment: measurement?.mindComment ?? '',
     },
     sleep: {
       value: formatSleepDuration(measurement?.sleepDurationMinutes ?? 0),
-      progress: measurement?.sleepScore ?? 0,
+      progress: sleepDurationProgress(measurement?.sleepDurationMinutes ?? 0),
+      comment: measurement?.sleepComment ?? '',
     },
   };
 }
@@ -73,14 +83,17 @@ export function toConditionSummaryFromAverage(item?: MeasurementAverageItem): Co
     body: {
       value: `${item?.bodyScorePercent ?? 0}%`,
       progress: item?.bodyScorePercent ?? 0,
+      comment: item?.bodyComment ?? '',
     },
     mind: {
       value: `${item?.mindScorePercent ?? 0}%`,
       progress: item?.mindScorePercent ?? 0,
+      comment: item?.mindComment ?? '',
     },
     sleep: {
       value: formatSleepDuration(item?.sleepDurationMinutes ?? 0),
-      progress: item?.sleepScore ?? 0,
+      progress: sleepDurationProgress(item?.sleepDurationMinutes ?? 0),
+      comment: item?.sleepComment ?? '',
     },
   };
 }
@@ -90,4 +103,13 @@ export function formatSleepDuration(totalMinutes: number): string {
   const minutes = totalMinutes % 60;
 
   return `${hours}h ${minutes}m`;
+}
+
+/** 권장 수면(8시간)을 100%로 보고 실제 수면 시간을 게이지 진행률로 환산합니다. */
+const SLEEP_TARGET_MINUTES = 8 * 60;
+
+export function sleepDurationProgress(totalMinutes: number): number {
+  const ratio = (Math.max(0, totalMinutes) / SLEEP_TARGET_MINUTES) * 100;
+
+  return Math.min(100, Math.round(ratio));
 }

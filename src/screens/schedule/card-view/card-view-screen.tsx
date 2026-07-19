@@ -4,11 +4,11 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { CardCreateHeader } from '@/components/domain/schedule/card-create-header';
 import { CardToast } from '@/components/domain/schedule/card-toast';
 import { CardViewHeader } from '@/components/features/card-view/card-view-header';
+import { CardViewStatus } from '@/components/features/card-view/card-view-status';
 import { PinViewBody } from '@/components/features/card-view/pin-view-body';
 import { QueueViewBody } from '@/components/features/card-view/queue-view-body';
 import { ConvertToPinBottomSheet } from '@/components/features/queue-to-pin/convert-to-pin-sheet';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
-import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
 
 import { useCardViewScreen } from './hooks/use-card-view-screen';
@@ -97,19 +97,6 @@ export function CardViewScreen() {
   );
 }
 
-function CardViewStatus({ message }: { message: string }) {
-  return (
-    <ScreenLayout backgroundColor={colors.surface} contentStyle={styles.screenContent}>
-      <StatusBar style="dark" />
-      <View style={styles.status}>
-        <Typography variant="bodyM" color={colors.gray[700]} align="center">
-          {message}
-        </Typography>
-      </View>
-    </ScreenLayout>
-  );
-}
-
 const styles = StyleSheet.create({
   screenContent: {
     flex: 1,
@@ -127,11 +114,5 @@ const styles = StyleSheet.create({
     gap: FORM_GAP,
     paddingTop: CONTENT_TOP,
     paddingBottom: spacing[16],
-  },
-  status: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing[6],
   },
 });

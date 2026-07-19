@@ -32,7 +32,7 @@ export function useCreateScheduleMutation(
     onSuccess: (data, variables, onMutateResult, context) => {
       updateScheduleListCacheAfterCreate(queryClient, data, variables);
       updateScheduleDetailCacheAfterCreate(queryClient, data, variables);
-      void queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.all });
       options?.onSuccess?.(data, variables, onMutateResult, context);
     },
   });
@@ -113,10 +113,7 @@ export function useUpdateScheduleMutation(
     mutationFn: ({ scheduleId, data }) => submitScheduleUpdate(scheduleId, data),
     ...options,
     onSuccess: (data, variables, onMutateResult, context) => {
-      void queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.lists() });
-      void queryClient.invalidateQueries({
-        queryKey: scheduleQueryKeys.detail(variables.scheduleId),
-      });
+      void queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.all });
       options?.onSuccess?.(data, variables, onMutateResult, context);
     },
   });
@@ -131,7 +128,7 @@ export function useDeleteScheduleMutation(
     mutationFn: ({ scheduleId }) => submitScheduleDelete(scheduleId),
     ...options,
     onSuccess: (data, variables, onMutateResult, context) => {
-      void queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.all });
       void queryClient.removeQueries({ queryKey: scheduleQueryKeys.detail(variables.scheduleId) });
       options?.onSuccess?.(data, variables, onMutateResult, context);
     },

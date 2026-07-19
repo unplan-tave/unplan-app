@@ -241,6 +241,7 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: spacing[4],
     padding: spacing[3],
+    paddingBottom: spacing[5],
     borderRadius: radius.panel,
     backgroundColor: colors.alpha.white50,
   },
@@ -287,6 +288,7 @@ const styles = StyleSheet.create({
     gap: spacing[1],
   },
   searchItem: {
+    minHeight: spacing[7],
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[1],

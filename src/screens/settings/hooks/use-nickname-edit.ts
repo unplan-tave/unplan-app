@@ -7,6 +7,7 @@ import { t } from '@/lib/i18n';
 
 const MAX_NICKNAME_LENGTH = 20;
 
+/** 닉네임 편집 입력값과 저장 이벤트를 관리합니다. */
 export function useNicknameEdit() {
   const router = useRouter();
   const profileQuery = useMemberProfileQuery();

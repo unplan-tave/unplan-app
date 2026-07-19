@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { SettingsConfirmModal } from '@/components/features/settings/settings-confirm-modal';
@@ -8,23 +7,16 @@ import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 
-import { useSettingsAccount } from './hooks/use-settings-account';
+import { useAccountScreen } from './hooks/use-account-screen';
 
 export function AccountScreen() {
-  const router = useRouter();
-  const account = useSettingsAccount();
-  const profileNickname = account.isProfileLoading
-    ? ''
-    : account.profile?.nickname || t('settings.profileFallback.nickname');
-  const profileEmail = account.isProfileLoading
-    ? ''
-    : account.profile?.email || t('settings.profileFallback.email');
+  const { account, profile, handleBack, handleNicknamePress } = useAccountScreen();
 
   return (
     <ScreenLayout backgroundColor={colors.gray[50]} contentStyle={styles.screen}>
       <Header
         title={t('settings.account.title')}
-        left={<HeaderBack onPress={router.back} />}
+        left={<HeaderBack onPress={handleBack} />}
         right={<View style={styles.headerSide} />}
         style={styles.header}
       />
@@ -34,12 +26,12 @@ export function AccountScreen() {
           rows={[
             {
               label: t('settings.account.nickname'),
-              value: profileNickname,
-              onPress: () => router.push('/settings/nickname'),
+              value: profile.nickname,
+              onPress: handleNicknamePress,
             },
             {
               label: t('settings.account.connectedAccount'),
-              value: profileEmail,
+              value: profile.email,
               type: 'text',
             },
           ]}

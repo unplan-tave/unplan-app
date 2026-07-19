@@ -4,7 +4,7 @@ import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
-import { colors, fontFamilyWeight, radius, spacing, typography } from '@/constants/theme';
+import { colors, radius, spacing, typography } from '@/constants/theme';
 import {
   DAILY_MEMO_MAX_COUNT,
   DAILY_MEMO_MAX_LENGTH,
@@ -42,15 +42,30 @@ export function DailyMemoBottomSheet({
   onDelete,
 }: DailyMemoBottomSheetProps) {
   const [content, setContent] = useState('');
+  const [isComposing, setIsComposing] = useState(false);
   const normalizedContent = content.trim();
   const isAtLimit = memos.length >= DAILY_MEMO_MAX_COUNT;
+  const canAdd = !isAtLimit && !isCreating;
   const canSubmit = normalizedContent.length > 0 && !isAtLimit && !isCreating;
 
   useEffect(() => {
     if (!visible) {
       setContent('');
+      setIsComposing(false);
     }
   }, [visible]);
+
+  const handleStartComposing = () => {
+    if (!canAdd) {
+      return;
+    }
+    setIsComposing(true);
+  };
+
+  const handleCancelComposing = () => {
+    setContent('');
+    setIsComposing(false);
+  };
 
   const handleSubmit = async () => {
     if (!canSubmit) {
@@ -59,37 +74,34 @@ export function DailyMemoBottomSheet({
 
     try {
       await onCreate(normalizedContent);
+      // 커밋 후 편집 모드를 종료해 키보드를 닫는다. 추가 입력은 다시 "메모 추가하기"로 진입한다.
       setContent('');
+      setIsComposing(false);
     } catch {
       // The screen keeps the input intact and renders the shared mutation error below.
     }
   };
 
   return (
-    <BottomSheet
-      visible={visible}
-      avoidKeyboard
-      onClose={onClose}
-      contentStyle={styles.sheetContent}
-    >
+    <BottomSheet visible={visible} avoidKeyboard onClose={onClose}>
       <View style={styles.header}>
         <Pressable accessibilityRole="button" onPress={onClose} hitSlop={spacing[2]}>
-          <Typography variant="caption" color={colors.primary}>
+          <Typography variant="bodyM" color={colors.primary}>
             {t('common.cancel')}
           </Typography>
         </Pressable>
-        <Typography variant="caption" color={colors.gray[800]}>
+        <Typography variant="bodyM" color={colors.gray[900]}>
           {t('home.dailyMemo.title')}
         </Typography>
         <Pressable accessibilityRole="button" onPress={onClose} hitSlop={spacing[2]}>
-          <Typography variant="caption" color={colors.primary}>
+          <Typography variant="bodyM" color={colors.primary}>
             {t('common.done')}
           </Typography>
         </Pressable>
       </View>
 
       <View style={styles.memoCard}>
-        <Typography variant="bodyS" color={colors.gray[800]} style={styles.dateLabel}>
+        <Typography variant="titleS" color={colors.gray[900]} style={styles.dateLabel}>
           {dateLabel}
         </Typography>
 
@@ -111,7 +123,7 @@ export function DailyMemoBottomSheet({
           ? memos.map((memo) => (
               <View key={memo.id} style={styles.memoRow}>
                 <Typography
-                  variant="caption"
+                  variant="bodyM"
                   color={colors.gray[700]}
                   numberOfLines={2}
                   style={styles.memoText}
@@ -126,42 +138,45 @@ export function DailyMemoBottomSheet({
                   accessibilityRole="button"
                   disabled={deletingMemoId != null}
                   hitSlop={spacing[2]}
+                  style={styles.rowAction}
                   onPress={() => onDelete(memo.id)}
                 >
+                  <View style={styles.rowActionDivider} />
                   {deletingMemoId === memo.id ? (
                     <ActivityIndicator size="small" color={colors.gray[400]} />
                   ) : (
-                    <Icon name="cancel" size={16} color={colors.gray[400]} />
+                    <Icon name="cancel" size={24} color={colors.gray[400]} />
                   )}
                 </Pressable>
               </View>
             ))
           : null}
 
-        {!isLoading && !isError && !isAtLimit ? (
+        {!isLoading && !isError && isComposing && !isAtLimit ? (
           <View style={styles.inputRow}>
             <TextInput
               value={content}
               accessibilityLabel={t('home.dailyMemo.inputAccessibilityLabel')}
+              autoFocus
               blurOnSubmit={false}
               maxLength={DAILY_MEMO_MAX_LENGTH}
               placeholder={t('home.dailyMemo.placeholder')}
-              placeholderTextColor={colors.gray[300]}
+              placeholderTextColor={colors.gray[400]}
               returnKeyType="done"
               style={styles.input}
               onChangeText={setContent}
               onSubmitEditing={() => void handleSubmit()}
             />
-            {content.length > 0 ? (
-              <Pressable
-                accessibilityLabel={t('home.dailyMemo.clearInput')}
-                accessibilityRole="button"
-                hitSlop={spacing[2]}
-                onPress={() => setContent('')}
-              >
-                <Icon name="cancel" size={16} color={colors.gray[400]} />
-              </Pressable>
-            ) : null}
+            <Pressable
+              accessibilityLabel={t('home.dailyMemo.clearInput')}
+              accessibilityRole="button"
+              hitSlop={spacing[2]}
+              style={styles.rowAction}
+              onPress={handleCancelComposing}
+            >
+              <View style={styles.rowActionDivider} />
+              <Icon name="cancel" size={24} color={colors.gray[400]} />
+            </Pressable>
           </View>
         ) : null}
       </View>
@@ -174,16 +189,16 @@ export function DailyMemoBottomSheet({
 
       <Pressable
         accessibilityRole="button"
-        disabled={!canSubmit}
-        style={[styles.addButton, !canSubmit && styles.addButtonDisabled]}
-        onPress={() => void handleSubmit()}
+        disabled={!canAdd}
+        style={[styles.addButton, !canAdd && styles.addButtonDisabled]}
+        onPress={handleStartComposing}
       >
         {isCreating ? (
           <ActivityIndicator size="small" color={colors.gray[400]} />
         ) : (
           <>
-            <Icon name="plus" size={16} color={canSubmit ? colors.gray[500] : colors.gray[300]} />
-            <Typography variant="caption" color={canSubmit ? colors.gray[500] : colors.gray[300]}>
+            <Icon name="plus" size={24} color={canAdd ? colors.gray[500] : colors.gray[300]} />
+            <Typography variant="bodyM" color={canAdd ? colors.gray[500] : colors.gray[300]}>
               {isAtLimit
                 ? t('home.dailyMemo.maxCount').replace('{count}', String(DAILY_MEMO_MAX_COUNT))
                 : t('home.dailyMemo.add')}
@@ -196,10 +211,6 @@ export function DailyMemoBottomSheet({
 }
 
 const styles = StyleSheet.create({
-  sheetContent: {
-    gap: spacing[2],
-    paddingHorizontal: spacing[3],
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -209,52 +220,68 @@ const styles = StyleSheet.create({
   memoCard: {
     gap: spacing[2],
     padding: spacing[3],
-    borderRadius: radius.panel,
+    borderRadius: radius.md,
     backgroundColor: colors.alpha.white70,
   },
   dateLabel: {
-    fontFamily: fontFamilyWeight.semiBold,
+    paddingTop: spacing[1],
+    paddingBottom: spacing[3],
+    paddingHorizontal: spacing[2],
   },
   memoRow: {
-    minHeight: spacing[8],
+    minHeight: spacing[10],
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[2],
-    paddingHorizontal: spacing[2],
-    borderRadius: radius.sm,
+    paddingHorizontal: spacing[3],
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.gray.white,
     backgroundColor: colors.alpha.white70,
   },
   memoText: {
     flex: 1,
   },
   inputRow: {
-    minHeight: spacing[8],
+    minHeight: spacing[10],
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[2],
-    paddingHorizontal: spacing[2],
-    borderRadius: radius.sm,
+    paddingHorizontal: spacing[3],
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.gray.white,
     backgroundColor: colors.alpha.white70,
   },
   input: {
-    ...typography.caption,
+    ...typography.bodyM,
     minWidth: 0,
     flex: 1,
     paddingVertical: 0,
     color: colors.gray[700],
   },
+  rowAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+  },
+  rowActionDivider: {
+    width: 1,
+    height: 20,
+    backgroundColor: colors.gray[300],
+  },
   stateRow: {
-    minHeight: spacing[8],
+    minHeight: spacing[10],
     alignItems: 'center',
     justifyContent: 'center',
   },
   addButton: {
-    minHeight: spacing[8],
+    minHeight: spacing[10],
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing[1],
-    borderRadius: radius.sm,
+    gap: spacing[2],
+    borderRadius: radius.md,
     backgroundColor: colors.alpha.white70,
   },
   addButtonDisabled: {

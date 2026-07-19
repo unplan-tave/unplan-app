@@ -1,6 +1,4 @@
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { BackHandler, ImageBackground, Pressable, StyleSheet, View } from 'react-native';
+import { ImageBackground, Pressable, StyleSheet, View } from 'react-native';
 
 import { BottomCTA } from '@/components/ui/BottomCTA';
 import { HomeIndicator } from '@/components/ui/Footer';
@@ -8,9 +6,10 @@ import { HeaderProgress } from '@/components/ui/Header';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { onboardingRoutes } from '@/domains/onboarding/routes';
 import { t } from '@/lib/i18n';
 import { type TranslationKey } from '@/translations/ko';
+
+import { useIntroScreen } from './hooks/use-intro-screen';
 
 const INTRO_STEPS = [
   {
@@ -40,43 +39,16 @@ const INTRO_STEPS = [
 }>;
 
 export function IntroScreen() {
-  const router = useRouter();
-  const { step } = useLocalSearchParams<{ step?: string }>();
-  const initialStepIndex = getInitialStepIndex(step);
-  const [stepIndex, setStepIndex] = useState(initialStepIndex);
+  const {
+    stepIndex,
+    progressDots,
+    isFirstStep,
+    isLastStep,
+    handleBack,
+    handleNext,
+    handleStepSelect,
+  } = useIntroScreen();
   const activeStep = INTRO_STEPS[stepIndex];
-  const isLastStep = stepIndex === INTRO_STEPS.length - 1;
-  const isFirstStep = stepIndex === 0;
-  const progressDots = useMemo(() => INTRO_STEPS.map((_, index) => index), []);
-
-  const handleBack = useCallback(() => {
-    setStepIndex((currentIndex) => Math.max(0, currentIndex - 1));
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-        if (stepIndex <= 0) {
-          return false;
-        }
-
-        handleBack();
-
-        return true;
-      });
-
-      return () => subscription.remove();
-    }, [handleBack, stepIndex]),
-  );
-
-  const handleNext = () => {
-    if (isLastStep) {
-      router.replace(onboardingRoutes.recovery);
-      return;
-    }
-
-    setStepIndex((currentIndex) => currentIndex + 1);
-  };
 
   return (
     <ImageBackground
@@ -110,7 +82,7 @@ export function IntroScreen() {
                   accessibilityState={{ selected: dotIndex === stepIndex }}
                   hitSlop={8}
                   style={[styles.dot, dotIndex === stepIndex && styles.activeDot]}
-                  onPress={() => setStepIndex(dotIndex)}
+                  onPress={() => handleStepSelect(dotIndex)}
                 />
               ))}
             </View>
@@ -135,16 +107,6 @@ export function IntroScreen() {
       </ScreenLayout>
     </ImageBackground>
   );
-}
-
-function getInitialStepIndex(step: string | undefined): number {
-  const parsedStep = Number(step);
-
-  if (!Number.isInteger(parsedStep)) {
-    return 0;
-  }
-
-  return Math.min(INTRO_STEPS.length - 1, Math.max(0, parsedStep));
 }
 
 const styles = StyleSheet.create({

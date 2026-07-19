@@ -1,69 +1,30 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { ActivityTimeRail } from '@/components/features/onboarding/activity-time-rail';
 import { Header, HeaderCancel } from '@/components/ui/Header';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
-import {
-  toggleActivityHourRange,
-  toggleContinuousSleepRange,
-} from '@/domains/onboarding/activity-time-ranges';
-import { useUpdateActivityPatternSettingsMutation } from '@/domains/onboarding/api/mutations';
-import { useActivityPatternSettingsQuery } from '@/domains/onboarding/api/queries';
 import { t } from '@/lib/i18n';
 
-import type { ActivityPatternSettings } from '@/domains/onboarding/model';
-
-const EMPTY_SETTINGS: ActivityPatternSettings = {
-  focusTimeRanges: [],
-  sleepyTimeRanges: [],
-  sleepTimeRanges: [],
-};
+import { useActivityPatternEditScreen } from './hooks/use-activity-pattern-edit-screen';
 
 export function ActivityPatternEditScreen() {
-  const router = useRouter();
-  const settingsQuery = useActivityPatternSettingsQuery();
-  const updateMutation = useUpdateActivityPatternSettingsMutation();
-  const [draft, setDraft] = useState<ActivityPatternSettings | null>(null);
-  const settings = draft ?? settingsQuery.data ?? EMPTY_SETTINGS;
-  const hasSleepTime = settings.sleepTimeRanges.length > 0;
-
-  const handleToggleHour = (rangeKey: keyof ActivityPatternSettings, hour: number) => {
-    setDraft({
-      ...settings,
-      [rangeKey]:
-        rangeKey === 'sleepTimeRanges'
-          ? toggleContinuousSleepRange(settings[rangeKey], hour)
-          : toggleActivityHourRange(settings[rangeKey], hour),
-    });
-  };
-
-  const handleConfirm = () => {
-    if (updateMutation.isPending || !hasSleepTime) {
-      return;
-    }
-
-    updateMutation.mutate(settings, {
-      onSuccess: () => router.back(),
-      onError: () => Alert.alert(t('settings.updateError')),
-    });
-  };
+  const { settings, hasSleepTime, isSubmitting, handleToggleHour, handleConfirm, handleCancel } =
+    useActivityPatternEditScreen();
 
   return (
     <ScreenLayout backgroundColor={colors.onboardingMutedBackground} contentStyle={styles.screen}>
       <Header
         title={t('settings.activityPattern')}
         left={
-          <HeaderCancel label={t('common.cancel')} color={colors.primary} onPress={router.back} />
+          <HeaderCancel label={t('common.cancel')} color={colors.primary} onPress={handleCancel} />
         }
         right={
           <HeaderCancel
-            label={updateMutation.isPending ? t('common.saving') : t('common.done')}
+            label={isSubmitting ? t('common.saving') : t('common.done')}
             color={hasSleepTime ? colors.primary : colors.gray[300]}
-            disabled={updateMutation.isPending || !hasSleepTime}
+            disabled={isSubmitting || !hasSleepTime}
             onPress={handleConfirm}
           />
         }

@@ -37,6 +37,7 @@ export function ConditionMetricCard({ metric }: ConditionMetricCardProps) {
 
 const styles = StyleSheet.create({
   card: {
+    flex: 1,
     height: CARD_HEIGHT,
     justifyContent: 'center',
     gap: spacing[1],

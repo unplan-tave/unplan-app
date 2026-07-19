@@ -8,6 +8,7 @@ import type { TransportOptionId } from '@/domains/onboarding/model';
 
 const TOAST_DURATION_MS = 3000;
 
+/** 기본 이동 수단 설정의 조회·저장 상태를 관리합니다. */
 export function useTransportSettings() {
   const settingsQuery = useTransportSettingsQuery();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

@@ -1,6 +1,4 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ActivityIndicator, Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { CardToast } from '@/components/domain/schedule/card-toast';
 import { SettingsCheckboxRow } from '@/components/features/settings/settings-checkbox-row';
@@ -11,53 +9,33 @@ import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 
-import { useRecoveryMethods } from './hooks/use-recovery-methods';
-
-import type { RecoveryOptionId } from '@/domains/onboarding/model';
-import type { TranslationKey } from '@/translations/ko';
-
-const DEFAULT_OPTION_DEFINITIONS = [
-  { id: 'nap', labelKey: 'settings.recovery.nap' },
-  { id: 'music', labelKey: 'settings.recovery.music' },
-  { id: 'walk', labelKey: 'settings.recovery.walk' },
-  { id: 'stretching', labelKey: 'settings.recovery.stretching' },
-  { id: 'food', labelKey: 'settings.recovery.food' },
-] satisfies ReadonlyArray<{ id: Exclude<RecoveryOptionId, 'custom'>; labelKey: TranslationKey }>;
+import { useRecoveryMethodsScreen } from './hooks/use-recovery-methods-screen';
 
 export function RecoveryMethodsScreen() {
-  const router = useRouter();
   const {
     settings,
     toggleDefaultOption,
     removeCustomMethod,
-    addCustomMethod,
     customMethodMaxLength,
     isLoading,
     isUpdating,
     errorMessage,
     dismissError,
-  } = useRecoveryMethods();
-  const [isCustomEditing, setIsCustomEditing] = useState(false);
-  const [customDraft, setCustomDraft] = useState('');
-
-  const handleCustomSubmit = () => {
-    const normalizedDraft = customDraft.trim();
-
-    if (!normalizedDraft) {
-      return;
-    }
-
-    addCustomMethod(normalizedDraft);
-    setCustomDraft('');
-    setIsCustomEditing(false);
-    Keyboard.dismiss();
-  };
+    isCustomEditing,
+    customDraft,
+    setCustomDraft,
+    openCustomEditor,
+    handleCustomSubmit,
+    handleCustomBlur,
+    handleBack,
+    defaultOptions,
+  } = useRecoveryMethodsScreen();
 
   return (
     <ScreenLayout backgroundColor={colors.gray[50]} contentStyle={styles.screen}>
       <Header
         title={t('settings.recoveryMethods')}
-        left={<HeaderBack onPress={router.back} />}
+        left={<HeaderBack onPress={handleBack} />}
         right={<View style={styles.headerSide} />}
         style={styles.header}
       />
@@ -69,10 +47,10 @@ export function RecoveryMethodsScreen() {
             </View>
           ) : (
             <>
-              {DEFAULT_OPTION_DEFINITIONS.map((option) => (
+              {defaultOptions.map((option) => (
                 <SettingsCheckboxRow
                   key={option.id}
-                  label={t(option.labelKey)}
+                  label={option.label}
                   checked={settings.recoveryOptionIds.includes(option.id)}
                   disabled={isUpdating}
                   onToggle={() => toggleDefaultOption(option.id)}
@@ -101,12 +79,7 @@ export function RecoveryMethodsScreen() {
                     style={styles.customInput}
                     onChangeText={setCustomDraft}
                     onSubmitEditing={handleCustomSubmit}
-                    onBlur={() => {
-                      if (!customDraft.trim()) {
-                        setIsCustomEditing(false);
-                        setCustomDraft('');
-                      }
-                    }}
+                    onBlur={handleCustomBlur}
                   />
                 </View>
               ) : (
@@ -115,7 +88,7 @@ export function RecoveryMethodsScreen() {
                   accessibilityRole="button"
                   style={({ pressed }) => [styles.customAddRow, pressed && styles.pressed]}
                   disabled={isUpdating}
-                  onPress={() => setIsCustomEditing(true)}
+                  onPress={openCustomEditor}
                 >
                   <Icon name="plus" size={20} color={colors.gray[400]} />
                   <Typography variant="bodyM" color={colors.gray[400]}>

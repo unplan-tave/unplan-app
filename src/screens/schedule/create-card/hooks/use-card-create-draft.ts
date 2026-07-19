@@ -16,6 +16,7 @@ interface UseCardCreateDraftParams {
   values: CardFormValues;
 }
 
+/** 카드 생성 draft의 필드 입력 상태를 관리합니다. */
 export function useCardCreateDraft({
   cardId,
   initialCardType,

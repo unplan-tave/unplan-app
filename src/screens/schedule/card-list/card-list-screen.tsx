@@ -1,16 +1,16 @@
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ConditionScoreBackground } from '@/components/domain/condition/condition-score-background';
 import { CardListEmptyState } from '@/components/features/card-list/card-list-empty-state';
 import { CardListFilterChips } from '@/components/features/card-list/card-list-filter-chips';
 import { CardListSearchBar } from '@/components/features/card-list/card-list-search-bar';
 import { CardListSections } from '@/components/features/card-list/card-list-sections';
-import { HomeBottomNav } from '@/components/features/home/home-bottom-nav';
-import { AppBackground } from '@/components/ui/AppBackground';
+import { CardListStatusMessage } from '@/components/features/card-list/card-list-status-message';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, spacing } from '@/constants/theme';
+import { useTodayConditionScore } from '@/hooks/use-condition-score';
 
 import { useCardListScreen } from './hooks/use-card-list-screen';
 
@@ -19,8 +19,8 @@ const CONTENT_MAX_WIDTH = 353;
 const BOTTOM_NAV_HEIGHT = 66;
 
 export function CardListScreen() {
-  const insets = useSafeAreaInsets();
   const {
+    insets,
     filters,
     expandedFilter,
     personalTags,
@@ -30,16 +30,15 @@ export function CardListScreen() {
     isLoading,
     isError,
     handleCardPress,
-    handleCreateCard,
     handleSearchPress,
     handleSearchClear,
-    handleNavItemPress,
     handleChangeCardType,
     toggleExpandedFilter,
     toggleProgressStatus,
     toggleConditionTag,
     togglePersonalTag,
   } = useCardListScreen();
+  const conditionScore = useTodayConditionScore();
 
   return (
     <ScreenLayout
@@ -48,7 +47,7 @@ export function CardListScreen() {
       useSafeArea={false}
     >
       <StatusBar style="light" />
-      <AppBackground />
+      <ConditionScoreBackground score={conditionScore} />
       <View style={styles.canvas}>
         <ScrollView
           style={styles.scrollView}
@@ -100,26 +99,8 @@ export function CardListScreen() {
             />
           )}
         </ScrollView>
-
-        <View style={[styles.footer, { bottom: insets.bottom + spacing[2] }]}>
-          <HomeBottomNav
-            value="cardList"
-            onAddPress={handleCreateCard}
-            onItemPress={handleNavItemPress}
-          />
-        </View>
       </View>
     </ScreenLayout>
-  );
-}
-
-function CardListStatusMessage({ message }: { message: string }) {
-  return (
-    <View style={styles.statusMessage}>
-      <Typography variant="bodyM" color={colors.gray.white} align="center">
-        {message}
-      </Typography>
-    </View>
   );
 }
 
@@ -151,20 +132,5 @@ const styles = StyleSheet.create({
     textShadowColor: colors.alpha.black35,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 5,
-  },
-  footer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: spacing[2],
-    alignItems: 'center',
-    paddingHorizontal: spacing[5],
-  },
-  statusMessage: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing[10],
-    paddingHorizontal: spacing[4],
   },
 });

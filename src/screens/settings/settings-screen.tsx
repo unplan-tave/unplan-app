@@ -1,72 +1,40 @@
-import Constants from 'expo-constants';
-import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { CardToast } from '@/components/domain/schedule/card-toast';
 import { SettingsList } from '@/components/features/settings/settings-list';
-import { GNB } from '@/components/ui/GNB';
 import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { useMemberProfileQuery } from '@/domains/member/api/queries';
-import { useTabNavigation } from '@/hooks/use-tab-navigation';
 import { t } from '@/lib/i18n';
 
-import { useAlarmSettings } from './hooks/use-alarm-settings';
+import { useSettingsScreen } from './hooks/use-settings-screen';
 
 export function SettingsScreen() {
-  const router = useRouter();
-  const profileQuery = useMemberProfileQuery();
   const {
-    scheduleEndNotification,
-    conditionRecordNotification,
-    recommendationPushEnabled,
-    setScheduleEndNotification,
-    setConditionRecordNotification,
-    setRecommendationPushEnabled,
-    errorMessage,
-    dismissError,
-    isLoading: isAlarmSettingsLoading,
-    isUpdating: isAlarmSettingsUpdating,
-  } = useAlarmSettings();
-  const isAlarmSettingsDisabled = isAlarmSettingsLoading || isAlarmSettingsUpdating;
-  const appVersion = Constants.expoConfig?.version ?? '1.0.0';
-  const profileNickname = profileQuery.isLoading
-    ? ''
-    : profileQuery.data?.nickname || t('settings.profileFallback.nickname');
-  const profileEmail = profileQuery.isLoading
-    ? ''
-    : profileQuery.data?.email || t('settings.profileFallback.email');
-
-  const handleNavChange = useTabNavigation();
+    profile,
+    appVersion,
+    alarmSettings,
+    isAlarmSettingsDisabled,
+    handleAccountPress,
+    createSettingsNavigation,
+    handleTermsPress,
+  } = useSettingsScreen();
 
   return (
-    <ScreenLayout
-      backgroundColor={colors.gray[50]}
-      contentStyle={styles.screen}
-      footer={
-        <View style={styles.footer}>
-          <GNB
-            value="setting"
-            onChange={handleNavChange}
-            onAddPress={() => router.push('/card/new')}
-          />
-        </View>
-      }
-    >
+    <ScreenLayout backgroundColor={colors.gray[50]} contentStyle={styles.screen}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <Pressable
           accessibilityRole="button"
           style={({ pressed }) => [styles.profileCard, pressed && styles.pressed]}
-          onPress={() => router.push('/settings/account')}
+          onPress={handleAccountPress}
         >
           <View style={styles.profileText}>
             <Typography variant="titleL" color={colors.gray[900]}>
-              {profileNickname}
+              {profile.nickname}
             </Typography>
             <Typography variant="bodyM" color={colors.gray[500]}>
-              {profileEmail}
+              {profile.email}
             </Typography>
           </View>
           <Icon name="arrowRight" size={24} color={colors.gray[300]} />
@@ -78,22 +46,22 @@ export function SettingsScreen() {
               label: t('settings.scheduleEndNotification'),
               type: 'switch',
               disabled: isAlarmSettingsDisabled,
-              switchValue: scheduleEndNotification,
-              onSwitchChange: setScheduleEndNotification,
+              switchValue: alarmSettings.scheduleEndNotification,
+              onSwitchChange: alarmSettings.setScheduleEndNotification,
             },
             {
               label: t('settings.conditionRecordNotification'),
               type: 'switch',
               disabled: isAlarmSettingsDisabled,
-              switchValue: conditionRecordNotification,
-              onSwitchChange: setConditionRecordNotification,
+              switchValue: alarmSettings.conditionRecordNotification,
+              onSwitchChange: alarmSettings.setConditionRecordNotification,
             },
             {
               label: t('settings.recommendationScheduleNotification'),
               type: 'switch',
               disabled: isAlarmSettingsDisabled,
-              switchValue: recommendationPushEnabled,
-              onSwitchChange: setRecommendationPushEnabled,
+              switchValue: alarmSettings.recommendationPushEnabled,
+              onSwitchChange: alarmSettings.setRecommendationPushEnabled,
             },
           ]}
         />
@@ -102,23 +70,23 @@ export function SettingsScreen() {
           rows={[
             {
               label: t('settings.scheduleRecommendationCriteria'),
-              onPress: () => router.push('/settings/recommendation'),
+              onPress: createSettingsNavigation('/settings/recommendation'),
             },
             {
               label: t('settings.recoveryMethods'),
-              onPress: () => router.push('/settings/recovery'),
+              onPress: createSettingsNavigation('/settings/recovery'),
             },
             {
               label: t('settings.sleepCondition'),
-              onPress: () => router.push('/settings/sleep-condition'),
+              onPress: createSettingsNavigation('/settings/sleep-condition'),
             },
             {
               label: t('settings.activityPattern'),
-              onPress: () => router.push('/settings/activity-pattern'),
+              onPress: createSettingsNavigation('/settings/activity-pattern'),
             },
             {
               label: t('settings.defaultTransport'),
-              onPress: () => router.push('/settings/transport'),
+              onPress: createSettingsNavigation('/settings/transport'),
             },
           ]}
         />
@@ -132,16 +100,18 @@ export function SettingsScreen() {
             },
             {
               label: t('terms.service.title'),
-              onPress: () => router.push({ pathname: '/terms', params: { type: 'service' } }),
+              onPress: () => handleTermsPress('service'),
             },
             {
               label: t('terms.privacy.title'),
-              onPress: () => router.push({ pathname: '/terms', params: { type: 'privacy' } }),
+              onPress: () => handleTermsPress('privacy'),
             },
           ]}
         />
       </ScrollView>
-      {errorMessage ? <CardToast message={errorMessage} onClose={dismissError} /> : null}
+      {alarmSettings.errorMessage ? (
+        <CardToast message={alarmSettings.errorMessage} onClose={alarmSettings.dismissError} />
+      ) : null}
     </ScreenLayout>
   );
 }
@@ -172,14 +142,6 @@ const styles = StyleSheet.create({
   },
   profileText: {
     gap: 5,
-  },
-  footer: {
-    position: 'absolute',
-    right: 0,
-    bottom: 34,
-    left: 0,
-    alignItems: 'center',
-    paddingHorizontal: spacing[5],
   },
   pressed: {
     opacity: 0.72,

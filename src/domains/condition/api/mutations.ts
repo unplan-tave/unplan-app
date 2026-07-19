@@ -7,7 +7,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { aiRecommendationQueryKeys } from '@/domains/ai-recommendation/api/query-keys';
 import { measurementQueryKeys } from '@/domains/measurement/api/query-keys';
 
-import { submitConditionRecord } from './client';
+import { submitConditionRecord, submitConditionRecordDelete } from './client';
+import { conditionQueryKeys } from './query-keys';
 
 import type { ConditionRecordEntry, ConditionRecordInput } from '../model';
 import type { UseMutationOptions } from '@tanstack/react-query';
@@ -26,7 +27,23 @@ export function useSaveConditionRecordMutation(options?: ConditionRecordMutation
     onSuccess: (data, variables, onMutateResult, context) => {
       void queryClient.invalidateQueries({ queryKey: measurementQueryKeys.all });
       void queryClient.invalidateQueries({ queryKey: aiRecommendationQueryKeys.all });
+      void queryClient.invalidateQueries({ queryKey: conditionQueryKeys.all });
       options?.onSuccess?.(data, variables, onMutateResult, context);
+    },
+  });
+}
+
+/** 컨디션 기록 삭제와 관련 캐시 갱신을 처리합니다. */
+export function useDeleteConditionRecordMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: submitConditionRecordDelete,
+    onSuccess: (_, conditionId) => {
+      void queryClient.invalidateQueries({ queryKey: measurementQueryKeys.all });
+      void queryClient.invalidateQueries({ queryKey: aiRecommendationQueryKeys.all });
+      void queryClient.invalidateQueries({ queryKey: conditionQueryKeys.all });
+      queryClient.removeQueries({ queryKey: conditionQueryKeys.detail(conditionId) });
     },
   });
 }

@@ -5,8 +5,8 @@
  * Unplan Server API Documentation
  * OpenAPI spec version: v1.0.0
  */
-import type { PageResponseConditionRecord } from './pageResponseConditionRecord';
-import type { PageResponseSleepRecord } from './pageResponseSleepRecord';
+import type { ConditionRecord } from './conditionRecord';
+import type { SleepRecord } from './sleepRecord';
 
 export interface MeasurementRecordResponse {
   date?: string;
@@ -17,6 +17,8 @@ export interface MeasurementRecordResponse {
   mind_score_percent?: number;
   sleep_score?: number;
   sleep_duration_minutes?: number;
-  conditions?: PageResponseConditionRecord;
-  sleeps?: PageResponseSleepRecord;
+  conditions?: ConditionRecord[];
+  sleeps?: SleepRecord[];
+  is_energy_recorded?: boolean;
+  is_sleep_recorded?: boolean;
 }

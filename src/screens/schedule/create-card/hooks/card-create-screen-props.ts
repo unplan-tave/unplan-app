@@ -28,6 +28,7 @@ interface CreateCardCreateScreenPropsParams {
   tagFeedback: ReturnType<typeof useCardCreateTags>['tagFeedback'];
 }
 
+/** 카드 생성 화면 JSX에 전달할 props를 조합합니다. */
 export function createCardCreateScreenProps({
   control,
   activeTab,
@@ -100,13 +101,15 @@ export function createCardCreateScreenProps({
       visible: sheets.tagSheetTab !== null,
       activeTab: sheets.tagSheetTab ?? 'condition',
       selectedConditionTagId: sheets.tagSheetSelectedId,
-      personalTags: draft.personalTags,
+      personalTags: sheets.personalTagsForPicker,
       selectedPersonalTagIds: values.personalTagIds,
+      selectedPersonalTagLabels: values.personalTagLabels,
+      isPersonalTagsLoading: sheets.isPersonalTagsLoading,
+      isPersonalTagsError: sheets.isPersonalTagsError,
       onSwitchTab: sheets.switchTagTab,
       onClose: sheets.closeTagSheet,
       onSelectConditionTag: sheets.selectConditionTag,
       onDoneConditionTag: sheets.confirmConditionTag,
-      onCreatePersonalTag: draft.createPersonalTag,
       onDonePersonalTags: sheets.confirmPersonalTags,
     },
     dateTimeSheetProps: {

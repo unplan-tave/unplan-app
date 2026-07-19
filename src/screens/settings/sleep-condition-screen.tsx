@@ -1,64 +1,57 @@
-import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { SettingsList } from '@/components/features/settings/settings-list';
 import { Header, HeaderBack, HeaderCancel } from '@/components/ui/Header';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { colors, spacing } from '@/constants/theme';
-import { useSleepConditionSettingsQuery } from '@/domains/onboarding/api/queries';
-import { formatSleepDurationLabel } from '@/domains/onboarding/sleep-condition';
 import { t } from '@/lib/i18n';
 
+import { useSleepConditionScreen } from './hooks/use-sleep-condition-screen';
+
 export function SleepConditionScreen() {
-  const router = useRouter();
-  const settingsQuery = useSleepConditionSettingsQuery();
-  const settings = settingsQuery.data;
+  const { values, handleBack, handleEdit } = useSleepConditionScreen();
 
   return (
     <ScreenLayout backgroundColor={colors.gray[50]} contentStyle={styles.screen}>
       <Header
         title={t('settings.sleepCondition.title')}
-        left={<HeaderBack onPress={router.back} />}
+        left={<HeaderBack onPress={handleBack} />}
         right={
-          <HeaderCancel
-            label={t('settings.edit')}
-            color={colors.primary}
-            onPress={() => router.push('/settings/sleep-condition-edit')}
-          />
+          <HeaderCancel label={t('settings.edit')} color={colors.primary} onPress={handleEdit} />
         }
         style={styles.header}
       />
       <View style={styles.content}>
-        {settings ? (
+        {values ? (
           <SettingsList
             rows={[
               {
                 label: t('settings.sleepCondition.risk'),
-                value: `${formatSleepDurationLabel(0)} ~ ${formatSleepDurationLabel(settings.dangerThresholdMinutes)}`,
+                value: values.risk,
                 type: 'text',
                 muted: true,
               },
               {
                 label: t('settings.sleepCondition.lack'),
-                value: `${formatSleepDurationLabel(settings.dangerThresholdMinutes + 1)} ~ ${formatSleepDurationLabel(settings.lackThresholdMinutes)}`,
+                value: values.lack,
                 type: 'text',
                 muted: true,
               },
               {
                 label: t('settings.sleepCondition.optimal'),
-                value: `${formatSleepDurationLabel(settings.lackThresholdMinutes + 1)} ~ ${formatSleepDurationLabel(settings.optimalThresholdMinutes)}`,
+                value: values.optimal,
                 type: 'text',
                 muted: true,
               },
               {
                 label: t('settings.sleepCondition.excess'),
-                value: `${formatSleepDurationLabel(settings.optimalThresholdMinutes + 1)} ~`,
+                value: values.excess,
                 type: 'text',
                 muted: true,
               },
               {
                 label: t('settings.sleepCondition.targetSleep'),
-                value: formatSleepDurationLabel(settings.targetSleepMinutes),
+                value: values.target,
                 type: 'text',
                 muted: true,
                 dividerAbove: true,

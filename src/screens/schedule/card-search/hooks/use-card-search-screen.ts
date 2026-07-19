@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { canSubmitCardSearch, normalizeCardSearchQuery } from '@/domains/schedule/search';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 
+/** 카드 검색 화면의 입력 상태와 목록 이동을 관리합니다. */
 export function useCardSearchScreen() {
   const recentSearches = useScheduleStore((store) => store.cardRecentSearches);
   const addRecentSearch = useScheduleStore((store) => store.addCardRecentSearch);

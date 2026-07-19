@@ -1,21 +1,17 @@
-import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { ActivityTimeRail } from '@/components/features/onboarding/activity-time-rail';
 import { OnboardingStepLayout } from '@/components/features/onboarding/onboarding-step-layout';
 import { colors } from '@/constants/theme';
-import { onboardingRoutes } from '@/domains/onboarding/routes';
-import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
 import { t } from '@/lib/i18n';
+
+import { useActivityScreen } from './hooks/use-activity-screen';
 
 const ACTIVITY_RAILS_MARGIN_TOP = 57;
 const ACTIVITY_RAILS_GAP = 60;
 
 export function ActivityScreen() {
-  const router = useRouter();
-  const preferences = useOnboardingStore((state) => state.preferences);
-  const toggleActivityHour = useOnboardingStore((state) => state.toggleActivityHour);
-  const hasSleepTime = preferences.sleepTimeRanges.length > 0;
+  const { preferences, toggleActivityHour, hasSleepTime, handleConfirm } = useActivityScreen();
 
   return (
     <OnboardingStepLayout
@@ -26,7 +22,7 @@ export function ActivityScreen() {
       titleMinHeight={34}
       ctaDisabled={!hasSleepTime}
       ctaCaption={null}
-      onConfirm={() => router.push(onboardingRoutes.transport)}
+      onConfirm={handleConfirm}
     >
       <View style={styles.rails}>
         <ActivityTimeRail

@@ -3,8 +3,11 @@ import {
   formatCalendarDateLabel,
   formatDateValue,
   getWeekStart,
+  isSameDate,
   startOfDay,
 } from '@/lib/utils/date';
+
+import type { DailyScheduleGroup, MonthlyScheduleCount } from '@/domains/schedule/model';
 
 export { formatDateValue, isSameDate } from '@/lib/utils/date';
 
@@ -79,4 +82,40 @@ export function isWithinFutureDays(date: Date, days: number, today = new Date())
 
 export function getHomeDateLabel(date: Date) {
   return formatCalendarDateLabel(date);
+}
+
+export function buildHomeCalendarDays({
+  dateValues,
+  monthSchedules,
+  selectedDate,
+  viewMode,
+  weekSchedules,
+}: {
+  dateValues: string[];
+  monthSchedules: MonthlyScheduleCount[];
+  selectedDate: Date;
+  viewMode: HomeViewMode;
+  weekSchedules: DailyScheduleGroup[];
+}): HomeCalendarDay[] {
+  const today = new Date();
+  const weekScheduleMap = new Map(weekSchedules.map((group) => [group.date, group.schedules]));
+  const monthScheduleMap = new Map(monthSchedules.map((item) => [item.date, item.count]));
+
+  return dateValues.map((dateValue) => {
+    const date = toHomeCalendarDate(dateValue);
+    const weekSchedulesForDate = weekScheduleMap.get(dateValue) ?? [];
+    const monthScheduleCount = monthScheduleMap.get(dateValue) ?? 0;
+
+    return {
+      date,
+      dateValue,
+      day: date.getDate(),
+      inCurrentMonth: date.getMonth() === selectedDate.getMonth(),
+      isToday: isSameDate(date, today),
+      isSelected: isSameDate(date, selectedDate),
+      hasMemo: false,
+      scheduleCount: viewMode === 'weekly' ? weekSchedulesForDate.length : monthScheduleCount,
+      previewTitles: weekSchedulesForDate.map((schedule) => schedule.title),
+    };
+  });
 }
