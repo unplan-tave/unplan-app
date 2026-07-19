@@ -9,7 +9,7 @@ export const CONDITION_QUADRANT = {
   view: 100,
   center: 50,
   axisExtent: 40,
-  markerSpan: 44,
+  markerSpan: 44.16,
   gridDivisions: 6,
   markerSize: 16,
   valueSize: 22,

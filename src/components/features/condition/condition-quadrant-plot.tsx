@@ -1,5 +1,5 @@
 import { type DimensionValue, Pressable, StyleSheet, View } from 'react-native';
-import Svg, { Defs, G, Line, Marker, Path, Rect } from 'react-native-svg';
+import Svg, { Defs, G, Line, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
@@ -31,13 +31,25 @@ interface ConditionQuadrantPlotProps {
 
 const VIEW = 100;
 const CENTER = VIEW / 2;
-const AXIS_EXTENT = 40;
-const MARKER_SPAN = 44;
+const GRID_INSET = 5.94;
+const GRID_SIZE = 88.32;
+const MARKER_SPAN = GRID_SIZE / 2;
 const GRID_DIVISIONS = 6;
+const FIGMA_TO_VIEW_SCALE = VIEW / 313.515;
+const HORIZONTAL_AXIS = {
+  x: 68.2575,
+  y: 153.078,
+  path: 'M0.146447 3.32843C-0.0488155 3.52369 -0.0488155 3.84027 0.146447 4.03553L3.32843 7.21751C3.52369 7.41278 3.84027 7.41278 4.03553 7.21751C4.2308 7.02225 4.2308 6.70567 4.03553 6.51041L1.20711 3.68198L4.03553 0.853554C4.2308 0.658291 4.2308 0.341709 4.03553 0.146447C3.84027 -0.0488155 3.52369 -0.0488155 3.32843 0.146447L0.146447 3.32843ZM177.857 4.03553C178.053 3.84027 178.053 3.52369 177.857 3.32843L174.675 0.146447C174.48 -0.0488155 174.164 -0.0488155 173.968 0.146447C173.773 0.341709 173.773 0.658291 173.968 0.853554L176.797 3.68198L173.968 6.51041C173.773 6.70567 173.773 7.02225 173.968 7.21751C174.164 7.41278 174.48 7.41278 174.675 7.21751L177.857 4.03553ZM0.5 3.68198V4.18198H177.504V3.68198V3.18198H0.5V3.68198Z',
+} as const;
+const VERTICAL_AXIS = {
+  x: 157.9325,
+  y: 56.59,
+  path: 'M0.146447 3.32843C-0.0488155 3.52369 -0.0488155 3.84027 0.146447 4.03553L3.32843 7.21751C3.52369 7.41278 3.84027 7.41278 4.03553 7.21751C4.2308 7.02225 4.2308 6.70567 4.03553 6.51041L1.20711 3.68198L4.03553 0.853554C4.2308 0.658291 4.2308 0.341709 4.03553 0.146447C3.84027 -0.0488155 3.52369 -0.0488155 3.32843 0.146447L0.146447 3.32843ZM201.91 4.03553C202.105 3.84027 202.105 3.52369 201.91 3.32843L198.728 0.146447C198.533 -0.0488155 198.216 -0.0488155 198.021 0.146447C197.826 0.341709 197.826 0.658291 198.021 0.853554L200.85 3.68198L198.021 6.51041C197.826 6.70567 197.826 7.02225 198.021 7.21751C198.216 7.41278 198.533 7.41278 198.728 7.21751L201.91 4.03553ZM0.5 3.68198V4.18198H201.557V3.68198V3.18198H0.5V3.68198Z',
+} as const;
 
 const GRID_LINES = Array.from(
   { length: GRID_DIVISIONS - 1 },
-  (_, index) => ((index + 1) * VIEW) / GRID_DIVISIONS,
+  (_, index) => GRID_INSET + ((index + 1) * GRID_SIZE) / GRID_DIVISIONS,
 );
 
 /** Body(세로)·Mind(가로) 2축 사분면에 컨디션 기록을 찍는 플롯입니다. */
@@ -58,24 +70,42 @@ export function ConditionQuadrantPlot({
     <View style={styles.container} onLayout={interaction.onLayout}>
       <Svg style={StyleSheet.absoluteFill} viewBox={`0 0 ${VIEW} ${VIEW}`}>
         <Defs>
-          <Marker id="axisArrow" markerWidth={6} markerHeight={6} refX={3} refY={3} orient="auto">
-            <Path
-              d="M0.5 0.5 L4.5 3 L0.5 5.5"
-              fill="none"
-              stroke={colors.gray[300]}
-              strokeWidth={0.8}
-            />
-          </Marker>
+          <RadialGradient id="conditionQuadrantBackground" cx="50%" cy="50%" r="50%">
+            <Stop offset="0" stopColor={colors.conditionGraph.center} stopOpacity={0.8} />
+            <Stop offset="0.125" stopColor={colors.conditionGraph.inner} stopOpacity={0.825} />
+            <Stop offset="0.25" stopColor={colors.conditionGraph.middle} stopOpacity={0.85} />
+            <Stop offset="0.5" stopColor={colors.conditionGraph.outer} stopOpacity={0.9} />
+            <Stop offset="0.75" stopColor={colors.conditionGraph.edge} stopOpacity={0.95} />
+            <Stop offset="1" stopColor={colors.gray.white} stopOpacity={1} />
+          </RadialGradient>
         </Defs>
 
         <Rect
-          x={4}
-          y={4}
-          width={VIEW - 8}
-          height={VIEW - 8}
-          rx={4}
+          x={0}
+          y={0}
+          width={VIEW}
+          height={VIEW}
+          rx={5.1}
+          fill="url(#conditionQuadrantBackground)"
+          opacity={0.5}
+        />
+        <Rect
+          x={0}
+          y={0}
+          width={VIEW}
+          height={VIEW}
+          rx={5.1}
           fill="none"
-          stroke={colors.gray[200]}
+          stroke={colors.gray.white}
+          strokeWidth={0.6}
+        />
+        <Rect
+          x={GRID_INSET}
+          y={GRID_INSET}
+          width={GRID_SIZE}
+          height={GRID_SIZE}
+          fill="none"
+          stroke={colors.gray[300]}
           strokeWidth={0.6}
         />
 
@@ -83,45 +113,39 @@ export function ConditionQuadrantPlot({
           <G key={`grid-${offset}`}>
             <Line
               x1={offset}
-              y1={4}
+              y1={GRID_INSET}
               x2={offset}
-              y2={VIEW - 4}
-              stroke={colors.gray[200]}
+              y2={GRID_INSET + GRID_SIZE}
+              stroke={colors.gray[300]}
               strokeWidth={0.5}
-              opacity={0.6}
+              opacity={0.2}
             />
             <Line
-              x1={4}
+              x1={GRID_INSET}
               y1={offset}
-              x2={VIEW - 4}
+              x2={GRID_INSET + GRID_SIZE}
               y2={offset}
-              stroke={colors.gray[200]}
+              stroke={colors.gray[300]}
               strokeWidth={0.5}
-              opacity={0.6}
+              opacity={0.2}
             />
           </G>
         ))}
 
-        <Line
-          x1={CENTER}
-          y1={CENTER - AXIS_EXTENT}
-          x2={CENTER}
-          y2={CENTER + AXIS_EXTENT}
-          stroke={colors.gray[300]}
-          strokeWidth={0.8}
-          markerStart="url(#axisArrow)"
-          markerEnd="url(#axisArrow)"
+        <Path
+          d={HORIZONTAL_AXIS.path}
+          fill={colors.gray[400]}
+          transform={`translate(${HORIZONTAL_AXIS.x * FIGMA_TO_VIEW_SCALE} ${
+            HORIZONTAL_AXIS.y * FIGMA_TO_VIEW_SCALE
+          }) scale(${FIGMA_TO_VIEW_SCALE})`}
         />
-        <Line
-          x1={CENTER - AXIS_EXTENT}
-          y1={CENTER}
-          x2={CENTER + AXIS_EXTENT}
-          y2={CENTER}
-          stroke={colors.gray[300]}
-          strokeWidth={0.8}
-          markerStart="url(#axisArrow)"
-          markerEnd="url(#axisArrow)"
-        />
+        <G
+          transform={`translate(${VERTICAL_AXIS.x * FIGMA_TO_VIEW_SCALE} ${
+            VERTICAL_AXIS.y * FIGMA_TO_VIEW_SCALE
+          }) rotate(90) scale(${FIGMA_TO_VIEW_SCALE})`}
+        >
+          <Path d={VERTICAL_AXIS.path} fill={colors.gray[400]} />
+        </G>
       </Svg>
 
       {onSelect ? (
@@ -142,7 +166,7 @@ export function ConditionQuadrantPlot({
       ) : null}
 
       <Typography
-        variant="bodyM"
+        variant="bodyS"
         color={colors.primary}
         pointerEvents="none"
         style={[styles.label, styles.top]}
@@ -150,7 +174,7 @@ export function ConditionQuadrantPlot({
         Body
       </Typography>
       <Typography
-        variant="bodyM"
+        variant="bodyS"
         color={colors.secondary}
         pointerEvents="none"
         style={[styles.label, styles.bottom]}
@@ -158,7 +182,7 @@ export function ConditionQuadrantPlot({
         Body
       </Typography>
       <Typography
-        variant="bodyM"
+        variant="bodyS"
         color={colors.secondary}
         pointerEvents="none"
         style={[styles.label, styles.left]}
@@ -166,7 +190,7 @@ export function ConditionQuadrantPlot({
         Mind
       </Typography>
       <Typography
-        variant="bodyM"
+        variant="bodyS"
         color={colors.primary}
         pointerEvents="none"
         style={[styles.label, styles.right]}
@@ -261,7 +285,7 @@ function historyListPosition(
   };
 }
 
-const MARKER_SIZE = 16;
+const MARKER_SIZE = 20;
 const VALUE_SIZE = 22;
 
 const styles = StyleSheet.create({
@@ -271,7 +295,6 @@ const styles = StyleSheet.create({
     borderRadius: radius['2xl'],
     borderWidth: 1,
     borderColor: colors.gray.white,
-    backgroundColor: colors.alpha.white50,
     overflow: 'hidden',
   },
   label: {
