@@ -339,7 +339,6 @@ export function useHomeScreen() {
       dailyMessage: pageData.dailyMessage?.message,
       isError: pageData.isError,
       isLoading: pageData.isLoading,
-      selectedDateValue,
     }),
     currentTimeLabel: formatHomeCurrentTime(now),
     timelineCardsForView,

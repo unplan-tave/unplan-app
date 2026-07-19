@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 
 import { ConditionScoreBackground } from '@/components/domain/condition/condition-score-background';
@@ -29,12 +29,17 @@ export function ConditionScreen() {
       <StatusBar style="light" />
       <ConditionScoreBackground score={view.conditionScore} />
       <GestureDetector gesture={view.periodSwipeGesture}>
-        <View style={styles.canvas}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[styles.canvas, { paddingBottom: insets.bottom + spacing[6] }]}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={[styles.header, { paddingTop: insets.top + spacing[2] }]}>
             <ConditionHero
               score={view.conditionSummary.finalScore}
               year={view.dateLabel.year}
               dateLabel={view.dateLabel.date}
+              message={view.message}
               viewMode={view.periodMode}
               onDatePress={view.openCalendar}
               onViewModePress={view.cyclePeriodMode}
@@ -72,7 +77,7 @@ export function ConditionScreen() {
               </View>
             </View>
           </View>
-        </View>
+        </ScrollView>
       </GestureDetector>
 
       <ConditionCalendarModal
@@ -110,18 +115,19 @@ export function ConditionScreen() {
   );
 }
 
-/** Figma 기준 393×852 화면에서 헤더와 본문이 한 화면에 들어가는 높이입니다. */
 const HEADER_HEIGHT = 251;
 
 const styles = StyleSheet.create({
   content: {
     flex: 1,
-    overflow: 'hidden',
+  },
+  scrollView: {
+    flex: 1,
   },
   canvas: {
     width: '100%',
     maxWidth: CONTENT_MAX_WIDTH,
-    flex: 1,
+    flexGrow: 1,
     alignSelf: 'center',
   },
   header: {

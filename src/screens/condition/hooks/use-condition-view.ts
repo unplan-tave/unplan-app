@@ -14,6 +14,7 @@ import {
 import { useMeasurementAveragesQuery } from '@/domains/measurement/api/queries';
 import { toConditionSummaryFromAverage } from '@/domains/measurement/model';
 import { getMeasurementMonthRange, getMeasurementWeekRange } from '@/domains/measurement/period';
+import { useDailyMessageQuery } from '@/domains/schedule/api/queries';
 import { addDays, formatDateValue, getWeekStart } from '@/lib/utils/date';
 
 const WEEK_LENGTH = 7;
@@ -48,12 +49,14 @@ export function useConditionView() {
     };
   }, [periodMode, selectedDate, selectedDateValue]);
   const measurementAveragesQuery = useMeasurementAveragesQuery(averageInput);
+  const dailyMessageQuery = useDailyMessageQuery(selectedDateValue);
   const conditionSummary = useMemo(
     () => toConditionSummaryFromAverage(measurementAveragesQuery.data?.items[0]),
     [measurementAveragesQuery.data?.items],
   );
   const conditionScore = measurementAveragesQuery.data?.items[0]?.finalConditionScore ?? null;
   const metrics = useMemo(() => toConditionMetricCards(conditionSummary), [conditionSummary]);
+  const message = dailyMessageQuery.data?.message?.trim() ?? '';
   const dateLabel = useMemo(
     () => getConditionPeriodLabel(selectedDate, periodMode),
     [periodMode, selectedDate],
@@ -179,6 +182,7 @@ export function useConditionView() {
     conditionSummary,
     conditionScore,
     metrics,
+    message,
     dateLabel,
     calendar: {
       visible: isCalendarVisible,

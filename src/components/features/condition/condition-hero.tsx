@@ -5,7 +5,6 @@ import { Typography } from '@/components/ui/Typography';
 import { ViewModeButton } from '@/components/ui/ViewModeButton';
 import { CONDITION_HERO_SCORE } from '@/constants/condition-ui';
 import { colors, fontFamilyWeight, spacing } from '@/constants/theme';
-import { getConditionHeroCopy } from '@/domains/condition/hero-copy';
 
 import type { ViewModeButtonProps } from '@/components/ui/ViewModeButton';
 
@@ -13,6 +12,8 @@ interface ConditionHeroProps {
   score: number;
   year: string;
   dateLabel: string;
+  /** `/schedule/message`에서 받은 일자별 안내 문구입니다. */
+  message: string;
   viewMode: ViewModeButtonProps['mode'];
   onDatePress: () => void;
   onViewModePress: () => void;
@@ -23,6 +24,7 @@ export function ConditionHero({
   score,
   year,
   dateLabel,
+  message,
   viewMode,
   onDatePress,
   onViewModePress,
@@ -53,9 +55,11 @@ export function ConditionHero({
           </Pressable>
         </View>
       </View>
-      <Typography variant="titleS" color={colors.gray.white} style={styles.message}>
-        {getConditionHeroCopy(score)}
-      </Typography>
+      {message.length > 0 ? (
+        <Typography variant="titleS" color={colors.gray.white} style={styles.message}>
+          {message}
+        </Typography>
+      ) : null}
     </View>
   );
 }

@@ -1,5 +1,4 @@
 /** 홈 화면에서 쓰는 React 비의존 계산을 모읍니다. */
-import { getConditionCommentByDate } from '@/domains/condition/comment';
 import { getCardPersonalTagLabels } from '@/domains/schedule/list';
 import {
   getConditionTagById,
@@ -165,12 +164,10 @@ export function getHomeHeaderMessage({
   dailyMessage,
   isError,
   isLoading,
-  selectedDateValue,
 }: {
   dailyMessage?: string;
   isError: boolean;
   isLoading: boolean;
-  selectedDateValue: string;
 }) {
   if (dailyMessage?.trim()) {
     return dailyMessage;
@@ -184,5 +181,5 @@ export function getHomeHeaderMessage({
     return '오늘의 컨디션과 일정을 불러오고 있어요.';
   }
 
-  return getConditionCommentByDate(selectedDateValue);
+  return '';
 }
