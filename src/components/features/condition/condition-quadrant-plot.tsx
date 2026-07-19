@@ -63,7 +63,7 @@ export function ConditionQuadrantPlot({
     if (onSelect == null || size === 0) return;
 
     const { locationX, locationY } = event.nativeEvent;
-    const x = clampUnit((((locationX / size) * VIEW - CENTER) / MARKER_SPAN) * 1);
+    const x = clampUnit(((locationX / size) * VIEW - CENTER) / MARKER_SPAN);
     const y = clampUnit(-(((locationY / size) * VIEW - CENTER) / MARKER_SPAN));
     onSelect(x, y);
   };
