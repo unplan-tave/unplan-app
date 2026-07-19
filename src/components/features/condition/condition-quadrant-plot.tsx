@@ -10,7 +10,7 @@ import {
 import Svg, { Defs, G, Line, Marker, Path, Rect } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
-import { colors, radius } from '@/constants/theme';
+import { colors, radius, spacing } from '@/constants/theme';
 
 /** 정규화 좌표(-1~1). x는 오른쪽(+)이 높은 Mind, y는 위(+)가 높은 Body입니다. */
 export interface QuadrantPoint {
@@ -31,6 +31,12 @@ interface ConditionQuadrantPlotProps {
   onSelect?: (x: number, y: number) => void;
   /** 조회 모드: 마커를 눌렀을 때 호출됩니다. */
   onMarkerPress?: (point: QuadrantPoint) => void;
+  /** 활성 단일 마커 아래에 표시할 기록 시각입니다. */
+  activeMarkerTime?: string | null;
+  /** 겹친 활성 마커 옆에 표시할 오름차순 기록 시각입니다. */
+  activeMarkerTimes?: string[];
+  /** 마커·목록 밖을 눌렀을 때 선택을 해제합니다. */
+  onBackgroundPress?: () => void;
   /** 기록이 없을 때 중앙 원점 마커를 보여줍니다. */
   showOrigin?: boolean;
 }
@@ -53,6 +59,9 @@ export function ConditionQuadrantPlot({
   activeMarkerId = null,
   onSelect,
   onMarkerPress,
+  activeMarkerTime = null,
+  activeMarkerTimes = [],
+  onBackgroundPress,
   showOrigin = true,
 }: ConditionQuadrantPlotProps) {
   const [size, setSize] = useState(0);
@@ -146,6 +155,14 @@ export function ConditionQuadrantPlot({
           onPress={handleSelectPress}
         />
       ) : null}
+      {onSelect == null && onBackgroundPress != null ? (
+        <Pressable
+          accessibilityLabel="선택한 컨디션 기록 닫기"
+          accessibilityRole="button"
+          style={StyleSheet.absoluteFill}
+          onPress={onBackgroundPress}
+        />
+      ) : null}
 
       <Typography
         variant="bodyM"
@@ -187,33 +204,43 @@ export function ConditionQuadrantPlot({
       {points.map((point) => {
         const badge = point.count != null && point.count >= 2;
         const active = point.id === activeMarkerId;
-        const content = (
-          <>
-            {badge ? (
-              <Typography variant="caption" align="center" color={colors.gray.white}>
-                {point.count}
-              </Typography>
-            ) : null}
-          </>
-        );
+        const content = badge ? (
+          <Typography variant="caption" align="center" color={colors.gray.white}>
+            {point.count}
+          </Typography>
+        ) : null;
 
         if (onMarkerPress) {
           return (
-            <Pressable
-              key={point.id}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              hitSlop={8}
-              style={[
-                styles.marker,
-                badge && styles.markerBadge,
-                active && styles.markerActive,
-                positionStyle(point.x, point.y),
-              ]}
-              onPress={() => onMarkerPress(point)}
-            >
-              {content}
-            </Pressable>
+            <View key={point.id} style={[styles.markerAnchor, positionStyle(point.x, point.y)]}>
+              <Pressable
+                accessibilityLabel="Body Mind 기록"
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                hitSlop={8}
+                style={[styles.marker, badge && styles.markerBadge, active && styles.markerActive]}
+                onPress={() => onMarkerPress(point)}
+              >
+                {content}
+              </Pressable>
+              {active && !badge && activeMarkerTime != null ? (
+                <Typography variant="caption" align="center" color={colors.secondary}>
+                  {activeMarkerTime}
+                </Typography>
+              ) : null}
+              {active && badge && activeMarkerTimes.length > 0 ? (
+                <View style={[styles.historyList, historyListPosition(point.x, point.y)]}>
+                  {activeMarkerTimes.map((time, index) => (
+                    <View key={`${time}-${index}`}>
+                      {index > 0 ? <View style={styles.historyDivider} /> : null}
+                      <Typography variant="caption" align="center" color={colors.gray[700]}>
+                        {time}
+                      </Typography>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+            </View>
           );
         }
 
@@ -239,6 +266,21 @@ function positionStyle(x: number, y: number): { left: DimensionValue; top: Dimen
   return {
     left: `${CENTER + x * MARKER_SPAN}%`,
     top: `${CENTER - y * MARKER_SPAN}%`,
+  };
+}
+
+function historyListPosition(
+  x: number,
+  y: number,
+): {
+  left?: DimensionValue;
+  right?: DimensionValue;
+  top?: DimensionValue;
+  bottom?: DimensionValue;
+} {
+  return {
+    ...(x <= 0 ? { left: MARKER_SIZE / 2 } : { right: MARKER_SIZE / 2 }),
+    ...(y >= 0 ? { top: MARKER_SIZE / 2 } : { bottom: MARKER_SIZE / 2 }),
   };
 }
 
@@ -292,7 +334,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   marker: {
-    position: 'absolute',
     width: MARKER_SIZE,
     height: MARKER_SIZE,
     marginLeft: -MARKER_SIZE / 2,
@@ -300,7 +341,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primary,
+    backgroundColor: colors.gray[400],
   },
   markerBadge: {
     width: MARKER_SIZE + 4,
@@ -309,8 +350,31 @@ const styles = StyleSheet.create({
     marginTop: -(MARKER_SIZE + 4) / 2,
   },
   markerActive: {
-    borderWidth: 2,
+    backgroundColor: colors.primary,
+  },
+  markerAnchor: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: -MARKER_SIZE / 2,
+    marginTop: -MARKER_SIZE / 2,
+  },
+  historyList: {
+    position: 'absolute',
+    zIndex: 1,
+    minWidth: 60,
+    gap: spacing[1],
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[2],
+    borderRadius: radius.md,
+    borderWidth: 1,
     borderColor: colors.gray.white,
+    backgroundColor: colors.alpha.white70,
+  },
+  historyDivider: {
+    height: 1,
+    marginVertical: spacing[1],
+    backgroundColor: colors.gray[300],
   },
   valueDot: {
     position: 'absolute',
