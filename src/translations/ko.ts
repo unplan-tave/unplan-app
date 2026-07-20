@@ -178,6 +178,11 @@ export const ko = {
   'home.dailyMemo.mutationError': '메모를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.',
   'home.dailyMemo.placeholder': '1~20자 입력',
   'home.dailyMemo.title': '날짜별 메모',
+  'home.conditionPrompt.conditionAction': '컨디션 입력하기',
+  'home.conditionPrompt.description':
+    '지금의 에너지와 수면을 기록하면\n오늘에 맞는 일정을 추천해드려요.',
+  'home.conditionPrompt.dismiss': '나중에 할게요',
+  'home.conditionPrompt.title': '오늘의 컨디션을 기록해 주세요!',
   'onboarding.activity.focusTime': '집중 잘 되는 시간',
   'onboarding.activity.required': '필수 표시',
   'onboarding.activity.sleepTime': '수면 시간',

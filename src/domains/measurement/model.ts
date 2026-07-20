@@ -10,6 +10,8 @@ export type MeasurementAverageGroupBy = 'DAY' | 'WEEK' | 'MONTH';
 
 export interface DailyMeasurementSummary {
   date: string;
+  isEnergyRecorded: boolean;
+  isSleepRecorded: boolean;
   finalConditionScore: number | null;
   conditionLevel: string;
   conditionTag: string;

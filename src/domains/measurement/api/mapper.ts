@@ -31,6 +31,8 @@ export function toDailyMeasurementSummary(
 
   return {
     date: response?.date ?? '',
+    isEnergyRecorded: response?.is_energy_recorded ?? false,
+    isSleepRecorded: response?.is_sleep_recorded ?? false,
     finalConditionScore: response?.final_condition_score ?? null,
     conditionLevel: response?.condition_level ?? '',
     conditionTag: response?.condition_tag ?? '',
