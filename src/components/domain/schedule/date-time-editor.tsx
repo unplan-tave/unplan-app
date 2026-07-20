@@ -58,22 +58,29 @@ export function DateTimeSheet({
   const [isWheelVisible, setIsWheelVisible] = useState(false);
   const [calendarBaseDate, setCalendarBaseDate] = useState(() => new Date());
   const [showTimeOrderError, setShowTimeOrderError] = useState(false);
+  const wasVisibleRef = useRef(false);
   const calendar = getCalendarMonth(calendarBaseDate);
 
   useEffect(() => {
-    if (visible) {
-      setDraft({
-        dateMode: value.dateMode,
-        dateStart: value.dateStart,
-        dateEnd: value.dateEnd,
-        timeStart: value.timeStart,
-        timeEnd: value.timeEnd,
-      });
-      setActiveTimeField(focus);
-      setIsWheelVisible(false);
-      setCalendarBaseDate(getInitialCalendarBaseDate(value.dateStart));
-      setShowTimeOrderError(false);
+    if (!visible) {
+      wasVisibleRef.current = false;
+      return;
     }
+
+    if (wasVisibleRef.current) return;
+
+    wasVisibleRef.current = true;
+    setDraft({
+      dateMode: value.dateMode,
+      dateStart: value.dateStart,
+      dateEnd: value.dateEnd,
+      timeStart: value.timeStart,
+      timeEnd: value.timeEnd,
+    });
+    setActiveTimeField(focus);
+    setIsWheelVisible(false);
+    setCalendarBaseDate(getInitialCalendarBaseDate(value.dateStart));
+    setShowTimeOrderError(false);
   }, [
     focus,
     value.dateEnd,
