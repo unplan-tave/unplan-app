@@ -22,6 +22,7 @@ import {
 } from '@/lib/api/model';
 
 import { getMonthDayFromDate } from '../recurrence';
+import { normalizeTimeToMinute } from '../time';
 
 import type {
   ConditionTagId,
@@ -36,6 +37,7 @@ import type {
   ScheduleDetail,
   ScheduleListItem,
   ScheduleMonthlyOverview,
+  ScheduleSearchPage,
   ScheduleStatus,
   ScheduleUpdateInput,
 } from '../model';
@@ -133,8 +135,8 @@ export function toScheduleListItem(response: ScheduleGetResponse): ScheduleListI
     id: response.schedule_id ?? 0,
     title: response.title ?? '',
     date: normalizeDateForView(response.date),
-    startTime: response.start_time ?? '',
-    endTime: response.end_time ?? '',
+    startTime: normalizeTimeToMinute(response.start_time ?? ''),
+    endTime: normalizeTimeToMinute(response.end_time ?? ''),
     estimatedMinutes: response.estimated_time ?? null,
     isQueue: response.is_queue ?? false,
     status: toScheduleStatus(response.status),
@@ -149,6 +151,21 @@ export function toScheduleSearchListItems(
   return (response?.data?.data ?? []).map(toScheduleSearchListItem);
 }
 
+/** 생성 DTO의 페이지 메타데이터를 화면에서 안전하게 쓸 수 있는 모델로 변환합니다. */
+export function toScheduleSearchPage(
+  response?: ApiResponsePageResponseScheduleSearchResponse,
+): ScheduleSearchPage {
+  const pagination = response?.data?.pagination;
+
+  return {
+    schedules: toScheduleSearchListItems(response),
+    page: pagination?.page ?? 0,
+    totalElements: pagination?.total_elements ?? 0,
+    totalPages: pagination?.total_pages ?? 0,
+    hasNext: pagination?.has_next ?? false,
+  };
+}
+
 function toScheduleSearchListItem(response: ScheduleSearchResponse): ScheduleListItem {
   const isQueue = response.start_time == null && response.end_time == null;
 
@@ -156,8 +173,8 @@ function toScheduleSearchListItem(response: ScheduleSearchResponse): ScheduleLis
     id: response.schedule_id ?? 0,
     title: response.title ?? '',
     date: normalizeDateForView(response.date),
-    startTime: response.start_time ?? '',
-    endTime: response.end_time ?? '',
+    startTime: normalizeTimeToMinute(response.start_time ?? ''),
+    endTime: normalizeTimeToMinute(response.end_time ?? ''),
     estimatedMinutes: response.estimated_time ?? null,
     isQueue,
     status: toScheduleStatus(response.status),
@@ -177,9 +194,11 @@ export function toScheduleSearchParams(input: {
   return {
     keyword: normalizeOptionalParam(input.keyword),
     isQueue: input.isQueue,
-    status: input.status?.map(toSearchScheduleStatus),
-    conditionTags: input.conditionTagIds?.map(toSearchConditionTag),
-    personalTags: input.personalTags?.filter((tag) => tag.trim().length > 0),
+    status: toOptionalArray(input.status?.map(toSearchScheduleStatus)),
+    conditionTags: toOptionalArray(input.conditionTagIds?.map(toSearchConditionTag)),
+    personalTags: toOptionalArray(
+      input.personalTags?.map((tag) => tag.trim()).filter((tag) => tag.length > 0),
+    ),
     page: input.page,
   };
 }
@@ -201,8 +220,8 @@ export function toScheduleDetail(response: ScheduleDetailResponse): ScheduleDeta
     id: response.schedule_id ?? 0,
     title: response.title ?? '',
     date: normalizeDateForView(response.date),
-    startTime: response.start_time ?? '',
-    endTime: response.end_time ?? '',
+    startTime: normalizeTimeToMinute(response.start_time ?? ''),
+    endTime: normalizeTimeToMinute(response.end_time ?? ''),
     estimatedMinutes: response.estimated_time ?? null,
     isQueue: response.is_queue ?? false,
     status: toScheduleStatus(response.status),
@@ -241,8 +260,8 @@ export function toScheduleCreateResult(response: ScheduleCreateResponse): Schedu
     id: response.schedule_id ?? 0,
     title: response.title ?? '',
     date: normalizeDateForView(response.date),
-    startTime: response.start_time ?? '',
-    endTime: response.end_time ?? '',
+    startTime: normalizeTimeToMinute(response.start_time ?? ''),
+    endTime: normalizeTimeToMinute(response.end_time ?? ''),
     estimatedMinutes: response.estimated_time ?? null,
     isQueue: response.is_queue ?? false,
   };
@@ -292,6 +311,7 @@ export function toScheduleUpdateRequest(input: ScheduleUpdateInput): ScheduleUpd
     title: input.title,
     condition_tag:
       input.conditionTagId == null ? undefined : conditionTagToUpdateDtoMap[input.conditionTagId],
+    personal_tags: input.personalTags,
     date: normalizeDateForRequest(input.date),
     start_time: input.startTime,
     end_time: input.endTime,
@@ -513,6 +533,10 @@ function normalizeDateForView(value?: string) {
 
 function normalizeDateForRequest(value?: string) {
   return value?.replace(/\./g, '-');
+}
+
+function toOptionalArray<T>(values?: T[]) {
+  return values != null && values.length > 0 ? values : undefined;
 }
 
 function normalizeOptionalParam(value: string | undefined) {

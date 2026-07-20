@@ -15,6 +15,7 @@ export function useConditionRecommendation(selectedDate: Date) {
   const [isSheetVisible, setIsSheetVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedRecoveryOptionId, setSelectedRecoveryOptionId] = useState<string | null>(null);
+  const [isKeepingQueueCard, setIsKeepingQueueCard] = useState(false);
   const selectedDateValue = formatDateValue(selectedDate);
 
   const recommendationQuery = useConditionRecommendationsQuery(selectedDateValue, {
@@ -56,6 +57,7 @@ export function useConditionRecommendation(selectedDate: Date) {
   const openSheet = useCallback(() => {
     setActiveIndex(0);
     setSelectedRecoveryOptionId(null);
+    setIsKeepingQueueCard(false);
     setIsSheetVisible(true);
   }, []);
 
@@ -66,11 +68,13 @@ export function useConditionRecommendation(selectedDate: Date) {
   const showPrevious = useCallback(() => {
     setActiveIndex((prev) => Math.max(0, prev - 1));
     setSelectedRecoveryOptionId(null);
+    setIsKeepingQueueCard(false);
   }, []);
 
   const showNext = useCallback(() => {
     setActiveIndex((prev) => Math.min(recommendations.length - 1, prev + 1));
     setSelectedRecoveryOptionId(null);
+    setIsKeepingQueueCard(false);
   }, [recommendations.length]);
 
   const acceptRecommendation = useCallback(() => {
@@ -96,9 +100,15 @@ export function useConditionRecommendation(selectedDate: Date) {
 
     acceptMutation.mutate({
       recommendId: activeRecommendation.recommendId,
-      keepQueueCard: false,
+      keepQueueCard: isKeepingQueueCard,
     });
-  }, [acceptMutation, activeRecommendation, freeSlot, selectedRecoveryOptionId]);
+  }, [
+    acceptMutation,
+    activeRecommendation,
+    freeSlot,
+    isKeepingQueueCard,
+    selectedRecoveryOptionId,
+  ]);
 
   /** 추천 시간 대신 사용자가 직접 시간을 정하는 경로. */
   const openManualTime = useCallback(() => {
@@ -106,22 +116,6 @@ export function useConditionRecommendation(selectedDate: Date) {
 
     router.push('/card/new');
   }, []);
-
-  /** "기존 큐 카드 유지하기" — 원본 큐 카드는 유지하고 핀 카드를 복제 생성합니다. */
-  const keepQueueCard = useCallback(() => {
-    if (
-      activeRecommendation == null ||
-      isRecoveryRecommendation(activeRecommendation) ||
-      activeRecommendation.recommendId == null
-    ) {
-      return;
-    }
-
-    acceptMutation.mutate({
-      recommendId: activeRecommendation.recommendId,
-      keepQueueCard: true,
-    });
-  }, [acceptMutation, activeRecommendation]);
 
   return {
     isSheetVisible,
@@ -138,8 +132,9 @@ export function useConditionRecommendation(selectedDate: Date) {
     showPrevious,
     showNext,
     selectRecoveryOption: setSelectedRecoveryOptionId,
+    isKeepingQueueCard,
+    toggleKeepQueueCard: () => setIsKeepingQueueCard((previous) => !previous),
     acceptRecommendation,
     openManualTime,
-    keepQueueCard,
   };
 }

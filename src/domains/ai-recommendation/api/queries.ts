@@ -43,17 +43,26 @@ export function useConditionRecommendationsQuery(
 }
 
 /** 특정 날짜의 일반 일정 추천을 조회합니다. */
-export function useScheduleRecommendationsQuery(date: string) {
+export function useScheduleRecommendationsQuery(
+  date: string,
+  options?: AiRecommendationQueryOptions<ScheduleRecommendation[]>,
+) {
   return useQuery<ScheduleRecommendation[]>({
+    ...options,
     queryKey: aiRecommendationQueryKeys.schedules(date),
     queryFn: () => fetchScheduleRecommendations(date),
-    enabled: date.length > 0,
+    enabled: date.length > 0 && (options?.enabled ?? true),
   });
 }
 
 /** 큐 카드별 추천 시간대를 조회합니다. */
-export function useQueueTimeRecommendationsQuery(scheduleId: number | null, days = 7) {
+export function useQueueTimeRecommendationsQuery(
+  scheduleId: number | null,
+  days = 7,
+  options?: AiRecommendationQueryOptions<QueueTimeRecommendationResult>,
+) {
   return useQuery<QueueTimeRecommendationResult>({
+    ...options,
     queryKey:
       scheduleId == null
         ? aiRecommendationQueryKeys.all
@@ -63,6 +72,6 @@ export function useQueueTimeRecommendationsQuery(scheduleId: number | null, days
 
       return fetchQueueTimeRecommendations(scheduleId, days);
     },
-    enabled: scheduleId != null,
+    enabled: scheduleId != null && (options?.enabled ?? true),
   });
 }

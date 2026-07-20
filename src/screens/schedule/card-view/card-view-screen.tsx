@@ -32,7 +32,12 @@ export function CardViewScreen() {
     openConvertSheet,
     closeConvertSheet,
     handleConvert,
+    handleAcceptRecommendation,
+    handleSearch14Days,
     handleEditDuration,
+    queueRecommendationCandidates,
+    isQueueRecommendationLoading,
+    queueRecommendationErrorMode,
     closeToast,
   } = useCardViewScreen();
 
@@ -81,8 +86,13 @@ export function CardViewScreen() {
       <ConvertToPinBottomSheet
         visible={isConvertSheetVisible}
         card={card}
+        candidates={queueRecommendationCandidates}
+        isRecommendationLoading={isQueueRecommendationLoading}
+        recommendationErrorMode={queueRecommendationErrorMode}
         onClose={closeConvertSheet}
         onConvert={handleConvert}
+        onAcceptRecommendation={handleAcceptRecommendation}
+        onSearch14Days={handleSearch14Days}
         onEditDuration={handleEditDuration}
       />
       {toast != null ? (

@@ -10,12 +10,10 @@ import { useActivityPatternSettingsQuery } from '@/domains/onboarding/api/querie
 
 import type { TimeRange } from '@/domains/onboarding/model';
 
-/** 시간 range 배열을 설정 목록에 표시할 문자열로 변환합니다. */
-function formatRangesValue(ranges: TimeRange[]): string {
+/** 시간 range 배열을 설정 목록에 표시할 문자열 목록으로 변환합니다. */
+function formatRangesValue(ranges: TimeRange[]): string[] {
   const contiguousRanges = toContiguousActivityRanges(ranges);
-  return contiguousRanges.length === 0
-    ? '-'
-    : contiguousRanges.map(formatActivityRangeLabel).join(', ');
+  return contiguousRanges.length === 0 ? ['-'] : contiguousRanges.map(formatActivityRangeLabel);
 }
 
 /** 활동 패턴 화면이 사용할 표시 모델과 이벤트를 반환합니다. */

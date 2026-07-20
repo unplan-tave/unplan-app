@@ -41,12 +41,12 @@ export function createCardCreateScreenProps({
   scroll,
   tagFeedback,
 }: CreateCardCreateScreenPropsParams) {
-  const selectedPersonalTagsById = draft.personalTags.filter((tag) =>
-    values.personalTagIds.includes(tag.id),
-  );
+  const selectedPersonalTagsById = draft.personalTags
+    .filter((tag) => values.personalTagIds.includes(tag.id))
+    .filter((tag, index, tags) => tags.findIndex((item) => item.label === tag.label) === index);
   const selectedPersonalTagLabels = new Set(selectedPersonalTagsById.map((tag) => tag.label));
-  const unmatchedPersonalTags = values.personalTagLabels
-    .filter((label) => !selectedPersonalTagLabels.has(label))
+  const unmatchedPersonalTags = [...new Set(values.personalTagLabels.map((label) => label.trim()))]
+    .filter((label) => label.length > 0 && !selectedPersonalTagLabels.has(label))
     .map((label) => ({
       id: `server-personal-tag:${label}`,
       label,

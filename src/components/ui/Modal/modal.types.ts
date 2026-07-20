@@ -14,6 +14,7 @@ export interface ModalProps extends Omit<RNModalProps, 'visible' | 'children'> {
   children: ReactNode;
   onClose?: () => void;
   contentStyle?: StyleProp<ViewStyle>;
+  overlayVariant?: 'default' | 'dimmed';
 }
 
 export interface ModalActionsProps {

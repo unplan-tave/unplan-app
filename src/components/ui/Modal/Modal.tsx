@@ -9,6 +9,7 @@ export function Modal({
   children,
   onClose,
   contentStyle,
+  overlayVariant = 'default',
   animationType = 'fade',
   transparent = true,
   ...props
@@ -21,7 +22,7 @@ export function Modal({
       onRequestClose={onClose}
       {...props}
     >
-      <View style={styles.overlay}>
+      <View style={[styles.overlay, overlayVariant === 'dimmed' && styles.overlayDimmed]}>
         <Pressable
           accessibilityLabel="모달 닫기"
           accessibilityRole="button"
@@ -41,6 +42,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
     backgroundColor: colors.alpha.black12,
+  },
+  overlayDimmed: {
+    backgroundColor: colors.alpha.black35,
   },
   content: {
     width: '100%',

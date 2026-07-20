@@ -1,34 +1,21 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useId, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
+import { DateTimeSheet } from '@/components/domain/schedule/date-time-editor';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { type CardFormValues, type CardItem, getCalendarMonth } from '@/domains/schedule/model';
+import { type CardFormValues, type CardItem, type DateTimeDraft } from '@/domains/schedule/model';
 import {
   createQueueToPinValuesFromCandidate,
-  formatDueDateForStorage,
-  getMockRecommendationCandidates,
-  parseDueDateToDate,
   type RecommendationCandidate,
 } from '@/domains/schedule/queue';
-import { isValidTimeRange, useTimeRangeValidation } from '@/hooks/use-time-range-validation';
+import { isValidTimeRange } from '@/hooks/use-time-range-validation';
 
-const WEEKDAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-const TIME_HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
-const TIME_MINUTES = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
-const DRUM_ITEM_HEIGHT = 32;
-const DRUM_PADDING = 2;
+import type { ScheduleRecommendation } from '@/domains/ai-recommendation/model';
 const SHEET_HEADER_MAX_WIDTH = 369;
-const DATE_CELL_SIZE = 32;
-
-const LOADING_STEPS = [
-  { ongoing: '일정 흐름을 확인하고 있어요...', done: '일정 흐름 확인을 완료했어요.' },
-  { ongoing: '소요 시간을 확인하고 있어요...', done: '소요 시간 확인을 완료했어요.' },
-  { ongoing: '컨디션 흐름을 확인하고 있어요...', done: '컨디션 흐름 확인을 완료했어요.' },
-];
 
 type SheetMode =
   | 'loading'
@@ -41,280 +28,246 @@ type SheetMode =
 export function ConvertToPinBottomSheet({
   visible,
   card,
+  candidates,
+  isRecommendationLoading,
+  recommendationErrorMode,
   onClose,
   onConvert,
+  onAcceptRecommendation,
+  onSearch14Days,
   onEditDuration,
 }: {
   visible: boolean;
   card: CardItem;
+  candidates: ScheduleRecommendation[];
+  isRecommendationLoading: boolean;
+  recommendationErrorMode: Extract<
+    SheetMode,
+    'error-no-duration' | 'error-7day' | 'error-14day'
+  > | null;
   onClose: () => void;
   onConvert: (values: CardFormValues, keepOriginal: boolean) => void;
+  onAcceptRecommendation: (recommendId: number, keepOriginal: boolean) => void;
+  onSearch14Days: () => void;
   onEditDuration: () => void;
 }) {
   const [mode, setMode] = useState<SheetMode>('loading');
-  const [loadingStep, setLoadingStep] = useState(0);
   const [candidateIndex, setCandidateIndex] = useState(0);
   const [keepOriginal, setKeepOriginal] = useState(true);
-  const [calendarBase, setCalendarBase] = useState(() => new Date());
-  const [selectedDate, setSelectedDate] = useState('');
+  const [manualStartDate, setManualStartDate] = useState('');
+  const [manualEndDate, setManualEndDate] = useState('');
   const [manualStartTime, setManualStartTime] = useState('14:00');
   const [manualEndTime, setManualEndTime] = useState('15:00');
-  const [activeTimeField, setActiveTimeField] = useState<'start' | 'end'>('start');
-  const [isTimeWheelVisible, setIsTimeWheelVisible] = useState(false);
-  const [useOneHourDuration, setUseOneHourDuration] = useState(false);
-  const handleShowCalendar = useCallback(() => setIsTimeWheelVisible(false), []);
-  const isReSearchRef = useRef(false);
-
-  const candidates = useMemo(() => getMockRecommendationCandidates(), []);
   const currentCandidate = candidates[candidateIndex] ?? candidates[0];
 
   useEffect(() => {
     if (!visible) return;
 
-    setLoadingStep(0);
     setCandidateIndex(0);
     setKeepOriginal(true);
-    setUseOneHourDuration(false);
-    isReSearchRef.current = false;
-
-    if (card.durationUnknown ?? false) {
-      setMode('error-no-duration');
-    } else {
-      setMode('loading');
-    }
-  }, [visible, card.durationUnknown]);
+  }, [visible]);
 
   useEffect(() => {
-    if (!visible || mode !== 'loading') return;
+    if (!visible || mode === 'manual') return;
 
-    const t1 = setTimeout(() => setLoadingStep(1), 700);
-    const t2 = setTimeout(() => setLoadingStep(2), 1400);
-    const t3 = setTimeout(() => setLoadingStep(3), 2100);
-    const t4 = setTimeout(() => {
-      if (isReSearchRef.current) {
-        isReSearchRef.current = false;
-        setMode('error-14day');
-      } else {
-        // candidates.length === 0이면 7일 내 가용 시간대 없음 (실제 API 연동 시 분기 활성화)
-        setMode(candidates.length > 0 ? 'recommend' : 'error-7day');
-      }
-    }, 2700);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
-    };
-  }, [visible, mode, candidates]);
+    if (card.durationUnknown) {
+      setMode('error-no-duration');
+    } else if (isRecommendationLoading) {
+      setMode('loading');
+    } else if (recommendationErrorMode != null) {
+      setMode(recommendationErrorMode);
+    } else {
+      setMode(candidates.length > 0 ? 'recommend' : 'error-7day');
+    }
+  }, [
+    card.durationUnknown,
+    candidates.length,
+    isRecommendationLoading,
+    mode,
+    recommendationErrorMode,
+    visible,
+  ]);
 
   const handleAccept = useCallback(() => {
-    let candidate: RecommendationCandidate;
-
     if (mode === 'manual') {
-      candidate = {
+      const candidate: RecommendationCandidate = {
         id: 'manual',
-        date: selectedDate,
+        date: manualStartDate,
         startTime: manualStartTime,
         endTime: manualEndTime,
         description: '',
       };
-    } else {
-      if (currentCandidate == null) return;
-      candidate = currentCandidate;
+      onConvert(createQueueToPinValuesFromCandidate(card, candidate), keepOriginal);
+      return;
     }
 
-    const baseCard: CardItem = useOneHourDuration
-      ? { ...card, durationUnknown: false, durationHours: 1, durationMinutes: 0 }
-      : card;
+    if (currentCandidate == null) return;
 
-    onConvert(createQueueToPinValuesFromCandidate(baseCard, candidate), keepOriginal);
+    onAcceptRecommendation(currentCandidate.recommendId, keepOriginal);
   }, [
     mode,
-    selectedDate,
+    manualStartDate,
     manualStartTime,
     manualEndTime,
     currentCandidate,
     card,
-    useOneHourDuration,
     keepOriginal,
     onConvert,
+    onAcceptRecommendation,
   ]);
 
   const handleSwitchToManual = useCallback(() => {
     if (currentCandidate == null) return;
-    const date = parseDueDateToDate(currentCandidate.date) ?? new Date();
-    setCalendarBase(date);
-    setSelectedDate(currentCandidate.date);
+    setManualStartDate(currentCandidate.date);
+    setManualEndDate(currentCandidate.date);
     setManualStartTime(currentCandidate.startTime);
     setManualEndTime(currentCandidate.endTime);
-    setActiveTimeField('start');
-    setIsTimeWheelVisible(false);
     setMode('manual');
   }, [currentCandidate]);
 
-  const handleUseOneHour = useCallback(() => {
-    setUseOneHourDuration(true);
-    setLoadingStep(0);
-    setMode('loading');
-  }, []);
-
   const handleSearch14Day = useCallback(() => {
-    isReSearchRef.current = true;
-    setLoadingStep(0);
-    setMode('loading');
-  }, []);
+    onSearch14Days();
+  }, [onSearch14Days]);
 
-  const handleSelectTimePart = useCallback(
-    (part: 'hour' | 'minute', value: string) => {
-      if (activeTimeField === 'start') {
-        setManualStartTime((prev) => {
-          const [h, m] = prev.split(':');
-          return part === 'hour' ? `${value}:${m}` : `${h}:${value}`;
-        });
-      } else {
-        setManualEndTime((prev) => {
-          const [h, m] = prev.split(':');
-          return part === 'hour' ? `${value}:${m}` : `${h}:${value}`;
-        });
-      }
-    },
-    [activeTimeField],
-  );
+  const handleManualDraftChange = useCallback((draft: DateTimeDraft) => {
+    setManualStartDate(draft.dateStart);
+    setManualEndDate(draft.dateEnd || draft.dateStart);
+    setManualStartTime(draft.timeStart);
+    setManualEndTime(draft.timeEnd);
+  }, []);
 
   const canAccept =
     mode === 'recommend' ||
     (mode === 'manual' &&
-      selectedDate.length > 0 &&
+      manualStartDate.length > 0 &&
+      manualEndDate.length > 0 &&
       isValidTimeRange(manualStartTime, manualEndTime));
   const showFooter = mode === 'recommend' || mode === 'manual';
   const sheetTitle = mode === 'error-no-duration' ? '소요 시간 확인' : '추천 시간 확인';
 
   return (
-    <BottomSheet visible={visible} contentStyle={styles.sheetContent} onClose={onClose}>
-      <View style={styles.header}>
-        <Pressable
-          accessibilityLabel="취소"
-          accessibilityRole="button"
-          hitSlop={8}
-          style={({ pressed }) => [styles.headerAction, pressed && styles.pressed]}
-          onPress={onClose}
-        >
-          <Typography variant="bodyM" color={colors.primary}>
-            취소
-          </Typography>
-        </Pressable>
-        <Typography
-          pointerEvents="none"
-          variant="bodyM"
-          color={colors.gray[900]}
-          align="center"
-          style={styles.headerTitle}
-        >
-          {sheetTitle}
-        </Typography>
-        {showFooter ? (
+    <>
+      <BottomSheet visible={visible} contentStyle={styles.sheetContent} onClose={onClose}>
+        <View style={styles.header}>
           <Pressable
-            accessibilityLabel="완료"
+            accessibilityLabel="취소"
             accessibilityRole="button"
-            accessibilityState={{ disabled: !canAccept }}
             hitSlop={8}
-            disabled={!canAccept}
-            style={({ pressed }) => [styles.headerAction, pressed && canAccept && styles.pressed]}
-            onPress={handleAccept}
+            style={({ pressed }) => [styles.headerAction, pressed && styles.pressed]}
+            onPress={onClose}
           >
-            <Typography variant="bodyM" color={canAccept ? colors.primary : colors.gray[300]}>
-              완료
+            <Typography variant="bodyM" color={colors.primary}>
+              취소
             </Typography>
           </Pressable>
-        ) : (
-          <View style={styles.headerAction} />
-        )}
-      </View>
-
-      {mode === 'loading' && <LoadingContent step={loadingStep} />}
-
-      {mode === 'recommend' && (
-        <RecommendContent
-          candidates={candidates}
-          currentIndex={candidateIndex}
-          keepOriginal={keepOriginal}
-          onChangeIndex={setCandidateIndex}
-          onToggleKeepOriginal={() => setKeepOriginal((prev) => !prev)}
-        />
-      )}
-
-      {mode === 'manual' && (
-        <ManualContent
-          calendarBase={calendarBase}
-          selectedDate={selectedDate}
-          startTime={manualStartTime}
-          endTime={manualEndTime}
-          activeTimeField={activeTimeField}
-          isTimeWheelVisible={isTimeWheelVisible}
-          onChangeCalendarBase={setCalendarBase}
-          onSelectDate={setSelectedDate}
-          onActivateTime={(field) => {
-            setActiveTimeField(field);
-            setIsTimeWheelVisible(true);
-          }}
-          onShowCalendar={handleShowCalendar}
-          onSelectTimePart={handleSelectTimePart}
-        />
-      )}
-
-      {mode === 'error-no-duration' && (
-        <ErrorContent
-          title="소요 시간이 정해지지 않았어요!"
-          description={`소요 시간을 입력하면 더 정확하게 추천할 수 있어요.\n지금은 1시간으로 가정해 추천할까요?`}
-          buttons={[
-            { label: '소요시간 변경하기', onPress: onEditDuration },
-            { label: '1시간 기준 추천', onPress: handleUseOneHour },
-          ]}
-        />
-      )}
-
-      {mode === 'error-7day' && (
-        <ErrorContent
-          title="추천 시간대가 없어요!"
-          description={`7일 내로 추천할 시간대를 찾지 못했어요.\n14일 이내의 추천 시간대를 찾아볼까요?`}
-          buttons={[
-            { label: '다음 주 시간도 보기', onPress: handleSearch14Day },
-            { label: '소요 시간 변경하기', onPress: onEditDuration },
-          ]}
-        />
-      )}
-
-      {mode === 'error-14day' && (
-        <ErrorContent
-          title="추천 시간대가 없어요!"
-          description="1~2주 뒤에 다시 찾아보는 걸 추천해요."
-          buttons={[{ label: '소요 시간 변경하기', onPress: onEditDuration }]}
-        />
-      )}
-
-      {showFooter && (
-        <View style={styles.footer}>
-          <SheetActionButton
-            label={mode === 'manual' ? '추천 시간 보기' : '시간 직접 입력'}
-            variant="secondary"
-            onPress={mode === 'manual' ? () => setMode('recommend') : handleSwitchToManual}
-          />
-          <SheetActionButton
-            label="추천 수락"
-            variant="primary"
-            disabled={!canAccept}
-            onPress={handleAccept}
-          />
+          <Typography
+            pointerEvents="none"
+            variant="bodyM"
+            color={colors.gray[900]}
+            align="center"
+            style={styles.headerTitle}
+          >
+            {sheetTitle}
+          </Typography>
+          {showFooter ? (
+            <Pressable
+              accessibilityLabel="완료"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !canAccept }}
+              hitSlop={8}
+              disabled={!canAccept}
+              style={({ pressed }) => [styles.headerAction, pressed && canAccept && styles.pressed]}
+              onPress={handleAccept}
+            >
+              <Typography variant="bodyM" color={canAccept ? colors.primary : colors.gray[300]}>
+                완료
+              </Typography>
+            </Pressable>
+          ) : (
+            <View style={styles.headerAction} />
+          )}
         </View>
-      )}
-    </BottomSheet>
+
+        {mode === 'loading' && <LoadingContent />}
+
+        {mode === 'recommend' && (
+          <RecommendContent
+            candidates={candidates}
+            currentIndex={candidateIndex}
+            keepOriginal={keepOriginal}
+            onChangeIndex={setCandidateIndex}
+            onToggleKeepOriginal={() => setKeepOriginal((prev) => !prev)}
+          />
+        )}
+
+        {mode === 'manual' && (
+          <DateTimeSheet
+            visible={visible}
+            focus="start"
+            presentation="embedded"
+            value={{
+              dateMode: manualEndDate !== manualStartDate ? 'range' : 'single',
+              dateStart: manualStartDate,
+              dateEnd: manualEndDate !== manualStartDate ? manualEndDate : '',
+              timeStart: manualStartTime,
+              timeEnd: manualEndTime,
+            }}
+            onClose={onClose}
+            onDone={handleAccept}
+            onDraftChange={handleManualDraftChange}
+          />
+        )}
+
+        {mode === 'error-no-duration' && (
+          <ErrorContent
+            title="소요 시간이 정해지지 않았어요!"
+            description="소요 시간을 입력하면 더 정확한 추천 시간을 찾을 수 있어요."
+            buttons={[{ label: '소요시간 변경하기', onPress: onEditDuration }]}
+          />
+        )}
+
+        {mode === 'error-7day' && (
+          <ErrorContent
+            title="추천 시간대가 없어요!"
+            description={`7일 내로 추천할 시간대를 찾지 못했어요.\n14일 이내의 추천 시간대를 찾아볼까요?`}
+            buttons={[
+              { label: '다음 주 시간도 보기', onPress: handleSearch14Day },
+              { label: '소요 시간 변경하기', onPress: onEditDuration },
+            ]}
+          />
+        )}
+
+        {mode === 'error-14day' && (
+          <ErrorContent
+            title="추천 시간대가 없어요!"
+            description="1~2주 뒤에 다시 찾아보는 걸 추천해요."
+            buttons={[{ label: '소요 시간 변경하기', onPress: onEditDuration }]}
+          />
+        )}
+
+        {showFooter && (
+          <View style={styles.footer}>
+            <SheetActionButton
+              label={mode === 'manual' ? '추천 시간 보기' : '시간 직접 입력'}
+              variant="secondary"
+              onPress={mode === 'manual' ? () => setMode('recommend') : handleSwitchToManual}
+            />
+            <SheetActionButton
+              label="추천 수락"
+              variant="primary"
+              disabled={!canAccept}
+              onPress={handleAccept}
+            />
+          </View>
+        )}
+      </BottomSheet>
+    </>
   );
 }
 
 // ─── Loading ────────────────────────────────────────────────────────────────
 
-function LoadingContent({ step }: { step: number }) {
+function LoadingContent() {
   return (
     <View style={styles.loadingBox}>
       <View style={styles.loadingHead}>
@@ -325,30 +278,7 @@ function LoadingContent({ step }: { step: number }) {
           일정과 컨디션을 분석해 7일 이내의 시간대를 찾고 있어요
         </Typography>
       </View>
-      <View style={styles.loadingItems}>
-        {LOADING_STEPS.map((item, index) => {
-          const isDone = step > index;
-          const isActive = step === index;
-          return (
-            <View key={item.done} style={styles.loadingItem}>
-              {isDone ? (
-                <Icon name="done" size={20} color={colors.primary} />
-              ) : (
-                <ActivityIndicator
-                  size="small"
-                  color={isActive ? colors.primary : colors.gray[300]}
-                />
-              )}
-              <Typography
-                variant="bodyS"
-                color={isDone ? colors.gray[800] : isActive ? colors.gray[600] : colors.gray[300]}
-              >
-                {isDone ? item.done : item.ongoing}
-              </Typography>
-            </View>
-          );
-        })}
-      </View>
+      <ActivityIndicator size="small" color={colors.primary} />
     </View>
   );
 }
@@ -362,7 +292,7 @@ function RecommendContent({
   onChangeIndex,
   onToggleKeepOriginal,
 }: {
-  candidates: RecommendationCandidate[];
+  candidates: ScheduleRecommendation[];
   currentIndex: number;
   keepOriginal: boolean;
   onChangeIndex: (index: number) => void;
@@ -418,7 +348,7 @@ function RecommendContent({
 
         {/* Description */}
         <Typography variant="bodyS" color={colors.gray[600]}>
-          {current.description}
+          일정과 컨디션을 바탕으로 가장 적합한 시간대를 찾았어요.
         </Typography>
 
         {/* Datetime rows */}
@@ -488,244 +418,6 @@ function DatetimeRows({
             </Typography>
           </View>
         </View>
-      </View>
-    </View>
-  );
-}
-
-// ─── Manual ─────────────────────────────────────────────────────────────────
-
-function ManualContent({
-  calendarBase,
-  selectedDate,
-  startTime,
-  endTime,
-  activeTimeField,
-  isTimeWheelVisible,
-  onChangeCalendarBase,
-  onSelectDate,
-  onActivateTime,
-  onShowCalendar,
-  onSelectTimePart,
-}: {
-  calendarBase: Date;
-  selectedDate: string;
-  startTime: string;
-  endTime: string;
-  activeTimeField: 'start' | 'end';
-  isTimeWheelVisible: boolean;
-  onChangeCalendarBase: (date: Date) => void;
-  onSelectDate: (date: string) => void;
-  onActivateTime: (field: 'start' | 'end') => void;
-  onShowCalendar: () => void;
-  onSelectTimePart: (part: 'hour' | 'minute', value: string) => void;
-}) {
-  const calendar = useMemo(() => getCalendarMonth(calendarBase), [calendarBase]);
-  const todayStr = useMemo(() => formatDueDateForStorage(new Date()), []);
-  const { isValid: isTimeValid } = useTimeRangeValidation(startTime, endTime);
-
-  return (
-    <View style={styles.manualContent}>
-      <View style={styles.manualCard}>
-        <Typography variant="titleS" color={colors.gray[900]}>
-          직접 입력
-        </Typography>
-
-        {/* Datetime rows for manual entry */}
-        <View
-          style={[styles.manualDatetimeSection, !isTimeValid && styles.manualDatetimeSectionError]}
-        >
-          <View style={styles.datetimeRow}>
-            <Typography variant="bodyM" color={colors.gray[600]}>
-              시작 일시
-            </Typography>
-            <View style={styles.datetimeChips}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="날짜 선택"
-                style={({ pressed }) => [
-                  styles.dateChip,
-                  selectedDate.length > 0 && styles.chipActive,
-                  pressed && styles.pressed,
-                ]}
-                onPress={onShowCalendar}
-              >
-                <Typography
-                  variant="bodyM"
-                  color={selectedDate.length > 0 ? colors.gray[800] : colors.gray[300]}
-                >
-                  {selectedDate.length > 0 ? selectedDate : '--.--.--'}
-                </Typography>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="시작 시간 선택"
-                accessibilityState={{ selected: isTimeWheelVisible && activeTimeField === 'start' }}
-                style={({ pressed }) => [
-                  styles.timeChip,
-                  isTimeWheelVisible && activeTimeField === 'start' && styles.chipSelected,
-                  pressed && styles.pressed,
-                ]}
-                onPress={() => onActivateTime('start')}
-              >
-                <Typography
-                  variant="bodyM"
-                  color={
-                    isTimeWheelVisible && activeTimeField === 'start'
-                      ? colors.primary
-                      : colors.gray[800]
-                  }
-                >
-                  {startTime}
-                </Typography>
-              </Pressable>
-            </View>
-          </View>
-
-          <View style={styles.datetimeRow}>
-            <Typography variant="bodyM" color={colors.gray[600]}>
-              종료 일시
-            </Typography>
-            <View style={styles.datetimeChips}>
-              <View style={[styles.dateChip, selectedDate.length > 0 && styles.chipActive]}>
-                <Typography
-                  variant="bodyM"
-                  color={selectedDate.length > 0 ? colors.gray[800] : colors.gray[300]}
-                >
-                  {selectedDate.length > 0 ? selectedDate : '--.--.--'}
-                </Typography>
-              </View>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="종료 시간 선택"
-                accessibilityState={{ selected: isTimeWheelVisible && activeTimeField === 'end' }}
-                style={({ pressed }) => [
-                  styles.timeChip,
-                  isTimeWheelVisible && activeTimeField === 'end' && styles.chipSelected,
-                  pressed && styles.pressed,
-                ]}
-                onPress={() => onActivateTime('end')}
-              >
-                <Typography
-                  variant="bodyM"
-                  color={
-                    isTimeWheelVisible && activeTimeField === 'end'
-                      ? colors.primary
-                      : colors.gray[800]
-                  }
-                >
-                  {endTime}
-                </Typography>
-              </Pressable>
-            </View>
-          </View>
-          {!isTimeValid && (
-            <Typography variant="caption" color={colors.secondary}>
-              종료 시간이 시작 시간보다 늦어야 해요.
-            </Typography>
-          )}
-        </View>
-
-        {/* Calendar — shows for date picking */}
-        {!isTimeWheelVisible && (
-          <View style={styles.calendarSection}>
-            <View style={styles.calendarMonthRow}>
-              <Pressable
-                accessibilityLabel="이전 달"
-                accessibilityRole="button"
-                hitSlop={8}
-                style={({ pressed }) => [styles.monthBtn, pressed && styles.pressed]}
-                onPress={() =>
-                  onChangeCalendarBase(
-                    new Date(calendarBase.getFullYear(), calendarBase.getMonth() - 1, 1),
-                  )
-                }
-              >
-                <Icon name="arrowLeft" size={24} color={colors.gray[400]} />
-              </Pressable>
-              <Typography variant="titleS" color={colors.gray[900]} align="center">
-                {calendar.title}
-              </Typography>
-              <Pressable
-                accessibilityLabel="다음 달"
-                accessibilityRole="button"
-                hitSlop={8}
-                style={({ pressed }) => [styles.monthBtn, pressed && styles.pressed]}
-                onPress={() =>
-                  onChangeCalendarBase(
-                    new Date(calendarBase.getFullYear(), calendarBase.getMonth() + 1, 1),
-                  )
-                }
-              >
-                <Icon name="arrowRight" size={24} color={colors.gray[400]} />
-              </Pressable>
-            </View>
-
-            <View style={styles.weekRow}>
-              {WEEKDAY_LABELS.map((label) => (
-                <Typography
-                  key={label}
-                  variant="caption"
-                  color={colors.gray[400]}
-                  align="center"
-                  style={styles.weekCell}
-                >
-                  {label}
-                </Typography>
-              ))}
-            </View>
-
-            <View style={styles.dateGrid}>
-              {calendar.cells.map((cell) => {
-                const isSelected = cell.value === selectedDate;
-                const isPast = cell.value.length > 0 && cell.value < todayStr;
-                const isEmpty = cell.value.length === 0;
-                return (
-                  <Pressable
-                    key={cell.key}
-                    accessibilityRole={isEmpty ? undefined : 'button'}
-                    accessibilityLabel={isEmpty ? undefined : `${cell.value} 선택`}
-                    accessibilityState={
-                      isEmpty ? undefined : { selected: isSelected, disabled: isPast }
-                    }
-                    disabled={isEmpty || isPast}
-                    style={({ pressed }) => [
-                      styles.dateCell,
-                      pressed && !isEmpty && !isPast && styles.pressed,
-                    ]}
-                    onPress={() => !isEmpty && !isPast && onSelectDate(cell.value)}
-                  >
-                    <View style={[styles.dateDot, isSelected && styles.dateDotSelected]}>
-                      <Typography
-                        variant="bodyM"
-                        color={
-                          isEmpty
-                            ? colors.alpha.transparent
-                            : isSelected
-                              ? colors.gray.white
-                              : isPast
-                                ? colors.gray[300]
-                                : colors.gray[700]
-                        }
-                        align="center"
-                      >
-                        {cell.label}
-                      </Typography>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        )}
-
-        {/* Time wheel — shows when time chip is tapped */}
-        {isTimeWheelVisible && (
-          <DrumTimePicker
-            value={activeTimeField === 'start' ? startTime : endTime}
-            onSelectPart={onSelectTimePart}
-          />
-        )}
       </View>
     </View>
   );
@@ -843,114 +535,6 @@ function SheetActionButton({
   );
 }
 
-// ─── Drum time picker ────────────────────────────────────────────────────────
-
-function DrumTimePicker({
-  value,
-  onSelectPart,
-}: {
-  value: string;
-  onSelectPart: (part: 'hour' | 'minute', value: string) => void;
-}) {
-  const [hourStr, minuteStr] = (value || '00:00').split(':');
-  const hourIndex = Math.max(0, TIME_HOURS.indexOf(hourStr));
-  const minuteIndex = Math.max(0, (TIME_MINUTES as string[]).indexOf(minuteStr));
-
-  return (
-    <View style={styles.drum}>
-      <View style={styles.drumHighlight} pointerEvents="none" />
-      <DrumColumn
-        items={TIME_HOURS}
-        selectedIndex={hourIndex}
-        onSelect={(v) => onSelectPart('hour', v)}
-      />
-      <Typography variant="bodyM" color={colors.gray[900]} align="center">
-        :
-      </Typography>
-      <DrumColumn
-        items={TIME_MINUTES as unknown as string[]}
-        selectedIndex={minuteIndex}
-        onSelect={(v) => onSelectPart('minute', v)}
-      />
-    </View>
-  );
-}
-
-function DrumColumn({
-  items,
-  selectedIndex,
-  onSelect,
-}: {
-  items: string[];
-  selectedIndex: number;
-  onSelect: (value: string) => void;
-}) {
-  const scrollRef = useRef<ScrollView>(null);
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ y: selectedIndex * DRUM_ITEM_HEIGHT, animated: false });
-  }, [selectedIndex]);
-
-  const handleMomentumScrollEnd = useCallback(
-    (e: { nativeEvent: { contentOffset: { y: number } } }) => {
-      const index = Math.round(e.nativeEvent.contentOffset.y / DRUM_ITEM_HEIGHT);
-      const clamped = Math.max(0, Math.min(items.length - 1, index));
-      if (items[clamped] !== undefined) {
-        onSelect(items[clamped]);
-      }
-    },
-    [items, onSelect],
-  );
-
-  const handlePress = useCallback(
-    (actualIndex: number) => {
-      const clamped = Math.max(0, Math.min(items.length - 1, actualIndex));
-      scrollRef.current?.scrollTo({ y: clamped * DRUM_ITEM_HEIGHT, animated: true });
-      onSelect(items[clamped]);
-    },
-    [items, onSelect],
-  );
-
-  const padded = useMemo(
-    () => [...Array(DRUM_PADDING).fill(''), ...items, ...Array(DRUM_PADDING).fill('')],
-    [items],
-  );
-
-  return (
-    <ScrollView
-      ref={scrollRef}
-      style={styles.drumColumn}
-      showsVerticalScrollIndicator={false}
-      snapToInterval={DRUM_ITEM_HEIGHT}
-      decelerationRate="fast"
-      scrollEventThrottle={16}
-      onMomentumScrollEnd={handleMomentumScrollEnd}
-    >
-      {padded.map((item, i) => {
-        const actualIndex = i - DRUM_PADDING;
-        const isActual = actualIndex >= 0 && actualIndex < items.length;
-        const dist = Math.abs(actualIndex - selectedIndex);
-        const opacity = !isActual ? 0 : dist === 0 ? 1 : dist === 1 ? 0.45 : 0.18;
-        return (
-          <Pressable
-            key={i}
-            style={styles.drumItem}
-            disabled={!isActual}
-            accessibilityRole={isActual ? 'button' : undefined}
-            accessibilityLabel={isActual ? `${item} 선택` : undefined}
-            accessibilityState={isActual ? { selected: dist === 0 } : undefined}
-            onPress={isActual ? () => handlePress(actualIndex) : undefined}
-          >
-            <Typography variant="bodyM" color={colors.gray[900]} align="center" style={{ opacity }}>
-              {item}
-            </Typography>
-          </Pressable>
-        );
-      })}
-    </ScrollView>
-  );
-}
-
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
@@ -1000,16 +584,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: spacing[12],
   },
-  loadingItems: {
-    gap: 4,
-  },
-  loadingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[2],
-    minHeight: 28,
-  },
-
   // Recommend wrapper
   recommendWrapper: {
     gap: spacing[3],
@@ -1033,7 +607,7 @@ const styles = StyleSheet.create({
     gap: spacing[1],
   },
 
-  // Datetime rows (shared between recommend and manual)
+  // Datetime rows
   datetimeRows: {
     gap: 6,
   },
@@ -1041,7 +615,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: DATE_CELL_SIZE,
+    minHeight: spacing[8],
   },
   datetimeChips: {
     flexDirection: 'row',
@@ -1049,7 +623,7 @@ const styles = StyleSheet.create({
     gap: spacing[1],
   },
   dateChip: {
-    height: DATE_CELL_SIZE,
+    height: spacing[8],
     paddingHorizontal: 7,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1058,7 +632,7 @@ const styles = StyleSheet.create({
   },
   timeChip: {
     width: spacing[15],
-    height: DATE_CELL_SIZE,
+    height: spacing[8],
     paddingHorizontal: 7,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1077,7 +651,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: DATE_CELL_SIZE,
+    minHeight: spacing[8],
     paddingHorizontal: spacing[1],
   },
   checkbox: {
@@ -1092,99 +666,6 @@ const styles = StyleSheet.create({
   checkboxChecked: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
-  },
-
-  // Manual content
-  manualContent: {
-    gap: spacing[3],
-  },
-  manualCard: {
-    gap: spacing[6],
-    padding: spacing[3],
-    borderRadius: radius.panel,
-    backgroundColor: colors.alpha.white50,
-    borderWidth: 1,
-    borderColor: colors.gray.white,
-  },
-  manualDatetimeSection: {
-    gap: 6,
-  },
-  manualDatetimeSectionError: {
-    gap: spacing[2],
-  },
-
-  // Calendar
-  calendarSection: {
-    gap: spacing[2],
-  },
-  calendarMonthRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    minHeight: spacing[8],
-  },
-  monthBtn: {
-    minWidth: spacing[8],
-    minHeight: spacing[8],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  weekRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  weekCell: {
-    width: '14.285%',
-  },
-  dateGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-  },
-  dateCell: {
-    width: '14.285%',
-    height: DATE_CELL_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dateDot: {
-    width: DATE_CELL_SIZE,
-    height: DATE_CELL_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: DATE_CELL_SIZE / 2,
-  },
-  dateDotSelected: {
-    backgroundColor: colors.primary,
-  },
-
-  // Drum picker
-  drum: {
-    width: '100%',
-    height: DRUM_ITEM_HEIGHT * (DRUM_PADDING * 2 + 1),
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing[3],
-    marginTop: spacing[1],
-  },
-  drumHighlight: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: DRUM_ITEM_HEIGHT * DRUM_PADDING,
-    height: DRUM_ITEM_HEIGHT,
-    borderRadius: radius['2xs'],
-    backgroundColor: colors.alpha.white50,
-  },
-  drumColumn: {
-    width: 40,
-    height: DRUM_ITEM_HEIGHT * (DRUM_PADDING * 2 + 1),
-  },
-  drumItem: {
-    height: DRUM_ITEM_HEIGHT,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 
   // Error

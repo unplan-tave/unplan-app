@@ -149,6 +149,7 @@ export function useCardCreateForm() {
     recurrence: values.recurrence,
     dateMode: values.dateMode,
     dateStart: values.dateStart,
+    dateEnd: values.dateEnd,
   });
 
   const { tagFeedback } = useCardCreateTags({

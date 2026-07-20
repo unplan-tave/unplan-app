@@ -49,6 +49,7 @@ export function toScheduleUpdateInput(
   return {
     title: createInput.title,
     conditionTagId: createInput.conditionTagId,
+    personalTags: createInput.personalTags,
     date: createInput.date,
     startTime: createInput.startTime,
     endTime: createInput.endTime,

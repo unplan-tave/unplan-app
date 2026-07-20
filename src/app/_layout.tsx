@@ -62,6 +62,7 @@ export default function RootLayout() {
           <Stack.Screen name="sleep" options={{ headerShown: false }} />
           <Stack.Screen name="energy" options={{ headerShown: false }} />
           <Stack.Screen name="settings" options={{ headerShown: false }} />
+          <Stack.Screen name="notifications" options={{ headerShown: false }} />
         </Stack>
       </QueryClientProvider>
     </GestureHandlerRootView>

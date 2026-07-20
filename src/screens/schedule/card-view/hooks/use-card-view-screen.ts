@@ -6,11 +6,13 @@ import { toCardItemFromScheduleDetail } from '@/domains/schedule/card-mapper';
 import { getCardPersonalTagLabels } from '@/domains/schedule/list';
 import { getConditionTagById } from '@/domains/schedule/model';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
+import { useGoBack } from '@/hooks/use-go-back';
 
 import { useCardViewConversion } from './use-card-view-conversion';
 
 /** 카드 상세 화면의 조회 결과와 화면 이벤트를 조합합니다. */
 export function useCardViewScreen() {
+  const goBack = useGoBack();
   const { cardId, toast: toastParam } = useLocalSearchParams<{ cardId: string; toast?: string }>();
   const numericCardId = parseNumericCardId(cardId);
   const personalTags = useScheduleStore((store) => store.personalTags);
@@ -28,6 +30,7 @@ export function useCardViewScreen() {
   const conversion = useCardViewConversion({
     cardId,
     numericCardId,
+    card,
     personalTags,
     initialToast:
       toastParam === 'created' ? { message: '핀카드가 생성됐어요!', variant: 'confirm' } : null,
@@ -39,9 +42,7 @@ export function useCardViewScreen() {
     [card, personalTags],
   );
 
-  const handleBack = useCallback(() => {
-    router.replace('/(tabs)');
-  }, []);
+  const handleBack = goBack;
 
   const handleEdit = useCallback(() => {
     router.push(`/card/card-detail?cardId=${cardId}`);

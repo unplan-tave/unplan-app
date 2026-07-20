@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 
 import {
   useCreateScheduleMutation,
+  useDeleteScheduleMutation,
   useUpdateScheduleMutation,
 } from '@/domains/schedule/api/mutations';
 import { toScheduleCreateInput, toScheduleUpdateInput } from '@/domains/schedule/card-mapper';
@@ -12,6 +13,7 @@ import {
   type CardTab,
   type PersonalTagOption,
 } from '@/domains/schedule/model';
+import { useGoBack } from '@/hooks/use-go-back';
 
 import { useCardCreateFeedback } from './use-card-create-feedback';
 
@@ -45,10 +47,15 @@ export function useCardCreateActions({
   setActiveTab,
   setHasSubmitted,
 }: UseCardCreateActionsParams) {
+  const goBack = useGoBack();
   const { toast, showToast, closeToast } = useCardCreateFeedback();
   const createScheduleMutation = useCreateScheduleMutation();
   const updateScheduleMutation = useUpdateScheduleMutation();
-  const isSubmitting = createScheduleMutation.isPending || updateScheduleMutation.isPending;
+  const deleteScheduleMutation = useDeleteScheduleMutation();
+  const isSubmitting =
+    createScheduleMutation.isPending ||
+    updateScheduleMutation.isPending ||
+    deleteScheduleMutation.isPending;
   const numericCardId = cardId == null ? null : Number(cardId);
   const canSubmitUpdate = numericCardId != null && Number.isFinite(numericCardId);
 
@@ -58,8 +65,8 @@ export function useCardCreateActions({
     }
 
     discardDraft();
-    router.replace('/(tabs)');
-  }, [discardDraft, isSubmitting]);
+    goBack();
+  }, [discardDraft, goBack, isSubmitting]);
 
   const handleValidSubmit = useCallback(
     (values: CardFormValues) => {
@@ -170,9 +177,38 @@ export function useCardCreateActions({
     }
 
     if (cardId == null) return;
+
+    if (canSubmitUpdate && numericCardId != null) {
+      deleteScheduleMutation.mutate(
+        { scheduleId: numericCardId },
+        {
+          onSuccess: () => {
+            discardDraft();
+            router.replace('/schedule');
+          },
+          onError: () => {
+            showToast({
+              message: '카드 삭제에 실패했어요. 다시 시도해 주세요.',
+              variant: 'warning',
+            });
+          },
+        },
+      );
+      return;
+    }
+
     deleteCard(cardId);
     router.back();
-  }, [cardId, deleteCard, isSubmitting]);
+  }, [
+    canSubmitUpdate,
+    cardId,
+    deleteCard,
+    deleteScheduleMutation,
+    discardDraft,
+    isSubmitting,
+    numericCardId,
+    showToast,
+  ]);
 
   const handleDurationUnknown = useCallback(() => {
     showToast({ message: '시간대 추천이 어려울 수 있어요!', variant: 'confirm' });

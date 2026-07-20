@@ -1,3 +1,5 @@
+import type { ConditionTagId } from '@/domains/schedule/model';
+
 /**
  * ai-recommendation 도메인의 화면 독립 모델입니다.
  * 추천 기준 설정, 제외 시간대, 추천 수락 입력처럼 API와 UI가 공유하는 순수 데이터를 정의합니다.
@@ -24,6 +26,12 @@ export interface AcceptConditionRecommendationInput {
   recoveryMean?: string;
 }
 
+/** 추천 수락 후 생성·전환된 일정의 결과입니다. */
+export interface AcceptRecommendationResult {
+  scheduleId: number | null;
+  created: boolean;
+}
+
 /** 빈 시간에 배치할 수 있는 큐 카드 추천입니다. */
 export interface ScheduleRecommendation {
   recommendId: number;
@@ -33,6 +41,8 @@ export interface ScheduleRecommendation {
   endTime: string;
   estimatedMinutes: number | null;
   deadline: string | null;
+  conditionTagId: ConditionTagId;
+  displayOrder: number | null;
 }
 
 /** 큐 카드별 시간 후보 API의 안전한 해석 결과입니다. */

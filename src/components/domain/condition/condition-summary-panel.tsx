@@ -16,7 +16,9 @@ interface ConditionSummaryPanelProps {
   summary: ConditionSummary;
   memoLabel?: string;
   memoCount?: number;
+  showMeters?: boolean;
   onDatePress?: () => void;
+  onScorePress?: () => void;
   onMemoPress?: () => void;
 }
 
@@ -26,7 +28,9 @@ export function ConditionSummaryPanel({
   summary,
   memoLabel = t('home.dailyMemo.emptyLabel'),
   memoCount = 0,
+  showMeters = true,
   onDatePress,
+  onScorePress,
   onMemoPress,
 }: ConditionSummaryPanelProps) {
   return (
@@ -57,12 +61,35 @@ export function ConditionSummaryPanel({
         ) : null}
       </Pressable>
       <View style={styles.divider} />
-      <Typography variant="titleL" color={colors.gray.white} style={styles.conditionScore}>
-        {summary.finalScore}
-      </Typography>
-      <ConditionMeter label="Body" value={summary.body.value} progress={summary.body.progress} />
-      <ConditionMeter label="Mind" value={summary.mind.value} progress={summary.mind.progress} />
-      <ConditionMeter label="Sleep" value={summary.sleep.value} progress={summary.sleep.progress} />
+      <Pressable
+        accessibilityLabel="컨디션 탭으로 이동"
+        accessibilityRole="button"
+        disabled={onScorePress == null}
+        onPress={onScorePress}
+      >
+        <Typography variant="titleL" color={colors.gray.white} style={styles.conditionScore}>
+          {summary.finalScore}
+        </Typography>
+      </Pressable>
+      {showMeters ? (
+        <>
+          <ConditionMeter
+            label="Body"
+            value={summary.body.value}
+            progress={summary.body.progress}
+          />
+          <ConditionMeter
+            label="Mind"
+            value={summary.mind.value}
+            progress={summary.mind.progress}
+          />
+          <ConditionMeter
+            label="Sleep"
+            value={summary.sleep.value}
+            progress={summary.sleep.progress}
+          />
+        </>
+      ) : null}
     </View>
   );
 }

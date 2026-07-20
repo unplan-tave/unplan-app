@@ -9,6 +9,8 @@ import { type DueDurationDraft } from '@/domains/schedule/queue';
 import { addMinutesToTime, parseTimeToMinutes } from '@/domains/schedule/time';
 import { getLocale } from '@/lib/i18n';
 
+import type { ScheduleRecommendation } from '@/domains/ai-recommendation/model';
+
 /** 타임라인 카드가 화면에 표시할 props를 생성합니다. */
 export function toHomeTimelineCardViewModel(
   card: CardItem,
@@ -35,6 +37,26 @@ export function toHomeTimelineCardViewModel(
         label,
         variant: 'personal' as const,
       })),
+    ],
+  };
+}
+
+/** 서버가 계산한 빈 시간 추천을 홈 타임라인 카드 props로 변환합니다. */
+export function toHomeRecommendationTimelineCardViewModel(recommendation: ScheduleRecommendation) {
+  const conditionTag = getConditionTagById(recommendation.conditionTagId);
+
+  return {
+    id: `recommendation-${recommendation.recommendId}`,
+    title: recommendation.title,
+    time: recommendation.startTime,
+    range: `${recommendation.startTime} - ${recommendation.endTime}`,
+    status: 'recommendation' as const,
+    tags: [
+      {
+        label: conditionTag.label,
+        variant: 'condition' as const,
+        condition: conditionTag.id,
+      },
     ],
   };
 }
