@@ -69,6 +69,7 @@ export function useHomeScreen() {
   const [isQueueSheetVisible, setIsQueueSheetVisible] = useState(false);
   const [extensionMinutes, setExtensionMinutes] = useState(EXTEND_STEP_MINUTES);
   const [isConflictToastDismissed, setIsConflictToastDismissed] = useState(false);
+  const [recommendationErrorMessage, setRecommendationErrorMessage] = useState<string | null>(null);
   const personalTags = useScheduleStore((store) => store.personalTags);
   const updateAlarmSettingsMutation = useUpdateAlarmSettingsMutation();
   const updateScheduleMutation = useUpdateScheduleMutation();
@@ -228,8 +229,12 @@ export function useHomeScreen() {
     async (recommendId: number) => {
       if (acceptRecommendationMutation.isPending) return;
 
-      await acceptRecommendationMutation.mutateAsync({ recommendId });
-      setIsAddSheetVisible(false);
+      try {
+        await acceptRecommendationMutation.mutateAsync({ recommendId });
+        setIsAddSheetVisible(false);
+      } catch {
+        setRecommendationErrorMessage(t('home.recommendation.addError'));
+      }
     },
     [acceptRecommendationMutation],
   );
@@ -347,6 +352,10 @@ export function useHomeScreen() {
   const handleCloseMemoSheet = useCallback(() => setIsDailyMemoSheetVisible(false), []);
   /** 연장 충돌 안내 토스트를 닫습니다. */
   const dismissConflictToast = useCallback(() => setIsConflictToastDismissed(true), []);
+  const dismissRecommendationErrorToast = useCallback(
+    () => setRecommendationErrorMessage(null),
+    [],
+  );
   /** 타임라인 렌더링에 필요한 카드 props와 이벤트를 조합합니다. */
   const timelineCardsForView = useMemo(() => {
     const cards = timelineItems.map((item) => {
@@ -457,6 +466,7 @@ export function useHomeScreen() {
     isNotificationModalVisible,
     isConditionPromptVisible: conditionPrompt.isVisible,
     notificationErrorMessage,
+    recommendationErrorMessage,
     isExtendSheetVisible,
     isQueueSheetVisible,
     isConflictToastDismissed,
@@ -498,5 +508,6 @@ export function useHomeScreen() {
     closeConditionPrompt: conditionPrompt.close,
     openConditionMeasureFromPrompt: conditionPrompt.openConditionMeasure,
     dismissConflictToast,
+    dismissRecommendationErrorToast,
   };
 }

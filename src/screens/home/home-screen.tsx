@@ -127,7 +127,7 @@ export function HomeScreen() {
         </View>
         <View style={styles.messageBox}>
           <Pressable
-            accessibilityLabel="알림"
+            accessibilityLabel={t('home.notification')}
             accessibilityRole="button"
             hitSlop={spacing[2]}
             style={({ pressed }) => pressed && styles.pressed}
@@ -215,6 +215,12 @@ export function HomeScreen() {
       home.extendState.hasConflict &&
       !home.isConflictToastDismissed ? (
         <CardToast message="다음 일정과 겹쳐요!" onClose={home.dismissConflictToast} />
+      ) : null}
+      {home.recommendationErrorMessage ? (
+        <CardToast
+          message={home.recommendationErrorMessage}
+          onClose={home.dismissRecommendationErrorToast}
+        />
       ) : null}
       <OnboardingNotificationModal
         visible={home.isNotificationModalVisible}
