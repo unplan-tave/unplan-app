@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 
+import { useAcceptRecommendationMutation } from '@/domains/ai-recommendation/api/mutations';
 import {
   useCreateDailyMemoMutation,
   useDeleteDailyMemoMutation,
@@ -15,7 +16,9 @@ import { getCardProgressStatus, progressStatusToScheduleStatus } from '@/domains
 import { type CardItem, type CardProgressStatus } from '@/domains/schedule/model';
 import { type DueDurationDraft } from '@/domains/schedule/queue';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
+import { useConditionCalendar } from '@/hooks/use-condition-calendar';
 import { t } from '@/lib/i18n';
+import { addDays, getWeekStart, isSameDate } from '@/lib/utils/date';
 
 import {
   formatDateValue,
@@ -32,14 +35,17 @@ import {
   getHomeHeaderMessage,
   getHomeProgressTimeSummary,
   isHomeScheduleEnded,
+  toHomeRecommendationTimelineCardViewModel,
   toHomeTimelineCardViewModel,
 } from '../home-screen-logic';
 
+import { useHomeConditionPrompt } from './use-home-condition-prompt';
 import { useHomePageData } from './use-home-page-data';
 
 import type { AlarmSettings } from '@/domains/member/model';
 
 const EXTEND_STEP_MINUTES = 10;
+const HOME_TIMELINE_TOP_PLACEHOLDER_COUNT = 2;
 
 /** 홈 화면 컴포넌트가 렌더링에 사용할 값과 이벤트를 반환합니다. */
 export function useHomeScreen() {
@@ -50,9 +56,11 @@ export function useHomeScreen() {
   const [isAddSheetVisible, setIsAddSheetVisible] = useState(false);
   const [isDailyMemoSheetVisible, setIsDailyMemoSheetVisible] = useState(false);
   const [deletingMemoId, setDeletingMemoId] = useState<number | null>(null);
-  const [isNotificationModalVisible, setIsNotificationModalVisible] = useState(false);
+  const [isNotificationModalVisible, setIsNotificationModalVisible] = useState(
+    () => params.onboardingNotification === '1',
+  );
   const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
-  const [dismissedRecommendationIds, setDismissedRecommendationIds] = useState<Set<string>>(
+  const [dismissedRecommendationIds, setDismissedRecommendationIds] = useState<Set<number>>(
     () => new Set(),
   );
   const [progressCard, setProgressCard] = useState<CardItem | null>(null);
@@ -61,23 +69,38 @@ export function useHomeScreen() {
   const [isQueueSheetVisible, setIsQueueSheetVisible] = useState(false);
   const [extensionMinutes, setExtensionMinutes] = useState(EXTEND_STEP_MINUTES);
   const [isConflictToastDismissed, setIsConflictToastDismissed] = useState(false);
+  const [recommendationErrorMessage, setRecommendationErrorMessage] = useState<string | null>(null);
   const personalTags = useScheduleStore((store) => store.personalTags);
   const updateAlarmSettingsMutation = useUpdateAlarmSettingsMutation();
   const updateScheduleMutation = useUpdateScheduleMutation();
   const createDailyMemoMutation = useCreateDailyMemoMutation();
   const deleteDailyMemoMutation = useDeleteDailyMemoMutation();
+  const acceptRecommendationMutation = useAcceptRecommendationMutation();
   const selectedDateValue = useMemo(() => formatDateValue(selectedDate), [selectedDate]);
+  const todayValue = useMemo(() => formatDateValue(now), [now]);
   const pageData = useHomePageData({ personalTags, selectedDate, viewMode });
+  const conditionPrompt = useHomeConditionPrompt(todayValue, !isNotificationModalVisible);
   const visibleRecommendations = useMemo(
-    () => pageData.recommendations.filter((item) => !dismissedRecommendationIds.has(item.card.id)),
+    () =>
+      pageData.recommendations.filter((item) => !dismissedRecommendationIds.has(item.recommendId)),
     [dismissedRecommendationIds, pageData.recommendations],
   );
   const timelineItems = useMemo(
     () =>
       [
-        ...pageData.timelineCards.map((card) => ({ card, isRecommendation: false })),
-        ...visibleRecommendations.map((item) => ({ card: item.card, isRecommendation: true })),
-      ].sort((first, second) => first.card.timeStart.localeCompare(second.card.timeStart)),
+        ...pageData.timelineCards.map((card) => ({ kind: 'schedule' as const, card })),
+        ...visibleRecommendations.map((recommendation) => ({
+          kind: 'recommendation' as const,
+          recommendation,
+        })),
+      ].sort((first, second) => {
+        const firstStartTime =
+          first.kind === 'schedule' ? first.card.timeStart : first.recommendation.startTime;
+        const secondStartTime =
+          second.kind === 'schedule' ? second.card.timeStart : second.recommendation.startTime;
+
+        return firstStartTime.localeCompare(secondStartTime);
+      }),
     [pageData.timelineCards, visibleRecommendations],
   );
   const extendState = useMemo(
@@ -113,6 +136,35 @@ export function useHomeScreen() {
         if (event.scale > 1.08) runOnJS(changeViewModeByZoom)('in');
       }),
     [changeViewModeByZoom],
+  );
+  /** 보기 단위에 따라 선택 날짜를 이전·다음 기간으로 이동합니다. */
+  const movePeriod = useCallback(
+    (direction: 'previous' | 'next') => {
+      const amount = direction === 'previous' ? -1 : 1;
+
+      setSelectedDate((previous) => {
+        if (viewMode === 'daily') return addDays(previous, amount);
+        if (viewMode === 'weekly') return addDays(getWeekStart(previous), amount * 7);
+
+        return new Date(previous.getFullYear(), previous.getMonth() + amount, 1);
+      });
+    },
+    [viewMode],
+  );
+  const periodSwipeGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetX([-20, 20])
+        .failOffsetY([-20, 20])
+        .onEnd((event) => {
+          if (event.translationX <= -40) runOnJS(movePeriod)('next');
+          if (event.translationX >= 40) runOnJS(movePeriod)('previous');
+        }),
+    [movePeriod],
+  );
+  const homeGesture = useMemo(
+    () => Gesture.Simultaneous(pinchGesture, periodSwipeGesture),
+    [periodSwipeGesture, pinchGesture],
   );
   /** 알림 안내 모달을 닫고 홈 route를 정리합니다. */
   const closeNotificationModal = useCallback(() => {
@@ -168,18 +220,36 @@ export function useHomeScreen() {
   );
   /** 추천 카드를 현재 세션에서 숨깁니다. */
   const handleDismissRecommendation = useCallback(
-    (cardId: string) => setDismissedRecommendationIds((previous) => new Set(previous).add(cardId)),
+    (recommendId: number) =>
+      setDismissedRecommendationIds((previous) => new Set(previous).add(recommendId)),
     [],
   );
-  /** 추천 카드 상세로 이동합니다. */
-  const handleAddRecommendation = useCallback((cardId: string) => {
-    setIsAddSheetVisible(false);
-    router.push(`/card/view?cardId=${cardId}`);
-  }, []);
+  /** 서버가 계산한 추천을 수락해 실제 핀 카드로 반영합니다. */
+  const handleAddRecommendation = useCallback(
+    async (recommendId: number) => {
+      if (acceptRecommendationMutation.isPending) return;
+
+      try {
+        await acceptRecommendationMutation.mutateAsync({ recommendId });
+        setIsAddSheetVisible(false);
+      } catch {
+        setRecommendationErrorMessage(t('home.recommendation.addError'));
+      }
+    },
+    [acceptRecommendationMutation],
+  );
   /** 카드 목록 화면으로 이동합니다. */
   const handleViewQueue = useCallback(() => {
     setIsAddSheetVisible(false);
     router.navigate('/schedule');
+  }, []);
+  /** 알림 화면으로 이동합니다. */
+  const openNotifications = useCallback(() => {
+    router.push('/notifications');
+  }, []);
+  /** 홈 헤더의 컨디션 점수에서 컨디션 탭으로 이동합니다. */
+  const openConditionTab = useCallback(() => {
+    router.navigate('/condition');
   }, []);
   /** 종료된 카드는 진행 sheet를, 그 외 카드는 상세를 엽니다. */
   const handleCardPress = useCallback(
@@ -265,6 +335,12 @@ export function useHomeScreen() {
   }, [extendState, progressCard, updateScheduleMutation]);
   /** 캘린더 선택 날짜를 바꿉니다. */
   const handleSelectDate = useCallback((date: Date) => setSelectedDate(date), []);
+  const handleCalendarDateSelect = useCallback((date: Date) => setSelectedDate(date), []);
+  const calendar = useConditionCalendar({
+    selectedDate,
+    periodMode: 'daily',
+    onSelectDate: handleCalendarDateSelect,
+  });
   /** 일·주·월 보기를 순환합니다. */
   const handleCycleViewMode = useCallback(
     () => setViewMode((previous) => getNextHomeViewMode(previous)),
@@ -276,24 +352,38 @@ export function useHomeScreen() {
   const handleCloseMemoSheet = useCallback(() => setIsDailyMemoSheetVisible(false), []);
   /** 연장 충돌 안내 토스트를 닫습니다. */
   const dismissConflictToast = useCallback(() => setIsConflictToastDismissed(true), []);
+  const dismissRecommendationErrorToast = useCallback(
+    () => setRecommendationErrorMessage(null),
+    [],
+  );
   /** 타임라인 렌더링에 필요한 카드 props와 이벤트를 조합합니다. */
   const timelineCardsForView = useMemo(() => {
-    const cards = timelineItems.map(({ card, isRecommendation }) => ({
-      ...toHomeTimelineCardViewModel(card, personalTags, isRecommendation),
-      helperText: isRecommendation ? '잠깐 쉬는 게 어떨까요?' : undefined,
-      onPress: isRecommendation ? undefined : () => handleCardPress(card),
-      onAddPress: isRecommendation ? () => handleAddRecommendation(card.id) : undefined,
-      onDismissPress: isRecommendation ? () => handleDismissRecommendation(card.id) : undefined,
-    }));
+    const cards = timelineItems.map((item) => {
+      if (item.kind === 'recommendation') {
+        return {
+          ...toHomeRecommendationTimelineCardViewModel(item.recommendation),
+          helperText: '잠깐 쉬는 게 어떨까요?',
+          onAddPress: () => void handleAddRecommendation(item.recommendation.recommendId),
+          onDismissPress: () => handleDismissRecommendation(item.recommendation.recommendId),
+        };
+      }
 
-    const placeholderCount = cards.length <= 1 ? 2 : 1;
-    const placeholders = Array.from({ length: placeholderCount }, (_, index) => ({
-      id: `placeholder-${index}`,
-      kind: 'placeholder' as const,
-      time: '00:00',
-      title: '',
-      range: '',
-    }));
+      return {
+        ...toHomeTimelineCardViewModel(item.card, personalTags, false),
+        onPress: () => handleCardPress(item.card),
+      };
+    });
+
+    const placeholders = Array.from(
+      { length: HOME_TIMELINE_TOP_PLACEHOLDER_COUNT },
+      (_, index) => ({
+        id: `placeholder-${index}`,
+        kind: 'placeholder' as const,
+        time: '00:00',
+        title: '',
+        range: '',
+      }),
+    );
 
     const addCard =
       cards.length === 0
@@ -325,6 +415,20 @@ export function useHomeScreen() {
     personalTags,
     timelineItems,
   ]);
+  const currentTimeMarkerIndex = useMemo(() => {
+    if (!isSameDate(selectedDate, now)) return null;
+
+    if (timelineItems.length === 0) return timelineCardsForView.length;
+
+    const placeholderCount = HOME_TIMELINE_TOP_PLACEHOLDER_COUNT;
+    const passedScheduleCount = timelineItems.filter(
+      (item) =>
+        (item.kind === 'schedule' ? item.card.timeStart : item.recommendation.startTime) <=
+        formatHomeCurrentTime(now),
+    ).length;
+
+    return placeholderCount + passedScheduleCount;
+  }, [now, selectedDate, timelineCardsForView.length, timelineItems]);
 
   return {
     ...pageData,
@@ -342,8 +446,9 @@ export function useHomeScreen() {
     }),
     currentTimeLabel: formatHomeCurrentTime(now),
     timelineCardsForView,
+    currentTimeMarkerIndex,
     visibleRecommendations,
-    pinchGesture,
+    homeGesture,
     extendState,
     queueDraftValue,
     progressCard,
@@ -356,9 +461,12 @@ export function useHomeScreen() {
     extensionMinutes,
     isAddSheetVisible,
     isDailyMemoSheetVisible,
+    calendar: calendar.calendar,
     deletingMemoId,
     isNotificationModalVisible,
+    isConditionPromptVisible: conditionPrompt.isVisible,
     notificationErrorMessage,
+    recommendationErrorMessage,
     isExtendSheetVisible,
     isQueueSheetVisible,
     isConflictToastDismissed,
@@ -374,6 +482,8 @@ export function useHomeScreen() {
     handleDismissRecommendation,
     handleAddRecommendation,
     handleViewQueue,
+    openNotifications,
+    openConditionTab,
     handleCardPress,
     handleCloseProgressSheet,
     handleCompleteProgress,
@@ -386,11 +496,18 @@ export function useHomeScreen() {
     handleIncreaseExtension,
     handleCompleteExtension,
     handleSelectDate,
+    handleOpenCalendar: calendar.openCalendar,
+    handleCloseCalendar: calendar.closeCalendar,
+    handleMoveCalendarMonth: calendar.moveCalendarMonth,
+    handleCalendarDateSelect: calendar.selectCalendarDate,
     handleCycleViewMode,
     handleOpenMemoSheet,
     handleCloseMemoSheet,
     updateNotificationSettings,
     closeNotificationModal,
+    closeConditionPrompt: conditionPrompt.close,
+    openConditionMeasureFromPrompt: conditionPrompt.openConditionMeasure,
     dismissConflictToast,
+    dismissRecommendationErrorToast,
   };
 }

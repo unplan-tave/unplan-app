@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { useScheduleRecommendationsQuery } from '@/domains/ai-recommendation/api/queries';
 import { useDailyMemosQuery } from '@/domains/daily-memo/api/queries';
 import { useMeasurementAveragesQuery } from '@/domains/measurement/api/queries';
 import { toConditionSummaryFromAverage } from '@/domains/measurement/model';
@@ -22,7 +23,7 @@ import {
   type HomeViewMode,
 } from '../home-calendar';
 
-import type { HomeRecommendationItem, PersonalTagOption } from '@/domains/schedule/model';
+import type { PersonalTagOption } from '@/domains/schedule/model';
 
 const HOME_RECOMMENDATION_FUTURE_DAYS = 7;
 
@@ -89,6 +90,9 @@ export function useHomePageData({
     viewMode === 'daily' &&
     !isPastDate(selectedDate) &&
     isWithinFutureDays(selectedDate, HOME_RECOMMENDATION_FUTURE_DAYS);
+  const scheduleRecommendationsQuery = useScheduleRecommendationsQuery(selectedDateValue, {
+    enabled: canShowRecommendations,
+  });
 
   const cards = useMemo(
     () => toCardItemsFromScheduleList(schedulesByDateQuery.data ?? [], personalTags),
@@ -101,15 +105,7 @@ export function useHomePageData({
         .sort((first, second) => first.timeStart.localeCompare(second.timeStart)),
     [cards],
   );
-  const recommendations = useMemo<HomeRecommendationItem[]>(() => {
-    // TODO: Home recommendation needs a dedicated ai-recommendation endpoint.
-    // Do not reuse /schedule/search here; that endpoint is owned by the card list search flow.
-    if (!canShowRecommendations) {
-      return [];
-    }
-
-    return [];
-  }, [canShowRecommendations]);
+  const recommendations = scheduleRecommendationsQuery.data ?? [];
   const calendarDays = useMemo(
     () =>
       buildHomeCalendarDays({
@@ -143,6 +139,7 @@ export function useHomePageData({
     dailyMessage: viewMode === 'daily' ? dailyMessageQuery.data : undefined,
     dailyMemos: dailyMemosQuery.data ?? [],
     dailyMemosQuery,
+    scheduleRecommendationsQuery,
     isLoading:
       measurementAveragesQuery.isLoading ||
       (viewMode === 'daily' && schedulesByDateQuery.isLoading) ||

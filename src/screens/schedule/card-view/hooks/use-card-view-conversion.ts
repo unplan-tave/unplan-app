@@ -1,13 +1,16 @@
+import { isAxiosError } from 'axios';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
+import { useAcceptRecommendationMutation } from '@/domains/ai-recommendation/api/mutations';
+import { useQueueTimeRecommendationsQuery } from '@/domains/ai-recommendation/api/queries';
 import {
   useCreateScheduleMutation,
   useUpdateScheduleMutation,
 } from '@/domains/schedule/api/mutations';
 import { toScheduleCreateInput, toScheduleUpdateInput } from '@/domains/schedule/card-mapper';
 
-import type { CardFormValues, PersonalTagOption } from '@/domains/schedule/model';
+import type { CardFormValues, CardItem, PersonalTagOption } from '@/domains/schedule/model';
 
 export type CardViewToast = {
   message: string;
@@ -17,6 +20,7 @@ export type CardViewToast = {
 interface UseCardViewConversionParams {
   cardId: string | undefined;
   numericCardId: number | null;
+  card: CardItem | null;
   personalTags: PersonalTagOption[];
   initialToast: CardViewToast;
 }
@@ -25,14 +29,28 @@ interface UseCardViewConversionParams {
 export function useCardViewConversion({
   cardId,
   numericCardId,
+  card,
   personalTags,
   initialToast,
 }: UseCardViewConversionParams) {
   const createScheduleMutation = useCreateScheduleMutation();
   const updateScheduleMutation = useUpdateScheduleMutation();
+  const acceptRecommendationMutation = useAcceptRecommendationMutation();
   const [isConvertSheetVisible, setIsConvertSheetVisible] = useState(false);
+  const [recommendationDays, setRecommendationDays] = useState(7);
   const [toast, setToast] = useState<CardViewToast>(initialToast);
-  const isConverting = createScheduleMutation.isPending || updateScheduleMutation.isPending;
+  const queueRecommendationQuery = useQueueTimeRecommendationsQuery(
+    numericCardId,
+    recommendationDays,
+    {
+      enabled: isConvertSheetVisible && card?.cardType === 'queue' && !card.durationUnknown,
+      retry: false,
+    },
+  );
+  const isConverting =
+    createScheduleMutation.isPending ||
+    updateScheduleMutation.isPending ||
+    acceptRecommendationMutation.isPending;
 
   useEffect(() => {
     if (toast == null) {
@@ -47,6 +65,7 @@ export function useCardViewConversion({
   }, [toast]);
 
   const openConvertSheet = useCallback(() => {
+    setRecommendationDays(7);
     setIsConvertSheetVisible(true);
   }, []);
   const closeConvertSheet = useCallback(() => {
@@ -113,6 +132,36 @@ export function useCardViewConversion({
     setIsConvertSheetVisible(false);
     router.push(`/card/card-detail?cardId=${cardId}`);
   }, [cardId]);
+  const handleSearch14Days = useCallback(() => {
+    setRecommendationDays(14);
+  }, []);
+  const handleAcceptRecommendation = useCallback(
+    (recommendId: number, keepOriginal: boolean) => {
+      if (isConverting) return;
+
+      acceptRecommendationMutation.mutate(
+        { recommendId, keepQueueCard: keepOriginal },
+        {
+          onSuccess: ({ scheduleId }) => {
+            setIsConvertSheetVisible(false);
+            if (scheduleId != null) {
+              router.replace(`/card/view?cardId=${scheduleId}&toast=created`);
+              return;
+            }
+
+            setToast({ message: '핀카드로 전환됐어요!', variant: 'confirm' });
+          },
+          onError: () => {
+            setToast({
+              message: '추천 일정 추가에 실패했어요. 다시 시도해 주세요.',
+              variant: 'warning',
+            });
+          },
+        },
+      );
+    },
+    [acceptRecommendationMutation, isConverting],
+  );
   const closeToast = useCallback(() => {
     setToast(null);
   }, []);
@@ -123,7 +172,39 @@ export function useCardViewConversion({
     openConvertSheet,
     closeConvertSheet,
     handleConvert,
+    handleAcceptRecommendation,
+    handleSearch14Days,
     handleEditDuration,
+    queueRecommendationCandidates: queueRecommendationQuery.data?.candidates ?? [],
+    isQueueRecommendationLoading: queueRecommendationQuery.isFetching,
+    queueRecommendationErrorMode: getQueueRecommendationErrorMode(
+      queueRecommendationQuery.error,
+      recommendationDays,
+    ),
     closeToast,
   };
+}
+
+function getQueueRecommendationErrorMode(
+  error: unknown,
+  days: number,
+): 'error-no-duration' | 'error-7day' | 'error-14day' | null {
+  if (!isAxiosError(error) || error.response?.status !== 409) {
+    return null;
+  }
+
+  const data = error.response.data;
+  if (typeof data !== 'object' || data == null) {
+    return days === 7 ? 'error-7day' : 'error-14day';
+  }
+
+  const { canExtendTo14Days, mustChangeDuration } = data as {
+    canExtendTo14Days?: unknown;
+    mustChangeDuration?: unknown;
+  };
+
+  if (mustChangeDuration === true) return 'error-no-duration';
+  if (days === 7 && canExtendTo14Days === true) return 'error-7day';
+
+  return 'error-14day';
 }

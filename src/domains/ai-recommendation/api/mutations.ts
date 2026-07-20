@@ -8,13 +8,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { scheduleQueryKeys } from '@/domains/schedule/api/query-keys';
 import { useOptimisticQueryMutation } from '@/lib/api/optimistic-query-mutation';
 
-import {
-  submitAcceptConditionRecommendation,
-  submitRecommendationCriteriaSettings,
-} from './client';
+import { submitAcceptRecommendation, submitRecommendationCriteriaSettings } from './client';
 import { aiRecommendationQueryKeys, recommendationCriteriaQueryKeys } from './query-keys';
 
-import type { AcceptConditionRecommendationInput, RecommendationCriteriaSettings } from '../model';
+import type {
+  AcceptConditionRecommendationInput,
+  AcceptRecommendationResult,
+  RecommendationCriteriaSettings,
+} from '../model';
 import type { OptimisticQueryMutationContext } from '@/lib/api/optimistic-query-mutation';
 import type { UseMutationOptions } from '@tanstack/react-query';
 
@@ -39,17 +40,17 @@ export function useUpdateRecommendationCriteriaSettingsMutation(
 }
 
 type AcceptConditionRecommendationMutationOptions = Omit<
-  UseMutationOptions<void, Error, AcceptConditionRecommendationInput>,
+  UseMutationOptions<AcceptRecommendationResult, Error, AcceptConditionRecommendationInput>,
   'mutationFn'
 >;
 
-export function useAcceptConditionRecommendationMutation(
+export function useAcceptRecommendationMutation(
   options?: AcceptConditionRecommendationMutationOptions,
 ) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: submitAcceptConditionRecommendation,
+    mutationFn: submitAcceptRecommendation,
     ...options,
     onSuccess: (data, variables, onMutateResult, context) => {
       void queryClient.invalidateQueries({ queryKey: aiRecommendationQueryKeys.all });
@@ -58,3 +59,6 @@ export function useAcceptConditionRecommendationMutation(
     },
   });
 }
+
+/** 컨디션 추천 화면에서 사용하는 추천 수락 mutation의 호환 별칭입니다. */
+export const useAcceptConditionRecommendationMutation = useAcceptRecommendationMutation;

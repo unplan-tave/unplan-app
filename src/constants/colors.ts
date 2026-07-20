@@ -26,6 +26,14 @@ export const colors = {
     core: '#4275DD', // 핵심 작업
   },
 
+  // ─── Sleep condition clock ─────────────────────────────
+  sleepCondition: {
+    risk: '#6C5DA1',
+    lack: '#47B399',
+    good: '#248DFE',
+    excess: '#D9DFE5',
+  },
+
   // ─── Gradient ───────────────────────────────────────────
   gradient: {
     blue: '#4275DD',
@@ -33,6 +41,10 @@ export const colors = {
     green: '#47B399',
     purple: '#D288DD',
     deepPurple: '#6C5DA1',
+  },
+
+  conditionBackground: {
+    mutedTop: '#D9DFE5',
   },
 
   // ─── Grayscale ──────────────────────────────────────────
@@ -61,6 +73,7 @@ export const colors = {
     black12: 'rgba(0,0,0,0.12)',
     black35: 'rgba(0,0,0,0.35)',
     black50: 'rgba(0,0,0,0.5)',
+    blueGray15: 'rgba(60,94,103,0.15)',
     primary20: 'rgba(36,141,254,0.2)',
     secondary10: 'rgba(241,94,94,0.1)',
     gray50020: 'rgba(119,127,136,0.2)',

@@ -131,8 +131,7 @@ function WeeklyDayColumn({
 }
 
 function MonthlyDayCell({ day, onPress }: { day: HomeCalendarDay; onPress: () => void }) {
-  const hasHighlight = day.isToday || day.isSelected;
-  const showGlassBackground = !day.inCurrentMonth || day.scheduleCount > 0 || hasHighlight;
+  const showGlassBackground = day.scheduleCount > 0;
 
   return (
     <Pressable
@@ -142,7 +141,6 @@ function MonthlyDayCell({ day, onPress }: { day: HomeCalendarDay; onPress: () =>
       style={({ pressed }) => [
         styles.monthlyCell,
         showGlassBackground && styles.glassCell,
-        !day.inCurrentMonth && styles.mutedCell,
         pressed && styles.pressed,
       ]}
       onPress={onPress}
@@ -179,6 +177,10 @@ function getDateColor(day: HomeCalendarDay) {
 
   if (day.isToday) {
     return colors.chip.selectedText;
+  }
+
+  if (!day.inCurrentMonth) {
+    return colors.gray[500];
   }
 
   return colors.gray[600];
@@ -270,9 +272,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.gray.white,
     backgroundColor: colors.alpha.white50,
-  },
-  mutedCell: {
-    opacity: 0.5,
   },
   monthlyDateBadge: {
     minWidth: MONTHLY_DATE_BADGE_SIZE,

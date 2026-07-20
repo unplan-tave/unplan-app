@@ -98,8 +98,12 @@ export function buildHomeCalendarDays({
   weekSchedules: DailyScheduleGroup[];
 }): HomeCalendarDay[] {
   const today = new Date();
-  const weekScheduleMap = new Map(weekSchedules.map((group) => [group.date, group.schedules]));
-  const monthScheduleMap = new Map(monthSchedules.map((item) => [item.date, item.count]));
+  const weekScheduleMap = new Map(
+    weekSchedules.map((group) => [normalizeCalendarDateValue(group.date), group.schedules]),
+  );
+  const monthScheduleMap = new Map(
+    monthSchedules.map((item) => [normalizeCalendarDateValue(item.date), item.count]),
+  );
 
   return dateValues.map((dateValue) => {
     const date = toHomeCalendarDate(dateValue);
@@ -118,4 +122,8 @@ export function buildHomeCalendarDays({
       previewTitles: weekSchedulesForDate.map((schedule) => schedule.title),
     };
   });
+}
+
+function normalizeCalendarDateValue(value: string) {
+  return value.replace(/\./g, '-');
 }

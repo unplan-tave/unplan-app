@@ -43,7 +43,8 @@ interface ConditionRecommendationSheetProps {
   onPrevPress: () => void;
   onNextPress: () => void;
   onSelectRecoveryOption: (optionId: string) => void;
-  onKeepQueuePress: () => void;
+  isKeepingQueueCard: boolean;
+  onToggleKeepQueueCard: () => void;
   onManualTimePress: () => void;
   onAccept: () => void;
 }
@@ -62,7 +63,8 @@ export function ConditionRecommendationSheet({
   onPrevPress,
   onNextPress,
   onSelectRecoveryOption,
-  onKeepQueuePress,
+  isKeepingQueueCard,
+  onToggleKeepQueueCard,
   onManualTimePress,
   onAccept,
 }: ConditionRecommendationSheetProps) {
@@ -192,7 +194,8 @@ export function ConditionRecommendationSheet({
             ) : (
               <QueueRecommendationCard
                 recommendation={recommendation}
-                onKeepQueuePress={onKeepQueuePress}
+                isKeepingQueueCard={isKeepingQueueCard}
+                onToggleKeepQueueCard={onToggleKeepQueueCard}
               />
             )}
           </View>
@@ -234,10 +237,12 @@ function RecommendationTag({ recommendation }: { recommendation: ConditionRecomm
 
 function QueueRecommendationCard({
   recommendation,
-  onKeepQueuePress,
+  isKeepingQueueCard,
+  onToggleKeepQueueCard,
 }: {
   recommendation: QueueConditionRecommendation;
-  onKeepQueuePress: () => void;
+  isKeepingQueueCard: boolean;
+  onToggleKeepQueueCard: () => void;
 }) {
   return (
     <View style={styles.detailCard}>
@@ -259,14 +264,20 @@ function QueueRecommendationCard({
         </Typography>
       </View>
       <Pressable
-        accessibilityRole="button"
+        accessibilityLabel={t('condition.recommendation.keepQueue')}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: isKeepingQueueCard }}
         style={({ pressed }) => [styles.keepQueueRow, pressed && styles.pressed]}
-        onPress={onKeepQueuePress}
+        onPress={onToggleKeepQueueCard}
       >
         <Typography variant="bodyS" color={colors.gray[500]}>
           {t('condition.recommendation.keepQueue')}
         </Typography>
-        <Icon name="arrowRight" size={16} color={colors.gray[500]} />
+        <View
+          style={[styles.keepQueueCheckbox, isKeepingQueueCard && styles.keepQueueCheckboxChecked]}
+        >
+          {isKeepingQueueCard ? <Icon name="done" size={16} color={colors.gray.white} /> : null}
+        </View>
       </Pressable>
     </View>
   );
@@ -390,10 +401,24 @@ const styles = StyleSheet.create({
     gap: spacing[1],
   },
   keepQueueRow: {
-    minHeight: 24,
+    minHeight: spacing[6],
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  keepQueueCheckbox: {
+    width: spacing[6],
+    height: spacing[6],
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius['2xs'],
+    borderWidth: 1.5,
+    borderColor: colors.gray[300],
+    backgroundColor: colors.gray.white,
+  },
+  keepQueueCheckboxChecked: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primary,
   },
   actions: {
     flexDirection: 'row',

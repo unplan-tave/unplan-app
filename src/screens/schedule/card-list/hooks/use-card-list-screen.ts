@@ -2,7 +2,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useScheduleSearchQuery } from '@/domains/schedule/api/queries';
+import { useInfiniteScheduleSearchQuery } from '@/domains/schedule/api/queries';
 import { toCardItemsFromScheduleList } from '@/domains/schedule/card-mapper';
 import {
   groupCardsByMonth,
@@ -12,6 +12,7 @@ import {
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 
 import { useCardListFilters } from './use-card-list-filters';
+import { useCardListInfiniteScroll } from './use-card-list-infinite-scroll';
 
 /** 카드 목록 화면의 조회·필터·이동 이벤트를 조합합니다. */
 export function useCardListScreen() {
@@ -56,12 +57,16 @@ export function useCardListScreen() {
       personalTags,
     ],
   );
-  const scheduleSearchQuery = useScheduleSearchQuery(searchInput, {
+  const scheduleSearchQuery = useInfiniteScheduleSearchQuery(searchInput, {
     enabled: isScreenFocused,
   });
+  const schedules = useMemo(
+    () => scheduleSearchQuery.data?.pages.flatMap((page) => page.schedules) ?? [],
+    [scheduleSearchQuery.data],
+  );
   const cards = useMemo(
-    () => toCardItemsFromScheduleList(scheduleSearchQuery.data ?? [], personalTags),
-    [personalTags, scheduleSearchQuery.data],
+    () => toCardItemsFromScheduleList(schedules, personalTags),
+    [personalTags, schedules],
   );
   const filteredCards = cards;
   const sections = useMemo(() => groupCardsByMonth(filteredCards), [filteredCards]);
@@ -78,6 +83,11 @@ export function useCardListScreen() {
   const handleSearchClear = useCallback(() => {
     router.setParams({ q: '' });
   }, []);
+  const handleScroll = useCardListInfiniteScroll({
+    hasNextPage: scheduleSearchQuery.hasNextPage,
+    isFetchingNextPage: scheduleSearchQuery.isFetchingNextPage,
+    fetchNextPage: scheduleSearchQuery.fetchNextPage,
+  });
 
   return {
     insets,
@@ -87,8 +97,11 @@ export function useCardListScreen() {
     filteredCards,
     sections,
     hasActiveFilter,
+    totalCards: scheduleSearchQuery.data?.pages[0]?.totalElements ?? 0,
     isLoading: scheduleSearchQuery.isLoading,
     isError: scheduleSearchQuery.isError,
+    isFetchingNextPage: scheduleSearchQuery.isFetchingNextPage,
+    handleScroll,
     handleCardPress,
     handleSearchPress,
     handleSearchClear,

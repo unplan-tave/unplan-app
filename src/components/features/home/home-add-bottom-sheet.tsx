@@ -3,25 +3,19 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import {
-  formatDueCountdown,
-  formatDueDateDisplay,
-  formatDurationInline,
-  hasDueDate,
-  UNKNOWN_DURATION_LABEL,
-} from '@/domains/schedule/queue';
+import { getConditionTagById } from '@/domains/schedule/model';
 
 import { TimelineCard } from './timeline-card';
 
-import type { CardItem, HomeRecommendationItem } from '@/domains/schedule/model';
+import type { ScheduleRecommendation } from '@/domains/ai-recommendation/model';
 
 interface HomeAddBottomSheetProps {
   visible: boolean;
-  recommendations: HomeRecommendationItem[];
+  recommendations: ScheduleRecommendation[];
   onClose: () => void;
   onCreatePress: () => void;
-  onDismissRecommendation: (cardId: string) => void;
-  onRecommendationAddPress: (cardId: string) => void;
+  onDismissRecommendation: (recommendId: number) => void;
+  onRecommendationAddPress: (recommendId: number) => void;
   onViewQueuePress: () => void;
 }
 
@@ -60,32 +54,27 @@ export function HomeAddBottomSheet({
             </View>
             <View style={styles.recommendList}>
               {recommendations.map((item) => {
-                const { card, conditionTag, personalTags } = item;
-                const timeLabel = getQueueRecommendationRange(card);
+                const conditionTag = getConditionTagById(item.conditionTagId);
 
                 return (
                   <TimelineCard
-                    key={card.id}
+                    key={item.recommendId}
                     compact
                     time=""
-                    title={card.title}
-                    range={timeLabel}
+                    title={item.title}
+                    range={`${item.startTime} - ${item.endTime}`}
                     status="recommendation"
-                    helperText="큐카드에서 가져오기"
+                    helperText="잠깐 쉬는 게 어떨까요?"
                     tags={[
                       {
                         label: conditionTag.label,
                         variant: 'condition',
                         condition: conditionTag.id,
                       },
-                      ...personalTags.map((tag) => ({
-                        label: tag.label,
-                        variant: 'personal' as const,
-                      })),
                     ]}
                     cardStyle={styles.recommendCard}
-                    onAddPress={() => onRecommendationAddPress(card.id)}
-                    onDismissPress={() => onDismissRecommendation(card.id)}
+                    onAddPress={() => onRecommendationAddPress(item.recommendId)}
+                    onDismissPress={() => onDismissRecommendation(item.recommendId)}
                   />
                 );
               })}
@@ -111,22 +100,6 @@ export function HomeAddBottomSheet({
       </View>
     </BottomSheet>
   );
-}
-
-function getQueueRecommendationRange(card: CardItem) {
-  const dueLabel = hasDueDate(card.dueDate)
-    ? `${formatDueDateDisplay(card.dueDate)} ${formatDueCountdown(card.dueDate)}`
-    : '마감일 미정';
-
-  if (card.durationUnknown) {
-    return `${dueLabel} · ${UNKNOWN_DURATION_LABEL}`;
-  }
-
-  if (card.durationHours > 0 || card.durationMinutes > 0) {
-    return `${dueLabel} · 약 ${formatDurationInline(card.durationHours, card.durationMinutes)}`;
-  }
-
-  return dueLabel;
 }
 
 const styles = StyleSheet.create({

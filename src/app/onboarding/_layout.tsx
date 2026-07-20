@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 
 export default function OnboardingLayout() {
   return (
-    <Stack>
+    <Stack screenOptions={{ gestureEnabled: false }}>
       <Stack.Screen name="intro" options={{ headerShown: false }} />
       <Stack.Screen name="recovery" options={{ headerShown: false }} />
       <Stack.Screen name="sleep" options={{ headerShown: false }} />

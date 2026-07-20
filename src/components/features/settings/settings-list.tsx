@@ -6,7 +6,7 @@ import { colors, radius, spacing } from '@/constants/theme';
 
 export interface SettingsListRow {
   label: string;
-  value?: string;
+  value?: string | string[];
   type?: 'navigation' | 'switch' | 'text';
   /** 조회 화면용 톤 — label은 흐리게, value는 진하게 표시 */
   muted?: boolean;
@@ -46,13 +46,19 @@ export function SettingsList({ title, rows, style }: SettingsListProps) {
 function SettingsRow({ row }: { row: SettingsListRow }) {
   const type = row.type ?? 'navigation';
   const isPressable = type === 'navigation' && row.onPress != null && !row.disabled;
+  const values = row.value == null ? [] : Array.isArray(row.value) ? row.value : [row.value];
+  const hasMultipleValues = values.length > 1;
 
   return (
     <Pressable
       accessibilityRole={isPressable ? 'button' : undefined}
       accessibilityState={{ disabled: row.disabled }}
       disabled={!isPressable}
-      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.row,
+        hasMultipleValues && styles.multilineRow,
+        pressed && styles.pressed,
+      ]}
       onPress={row.onPress}
     >
       <Typography
@@ -62,14 +68,19 @@ function SettingsRow({ row }: { row: SettingsListRow }) {
         {row.label}
       </Typography>
       <View style={styles.trailing}>
-        {row.value ? (
-          <Typography
-            variant="bodyM"
-            color={row.muted ? colors.gray[600] : colors.gray[400]}
-            numberOfLines={1}
-          >
-            {row.value}
-          </Typography>
+        {values.length > 0 ? (
+          <View style={[styles.values, hasMultipleValues && styles.multilineValues]}>
+            {values.map((value) => (
+              <Typography
+                key={value}
+                variant="bodyM"
+                color={row.muted ? colors.gray[600] : colors.gray[400]}
+                numberOfLines={1}
+              >
+                {value}
+              </Typography>
+            ))}
+          </View>
         ) : null}
         {type === 'switch' ? (
           <Switch
@@ -120,6 +131,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing[4],
   },
+  multilineRow: {
+    alignItems: 'flex-start',
+  },
   trailing: {
     flex: 1,
     minWidth: 0,
@@ -127,6 +141,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     gap: spacing[2],
+  },
+  values: {
+    minWidth: 0,
+  },
+  multilineValues: {
+    alignItems: 'flex-end',
+    gap: spacing[1],
   },
   pressed: {
     opacity: 0.72,

@@ -28,7 +28,7 @@ export function SleepMeasureScreen() {
 
   return (
     <View style={styles.screen}>
-      <AppBackground />
+      <AppBackground variant="reversed" />
       <SafeAreaView style={styles.safeArea}>
         <Header
           left={<HeaderCancel color={colors.primary} onPress={sleep.cancel} />}

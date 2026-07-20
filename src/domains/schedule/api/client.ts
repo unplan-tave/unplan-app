@@ -26,6 +26,7 @@ import {
   toScheduleListItems,
   toScheduleMonthlyOverview,
   toScheduleSearchListItems,
+  toScheduleSearchPage,
   toScheduleSearchParams,
   toScheduleUpdateRequest,
   toPersonalTagOptions,
@@ -41,6 +42,7 @@ import type {
   ScheduleDetail,
   ScheduleListItem,
   ScheduleMonthlyOverview,
+  ScheduleSearchPage,
   ScheduleStatus,
   ScheduleUpdateInput,
   PersonalTagOption,
@@ -108,6 +110,15 @@ export async function searchSchedules(input: SearchSchedulesInput): Promise<Sche
   const response = await searchScheduleEndpoints(toScheduleSearchParams(input));
 
   return toScheduleSearchListItems(response);
+}
+
+/** 검색 필터에 맞는 일정 카드 한 페이지와 페이지 정보를 조회합니다. */
+export async function searchSchedulesPage(
+  input: SearchSchedulesInput,
+): Promise<ScheduleSearchPage> {
+  const response = await searchScheduleEndpoints(toScheduleSearchParams(input));
+
+  return toScheduleSearchPage(response);
 }
 
 export async function fetchDailyMessage(input: GetDailyMessageInput): Promise<DailyMessage> {

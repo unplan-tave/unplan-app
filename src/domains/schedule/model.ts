@@ -83,13 +83,6 @@ export interface TagRecommendation {
   label: string;
 }
 
-/** 홈 등 화면에서 추천 카드와 함께 표시할 태그 정보를 표현합니다. */
-export interface HomeRecommendationItem {
-  card: CardItem;
-  conditionTag: ConditionTagOption;
-  personalTags: PersonalTagOption[];
-}
-
 export interface CalendarCell {
   key: string;
   label: string;
@@ -108,6 +101,36 @@ export interface ScheduleListItem {
   status: ScheduleStatus;
   conditionTagId: ConditionTagId;
   personalTags: string[];
+}
+
+/** 일정 검색 API의 페이지 정보를 화면 모델로 정규화한 값입니다. */
+export interface ScheduleSearchPage {
+  schedules: ScheduleListItem[];
+  page: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+}
+
+/** 일정의 종료 시각이 현재 시각을 지났는지 확인합니다. */
+export function hasScheduleEnded(
+  schedule: Pick<ScheduleListItem, 'date' | 'endTime'>,
+  now = new Date(),
+): boolean {
+  const [year, month, day] = schedule.date.split(/[.-]/).map(Number);
+  const [hours, minutes] = schedule.endTime.split(':').map(Number);
+
+  if (
+    !Number.isInteger(year) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(day) ||
+    !Number.isInteger(hours) ||
+    !Number.isInteger(minutes)
+  ) {
+    return false;
+  }
+
+  return new Date(year, month - 1, day, hours, minutes) <= now;
 }
 
 export interface ScheduleDetail extends ScheduleListItem {
@@ -182,6 +205,8 @@ export interface ScheduleCreateInput {
 export interface ScheduleUpdateInput {
   title?: string;
   conditionTagId?: ConditionTagId;
+  /** 전달 시 일정의 개인 태그 전체를 교체합니다. */
+  personalTags?: string[];
   date?: string;
   startTime?: string;
   endTime?: string;

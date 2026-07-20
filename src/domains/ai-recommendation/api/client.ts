@@ -25,6 +25,7 @@ import {
 
 import type {
   AcceptConditionRecommendationInput,
+  AcceptRecommendationResult,
   QueueTimeRecommendationResult,
   RecommendationCriteriaSettings,
   ScheduleRecommendation,
@@ -60,23 +61,30 @@ export async function fetchConditionRecommendations(
   return toConditionRecommendationViewModel(response.data);
 }
 
-export async function submitAcceptConditionRecommendation(
+export async function submitAcceptRecommendation(
   input: AcceptConditionRecommendationInput,
-): Promise<void> {
-  await acceptRecommendation(
+): Promise<AcceptRecommendationResult> {
+  const response = await acceptRecommendation(
     input.recommendId,
     toRecommendationAcceptRequest({
       keepQueueCard: input.keepQueueCard,
       recoveryMean: input.recoveryMean,
     }),
   );
+
+  return {
+    scheduleId: response.schedule_id ?? null,
+    created: response.created === true,
+  };
 }
 
 /** 특정 날짜의 일반 큐 카드 추천을 조회합니다. */
 export async function fetchScheduleRecommendations(
   date: string,
 ): Promise<ScheduleRecommendation[]> {
-  return toScheduleRecommendations(await getRecommendations({ date }));
+  const response = await getRecommendations({ date });
+
+  return toScheduleRecommendations(response);
 }
 
 /** 특정 큐 카드의 추천 시간대를 조회합니다. */

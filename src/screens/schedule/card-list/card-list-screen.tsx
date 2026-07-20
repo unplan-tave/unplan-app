@@ -15,7 +15,7 @@ import { useTodayConditionScore } from '@/hooks/use-condition-score';
 import { useCardListScreen } from './hooks/use-card-list-screen';
 
 const SCREEN_MAX_WIDTH = 393;
-const CONTENT_MAX_WIDTH = 353;
+const CONTENT_MAX_WIDTH = 393;
 const BOTTOM_NAV_HEIGHT = 66;
 
 export function CardListScreen() {
@@ -27,8 +27,11 @@ export function CardListScreen() {
     filteredCards,
     sections,
     hasActiveFilter,
+    totalCards,
     isLoading,
     isError,
+    isFetchingNextPage,
+    handleScroll,
     handleCardPress,
     handleSearchPress,
     handleSearchClear,
@@ -59,6 +62,8 @@ export function CardListScreen() {
             },
           ]}
           showsVerticalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
         >
           <View style={styles.header}>
             <CardListSearchBar
@@ -82,7 +87,7 @@ export function CardListScreen() {
           </View>
 
           <Typography variant="caption" color={colors.gray.white} style={styles.headerLabel}>
-            총 {filteredCards.length}개의 카드
+            총 {totalCards}개의 카드
           </Typography>
 
           {isLoading ? (
@@ -98,6 +103,9 @@ export function CardListScreen() {
               onCardPress={handleCardPress}
             />
           )}
+          {isFetchingNextPage ? (
+            <CardListStatusMessage message="카드를 더 불러오는 중이에요." />
+          ) : null}
         </ScrollView>
       </View>
     </ScreenLayout>
@@ -122,7 +130,7 @@ const styles = StyleSheet.create({
     maxWidth: CONTENT_MAX_WIDTH,
     alignSelf: 'center',
     gap: spacing[4],
-    paddingHorizontal: spacing[5],
+    paddingHorizontal: spacing[3],
   },
   header: {
     gap: spacing[3],
