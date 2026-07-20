@@ -187,15 +187,15 @@ const styles = StyleSheet.create({
   },
   header: {
     position: 'relative',
-    minHeight: 24,
+    minHeight: spacing[6],
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing[3],
   },
   headerAction: {
-    minWidth: 33,
-    minHeight: 24,
+    minWidth: spacing[8] + spacing.px,
+    minHeight: spacing[6],
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1,
