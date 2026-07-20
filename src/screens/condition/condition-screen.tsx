@@ -107,7 +107,8 @@ export function ConditionScreen() {
         onPrevPress={recommendation.showPrevious}
         onNextPress={recommendation.showNext}
         onSelectRecoveryOption={recommendation.selectRecoveryOption}
-        onKeepQueuePress={recommendation.keepQueueCard}
+        isKeepingQueueCard={recommendation.isKeepingQueueCard}
+        onToggleKeepQueueCard={recommendation.toggleKeepQueueCard}
         onManualTimePress={recommendation.openManualTime}
         onAccept={recommendation.acceptRecommendation}
       />
