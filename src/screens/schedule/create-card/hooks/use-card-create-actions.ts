@@ -13,6 +13,7 @@ import {
   type CardTab,
   type PersonalTagOption,
 } from '@/domains/schedule/model';
+import { useGoBack } from '@/hooks/use-go-back';
 
 import { useCardCreateFeedback } from './use-card-create-feedback';
 
@@ -46,6 +47,7 @@ export function useCardCreateActions({
   setActiveTab,
   setHasSubmitted,
 }: UseCardCreateActionsParams) {
+  const goBack = useGoBack();
   const { toast, showToast, closeToast } = useCardCreateFeedback();
   const createScheduleMutation = useCreateScheduleMutation();
   const updateScheduleMutation = useUpdateScheduleMutation();
@@ -63,8 +65,8 @@ export function useCardCreateActions({
     }
 
     discardDraft();
-    router.replace('/(tabs)');
-  }, [discardDraft, isSubmitting]);
+    goBack();
+  }, [discardDraft, goBack, isSubmitting]);
 
   const handleValidSubmit = useCallback(
     (values: CardFormValues) => {
