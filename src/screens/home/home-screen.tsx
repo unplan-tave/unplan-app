@@ -1,8 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
+import { ConditionCalendarModal } from '@/components/domain/condition/condition-calendar-modal';
 import { ConditionScoreBackground } from '@/components/domain/condition/condition-score-background';
 import { ConditionSummaryPanel } from '@/components/domain/condition/condition-summary-panel';
 import { CardToast } from '@/components/domain/schedule/card-toast';
@@ -10,6 +11,7 @@ import { DueDurationSheet } from '@/components/domain/schedule/due-duration-shee
 import { DailyMemoBottomSheet } from '@/components/features/home/daily-memo-bottom-sheet';
 import { HomeAddBottomSheet } from '@/components/features/home/home-add-bottom-sheet';
 import { HomeCalendarView } from '@/components/features/home/home-calendar-view';
+import { HomeConditionPromptModal } from '@/components/features/home/home-condition-prompt-modal';
 import { HomeExtendTimeSheet } from '@/components/features/home/home-extend-time-sheet';
 import { HomeProgressSheet } from '@/components/features/home/home-progress-sheet';
 import { TimelineCard } from '@/components/features/home/timeline-card';
@@ -19,6 +21,7 @@ import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { ViewModeButton } from '@/components/ui/ViewModeButton';
 import { colors, radius, spacing } from '@/constants/theme';
+import { getConditionScoreTheme } from '@/domains/condition/score-theme';
 import { t } from '@/lib/i18n';
 
 import { useHomeScreen } from './hooks/use-home-screen';
@@ -29,11 +32,12 @@ const HOME_TIMELINE_LEFT = 108;
 const HOME_TIMELINE_LINE_LEFT = 43;
 const HOME_TIMELINE_CARD_LIST_TOP = 107;
 const HOME_TIMELINE_CARD_LIST_BOTTOM = 160;
-const HOME_CURRENT_TIME_LINE_WIDTH = 13;
+const HOME_HEADER_OVERLAY_HEIGHT = 216;
 
 /** 홈 화면의 JSX와 화면 전용 스타일만 렌더링합니다. */
 export function HomeScreen() {
   const home = useHomeScreen();
+  const scoreTheme = getConditionScoreTheme(home.conditionScore);
 
   return (
     <ScreenLayout
@@ -43,7 +47,7 @@ export function HomeScreen() {
     >
       <StatusBar style="light" />
       <ConditionScoreBackground score={home.conditionScore} />
-      <GestureDetector gesture={home.pinchGesture}>
+      <GestureDetector gesture={home.homeGesture}>
         <View style={styles.canvas}>
           {home.viewMode === 'daily' ? (
             <View style={styles.timeline}>
@@ -52,18 +56,15 @@ export function HomeScreen() {
                 contentContainerStyle={styles.timelineContent}
                 showsVerticalScrollIndicator={false}
               >
-                {home.timelineCardsForView.map((card) => (
-                  <TimelineCard key={card.id} {...card} />
+                {home.timelineCardsForView.map((card, index) => (
+                  <View key={card.id} style={styles.timelineCardSlot}>
+                    <TimelineCard {...card} />
+                    {home.currentTimeMarkerIndex === index + 1 ? (
+                      <HomeCurrentTimeMarker time={home.currentTimeLabel} />
+                    ) : null}
+                  </View>
                 ))}
               </ScrollView>
-              <View style={styles.currentTime}>
-                <View style={styles.currentTimeBadge}>
-                  <Typography variant="caption" color={colors.gray.white}>
-                    {home.currentTimeLabel}
-                  </Typography>
-                </View>
-                <View style={styles.currentLine} />
-              </View>
             </View>
           ) : (
             <HomeCalendarView
@@ -78,19 +79,19 @@ export function HomeScreen() {
         <Svg
           pointerEvents="none"
           preserveAspectRatio="none"
-          viewBox="0 0 393 320"
+          viewBox={`0 0 393 ${HOME_HEADER_OVERLAY_HEIGHT}`}
           width="100%"
-          height={320}
+          height={HOME_HEADER_OVERLAY_HEIGHT}
           style={styles.headerOverlay}
         >
           <Defs>
             <LinearGradient id="homeHeaderOverlay" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor={colors.gradient.blue} stopOpacity="0.72" />
-              <Stop offset="0.68" stopColor={colors.gradient.blue} stopOpacity="0.52" />
-              <Stop offset="1" stopColor={colors.gradient.blue} stopOpacity="0" />
+              <Stop offset="0" stopColor={scoreTheme.primary} stopOpacity="0.72" />
+              <Stop offset="0.68" stopColor={scoreTheme.primary} stopOpacity="0.52" />
+              <Stop offset="1" stopColor={scoreTheme.primary} stopOpacity="0" />
             </LinearGradient>
           </Defs>
-          <Rect width={393} height={320} fill="url(#homeHeaderOverlay)" />
+          <Rect width={393} height={HOME_HEADER_OVERLAY_HEIGHT} fill="url(#homeHeaderOverlay)" />
         </Svg>
       ) : null}
       <View style={styles.header}>
@@ -107,11 +108,22 @@ export function HomeScreen() {
             summary={home.conditionSummary}
             memoLabel={home.dailyMemos[0]?.content ?? t('home.dailyMemo.emptyLabel')}
             memoCount={home.dailyMemos.length}
+            showMeters={home.viewMode === 'daily'}
+            onDatePress={home.handleOpenCalendar}
+            onScorePress={home.openConditionTab}
             onMemoPress={home.handleOpenMemoSheet}
           />
         </View>
         <View style={styles.messageBox}>
-          <Icon name="bell" size={24} color={colors.gray.white} />
+          <Pressable
+            accessibilityLabel="알림"
+            accessibilityRole="button"
+            hitSlop={spacing[2]}
+            style={({ pressed }) => pressed && styles.pressed}
+            onPress={() => home.openNotifications()}
+          >
+            <Icon name="bell" size={24} color={colors.gray.white} />
+          </Pressable>
           <Typography
             variant="titleM"
             color={colors.gray.white}
@@ -200,7 +212,37 @@ export function HomeScreen() {
         onAllow={() => home.updateNotificationSettings(true)}
         onDeny={() => home.updateNotificationSettings(false)}
       />
+      <HomeConditionPromptModal
+        visible={home.isConditionPromptVisible}
+        onClose={home.closeConditionPrompt}
+        onConditionPress={home.openConditionMeasureFromPrompt}
+      />
+      <ConditionCalendarModal
+        visible={home.calendar.visible}
+        title={home.calendar.title}
+        days={home.calendar.days}
+        selectedDate={home.selectedDate}
+        periodMode="daily"
+        canGoNext={home.calendar.canGoNext}
+        onSelectDate={home.handleCalendarDateSelect}
+        onPreviousMonth={() => home.handleMoveCalendarMonth('previous')}
+        onNextMonth={() => home.handleMoveCalendarMonth('next')}
+        onClose={home.handleCloseCalendar}
+      />
     </ScreenLayout>
+  );
+}
+
+function HomeCurrentTimeMarker({ time }: { time: string }) {
+  return (
+    <View style={styles.currentTime} pointerEvents="none">
+      <View style={styles.currentTimeBadge}>
+        <Typography variant="caption" color={colors.gray.white}>
+          {time}
+        </Typography>
+      </View>
+      <View style={styles.currentLine} />
+    </View>
   );
 }
 
@@ -230,7 +272,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 320,
+    height: HOME_HEADER_OVERLAY_HEIGHT,
     zIndex: 0,
   },
   timeline: { position: 'absolute', top: 0, bottom: 0, left: HOME_TIMELINE_LEFT, right: 0 },
@@ -249,13 +291,19 @@ const styles = StyleSheet.create({
     paddingRight: spacing[3],
     paddingBottom: HOME_TIMELINE_CARD_LIST_BOTTOM,
   },
+  timelineCardSlot: {
+    position: 'relative',
+    width: '100%',
+    maxWidth: 273,
+  },
   currentTime: {
     position: 'absolute',
-    top: '58%',
+    bottom: -spacing[4],
     left: 0,
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    zIndex: 4,
+    zIndex: 1,
   },
   currentTimeBadge: {
     alignItems: 'center',
@@ -265,8 +313,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
   },
   currentLine: {
-    width: HOME_CURRENT_TIME_LINE_WIDTH,
+    flex: 1,
     height: 2,
     backgroundColor: colors.secondary,
   },
+  pressed: { opacity: 0.72 },
 });

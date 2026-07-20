@@ -15,7 +15,9 @@ import { getCardProgressStatus, progressStatusToScheduleStatus } from '@/domains
 import { type CardItem, type CardProgressStatus } from '@/domains/schedule/model';
 import { type DueDurationDraft } from '@/domains/schedule/queue';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
+import { useConditionCalendar } from '@/hooks/use-condition-calendar';
 import { t } from '@/lib/i18n';
+import { addDays, getWeekStart, isSameDate } from '@/lib/utils/date';
 
 import {
   formatDateValue,
@@ -35,6 +37,7 @@ import {
   toHomeTimelineCardViewModel,
 } from '../home-screen-logic';
 
+import { useHomeConditionPrompt } from './use-home-condition-prompt';
 import { useHomePageData } from './use-home-page-data';
 
 import type { AlarmSettings } from '@/domains/member/model';
@@ -50,7 +53,9 @@ export function useHomeScreen() {
   const [isAddSheetVisible, setIsAddSheetVisible] = useState(false);
   const [isDailyMemoSheetVisible, setIsDailyMemoSheetVisible] = useState(false);
   const [deletingMemoId, setDeletingMemoId] = useState<number | null>(null);
-  const [isNotificationModalVisible, setIsNotificationModalVisible] = useState(false);
+  const [isNotificationModalVisible, setIsNotificationModalVisible] = useState(
+    () => params.onboardingNotification === '1',
+  );
   const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
   const [dismissedRecommendationIds, setDismissedRecommendationIds] = useState<Set<string>>(
     () => new Set(),
@@ -67,7 +72,9 @@ export function useHomeScreen() {
   const createDailyMemoMutation = useCreateDailyMemoMutation();
   const deleteDailyMemoMutation = useDeleteDailyMemoMutation();
   const selectedDateValue = useMemo(() => formatDateValue(selectedDate), [selectedDate]);
+  const todayValue = useMemo(() => formatDateValue(now), [now]);
   const pageData = useHomePageData({ personalTags, selectedDate, viewMode });
+  const conditionPrompt = useHomeConditionPrompt(todayValue, !isNotificationModalVisible);
   const visibleRecommendations = useMemo(
     () => pageData.recommendations.filter((item) => !dismissedRecommendationIds.has(item.card.id)),
     [dismissedRecommendationIds, pageData.recommendations],
@@ -113,6 +120,35 @@ export function useHomeScreen() {
         if (event.scale > 1.08) runOnJS(changeViewModeByZoom)('in');
       }),
     [changeViewModeByZoom],
+  );
+  /** 보기 단위에 따라 선택 날짜를 이전·다음 기간으로 이동합니다. */
+  const movePeriod = useCallback(
+    (direction: 'previous' | 'next') => {
+      const amount = direction === 'previous' ? -1 : 1;
+
+      setSelectedDate((previous) => {
+        if (viewMode === 'daily') return addDays(previous, amount);
+        if (viewMode === 'weekly') return addDays(getWeekStart(previous), amount * 7);
+
+        return new Date(previous.getFullYear(), previous.getMonth() + amount, 1);
+      });
+    },
+    [viewMode],
+  );
+  const periodSwipeGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetX([-20, 20])
+        .failOffsetY([-20, 20])
+        .onEnd((event) => {
+          if (event.translationX <= -40) runOnJS(movePeriod)('next');
+          if (event.translationX >= 40) runOnJS(movePeriod)('previous');
+        }),
+    [movePeriod],
+  );
+  const homeGesture = useMemo(
+    () => Gesture.Simultaneous(pinchGesture, periodSwipeGesture),
+    [periodSwipeGesture, pinchGesture],
   );
   /** 알림 안내 모달을 닫고 홈 route를 정리합니다. */
   const closeNotificationModal = useCallback(() => {
@@ -180,6 +216,14 @@ export function useHomeScreen() {
   const handleViewQueue = useCallback(() => {
     setIsAddSheetVisible(false);
     router.navigate('/schedule');
+  }, []);
+  /** 알림 화면으로 이동합니다. */
+  const openNotifications = useCallback(() => {
+    router.push('/notifications');
+  }, []);
+  /** 홈 헤더의 컨디션 점수에서 컨디션 탭으로 이동합니다. */
+  const openConditionTab = useCallback(() => {
+    router.navigate('/condition');
   }, []);
   /** 종료된 카드는 진행 sheet를, 그 외 카드는 상세를 엽니다. */
   const handleCardPress = useCallback(
@@ -265,6 +309,12 @@ export function useHomeScreen() {
   }, [extendState, progressCard, updateScheduleMutation]);
   /** 캘린더 선택 날짜를 바꿉니다. */
   const handleSelectDate = useCallback((date: Date) => setSelectedDate(date), []);
+  const handleCalendarDateSelect = useCallback((date: Date) => setSelectedDate(date), []);
+  const calendar = useConditionCalendar({
+    selectedDate,
+    periodMode: 'daily',
+    onSelectDate: handleCalendarDateSelect,
+  });
   /** 일·주·월 보기를 순환합니다. */
   const handleCycleViewMode = useCallback(
     () => setViewMode((previous) => getNextHomeViewMode(previous)),
@@ -325,6 +375,18 @@ export function useHomeScreen() {
     personalTags,
     timelineItems,
   ]);
+  const currentTimeMarkerIndex = useMemo(() => {
+    if (!isSameDate(selectedDate, now)) return null;
+
+    if (timelineItems.length === 0) return timelineCardsForView.length;
+
+    const placeholderCount = timelineItems.length <= 1 ? 2 : 1;
+    const passedScheduleCount = timelineItems.filter(
+      ({ card }) => card.timeStart <= formatHomeCurrentTime(now),
+    ).length;
+
+    return placeholderCount + passedScheduleCount;
+  }, [now, selectedDate, timelineCardsForView.length, timelineItems]);
 
   return {
     ...pageData,
@@ -342,8 +404,9 @@ export function useHomeScreen() {
     }),
     currentTimeLabel: formatHomeCurrentTime(now),
     timelineCardsForView,
+    currentTimeMarkerIndex,
     visibleRecommendations,
-    pinchGesture,
+    homeGesture,
     extendState,
     queueDraftValue,
     progressCard,
@@ -356,8 +419,10 @@ export function useHomeScreen() {
     extensionMinutes,
     isAddSheetVisible,
     isDailyMemoSheetVisible,
+    calendar: calendar.calendar,
     deletingMemoId,
     isNotificationModalVisible,
+    isConditionPromptVisible: conditionPrompt.isVisible,
     notificationErrorMessage,
     isExtendSheetVisible,
     isQueueSheetVisible,
@@ -374,6 +439,8 @@ export function useHomeScreen() {
     handleDismissRecommendation,
     handleAddRecommendation,
     handleViewQueue,
+    openNotifications,
+    openConditionTab,
     handleCardPress,
     handleCloseProgressSheet,
     handleCompleteProgress,
@@ -386,11 +453,17 @@ export function useHomeScreen() {
     handleIncreaseExtension,
     handleCompleteExtension,
     handleSelectDate,
+    handleOpenCalendar: calendar.openCalendar,
+    handleCloseCalendar: calendar.closeCalendar,
+    handleMoveCalendarMonth: calendar.moveCalendarMonth,
+    handleCalendarDateSelect: calendar.selectCalendarDate,
     handleCycleViewMode,
     handleOpenMemoSheet,
     handleCloseMemoSheet,
     updateNotificationSettings,
     closeNotificationModal,
+    closeConditionPrompt: conditionPrompt.close,
+    openConditionMeasureFromPrompt: conditionPrompt.openConditionMeasure,
     dismissConflictToast,
   };
 }
