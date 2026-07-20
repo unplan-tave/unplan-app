@@ -1,3 +1,6 @@
+import { parseTimeToMinutes } from '@/domains/schedule/time';
+import { formatDateValue } from '@/lib/utils/date';
+
 import type { ConditionTagId } from '@/domains/schedule/model';
 
 /**
@@ -50,6 +53,22 @@ export interface QueueTimeRecommendationResult {
   candidates: ScheduleRecommendation[];
   canExtendTo14Days: boolean;
   mustChangeDuration: boolean;
+}
+
+/** 현재 기기 시각 이후에 시작하는 추천인지 확인합니다. 잘못된 날짜·시각은 표시하지 않습니다. */
+export function isUpcomingScheduleRecommendation(
+  recommendation: Pick<ScheduleRecommendation, 'date' | 'startTime'>,
+  now = new Date(),
+): boolean {
+  const today = formatDateValue(now);
+
+  if (recommendation.date > today) return true;
+  if (recommendation.date < today) return false;
+
+  const startMinutes = parseTimeToMinutes(recommendation.startTime);
+  if (startMinutes == null) return false;
+
+  return startMinutes > now.getHours() * 60 + now.getMinutes();
 }
 
 export type QueueTimeRecommendationErrorMode = 'error-no-duration' | 'error-7day' | 'error-14day';
