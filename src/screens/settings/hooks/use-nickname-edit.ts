@@ -22,7 +22,7 @@ export function useNicknameEdit() {
   const [nickname, setNickname] = useState('');
   const trimmedNickname = nickname.trim();
   const hasLoadedProfile = !profileQuery.isLoading && profileQuery.data != null;
-  const canSubmit = hasLoadedProfile && trimmedNickname.length > 0;
+  const canSubmit = hasLoadedProfile && !updateProfileMutation.isPending;
 
   const placeholder = useMemo(() => `1~${MAX_NICKNAME_LENGTH}자`, []);
 
@@ -38,7 +38,12 @@ export function useNicknameEdit() {
   };
 
   const submit = () => {
-    if (!canSubmit || updateProfileMutation.isPending) {
+    if (!hasLoadedProfile || updateProfileMutation.isPending) {
+      return;
+    }
+
+    if (trimmedNickname.length === 0) {
+      setErrorMessage('닉네임을 입력해 주세요.');
       return;
     }
 
@@ -50,7 +55,7 @@ export function useNicknameEdit() {
     nickname,
     placeholder,
     maxLength: MAX_NICKNAME_LENGTH,
-    canSubmit: canSubmit && !updateProfileMutation.isPending,
+    canSubmit,
     errorMessage,
     isLoading: profileQuery.isLoading,
     isSubmitting: updateProfileMutation.isPending,

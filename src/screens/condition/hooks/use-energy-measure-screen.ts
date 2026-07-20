@@ -31,6 +31,7 @@ export function useEnergyMeasureScreen() {
   const [dateId, setDateId] = useState(() => format(now, DATE_ID));
   const [time, setTime] = useState(() => format(now, 'HH:mm'));
   const [activeField, setActiveField] = useState<PickerField | null>(null);
+  const [validationMessage, setValidationMessage] = useState<string | null>(null);
 
   const recordQuery = useConditionRecordQuery(isEditMode ? conditionId : null);
   const saveMutation = useSaveConditionRecordMutation({ onSuccess: () => router.back() });
@@ -70,6 +71,7 @@ export function useEnergyMeasureScreen() {
     setMindScore(normalizedToScore(x));
     setBodyScore(normalizedToScore(y));
     setHasValue(true);
+    setValidationMessage(null);
   }, []);
 
   const openDateField = useCallback(() => setActiveField('date'), []);
@@ -89,7 +91,12 @@ export function useEnergyMeasureScreen() {
   }, []);
 
   const submit = useCallback(() => {
-    if (!hasValue) return;
+    if (saveMutation.isPending) return;
+
+    if (!hasValue) {
+      setValidationMessage('에너지 상태를 선택해 주세요.');
+      return;
+    }
 
     saveMutation.mutate({
       id: isEditMode ? conditionId : undefined,
@@ -110,6 +117,7 @@ export function useEnergyMeasureScreen() {
     activeField,
     fieldOptions: activeField === 'date' ? dateOptions : TIME_OPTIONS,
     fieldValue: activeField === 'date' ? dateLabel : time,
+    validationMessage,
     canSubmit: hasValue && !saveMutation.isPending,
     isSaving: saveMutation.isPending,
     selectPoint,

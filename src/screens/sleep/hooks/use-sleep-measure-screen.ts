@@ -280,7 +280,24 @@ export function useSleepMeasureScreen() {
   }, []);
 
   const submit = useCallback(() => {
-    if (!canSubmit || bedTime == null || wakeUpTime == null) return;
+    if (
+      isRecordLoading ||
+      isRecordLoadError ||
+      createMutation.isPending ||
+      updateMutation.isPending
+    ) {
+      return;
+    }
+
+    if (bedTime == null || wakeUpTime == null) {
+      setValidationMessage('취침 시각과 기상 시각을 입력해 주세요.');
+      return;
+    }
+
+    if (!isAllNight && !durationIsValid) {
+      setValidationMessage('취침 날짜와 시각을 확인해 주세요.');
+      return;
+    }
 
     const input = {
       bedTime: toApiDateTime(bedDateId, bedTime),
@@ -301,11 +318,13 @@ export function useSleepMeasureScreen() {
   }, [
     bedTime,
     bedDateId,
-    canSubmit,
     createMutation,
+    durationIsValid,
     isAllNight,
     isEditMode,
     isNap,
+    isRecordLoadError,
+    isRecordLoading,
     sleepId,
     updateMutation,
     wakeUpTime,
