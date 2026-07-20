@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { CardToast } from '@/components/domain/schedule/card-toast';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Icon } from '@/components/ui/Icon';
 import { TimeStepper } from '@/components/ui/TimeStepper';
@@ -21,10 +22,12 @@ export interface HomeExtendTimeSheetProps {
   decreaseDisabled?: boolean;
   /** 다음 일정과 겹침 */
   hasConflict?: boolean;
+  showConflictToast?: boolean;
   onBack: () => void;
   onComplete: () => void;
   onDecrease: () => void;
   onIncrease: () => void;
+  onDismissConflict: () => void;
   completeDisabled?: boolean;
 }
 
@@ -37,10 +40,12 @@ export function HomeExtendTimeSheet({
   addedMinutes,
   decreaseDisabled = false,
   hasConflict = false,
+  showConflictToast = false,
   onBack,
   onComplete,
   onDecrease,
   onIncrease,
+  onDismissConflict,
   completeDisabled = false,
 }: HomeExtendTimeSheetProps) {
   return (
@@ -96,6 +101,11 @@ export function HomeExtendTimeSheet({
         onDecrease={onDecrease}
         onIncrease={onIncrease}
       />
+      {showConflictToast ? (
+        <View style={styles.errorToastSlot}>
+          <CardToast message="다음 일정과 겹쳐요!" bottomOffset={0} onClose={onDismissConflict} />
+        </View>
+      ) : null}
     </BottomSheet>
   );
 }
@@ -119,5 +129,9 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  errorToastSlot: {
+    position: 'relative',
+    height: spacing[12],
   },
 });

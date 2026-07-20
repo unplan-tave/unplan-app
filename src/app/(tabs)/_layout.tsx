@@ -81,7 +81,7 @@ function TabsGNB({ state, navigation }: TabsGNBProps) {
     >
       <GNB
         value={currentValue}
-        onAddPress={() => router.push('/card/new')}
+        onAddPress={() => router.navigate({ pathname: '/(tabs)', params: { openAddSheet: '1' } })}
         onChange={(value) => {
           const routeName = GNB_ROUTES[value];
 

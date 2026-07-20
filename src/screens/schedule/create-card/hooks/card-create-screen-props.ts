@@ -58,7 +58,7 @@ export function createCardCreateScreenProps({
     scrollRef: scroll.scrollRef,
     headerProps: {
       deleteVisible: draft.draftMode === 'edit',
-      doneEnabled: validation.isRequiredComplete && !actions.isSubmitting,
+      doneEnabled: !actions.isSubmitting,
       onClose: actions.handleClose,
       onDelete: actions.handleDelete,
       onDone: actions.handleDone,
@@ -77,7 +77,6 @@ export function createCardCreateScreenProps({
       showTitleError: validation.shouldShowTitleError,
       showDateError: validation.shouldShowDateError,
       showTimeError: validation.shouldShowTimeError,
-      showDueError: validation.shouldShowDueError,
       showDurationError: validation.shouldShowDurationError,
       dueDate: values.dueDate,
       durationHours: values.durationHours,

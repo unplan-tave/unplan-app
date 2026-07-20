@@ -26,7 +26,6 @@ export function QueueFormBody({
   durationHours = 0,
   durationMinutes = 0,
   durationUnknown = false,
-  showDueError = false,
   showDurationError = false,
   onOpenDueDuration,
   onOpenLocation,
@@ -39,7 +38,6 @@ export function QueueFormBody({
   durationHours?: number;
   durationMinutes?: number;
   durationUnknown?: boolean;
-  showDueError?: boolean;
   showDurationError?: boolean;
   onOpenDueDuration?: () => void;
   onOpenLocation: () => void;
@@ -50,14 +48,14 @@ export function QueueFormBody({
   return (
     <View style={styles.formStack}>
       <FormBox>
-        <FormRow required={!hasDueDate(dueDate)} label="마감일">
+        <FormRow label="마감일">
           <Pressable
             accessibilityLabel="마감일 선택"
             accessibilityRole="button"
             style={({ pressed }) => [styles.valuePressable, pressed && styles.pressed]}
             onPress={onOpenDueDuration}
           >
-            <DueDateValue dueDate={dueDate} error={showDueError} />
+            <DueDateValue dueDate={dueDate} />
           </Pressable>
         </FormRow>
         <Divider />
@@ -281,12 +279,11 @@ function LocationField({
   );
 }
 
-function DueDateValue({ dueDate, error }: { dueDate: string; error: boolean }) {
+function DueDateValue({ dueDate }: { dueDate: string }) {
   const filled = hasDueDate(dueDate);
   const dateText = formatDueDateDisplay(dueDate);
   const countdown = formatDueCountdown(dueDate);
-  const dateColor = error ? colors.secondary : filled ? colors.gray[600] : colors.gray[400];
-  const countdownColor = error ? colors.secondary : colors.gray[400];
+  const dateColor = filled ? colors.gray[600] : colors.gray[400];
 
   return (
     <View style={styles.queueDueValue}>
@@ -297,7 +294,7 @@ function DueDateValue({ dueDate, error }: { dueDate: string; error: boolean }) {
         까지
       </Typography>
       <View style={styles.queueVerticalDivider} />
-      <Typography variant="bodyM" color={countdownColor}>
+      <Typography variant="bodyM" color={colors.gray[400]}>
         {countdown}
       </Typography>
     </View>

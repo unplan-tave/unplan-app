@@ -32,7 +32,6 @@ export function CardForm({
   showTitleError,
   showDateError,
   showTimeError,
-  showDueError = false,
   showDurationError = false,
   dueDate = '',
   durationHours = 0,
@@ -65,7 +64,6 @@ export function CardForm({
   showTitleError: boolean;
   showDateError: boolean;
   showTimeError: boolean;
-  showDueError?: boolean;
   showDurationError?: boolean;
   dueDate?: string;
   durationHours?: number;
@@ -139,7 +137,6 @@ export function CardForm({
             durationHours={durationHours}
             durationMinutes={durationMinutes}
             durationUnknown={durationUnknown}
-            showDueError={showDueError}
             showDurationError={showDurationError}
             onOpenDueDuration={onOpenDueDuration}
             onOpenLocation={onOpenLocation}

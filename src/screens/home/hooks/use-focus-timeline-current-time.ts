@@ -1,20 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { type LayoutChangeEvent, type ScrollView } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { type LayoutChangeEvent } from 'react-native';
 
 interface TimelineMarkerLayout {
   height: number;
   y: number;
 }
 
-/** 현재 시간 마커가 타임라인 중앙에 보이도록 스크롤 위치를 맞춥니다. */
-export function useFocusTimelineCurrentTime(enabled: boolean) {
-  const timelineRef = useRef<ScrollView>(null);
+/** 현재 시각이 타임라인 콘텐츠 안에서 차지하는 세로 위치를 계산합니다. */
+export function useFocusTimelineCurrentTime(enabled: boolean, markerOffsetRatio: number | null) {
   const [markerLayout, setMarkerLayout] = useState<TimelineMarkerLayout | null>(null);
-  const [timelineHeight, setTimelineHeight] = useState(0);
+  const [markerTop, setMarkerTop] = useState<number | null>(null);
 
-  const handleTimelineLayout = useCallback((event: LayoutChangeEvent) => {
-    setTimelineHeight(event.nativeEvent.layout.height);
-  }, []);
   const handleMarkerLayout = useCallback((event: LayoutChangeEvent) => {
     const { height, y } = event.nativeEvent.layout;
 
@@ -22,13 +18,13 @@ export function useFocusTimelineCurrentTime(enabled: boolean) {
   }, []);
 
   useEffect(() => {
-    if (!enabled || markerLayout == null || timelineHeight === 0) return;
+    if (!enabled || markerLayout == null || markerOffsetRatio == null) {
+      setMarkerTop(null);
+      return;
+    }
 
-    const markerCenter = markerLayout.y + markerLayout.height;
-    const offset = Math.max(0, markerCenter - timelineHeight / 2);
+    setMarkerTop(markerLayout.y + markerLayout.height * markerOffsetRatio);
+  }, [enabled, markerLayout, markerOffsetRatio]);
 
-    timelineRef.current?.scrollTo({ y: offset, animated: false });
-  }, [enabled, markerLayout, timelineHeight]);
-
-  return { handleMarkerLayout, handleTimelineLayout, timelineRef };
+  return { handleMarkerLayout, markerTop };
 }

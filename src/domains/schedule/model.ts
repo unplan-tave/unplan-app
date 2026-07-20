@@ -18,6 +18,7 @@ export type ReminderType = 'before' | 'after';
 export type ReminderSoundType = 'sound' | 'vibrate';
 
 export const MEMO_MAX_LENGTH = 2000;
+export const MAX_PERSONAL_TAGS_PER_SCHEDULE = 10;
 
 export interface CardFormValues {
   title: string;
@@ -442,9 +443,10 @@ export function hasCompleteTime(draft: DateTimeDraft) {
   return draft.timeStart.length > 0 && draft.timeEnd.length > 0;
 }
 
-export function getCalendarMonth(today: Date) {
-  const year = today.getFullYear();
-  const month = today.getMonth();
+export function getCalendarMonth(baseDate: Date) {
+  const year = baseDate.getFullYear();
+  const month = baseDate.getMonth();
+  const currentDate = new Date();
   const firstDate = new Date(year, month, 1);
   const lastDate = new Date(year, month + 1, 0);
   const leadingEmptyCount = firstDate.getDay();
@@ -462,7 +464,10 @@ export function getCalendarMonth(today: Date) {
       key: value,
       label: String(day),
       value,
-      isToday: day === today.getDate(),
+      isToday:
+        year === currentDate.getFullYear() &&
+        month === currentDate.getMonth() &&
+        day === currentDate.getDate(),
     });
   }
 

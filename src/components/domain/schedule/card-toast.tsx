@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
@@ -7,10 +8,12 @@ import { colors, radius, spacing } from '@/constants/theme';
 const TOAST_MAX_WIDTH = 353;
 const TOAST_ICON_SIZE = spacing[6];
 const TOAST_CONTENT_GAP = 10;
+const GNB_HEIGHT = 66;
+const TOAST_GNB_GAP = spacing[3];
 
 export function CardToast({
   message,
-  bottomOffset = 70.5,
+  bottomOffset,
   variant = 'warning',
   onClose,
   onConfirm,
@@ -21,58 +24,67 @@ export function CardToast({
   onClose: () => void;
   onConfirm?: () => void;
 }) {
+  const insets = useSafeAreaInsets();
+  const resolvedBottomOffset =
+    bottomOffset ?? insets.bottom + GNB_HEIGHT + spacing[2] + TOAST_GNB_GAP;
+
   return (
-    <View style={[styles.toast, { bottom: bottomOffset }]}>
-      <View style={styles.toastContent}>
-        {variant === 'warning' ? (
-          <Icon name="warning" size={TOAST_ICON_SIZE} variant="badge" />
-        ) : null}
-        <Typography
-          variant="bodyM"
-          color={colors.gray.white}
-          numberOfLines={2}
-          style={styles.toastText}
-        >
-          {message}
-        </Typography>
-      </View>
-      {variant === 'confirm' ? (
-        <Pressable
-          accessibilityLabel="알림 확인"
-          accessibilityRole="button"
-          hitSlop={8}
-          style={({ pressed }) => [styles.toastConfirm, pressed && styles.pressed]}
-          onPress={onConfirm ?? onClose}
-        >
-          <Typography variant="bodyM" color={colors.gray.white}>
-            확인
+    <View style={[styles.toastPositioner, { bottom: resolvedBottomOffset }]}>
+      <View style={styles.toast}>
+        <View style={styles.toastContent}>
+          {variant === 'warning' ? (
+            <Icon name="warning" size={TOAST_ICON_SIZE} variant="badge" />
+          ) : null}
+          <Typography
+            variant="bodyM"
+            color={colors.gray.white}
+            numberOfLines={2}
+            style={styles.toastText}
+          >
+            {message}
           </Typography>
-        </Pressable>
-      ) : (
-        <Pressable
-          accessibilityLabel="알림 닫기"
-          accessibilityRole="button"
-          hitSlop={8}
-          style={({ pressed }) => [styles.toastClose, pressed && styles.pressed]}
-          onPress={onClose}
-        >
-          <Icon name="cancel" size={TOAST_ICON_SIZE} color={colors.gray.white} />
-        </Pressable>
-      )}
+        </View>
+        {variant === 'confirm' ? (
+          <Pressable
+            accessibilityLabel="알림 확인"
+            accessibilityRole="button"
+            hitSlop={8}
+            style={({ pressed }) => [styles.toastConfirm, pressed && styles.pressed]}
+            onPress={onConfirm ?? onClose}
+          >
+            <Typography variant="bodyM" color={colors.gray.white}>
+              확인
+            </Typography>
+          </Pressable>
+        ) : (
+          <Pressable
+            accessibilityLabel="알림 닫기"
+            accessibilityRole="button"
+            hitSlop={8}
+            style={({ pressed }) => [styles.toastClose, pressed && styles.pressed]}
+            onPress={onClose}
+          >
+            <Icon name="cancel" size={TOAST_ICON_SIZE} color={colors.gray.white} />
+          </Pressable>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  toast: {
+  toastPositioner: {
     position: 'absolute',
-    left: spacing[5],
-    right: spacing[5],
+    left: 0,
+    right: 0,
     alignSelf: 'center',
-    width: '100%',
-    maxWidth: TOAST_MAX_WIDTH,
+    alignItems: 'center',
     zIndex: 100,
     elevation: 100,
+  },
+  toast: {
+    width: '100%',
+    maxWidth: TOAST_MAX_WIDTH,
     minHeight: spacing[12],
     flexDirection: 'row',
     alignItems: 'center',

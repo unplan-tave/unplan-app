@@ -68,6 +68,15 @@ export function CardFormHeader({
           accessibilityLabel="조건 태그 변경"
           onPress={onOpenConditionTag}
         />
+        {personalTags.map((tag) => (
+          <Tag
+            key={tag.id}
+            variant="personal"
+            label={tag.label}
+            accessibilityLabel={`${tag.label} 개인 태그 편집`}
+            onPress={onOpenPersonalTags}
+          />
+        ))}
         <Pressable
           accessibilityLabel="개인 태그 선택"
           accessibilityRole="button"
@@ -78,15 +87,6 @@ export function CardFormHeader({
             + 개인태그
           </Typography>
         </Pressable>
-        {personalTags.map((tag) => (
-          <Tag
-            key={tag.id}
-            variant="personal"
-            label={tag.label}
-            accessibilityLabel={`${tag.label} 개인 태그 편집`}
-            onPress={onOpenPersonalTags}
-          />
-        ))}
       </View>
       <TagFeedback state={tagFeedback} />
     </View>

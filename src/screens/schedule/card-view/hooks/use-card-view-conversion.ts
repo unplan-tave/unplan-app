@@ -1,7 +1,7 @@
-import { isAxiosError } from 'axios';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
+import { getQueueTimeRecommendationErrorMode } from '@/domains/ai-recommendation/api/client';
 import { useAcceptRecommendationMutation } from '@/domains/ai-recommendation/api/mutations';
 import { useQueueTimeRecommendationsQuery } from '@/domains/ai-recommendation/api/queries';
 import {
@@ -111,7 +111,7 @@ export function useCardViewConversion({
       updateScheduleMutation.mutate(
         {
           scheduleId: numericCardId,
-          data: toScheduleUpdateInput(values, personalTags),
+          data: toScheduleUpdateInput('pin', values, personalTags),
         },
         {
           onSuccess: () => {
@@ -177,34 +177,9 @@ export function useCardViewConversion({
     handleEditDuration,
     queueRecommendationCandidates: queueRecommendationQuery.data?.candidates ?? [],
     isQueueRecommendationLoading: queueRecommendationQuery.isFetching,
-    queueRecommendationErrorMode: getQueueRecommendationErrorMode(
+    queueRecommendationErrorMode: getQueueTimeRecommendationErrorMode(
       queueRecommendationQuery.error,
-      recommendationDays,
     ),
     closeToast,
   };
-}
-
-function getQueueRecommendationErrorMode(
-  error: unknown,
-  days: number,
-): 'error-no-duration' | 'error-7day' | 'error-14day' | null {
-  if (!isAxiosError(error) || error.response?.status !== 409) {
-    return null;
-  }
-
-  const data = error.response.data;
-  if (typeof data !== 'object' || data == null) {
-    return days === 7 ? 'error-7day' : 'error-14day';
-  }
-
-  const { canExtendTo14Days, mustChangeDuration } = data as {
-    canExtendTo14Days?: unknown;
-    mustChangeDuration?: unknown;
-  };
-
-  if (mustChangeDuration === true) return 'error-no-duration';
-  if (days === 7 && canExtendTo14Days === true) return 'error-7day';
-
-  return 'error-14day';
 }

@@ -75,15 +75,30 @@ export function useCardCreateActions({
       }
 
       if (cardId != null && canSubmitUpdate && numericCardId != null) {
+        let updateInput;
+
+        try {
+          updateInput = toScheduleUpdateInput(activeTab, values, personalTags);
+        } catch {
+          showToast({
+            message:
+              activeTab === 'queue'
+                ? '큐카드 소요 시간을 다시 확인해 주세요.'
+                : '핀카드 날짜와 시간을 다시 확인해 주세요.',
+            variant: 'warning',
+          });
+          return;
+        }
+
         updateScheduleMutation.mutate(
           {
             scheduleId: numericCardId,
-            data: toScheduleUpdateInput(values, personalTags),
+            data: updateInput,
           },
           {
             onSuccess: () => {
               discardDraft();
-              router.replace(`/card/view?cardId=${numericCardId}`);
+              goBack();
             },
             onError: () => {
               showToast({
@@ -137,6 +152,7 @@ export function useCardCreateActions({
       cardId,
       createScheduleMutation,
       discardDraft,
+      goBack,
       isSubmitting,
       numericCardId,
       personalTags,

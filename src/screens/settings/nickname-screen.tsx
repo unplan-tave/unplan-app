@@ -55,7 +55,7 @@ export function NicknameScreen() {
             placeholderTextColor={colors.gray[400]}
             maxLength={edit.maxLength}
             returnKeyType="done"
-            style={styles.input}
+            style={[styles.input, edit.errorMessage != null && styles.inputError]}
             onChangeText={edit.updateNickname}
             onSubmitEditing={edit.submit}
           />
@@ -102,6 +102,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '400',
     lineHeight: 26,
+  },
+  inputError: {
+    borderWidth: 1,
+    borderColor: colors.secondary,
   },
   pressed: {
     opacity: 0.72,

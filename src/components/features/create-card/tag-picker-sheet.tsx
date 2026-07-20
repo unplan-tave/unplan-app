@@ -16,6 +16,7 @@ import { CONDITION_TAG_OPTIONS } from '@/domains/schedule/data';
 import {
   canCreatePersonalTag,
   getConditionTagDescription,
+  MAX_PERSONAL_TAGS_PER_SCHEDULE,
   normalizePersonalTagLabel,
   sortPersonalTags,
   type CardTagTab,
@@ -105,6 +106,8 @@ export function TagPickerSheet({
       ),
     [draftPersonalLabels, selectedServerPersonalTagLabels],
   );
+  const selectedPersonalTagCount = selectedPersonalTags.length + selectedDraftPersonalLabels.length;
+  const hasReachedPersonalTagLimit = selectedPersonalTagCount >= MAX_PERSONAL_TAGS_PER_SCHEDULE;
   const visiblePersonalTags = sortedTags.filter(
     (t) =>
       !draftPersonalIds.includes(t.id) &&
@@ -123,13 +126,18 @@ export function TagPickerSheet({
     () => [...personalTags, ...draftLabelOptions],
     [draftLabelOptions, personalTags],
   );
-  const canCreate = canCreatePersonalTag(normalizedQuery, catalogForCreateCheck);
+  const canCreate =
+    !hasReachedPersonalTagLimit && canCreatePersonalTag(normalizedQuery, catalogForCreateCheck);
   const canDoneCondition = selectedConditionTagId != null;
 
   const handleTogglePersonalTag = (tagId: string) => {
-    setDraftPersonalIds((prev) =>
-      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId],
-    );
+    setDraftPersonalIds((prev) => {
+      if (prev.includes(tagId)) {
+        return prev.filter((id) => id !== tagId);
+      }
+
+      return hasReachedPersonalTagLimit ? prev : [...prev, tagId];
+    });
   };
 
   const handleToggleDraftLabel = (label: string) => {
@@ -316,6 +324,11 @@ export function TagPickerSheet({
                   />
                 ))}
               </View>
+              {hasReachedPersonalTagLimit ? (
+                <Typography variant="caption" color={colors.secondary}>
+                  개인 태그는 최대 {MAX_PERSONAL_TAGS_PER_SCHEDULE}개까지 선택할 수 있어요.
+                </Typography>
+              ) : null}
               <View style={styles.divider} />
             </View>
           ) : null}
@@ -329,6 +342,7 @@ export function TagPickerSheet({
               <PersonalTagChip
                 key={tag.id}
                 label={tag.label}
+                disabled={hasReachedPersonalTagLimit}
                 onPress={() => handleTogglePersonalTag(tag.id)}
               />
             ))}
@@ -461,21 +475,25 @@ function ConditionTagDescriptionView({
 function PersonalTagChip({
   label,
   selected = false,
+  disabled = false,
   onPress,
 }: {
   label: string;
   selected?: boolean;
+  disabled?: boolean;
   onPress: () => void;
 }) {
   return (
     <Pressable
       accessibilityLabel={`${label} 개인 태그 ${selected ? '선택 해제' : '선택'}`}
       accessibilityRole="button"
-      accessibilityState={{ selected }}
+      accessibilityState={{ selected, disabled }}
+      disabled={disabled}
       style={({ pressed }) => [
         styles.tagChip,
         selected && styles.tagChipSelected,
-        pressed && styles.pressed,
+        disabled && styles.tagChipDisabled,
+        pressed && !disabled && styles.pressed,
       ]}
       onPress={onPress}
     >
@@ -707,6 +725,9 @@ const styles = StyleSheet.create({
   },
   tagChipSelected: {
     backgroundColor: colors.alpha.primary20,
+  },
+  tagChipDisabled: {
+    opacity: 0.5,
   },
   tagCloseDivider: {
     width: 1,
