@@ -68,6 +68,8 @@ export function useCardListScreen() {
         .map((tag) => tag.label),
       startDate: filters.startDate,
       endDate: filters.endDate,
+      startTime: filters.startTime,
+      endTime: filters.endTime,
     }),
     [
       filters.cardType,
@@ -77,6 +79,8 @@ export function useCardListScreen() {
       filters.searchQuery,
       filters.startDate,
       filters.endDate,
+      filters.startTime,
+      filters.endTime,
       personalTags,
     ],
   );

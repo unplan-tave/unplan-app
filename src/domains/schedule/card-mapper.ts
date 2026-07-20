@@ -55,6 +55,8 @@ export function toScheduleUpdateInput(
     startTime: cardType === 'pin' ? createInput.startTime : '',
     endTime: cardType === 'pin' ? createInput.endTime : '',
     estimatedMinutes: toEstimatedMinutes(values),
+    location: createInput.location,
+    locationDetail: createInput.locationDetail,
     memo: createInput.memo,
     isReminderEnabled: createInput.isReminderEnabled,
   };
@@ -101,7 +103,10 @@ export function toCardItemFromScheduleDetail(
     timeStart: isPinTimeFilled ? detail.startTime : '',
     timeEnd: isPinTimeFilled ? detail.endTime : '',
     location: detail.location,
+    locationDetail: detail.locationDetail,
     memo: detail.memo,
+    repeatEnabled: detail.recurrence != null,
+    recurrence: detail.recurrence,
     reminderEnabled: detail.isReminderEnabled,
     dueDate: detail.isQueue ? detail.date : '',
     durationHours: estimatedDuration.hours,
@@ -164,6 +169,8 @@ function toScheduleInputBase(
     title: values.title.trim(),
     conditionTagId: values.conditionTagId,
     personalTags: toMergedPersonalTagLabels(values, personalTags),
+    location: values.location.trim(),
+    locationDetail: values.locationDetail.trim(),
     memo: normalizeOptionalText(values.memo),
     isReminderEnabled: values.reminderEnabled,
   };

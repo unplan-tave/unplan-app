@@ -9,6 +9,7 @@ import type { ScheduleDetailResponseStatus } from './scheduleDetailResponseStatu
 import type { ScheduleDetailResponseConditionTag } from './scheduleDetailResponseConditionTag';
 import type { ScheduleDetailResponseRemindType } from './scheduleDetailResponseRemindType';
 import type { ScheduleDetailResponseRemindSoundType } from './scheduleDetailResponseRemindSoundType';
+import type { Recurrence } from './recurrence';
 
 export interface ScheduleDetailResponse {
   schedule_id?: number;
@@ -22,6 +23,7 @@ export interface ScheduleDetailResponse {
   condition_tag?: ScheduleDetailResponseConditionTag;
   memo?: string;
   location?: string;
+  location_detail?: string;
   is_remind_on?: boolean;
   remind_minutes?: number;
   remind_type?: ScheduleDetailResponseRemindType;
@@ -31,4 +33,5 @@ export interface ScheduleDetailResponse {
   latitude?: number;
   longitude?: number;
   personal_tags?: string[];
+  recurrence?: Recurrence;
 }

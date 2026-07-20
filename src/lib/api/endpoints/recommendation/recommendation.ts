@@ -38,6 +38,87 @@ import type { ErrorType, BodyType } from '../../mutator/orval-mutator';
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
+ * 추천을 패스(넘기기)합니다. 삭제가 아니라 해당 추천의 원본 큐 카드를 그날 추천에서만 제외하며, 다음 날 같은 큐 카드는 다시 추천 후보가 됩니다. 회복 수단 추천은 패스할 수 없습니다(400).
+ * @summary 추천 패스
+ */
+export const passRecommendation = (
+  recommendId: number,
+  options?: SecondParameter<typeof apiMutator>,
+  signal?: AbortSignal,
+) => {
+  return apiMutator<void>(
+    { url: `/schedule/recommendations/${recommendId}/pass`, method: 'POST', signal },
+    options,
+  );
+};
+
+export const getPassRecommendationMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof passRecommendation>>,
+    TError,
+    { recommendId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiMutator>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof passRecommendation>>,
+  TError,
+  { recommendId: number },
+  TContext
+> => {
+  const mutationKey = ['passRecommendation'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof passRecommendation>>,
+    { recommendId: number }
+  > = (props) => {
+    const { recommendId } = props ?? {};
+
+    return passRecommendation(recommendId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PassRecommendationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof passRecommendation>>
+>;
+
+export type PassRecommendationMutationError = ErrorType<unknown>;
+
+/**
+ * @summary 추천 패스
+ */
+export const usePassRecommendation = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof passRecommendation>>,
+      TError,
+      { recommendId: number },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiMutator>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof passRecommendation>>,
+  TError,
+  { recommendId: number },
+  TContext
+> => {
+  const mutationOptions = getPassRecommendationMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
  * 추천을 수락합니다. 큐 카드 추천은 원본 큐 카드를 핀 카드로 전환하고, 회복 수단 추천은 새 일정을 생성합니다. '기존 큐 카드 유지하기'(keepQueueCard=true) 시 큐 카드를 남긴 채 핀 카드를 복제 생성합니다.
  * @summary 추천 수락
  */

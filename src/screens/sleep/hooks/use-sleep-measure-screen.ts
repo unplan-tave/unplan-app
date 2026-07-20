@@ -35,6 +35,7 @@ export function useSleepMeasureScreen() {
   const today = useMemo(() => startOfDay(now), [now]);
   const [bedDateId, setBedDateId] = useState(() => format(subDays(today, 1), DATE_ID));
   const [wakeDateId, setWakeDateId] = useState(() => format(today, DATE_ID));
+  const [weekStartDateId, setWeekStartDateId] = useState(() => format(subDays(today, 6), DATE_ID));
   const [bedTime, setBedTime] = useState<string | null>(null);
   const [wakeUpTime, setWakeUpTime] = useState<string | null>(null);
   const [isNap, setIsNap] = useState(false);
@@ -66,7 +67,7 @@ export function useSleepMeasureScreen() {
     setIsAllNight(loadedRecord.isAllNight);
   }, [isEditMode, loadedRecord, today]);
 
-  const monthLabel = useMemo(() => format(parseISO(wakeDateId), 'yyyy.MM'), [wakeDateId]);
+  const monthLabel = useMemo(() => format(parseISO(weekStartDateId), 'yyyy.MM'), [weekStartDateId]);
   const wakeDateTime = useMemo(
     () => (wakeUpTime == null ? null : toDateTime(wakeDateId, wakeUpTime)),
     [wakeDateId, wakeUpTime],
@@ -97,16 +98,12 @@ export function useSleepMeasureScreen() {
     (isAllNight || (bedTime != null && wakeUpTime != null && durationIsValid));
 
   const weekDays = useMemo<SleepWeekDay[]>(() => {
-    // Figma의 날짜 레일처럼 기상일을 마지막 칸에 두어 기본 어제~오늘 범위를 항상 보여줍니다.
-    const weekStart = subDays(parseISO(wakeDateId), 6);
+    const weekStart = parseISO(weekStartDateId);
 
     return Array.from({ length: 7 }, (_, index) => {
       const date = addDays(weekStart, index);
       const id = format(date, DATE_ID);
       const dateIsAfterToday = isAfter(startOfDay(date), today);
-      const isAfterEnd =
-        !isSelectingEndDate && differenceInCalendarDays(parseISO(wakeDateId), date) < 0;
-
       return {
         id,
         day: format(date, 'd'),
@@ -114,10 +111,24 @@ export function useSleepMeasureScreen() {
         inRange: id >= bedDateId && id <= wakeDateId,
         isStart: id === bedDateId,
         isEnd: id === wakeDateId,
-        disabled: dateIsAfterToday || isAfterEnd,
+        disabled: dateIsAfterToday,
       };
     });
-  }, [bedDateId, isSelectingEndDate, today, wakeDateId]);
+  }, [bedDateId, today, wakeDateId, weekStartDateId]);
+
+  const moveWeek = useCallback(
+    (direction: 'previous' | 'next') => {
+      const lastAvailableWeekStart = subDays(today, 6);
+
+      setWeekStartDateId((current) => {
+        const next = addDays(parseISO(current), direction === 'previous' ? -1 : 1);
+        const nextWeekStart = isAfter(next, lastAvailableWeekStart) ? lastAvailableWeekStart : next;
+
+        return format(nextWeekStart, DATE_ID);
+      });
+    },
+    [today],
+  );
 
   const validateManualInputs = useCallback(
     (
@@ -334,6 +345,7 @@ export function useSleepMeasureScreen() {
     subtitle: '수면 패턴을 통해 컨디션값을 보정해요',
     monthLabel,
     weekDays,
+    moveWeek,
     bedTime,
     wakeUpTime,
     durationMinutes: isAllNight ? 0 : computedDuration,

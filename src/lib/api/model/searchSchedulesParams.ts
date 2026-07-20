@@ -30,6 +30,14 @@ export type SearchSchedulesParams = {
    */
   personalTags?: string[];
   /**
+   * 기간 필터 시작 일시(ISO, 예: 2026-06-28T14:30). 겹치는 핀 카드만(큐 카드 제외)
+   */
+  startDate?: string;
+  /**
+   * 기간 필터 종료 일시(ISO, 예: 2026-07-01T18:00)
+   */
+  endDate?: string;
+  /**
    * 페이지 번호(0부터, 기본 0)
    */
   page?: number;

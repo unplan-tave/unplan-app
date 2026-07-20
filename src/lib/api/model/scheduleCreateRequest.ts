@@ -24,6 +24,18 @@ export interface ScheduleCreateRequest {
   start_time?: string;
   end_time?: string;
   estimated_time?: number;
+  /**
+   * 대표 위치(장소명/주소 등, 선택, 최대 200자). 좌표(latitude/longitude)와 독립적으로 저장됨
+   * @minLength 0
+   * @maxLength 200
+   */
+  location?: string;
+  /**
+   * 상세 위치(대표 위치 내 세부, 선택, 최대 200자)
+   * @minLength 0
+   * @maxLength 200
+   */
+  location_detail?: string;
   latitude?: number;
   longitude?: number;
   memo?: string;

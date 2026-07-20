@@ -1,44 +1,22 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { BottomSheet } from '@/components/ui/BottomSheet';
-import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
-import {
-  getLocationSuggestions,
-  getVisibleLocationRecentSearches,
-  isValidLocationSearchLabel,
-  LOCATION_SEARCH_MAX_LENGTH,
-  normalizeLocationSearchLabel,
-} from '@/domains/schedule/location';
+
+const LOCATION_TEXT_MAX_LENGTH = 200;
 
 interface LocationBottomSheetProps {
   visible: boolean;
-  recentSearches?: string[];
   onClose: () => void;
   onSelect: (location: string) => void;
-  onDeleteSearch?: (location: string) => void;
-  onDeleteAllSearches?: () => void;
 }
 
-export function LocationSheet({
-  visible,
-  recentSearches = [],
-  onClose,
-  onSelect,
-  onDeleteSearch,
-  onDeleteAllSearches,
-}: LocationBottomSheetProps) {
+export function LocationSheet({ visible, onClose, onSelect }: LocationBottomSheetProps) {
   const searchInputRef = useRef<TextInput>(null);
-  const [query, setQuery] = useState('');
-  const visibleRecentSearches = useMemo(
-    () => getVisibleLocationRecentSearches(recentSearches),
-    [recentSearches],
-  );
-  const suggestions = useMemo(() => getLocationSuggestions(query), [query]);
-  const isSearching = query.length > 0;
-  const canDone = isValidLocationSearchLabel(query);
+  const [location, setLocation] = useState('');
+  const canDone = location.trim().length > 0;
 
   const handleSheetShow = useCallback(() => {
     searchInputRef.current?.focus();
@@ -46,7 +24,7 @@ export function LocationSheet({
 
   useEffect(() => {
     if (!visible) {
-      setQuery('');
+      setLocation('');
     }
   }, [visible]);
 
@@ -55,11 +33,7 @@ export function LocationSheet({
       return;
     }
 
-    onSelect(normalizeLocationSearchLabel(query));
-  };
-
-  const handleSelect = (location: string) => {
-    onSelect(normalizeLocationSearchLabel(location));
+    onSelect(location.trim());
   };
 
   return (
@@ -107,102 +81,19 @@ export function LocationSheet({
       </View>
 
       <View style={styles.card}>
-        <View style={styles.searchBar}>
-          <Icon name="search" size={24} color={colors.gray[400]} />
-          <TextInput
-            ref={searchInputRef}
-            accessibilityLabel="장소 또는 주소 입력"
-            value={query}
-            placeholder="장소, 주소 입력"
-            placeholderTextColor={colors.gray[400]}
-            returnKeyType="search"
-            maxLength={LOCATION_SEARCH_MAX_LENGTH}
-            autoCorrect={false}
-            autoCapitalize="none"
-            style={styles.searchInput}
-            onChangeText={setQuery}
-            onSubmitEditing={handleDone}
-          />
-        </View>
-
-        {isSearching ? (
-          <View style={styles.suggestionList}>
-            {suggestions.map((item) => (
-              <Pressable
-                key={item}
-                accessibilityLabel={`${item} 선택`}
-                accessibilityRole="button"
-                style={({ pressed }) => [styles.suggestionItem, pressed && styles.pressed]}
-                onPress={() => handleSelect(item)}
-              >
-                <Typography variant="bodyS" color={colors.gray[600]} numberOfLines={1}>
-                  {item}
-                </Typography>
-              </Pressable>
-            ))}
-          </View>
-        ) : (
-          <View style={styles.recentSection}>
-            <View style={styles.recentHeader}>
-              <Typography variant="bodyM" color={colors.gray[900]}>
-                최근 검색어
-              </Typography>
-              <Pressable
-                accessibilityLabel="최근 검색어 전체 삭제"
-                accessibilityRole="button"
-                hitSlop={8}
-                style={({ pressed }) => [pressed && styles.pressed]}
-                onPress={onDeleteAllSearches}
-              >
-                <Typography variant="bodyS" color={colors.gray[400]} align="center">
-                  전체삭제
-                </Typography>
-              </Pressable>
-            </View>
-
-            {visibleRecentSearches.length > 0 ? (
-              <View style={styles.searchList}>
-                {visibleRecentSearches.map((item) => (
-                  <View key={item} style={styles.searchItem}>
-                    <Pressable
-                      accessibilityLabel={`${item} 선택`}
-                      accessibilityRole="button"
-                      style={({ pressed }) => [
-                        styles.searchItemPressable,
-                        pressed && styles.pressed,
-                      ]}
-                      onPress={() => handleSelect(item)}
-                    >
-                      <Typography
-                        variant="bodyS"
-                        color={colors.gray[600]}
-                        numberOfLines={1}
-                        style={styles.searchItemText}
-                      >
-                        {item}
-                      </Typography>
-                    </Pressable>
-                    <Pressable
-                      accessibilityLabel={`${item} 검색어 삭제`}
-                      accessibilityRole="button"
-                      hitSlop={8}
-                      style={({ pressed }) => pressed && styles.pressed}
-                      onPress={() => onDeleteSearch?.(item)}
-                    >
-                      <Icon name="cancel" size={16} color={colors.gray[400]} />
-                    </Pressable>
-                  </View>
-                ))}
-              </View>
-            ) : (
-              <View style={styles.emptyHistory}>
-                <Typography variant="bodyM" color={colors.gray[400]} align="center">
-                  최근 검색 내역이 없습니다
-                </Typography>
-              </View>
-            )}
-          </View>
-        )}
+        <TextInput
+          ref={searchInputRef}
+          accessibilityLabel="위치 입력"
+          value={location}
+          placeholder="위치를 입력해주세요"
+          placeholderTextColor={colors.gray[400]}
+          returnKeyType="done"
+          maxLength={LOCATION_TEXT_MAX_LENGTH}
+          autoCorrect={false}
+          style={styles.locationInput}
+          onChangeText={setLocation}
+          onSubmitEditing={handleDone}
+        />
       </View>
     </BottomSheet>
   );
@@ -239,16 +130,12 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    gap: spacing[4],
     padding: spacing[3],
-    paddingBottom: spacing[5],
     borderRadius: radius.panel,
     backgroundColor: colors.alpha.white50,
   },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[3],
+  locationInput: {
+    ...typography.bodyS,
     width: '100%',
     maxWidth: 329,
     height: spacing[10],
@@ -257,53 +144,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[3],
     borderRadius: radius.md,
     backgroundColor: colors.alpha.white50,
-  },
-  searchInput: {
-    ...typography.bodyS,
-    flex: 1,
-    minWidth: 0,
-    paddingVertical: 0,
     color: colors.gray[800],
-  },
-  suggestionList: {
-    alignSelf: 'stretch',
-    gap: spacing[1],
-    paddingHorizontal: spacing[1],
-  },
-  suggestionItem: {
-    alignSelf: 'flex-start',
-    maxWidth: '100%',
-  },
-  recentSection: {
-    alignSelf: 'stretch',
-    gap: spacing[2],
-    paddingHorizontal: spacing[1],
-  },
-  recentHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-  },
-  searchList: {
-    gap: spacing[1],
-  },
-  searchItem: {
-    minHeight: spacing[7],
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[1],
-  },
-  searchItemPressable: {
-    flex: 1,
-  },
-  searchItemText: {
-    flex: 1,
-  },
-  emptyHistory: {
-    alignSelf: 'stretch',
-    paddingVertical: spacing[6],
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   pressed: {
     opacity: 0.72,

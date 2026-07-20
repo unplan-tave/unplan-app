@@ -21,7 +21,7 @@ import {
   ScheduleUpdateRequestStatus,
 } from '@/lib/api/model';
 
-import { getMonthDayFromDate } from '../recurrence';
+import { getMonthDayFromDate, getWeekdayFromDate } from '../recurrence';
 import { normalizeTimeToMinute } from '../time';
 
 import type {
@@ -191,8 +191,10 @@ export function toScheduleSearchParams(input: {
   personalTags?: string[];
   startDate?: string;
   endDate?: string;
+  startTime?: string;
+  endTime?: string;
   page?: number;
-}): SearchSchedulesParams & ScheduleSearchDateRangeParams {
+}): SearchSchedulesParams {
   return {
     keyword: normalizeOptionalParam(input.keyword),
     isQueue: input.isQueue,
@@ -201,20 +203,23 @@ export function toScheduleSearchParams(input: {
     personalTags: toOptionalArray(
       input.personalTags?.map((tag) => tag.trim()).filter((tag) => tag.length > 0),
     ),
-    startDate: normalizeDateForRequest(input.startDate),
-    endDate: normalizeDateForRequest(input.endDate),
+    startDate: toSearchDateTime(input.startDate, input.startTime),
+    endDate: toSearchDateTime(input.endDate, input.endTime),
     page: input.page,
   };
 }
 
-/**
- * 스웨거 응답이 갱신되기 전까지 검색 기간 파라미터를 API 경계에서 보완합니다.
- * 서버는 camelCase 쿼리 키(`startDate`, `endDate`)를 받습니다.
- */
-type ScheduleSearchDateRangeParams = {
-  startDate?: string;
-  endDate?: string;
-};
+function toSearchDateTime(date?: string, time?: string) {
+  const normalizedDate = normalizeDateForRequest(date);
+
+  if (!normalizedDate) return undefined;
+
+  return `${normalizedDate}T${normalizeSearchTime(time)}`;
+}
+
+function normalizeSearchTime(time?: string) {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(time ?? '') ? time : '00:00';
+}
 
 export function toDailyMessage(response?: ApiResponseDailyMessageResponseDto): DailyMessage {
   const message = response?.data;
@@ -242,15 +247,98 @@ export function toScheduleDetail(response: ScheduleDetailResponse): ScheduleDeta
     personalTags: getPersonalTagsFromResponse(response),
     memo: response.memo ?? '',
     location: response.location ?? '',
-    latitude: response.latitude ?? null,
-    longitude: response.longitude ?? null,
+    locationDetail: getLocationDetailFromResponse(response),
     isReminderEnabled: response.is_remind_on ?? false,
     reminderMinutes: response.remind_minutes ?? null,
     reminderType: toReminderType(response.remind_type),
     reminderSoundType: toReminderSoundType(response.remind_sound_type),
-    isRecurring: response.is_recurring ?? false,
+    isRecurring: response.is_recurring ?? response.recurrence != null,
+    recurrence: toRecurrenceValue(response.recurrence, response.date),
     isConflict: response.is_conflict ?? false,
   };
+}
+
+function getLocationDetailFromResponse(response: unknown): string {
+  if (typeof response !== 'object' || response == null) {
+    return '';
+  }
+
+  const value = response as { locationDetail?: unknown; location_detail?: unknown };
+
+  if (typeof value.locationDetail === 'string') return value.locationDetail;
+  if (typeof value.location_detail === 'string') return value.location_detail;
+
+  return '';
+}
+
+function toRecurrenceValue(
+  recurrence: ScheduleDetailResponse['recurrence'],
+  scheduleDate: string | undefined,
+): RecurrenceValue | null {
+  if (recurrence?.freq == null) return null;
+
+  const freq = recurrence.freq;
+  const interval = recurrence.interval != null && recurrence.interval > 0 ? recurrence.interval : 1;
+  const byDay = toRecurrenceWeekdays(recurrence.by_day, scheduleDate);
+  const until = recurrence.until ?? '';
+  const occurrenceCount = recurrence.count ?? 10;
+
+  return {
+    preset: toRecurrencePreset(freq, interval, byDay),
+    freq,
+    interval,
+    byDay,
+    endType: recurrence.count != null ? 'count' : until ? 'until' : 'never',
+    occurrenceCount,
+    until,
+  };
+}
+
+function toRecurrencePreset(
+  freq: RecurrenceValue['freq'],
+  interval: number,
+  byDay: number[],
+): RecurrenceValue['preset'] {
+  if (interval !== 1 || (freq === 'WEEKLY' && byDay.length > 1)) return 'custom';
+
+  switch (freq) {
+    case 'DAILY':
+      return 'daily';
+    case 'WEEKLY':
+      return 'weekly';
+    case 'MONTHLY':
+      return 'monthly';
+    case 'YEARLY':
+      return 'yearly';
+  }
+}
+
+function toRecurrenceWeekdays(
+  byDay: string | undefined,
+  scheduleDate: string | undefined,
+): number[] {
+  if (!byDay) return scheduleDate ? [getWeekdayFromDate(scheduleDate)] : [];
+
+  const weekdayCodes: Record<string, number> = {
+    SUN: 0,
+    MON: 1,
+    TUE: 2,
+    WED: 3,
+    THU: 4,
+    FRI: 5,
+    SAT: 6,
+  };
+
+  return [
+    ...new Set(
+      byDay.split(',').flatMap((value) => {
+        const code = value.trim().replace(/^\d+/, '');
+        const weekday = weekdayCodes[code];
+
+        return weekday == null ? [] : [weekday];
+      }),
+    ),
+  ];
 }
 
 function getPersonalTagsFromResponse(response: unknown): string[] {
@@ -269,14 +357,20 @@ function getPersonalTagsFromResponse(response: unknown): string[] {
 }
 
 export function toScheduleCreateResult(response: ScheduleCreateResponse): ScheduleCreateResult {
+  const detail = toScheduleDetail(response as ScheduleDetailResponse);
+
   return {
-    id: response.schedule_id ?? 0,
-    title: response.title ?? '',
-    date: normalizeDateForView(response.date),
-    startTime: normalizeTimeToMinute(response.start_time ?? ''),
-    endTime: normalizeTimeToMinute(response.end_time ?? ''),
-    estimatedMinutes: response.estimated_time ?? null,
-    isQueue: response.is_queue ?? false,
+    id: detail.id,
+    title: detail.title,
+    date: detail.date,
+    startTime: detail.startTime,
+    endTime: detail.endTime,
+    estimatedMinutes: detail.estimatedMinutes,
+    isQueue: detail.isQueue,
+    location: detail.location,
+    locationDetail: detail.locationDetail,
+    isRecurring: detail.isRecurring,
+    recurrence: detail.recurrence,
   };
 }
 
@@ -302,8 +396,8 @@ export function toScheduleCreateRequest(input: ScheduleCreateInput): ScheduleCre
     start_time: input.startTime,
     end_time: input.endTime,
     estimated_time: input.estimatedMinutes,
-    latitude: input.latitude,
-    longitude: input.longitude,
+    location: input.location,
+    location_detail: input.locationDetail,
     memo: input.memo,
     is_remind_on: input.isReminderEnabled ?? false,
     remind_minutes: input.reminderMinutes,
@@ -329,6 +423,8 @@ export function toScheduleUpdateRequest(input: ScheduleUpdateInput): ScheduleUpd
     start_time: input.startTime,
     end_time: input.endTime,
     estimated_time: input.estimatedMinutes,
+    location: input.location,
+    location_detail: input.locationDetail,
     memo: input.memo,
     status: input.status == null ? undefined : statusToUpdateDtoMap[input.status],
     is_remind_on: input.isReminderEnabled,
@@ -461,12 +557,8 @@ function toRecurrenceRequest(value: RecurrenceValue, scheduleDate: string): Recu
   const request: RecurrenceRequest = {
     freq: RecurrenceRequestFreq[value.freq],
     interval: value.interval,
-    until:
-      value.endType === 'until'
-        ? normalizeDateForRequest(value.until)
-        : value.endType === 'count'
-          ? normalizeDateForRequest(estimateUntilByCount(value, scheduleDate))
-          : '2099-12-31',
+    until: value.endType === 'until' ? normalizeDateForRequest(value.until) : undefined,
+    count: value.endType === 'count' ? value.occurrenceCount : undefined,
   };
 
   if (value.freq === 'WEEKLY' && value.byDay.length > 0) {
@@ -478,66 +570,6 @@ function toRecurrenceRequest(value: RecurrenceValue, scheduleDate: string): Recu
   }
 
   return request;
-}
-
-function estimateUntilByCount(value: RecurrenceValue, scheduleDate: string) {
-  const startDate = parseDateValue(scheduleDate) ?? new Date();
-  const occurrences = Math.max(value.occurrenceCount - 1, 0);
-  const nextDate = new Date(startDate);
-
-  switch (value.freq) {
-    case 'DAILY':
-      nextDate.setDate(nextDate.getDate() + occurrences * value.interval);
-      break;
-    case 'WEEKLY':
-      nextDate.setDate(nextDate.getDate() + occurrences * value.interval * 7);
-      break;
-    case 'MONTHLY':
-      addMonthsClamped(nextDate, occurrences * value.interval);
-      break;
-    case 'YEARLY':
-      addYearsClamped(nextDate, occurrences * value.interval);
-      break;
-  }
-
-  return formatDateValue(nextDate);
-}
-
-function addMonthsClamped(date: Date, months: number) {
-  const originalDay = date.getDate();
-  const targetMonthIndex = date.getMonth() + months;
-  const targetYear = date.getFullYear() + Math.floor(targetMonthIndex / 12);
-  const targetMonth = ((targetMonthIndex % 12) + 12) % 12;
-  const lastDayOfTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
-
-  date.setFullYear(targetYear, targetMonth, Math.min(originalDay, lastDayOfTargetMonth));
-}
-
-function addYearsClamped(date: Date, years: number) {
-  const originalDay = date.getDate();
-  const targetYear = date.getFullYear() + years;
-  const targetMonth = date.getMonth();
-  const lastDayOfTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
-
-  date.setFullYear(targetYear, targetMonth, Math.min(originalDay, lastDayOfTargetMonth));
-}
-
-function parseDateValue(dateValue: string) {
-  const [year, month, day] = dateValue.replace(/-/g, '.').split('.').map(Number);
-
-  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
-    return null;
-  }
-
-  return new Date(year, month - 1, day);
-}
-
-function formatDateValue(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-
-  return `${year}.${month}.${day}`;
 }
 
 function normalizeDateForView(value?: string) {

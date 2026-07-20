@@ -32,7 +32,11 @@ export function useCreateScheduleMutation(
     onSuccess: (data, variables, onMutateResult, context) => {
       updateScheduleListCacheAfterCreate(queryClient, data, variables);
       updateScheduleDetailCacheAfterCreate(queryClient, data, variables);
-      void queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.all });
+      // 생성 응답에는 상세의 선택 필드(반복·위치 등)가 아직 모두 포함되지 않는다.
+      // 방금 조립한 상세 캐시를 무효화하면 상세 조회 응답이 이를 즉시 덮어쓰므로,
+      // 목록과 검색 결과만 갱신하고 상세는 다음 stale 주기에 서버 값으로 동기화한다.
+      void queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.searches() });
       options?.onSuccess?.(data, variables, onMutateResult, context);
     },
   });
@@ -56,14 +60,14 @@ function updateScheduleDetailCacheAfterCreate(
     conditionTagId: input.conditionTagId,
     personalTags: input.personalTags ?? [],
     memo: input.memo ?? '',
-    location: '',
-    latitude: input.latitude ?? null,
-    longitude: input.longitude ?? null,
+    location: result.location || input.location || '',
+    locationDetail: result.locationDetail || input.locationDetail || '',
     isReminderEnabled: input.isReminderEnabled ?? false,
     reminderMinutes: input.reminderMinutes ?? null,
     reminderType: input.reminderType ?? null,
     reminderSoundType: input.reminderSoundType ?? null,
-    isRecurring: input.recurrence != null,
+    isRecurring: result.isRecurring || input.recurrence != null,
+    recurrence: result.recurrence ?? input.recurrence ?? null,
     isConflict: false,
   };
 

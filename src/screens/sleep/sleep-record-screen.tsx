@@ -79,8 +79,10 @@ export function SleepRecordScreen() {
                   points={sleep.bodyMind.points}
                   activeMarkerId={sleep.selectedMarkerId ?? sleep.activeMarkerId}
                   activeMarkerTime={sleep.selectedMarkerTime}
-                  activeMarkerTimes={sleep.activeMarkerTimes}
+                  activeMarkerRecords={sleep.activeMarkerRecords}
                   onMarkerPress={sleep.pressBodyMindMarker}
+                  onHistoryRecordPress={sleep.selectActiveBodyMindRecord}
+                  selectedHistoryRecordId={sleep.selectedConditionRecordId}
                   onBackgroundPress={sleep.clearMarkerState}
                 />
               </View>

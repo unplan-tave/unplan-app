@@ -24,6 +24,18 @@ export interface ScheduleUpdateRequest {
   end_time?: string;
   estimated_time?: number;
   memo?: string;
+  /**
+   * 대표 위치(장소명/주소 등, 최대 200자). 전달하면 갱신, 미전송(null)이면 기존 유지
+   * @minLength 0
+   * @maxLength 200
+   */
+  location?: string;
+  /**
+   * 상세 위치(대표 위치 내 세부, 최대 200자). 전달하면 갱신, 미전송(null)이면 기존 유지
+   * @minLength 0
+   * @maxLength 200
+   */
+  location_detail?: string;
   status?: ScheduleUpdateRequestStatus;
   is_remind_on?: boolean;
   remind_minutes?: number;

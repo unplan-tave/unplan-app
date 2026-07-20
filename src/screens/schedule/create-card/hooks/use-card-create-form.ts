@@ -1,8 +1,8 @@
 import { useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { useScheduleDetailQuery } from '@/domains/schedule/api/queries';
+import { usePersonalTagsQuery, useScheduleDetailQuery } from '@/domains/schedule/api/queries';
 import { toCardItemFromScheduleDetail } from '@/domains/schedule/card-mapper';
 import { getCardCreateValidation } from '@/domains/schedule/create/validation';
 import {
@@ -30,6 +30,7 @@ export function useCardCreateForm() {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [initializedTitle, setInitializedTitle] = useState<string | null>(null);
   const personalTags = useScheduleStore((store) => store.personalTags);
+  const setPersonalTags = useScheduleStore((store) => store.setPersonalTags);
   const keyboardHeight = useKeyboardHeight();
 
   const {
@@ -43,6 +44,13 @@ export function useCardCreateForm() {
   const scheduleDetailQuery = useScheduleDetailQuery(numericCardId, {
     enabled: numericCardId != null,
   });
+  const personalTagsQuery = usePersonalTagsQuery({ enabled: numericCardId != null });
+
+  useEffect(() => {
+    if (personalTagsQuery.data != null) {
+      setPersonalTags(personalTagsQuery.data);
+    }
+  }, [personalTagsQuery.data, setPersonalTags]);
   const editCard = useMemo(
     () =>
       scheduleDetailQuery.data == null
@@ -141,7 +149,6 @@ export function useCardCreateForm() {
     updateDraftValues: draft.updateDraftValues,
     changeDraftCardType: draft.changeDraftCardType,
     setActiveTab,
-    addLocationRecentSearch: draft.addLocationRecentSearch,
     hasSubmitted,
     activeTab,
     conditionTagId: values.conditionTagId,
