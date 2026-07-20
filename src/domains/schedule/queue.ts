@@ -114,6 +114,24 @@ export function createDefaultDurationDraft(): Pick<
   };
 }
 
+/** 완료하지 못한 pin 카드를 추천 탐색용 queue 카드로 바꿉니다. */
+export function createQueueCardForReschedule(card: CardItem, draft: DueDurationDraft): CardItem {
+  return {
+    ...card,
+    cardType: 'queue',
+    dateMode: 'empty',
+    dateStart: '',
+    dateEnd: '',
+    timeFilled: false,
+    timeStart: '',
+    timeEnd: '',
+    dueDate: draft.dueDate,
+    durationHours: draft.durationHours,
+    durationMinutes: draft.durationMinutes,
+    durationUnknown: draft.durationUnknown,
+  };
+}
+
 export function hasQueueDuration(hours: number, minutes: number): boolean {
   return hours > 0 || minutes > 0;
 }
@@ -131,14 +149,10 @@ export function hasDueDate(dueDate: string): boolean {
 }
 
 export function isQueueFormComplete(
-  values: Pick<
-    CardFormValues,
-    'title' | 'dueDate' | 'durationHours' | 'durationMinutes' | 'durationUnknown'
-  >,
+  values: Pick<CardFormValues, 'title' | 'durationHours' | 'durationMinutes' | 'durationUnknown'>,
 ): boolean {
   return (
     values.title.trim().length > 0 &&
-    hasDueDate(values.dueDate) &&
     hasQueueDurationOrUnknown(values.durationHours, values.durationMinutes, values.durationUnknown)
   );
 }

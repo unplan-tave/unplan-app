@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { TodayDot } from '@/components/domain/schedule/today-dot';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
@@ -459,6 +460,7 @@ export function RepeatCustomSheet({
                         >
                           {cell.label}
                         </Typography>
+                        {cell.isToday ? <TodayDot /> : null}
                       </Pressable>
                     );
                   })}
@@ -752,6 +754,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dateCell: {
+    position: 'relative',
     width: '14.285%',
     height: spacing[8],
     alignItems: 'center',

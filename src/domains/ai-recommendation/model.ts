@@ -52,6 +52,10 @@ export interface QueueTimeRecommendationResult {
   mustChangeDuration: boolean;
 }
 
+export type QueueTimeRecommendationErrorMode = 'error-no-duration' | 'error-7day' | 'error-14day';
+
+export type RecommendationAcceptErrorKind = 'expired' | 'conflict' | 'network' | 'unknown';
+
 export const MINUTES_PER_DAY = 24 * 60;
 
 export const DEFAULT_EXCLUDE_RANGE: MinuteRange = {

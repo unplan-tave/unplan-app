@@ -117,23 +117,24 @@ export interface HomeExtendState {
 export function getHomeExtendState(
   card: CardItem | null,
   extensionMinutes: number,
+  now: Date,
   cards: CardItem[],
-  minimumExtensionMinutes: number,
 ): HomeExtendState {
   if (card == null) {
     return { newEndTime: '', hasConflict: false, decreaseDisabled: true };
   }
 
-  const newEndTime = addMinutesToTime(card.timeEnd, extensionMinutes);
+  const nowTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const newEndTime = addMinutesToTime(nowTime, extensionMinutes);
   const newEndMinutes = parseTimeToMinutes(newEndTime);
-  const originalEndMinutes = parseTimeToMinutes(card.timeEnd);
-  const nextStartMinutes = getNextHomeScheduleStartMinutes(card, originalEndMinutes, cards);
+  const nowMinutes = parseTimeToMinutes(nowTime);
+  const nextStartMinutes = getNextHomeScheduleStartMinutes(card, nowMinutes, cards);
 
   return {
     newEndTime,
     hasConflict:
       newEndMinutes != null && nextStartMinutes != null && newEndMinutes > nextStartMinutes,
-    decreaseDisabled: extensionMinutes <= minimumExtensionMinutes,
+    decreaseDisabled: extensionMinutes === 0,
   };
 }
 

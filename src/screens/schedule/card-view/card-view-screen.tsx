@@ -3,9 +3,9 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { CardCreateHeader } from '@/components/domain/schedule/card-create-header';
 import { CardToast } from '@/components/domain/schedule/card-toast';
-import { CardViewHeader } from '@/components/features/card-view/card-view-header';
+import { CardViewHeader } from '@/components/domain/schedule/card-view-header';
+import { PinViewBody } from '@/components/domain/schedule/pin-view-body';
 import { CardViewStatus } from '@/components/features/card-view/card-view-status';
-import { PinViewBody } from '@/components/features/card-view/pin-view-body';
 import { QueueViewBody } from '@/components/features/card-view/queue-view-body';
 import { ConvertToPinBottomSheet } from '@/components/features/queue-to-pin/convert-to-pin-sheet';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';

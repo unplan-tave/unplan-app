@@ -26,15 +26,15 @@ export function EnergyMeasureScreen() {
             <Pressable
               accessibilityLabel="에너지 기록 저장"
               accessibilityRole="button"
-              accessibilityState={{ disabled: !energy.canSubmit }}
-              disabled={!energy.canSubmit}
+              accessibilityState={{ disabled: energy.isSaving }}
+              disabled={energy.isSaving}
               hitSlop={8}
               style={({ pressed }) => [styles.done, pressed && styles.pressed]}
               onPress={energy.submit}
             >
               <Typography
                 variant="bodyM"
-                color={energy.canSubmit ? colors.primary : colors.gray[300]}
+                color={energy.isSaving ? colors.gray[300] : colors.primary}
               >
                 완료
               </Typography>
@@ -50,6 +50,16 @@ export function EnergyMeasureScreen() {
             <Typography variant="bodyS" align="center" color={colors.gray[500]}>
               {energy.subtitle}
             </Typography>
+            {energy.validationMessage != null ? (
+              <Typography
+                accessibilityLiveRegion="polite"
+                variant="caption"
+                align="center"
+                color={colors.secondary}
+              >
+                {energy.validationMessage}
+              </Typography>
+            ) : null}
           </View>
 
           <ConditionQuadrantPlot value={energy.value} onSelect={energy.selectPoint} />

@@ -81,6 +81,15 @@ export function useConditionView() {
 
   const movePeriod = useCallback(
     (direction: 'previous' | 'next') => {
+      if (periodMode === 'daily') {
+        if (direction === 'next') {
+          return;
+        }
+
+        setSelectedDate((currentDate) => addDays(currentDate, -1));
+        return;
+      }
+
       if (periodMode === 'weekly') {
         const currentWeekStart = getWeekStart(selectedDate);
         const nextDate = addDays(
@@ -123,7 +132,7 @@ export function useConditionView() {
   const periodSwipeGesture = useMemo(
     () =>
       Gesture.Pan()
-        .enabled(periodMode === 'weekly' || periodMode === 'monthly')
+        .enabled(true)
         .activeOffsetX([-20, 20])
         .failOffsetY([-20, 20])
         .onEnd((event) => {
@@ -134,7 +143,7 @@ export function useConditionView() {
             runOnJS(movePeriod)('previous');
           }
         }),
-    [movePeriod, periodMode],
+    [movePeriod],
   );
 
   return {

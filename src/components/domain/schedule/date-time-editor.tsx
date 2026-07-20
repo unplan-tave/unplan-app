@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { TodayDot } from '@/components/domain/schedule/today-dot';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Card } from '@/components/ui/Card';
 import { Typography } from '@/components/ui/Typography';
@@ -8,6 +9,7 @@ import { colors, radius, spacing } from '@/constants/theme';
 import { DEFAULT_TIME_RANGE, WEEKDAY_LABELS } from '@/domains/schedule/data';
 import {
   type DateTimeDraft,
+  type CalendarCell,
   getCalendarMonth,
   isDateInDraftRange,
   sortDateValues,
@@ -319,7 +321,7 @@ function DateGridCell({
   nextValue,
   onSelect,
 }: {
-  cell: { label: string; value: string };
+  cell: CalendarCell;
   column: number;
   draft: DateTimeDraft;
   previousValue?: string;
@@ -378,12 +380,14 @@ function DateGridCell({
           <Typography variant="bodyM" color={colors.gray.white} align="center">
             {cell.label}
           </Typography>
+          {cell.isToday ? <TodayDot /> : null}
         </View>
       ) : (
         <View style={styles.dateCircle}>
           <Typography variant="bodyM" color={colors.gray[700]} align="center">
             {cell.label}
           </Typography>
+          {cell.isToday ? <TodayDot /> : null}
         </View>
       )}
     </Pressable>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { TodayDot } from '@/components/domain/schedule/today-dot';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
@@ -21,7 +22,6 @@ import {
 const DATE_CELL_SIZE = spacing[8];
 const SHEET_HEADER_MAX_WIDTH = 369;
 const DATE_CELL_RADIUS = DATE_CELL_SIZE / 2;
-const TODAY_DOT_SIZE = 4;
 const DURATION_BUTTON_HEIGHT = spacing[10];
 
 export type DueDurationLeftAction = 'cancel' | 'back';
@@ -80,7 +80,10 @@ export function DueDurationSheet({
       return;
     }
 
-    setDraft((prev) => ({ ...prev, dueDate: dateValue }));
+    setDraft((prev) => ({
+      ...prev,
+      dueDate: prev.dueDate === dateValue ? '' : dateValue,
+    }));
   }, []);
 
   const handleClearDueDate = useCallback(() => {
@@ -341,7 +344,9 @@ function DueDateCell({
 
   return (
     <Pressable
-      accessibilityLabel={cell.value ? `${cell.value} 선택` : '빈 날짜'}
+      accessibilityLabel={
+        cell.value ? `${cell.value} ${isSelected ? '선택 취소' : '선택'}` : '빈 날짜'
+      }
       accessibilityRole="button"
       accessibilityState={{ selected: isSelected, disabled: isDisabled }}
       disabled={isDisabled}
@@ -357,13 +362,14 @@ function DueDateCell({
           <Typography variant="bodyM" color={textColor} align="center">
             {cell.label}
           </Typography>
+          {isToday ? <TodayDot /> : null}
         </View>
       ) : (
         <View style={styles.dateCircle}>
           <Typography variant="bodyM" color={textColor} align="center">
             {cell.label}
           </Typography>
-          {isToday ? <View style={styles.todayDot} /> : null}
+          {isToday ? <TodayDot /> : null}
         </View>
       )}
     </Pressable>
@@ -471,14 +477,6 @@ const styles = StyleSheet.create({
   },
   dateCircleSelected: {
     backgroundColor: colors.primary,
-  },
-  todayDot: {
-    position: 'absolute',
-    bottom: spacing[1],
-    width: TODAY_DOT_SIZE,
-    height: TODAY_DOT_SIZE,
-    borderRadius: TODAY_DOT_SIZE / 2,
-    backgroundColor: colors.gray.white,
   },
   clearDueButton: {
     alignSelf: 'center',

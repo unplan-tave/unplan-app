@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
+import { Icon } from '@/components/ui/Icon';
 import { ProgressSegment } from '@/components/ui/ProgressSegment';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
@@ -30,27 +30,29 @@ const SEGMENT_TO_PROGRESS: Record<ProgressSegmentValue, CardProgressStatus> = {
 
 export interface HomeProgressSheetProps {
   visible: boolean;
-  /** 카드 상단에 표시되는 요약(예: "06/19 08:30-09:00") */
+  title: string;
   timeSummary: string;
   status: CardProgressStatus;
+  step: 'status' | 'action';
   onChangeStatus: (status: CardProgressStatus) => void;
   onCancel: () => void;
+  onBack: () => void;
   onComplete: () => void;
   completeDisabled?: boolean;
-  /** "다른 시간에 다시 하기"(추천 재탐색) — 추천 API 미출시로 현재 비활성화 */
   onReschedulePress?: () => void;
-  /** "큐 카드로 남겨두기"(핀 → 큐 전환) */
   onLeaveAsQueuePress?: () => void;
-  /** "종료 시간 연장" */
   onExtendTimePress?: () => void;
 }
 
 export function HomeProgressSheet({
   visible,
+  title,
   timeSummary,
   status,
+  step,
   onChangeStatus,
   onCancel,
+  onBack,
   onComplete,
   completeDisabled = false,
   onReschedulePress,
@@ -58,67 +60,125 @@ export function HomeProgressSheet({
   onExtendTimePress,
 }: HomeProgressSheetProps) {
   const segmentValue = PROGRESS_TO_SEGMENT[status];
-  const actions = useMemo(() => renderableActions(segmentValue), [segmentValue]);
+  const isActionStep = step === 'action';
 
   return (
-    <BottomSheet visible={visible} onClose={onCancel} contentStyle={styles.content}>
+    <BottomSheet
+      visible={visible}
+      onClose={isActionStep ? onBack : onCancel}
+      contentStyle={styles.content}
+    >
       <View style={styles.header}>
-        <Pressable accessibilityRole="button" hitSlop={8} onPress={onCancel}>
-          <Typography variant="bodyM" color={colors.gray[500]}>
-            취소
-          </Typography>
-        </Pressable>
+        {isActionStep ? (
+          <Pressable
+            accessibilityLabel="이전 단계로 돌아가기"
+            accessibilityRole="button"
+            hitSlop={8}
+            style={({ pressed }) => [styles.headerAction, pressed && styles.pressed]}
+            onPress={onBack}
+          >
+            <Icon name="arrowLeft" size={24} color={colors.gray[500]} />
+          </Pressable>
+        ) : (
+          <Pressable
+            accessibilityLabel="취소"
+            accessibilityRole="button"
+            hitSlop={8}
+            style={({ pressed }) => [styles.headerAction, pressed && styles.pressed]}
+            onPress={onCancel}
+          >
+            <Typography variant="bodyM" color={colors.primary}>
+              취소
+            </Typography>
+          </Pressable>
+        )}
+        <Typography
+          align="center"
+          pointerEvents="none"
+          variant="bodyM"
+          color={colors.gray[900]}
+          style={styles.headerTitle}
+        >
+          일정 완료 확인
+        </Typography>
         <Pressable
+          accessibilityLabel="완료"
           accessibilityRole="button"
-          accessibilityState={{ disabled: completeDisabled }}
-          disabled={completeDisabled}
+          accessibilityState={{ disabled: completeDisabled || isActionStep }}
+          disabled={completeDisabled || isActionStep}
           hitSlop={8}
+          style={({ pressed }) => [styles.headerAction, pressed && !isActionStep && styles.pressed]}
           onPress={onComplete}
         >
-          <Typography variant="bodyM" color={completeDisabled ? colors.gray[300] : colors.primary}>
+          <Typography
+            variant="bodyM"
+            color={completeDisabled || isActionStep ? colors.gray[300] : colors.primary}
+          >
             완료
           </Typography>
         </Pressable>
       </View>
 
-      <Typography variant="bodyM" color={colors.gray[700]} align="center">
-        일정 진행 상태를 알려주세요!
-      </Typography>
-
-      <View style={styles.summaryCard}>
-        <Typography variant="bodyS" color={colors.gray[600]}>
-          {timeSummary}
-        </Typography>
-        <ProgressSegment
-          options={SEGMENT_OPTIONS}
-          value={segmentValue}
-          onChange={(next) => onChangeStatus(SEGMENT_TO_PROGRESS[next])}
+      {isActionStep ? (
+        <ActionContent
+          status={status}
+          onReschedulePress={onReschedulePress}
+          onLeaveAsQueuePress={onLeaveAsQueuePress}
+          onExtendTimePress={onExtendTimePress}
         />
-      </View>
-
-      {actions.reschedule ? (
-        // TODO(recommendation-api): "다른 시간에 다시 하기"는 백엔드 추천 시간대 API가
-        // 아직 없어 비활성화 상태로만 노출합니다. API 연동 시 disabled/onPress 해제.
-        <Button label="다른 시간에 다시 하기" fullWidth disabled onPress={onReschedulePress} />
-      ) : null}
-
-      {actions.leaveAsQueue ? (
-        <Button label="큐 카드로 남겨두기" fullWidth onPress={onLeaveAsQueuePress} />
-      ) : null}
-
-      {actions.extendTime ? (
-        <Button label="종료 시간 연장" fullWidth onPress={onExtendTimePress} />
-      ) : null}
+      ) : (
+        <View style={styles.statusContent}>
+          <Typography variant="bodyM" color={colors.gray[700]} align="center">
+            일정 진행 상태를 알려주세요!
+          </Typography>
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryText}>
+              <Typography variant="titleM" color={colors.gray[900]} align="center">
+                {title}
+              </Typography>
+              <Typography variant="bodyS" color={colors.gray[600]} align="center">
+                {timeSummary}
+              </Typography>
+            </View>
+            <ProgressSegment
+              options={SEGMENT_OPTIONS}
+              value={segmentValue}
+              onChange={(next) => onChangeStatus(SEGMENT_TO_PROGRESS[next])}
+            />
+          </View>
+        </View>
+      )}
     </BottomSheet>
   );
 }
 
-function renderableActions(value: ProgressSegmentValue) {
-  return {
-    reschedule: value === 'todo',
-    leaveAsQueue: value === 'todo',
-    extendTime: value === 'ongoing',
-  };
+function ActionContent({
+  status,
+  onReschedulePress,
+  onLeaveAsQueuePress,
+  onExtendTimePress,
+}: {
+  status: CardProgressStatus;
+  onReschedulePress?: () => void;
+  onLeaveAsQueuePress?: () => void;
+  onExtendTimePress?: () => void;
+}) {
+  return (
+    <View style={styles.actionContent}>
+      <Typography variant="bodyM" color={colors.gray[700]} align="center">
+        일정을 어떻게 수정할까요?
+      </Typography>
+      {status === 'incomplete' ? (
+        <View style={styles.actionButtons}>
+          <Button label="다른 시간에 다시 하기" fullWidth onPress={onReschedulePress} />
+          <Button label="큐 카드로 남겨두기" fullWidth onPress={onLeaveAsQueuePress} />
+        </View>
+      ) : null}
+      {status === 'in_progress' ? (
+        <Button label="종료 시간 연장" fullWidth onPress={onExtendTimePress} />
+      ) : null}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -126,15 +186,47 @@ const styles = StyleSheet.create({
     gap: spacing[4],
   },
   header: {
+    position: 'relative',
+    minHeight: spacing[6],
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing[3],
+  },
+  headerAction: {
+    minWidth: spacing[8] + spacing.px,
+    minHeight: spacing[6],
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  headerTitle: {
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    alignSelf: 'center',
+    textAlign: 'center',
+  },
+  statusContent: {
+    gap: spacing[3],
   },
   summaryCard: {
     alignItems: 'center',
-    gap: spacing[3],
+    gap: spacing[4],
     padding: spacing[3],
     borderRadius: radius.md,
     backgroundColor: colors.alpha.white50,
+  },
+  summaryText: {
+    gap: spacing[1],
+  },
+  actionContent: {
+    gap: spacing[4],
+  },
+  actionButtons: {
+    gap: spacing[2],
+  },
+  pressed: {
+    opacity: 0.72,
   },
 });

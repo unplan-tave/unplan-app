@@ -25,6 +25,7 @@ const SLEEP_INPUT_ACCESSORY_ID = 'sleep-input-accessory';
 
 export function SleepMeasureScreen() {
   const sleep = useSleepMeasureScreen();
+  const isDoneDisabled = sleep.isRecordLoading || sleep.isRecordLoadError || sleep.isSaving;
 
   return (
     <View style={styles.screen}>
@@ -37,21 +38,19 @@ export function SleepMeasureScreen() {
             <Pressable
               accessibilityLabel="수면 기록 저장"
               accessibilityRole="button"
-              accessibilityState={{
-                disabled: !sleep.canSubmit || sleep.isSaving,
-              }}
-              disabled={!sleep.canSubmit || sleep.isSaving}
+              accessibilityState={{ disabled: isDoneDisabled }}
+              disabled={isDoneDisabled}
               hitSlop={8}
               style={({ pressed }) => [
                 styles.done,
-                !sleep.canSubmit && styles.doneDisabled,
-                pressed && sleep.canSubmit && styles.pressed,
+                isDoneDisabled && styles.doneDisabled,
+                pressed && !isDoneDisabled && styles.pressed,
               ]}
               onPress={sleep.submit}
             >
               <Typography
                 variant="bodyM"
-                color={sleep.canSubmit ? colors.primary : colors.gray[400]}
+                color={isDoneDisabled ? colors.gray[400] : colors.primary}
               >
                 완료
               </Typography>
