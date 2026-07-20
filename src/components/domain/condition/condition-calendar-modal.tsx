@@ -27,7 +27,7 @@ interface ConditionCalendarModalProps {
   onClose: () => void;
 }
 
-/** 컨디션 탭 전용 월력 모달. Figma 2337:172826의 블러 패널과 원형 날짜 셀을 따릅니다. */
+/** 홈과 컨디션 화면이 공유하는 컨디션 기간 선택 월력 모달입니다. */
 export function ConditionCalendarModal({
   visible,
   title,

@@ -5,8 +5,6 @@ import { runOnJS } from 'react-native-reanimated';
 import { toConditionMetricCards } from '@/domains/condition/metric';
 import { type ConditionPeriodMode } from '@/domains/condition/model';
 import {
-  buildConditionCalendarDays,
-  getConditionCalendarTitle,
   getConditionPeriodLabel,
   getNextConditionPeriodMode,
   isConditionDateSelectable,
@@ -15,6 +13,7 @@ import { useMeasurementAveragesQuery } from '@/domains/measurement/api/queries';
 import { toConditionSummaryFromAverage } from '@/domains/measurement/model';
 import { getMeasurementMonthRange, getMeasurementWeekRange } from '@/domains/measurement/period';
 import { useDailyMessageQuery } from '@/domains/schedule/api/queries';
+import { useConditionCalendar } from '@/hooks/use-condition-calendar';
 import { addDays, formatDateValue, getWeekStart } from '@/lib/utils/date';
 
 const WEEK_LENGTH = 7;
@@ -23,8 +22,6 @@ const WEEK_LENGTH = 7;
 export function useConditionView() {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [periodMode, setPeriodMode] = useState<ConditionPeriodMode>('daily');
-  const [isCalendarVisible, setIsCalendarVisible] = useState(false);
-  const [calendarMonth, setCalendarMonth] = useState(() => new Date());
 
   const selectedDateValue = useMemo(() => formatDateValue(selectedDate), [selectedDate]);
   // 데일리/위클리/먼슬리 모두 /measurements/averages를 사용합니다. (데일리는 from=to=선택 날짜, groupBy DAY)
@@ -61,61 +58,26 @@ export function useConditionView() {
     () => getConditionPeriodLabel(selectedDate, periodMode),
     [periodMode, selectedDate],
   );
-  const calendarDays = useMemo(
-    () => buildConditionCalendarDays(calendarMonth, periodMode),
-    [calendarMonth, periodMode],
-  );
-  const calendarTitle = useMemo(() => getConditionCalendarTitle(calendarMonth), [calendarMonth]);
 
   const cyclePeriodMode = useCallback(() => {
     setPeriodMode(getNextConditionPeriodMode);
   }, []);
 
-  const openCalendar = useCallback(() => {
-    setCalendarMonth(selectedDate);
-    setIsCalendarVisible(true);
-  }, [selectedDate]);
-
-  const closeCalendar = useCallback(() => {
-    setIsCalendarVisible(false);
-  }, []);
-
-  const moveCalendarMonth = useCallback((direction: 'previous' | 'next') => {
-    setCalendarMonth((previous) => {
-      const next = new Date(
-        previous.getFullYear(),
-        previous.getMonth() + (direction === 'previous' ? -1 : 1),
-        1,
-      );
-      const currentMonth = new Date();
-
-      if (
-        next.getFullYear() > currentMonth.getFullYear() ||
-        (next.getFullYear() === currentMonth.getFullYear() &&
-          next.getMonth() > currentMonth.getMonth())
-      ) {
-        return previous;
-      }
-
-      return next;
-    });
-  }, []);
-
-  const selectDate = useCallback(
+  const handleCalendarDateSelect = useCallback(
     (date: Date) => {
-      if (!isConditionDateSelectable(date)) {
-        return;
-      }
-
       setSelectedDate(date);
       // 주차 달력의 날짜 선택은 해당 일자의 데일리 뷰로 진입합니다.
       if (periodMode === 'weekly') {
         setPeriodMode('daily');
       }
-      setIsCalendarVisible(false);
     },
     [periodMode],
   );
+  const calendar = useConditionCalendar({
+    selectedDate,
+    periodMode,
+    onSelectDate: handleCalendarDateSelect,
+  });
 
   const movePeriod = useCallback(
     (direction: 'previous' | 'next') => {
@@ -184,19 +146,12 @@ export function useConditionView() {
     metrics,
     message,
     dateLabel,
-    calendar: {
-      visible: isCalendarVisible,
-      title: calendarTitle,
-      days: calendarDays,
-      canGoNext:
-        calendarMonth.getFullYear() < new Date().getFullYear() ||
-        calendarMonth.getMonth() < new Date().getMonth(),
-    },
+    calendar: calendar.calendar,
     cyclePeriodMode,
     periodSwipeGesture,
-    openCalendar,
-    closeCalendar,
-    moveCalendarMonth,
-    selectDate,
+    openCalendar: calendar.openCalendar,
+    closeCalendar: calendar.closeCalendar,
+    moveCalendarMonth: calendar.moveCalendarMonth,
+    selectDate: calendar.selectCalendarDate,
   };
 }
