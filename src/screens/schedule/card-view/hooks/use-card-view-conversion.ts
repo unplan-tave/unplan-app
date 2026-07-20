@@ -111,7 +111,7 @@ export function useCardViewConversion({
       updateScheduleMutation.mutate(
         {
           scheduleId: numericCardId,
-          data: toScheduleUpdateInput(values, personalTags),
+          data: toScheduleUpdateInput('pin', values, personalTags),
         },
         {
           onSuccess: () => {

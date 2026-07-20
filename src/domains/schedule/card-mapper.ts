@@ -41,18 +41,19 @@ export function toScheduleCreateInput(
 }
 
 export function toScheduleUpdateInput(
+  cardType: CardTab,
   values: CardFormValues,
   personalTags: PersonalTagOption[],
 ): ScheduleUpdateInput {
-  const createInput = toScheduleCreateInput('pin', values, personalTags);
+  const createInput = toScheduleCreateInput(cardType, values, personalTags);
 
   return {
     title: createInput.title,
     conditionTagId: createInput.conditionTagId,
     personalTags: createInput.personalTags,
     date: createInput.date,
-    startTime: createInput.startTime,
-    endTime: createInput.endTime,
+    startTime: cardType === 'pin' ? createInput.startTime : '',
+    endTime: cardType === 'pin' ? createInput.endTime : '',
     estimatedMinutes: toEstimatedMinutes(values),
     memo: createInput.memo,
     isReminderEnabled: createInput.isReminderEnabled,
