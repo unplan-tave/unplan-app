@@ -158,11 +158,8 @@ export function createCardCreateScreenProps({
     },
     locationSheetProps: {
       visible: sheets.isLocationVisible,
-      recentSearches: draft.locationRecentSearches,
       onClose: sheets.closeSheet,
       onSelect: sheets.selectLocation,
-      onDeleteSearch: draft.deleteLocationRecentSearch,
-      onDeleteAllSearches: draft.deleteAllLocationRecentSearches,
     },
     toastProps:
       actions.toast == null

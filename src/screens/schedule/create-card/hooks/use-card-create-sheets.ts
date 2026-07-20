@@ -25,7 +25,6 @@ interface UseCardCreateSheetsParams {
   updateDraftValues: (values: Partial<CardFormValues>) => void;
   changeDraftCardType: (cardType: CardTab) => void;
   setActiveTab: (cardType: CardTab) => void;
-  addLocationRecentSearch: (query: string) => void;
   hasSubmitted: boolean;
   activeTab: CardTab;
   conditionTagId: ConditionTagId;
@@ -43,7 +42,6 @@ export function useCardCreateSheets(params: UseCardCreateSheetsParams) {
     updateDraftValues,
     changeDraftCardType,
     setActiveTab,
-    addLocationRecentSearch,
     hasSubmitted,
     activeTab,
     conditionTagId,
@@ -87,7 +85,6 @@ export function useCardCreateSheets(params: UseCardCreateSheetsParams) {
   const location = useCardCreateLocation({
     setValue,
     updateDraftValues,
-    addLocationRecentSearch,
     setSheet,
   });
   const tagSheet = useCardCreateTagSheet({
