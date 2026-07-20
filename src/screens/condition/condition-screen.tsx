@@ -2,8 +2,8 @@ import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 
+import { ConditionCalendarModal } from '@/components/domain/condition/condition-calendar-modal';
 import { ConditionScoreBackground } from '@/components/domain/condition/condition-score-background';
-import { ConditionCalendarModal } from '@/components/features/condition/condition-calendar-modal';
 import { ConditionGraphCard } from '@/components/features/condition/condition-graph-card';
 import { ConditionGraphModeToggle } from '@/components/features/condition/condition-graph-mode-toggle';
 import { ConditionHero } from '@/components/features/condition/condition-hero';
@@ -27,7 +27,7 @@ export function ConditionScreen() {
       useSafeArea={false}
     >
       <StatusBar style="light" />
-      <ConditionScoreBackground score={view.conditionScore} />
+      <ConditionScoreBackground score={view.conditionScore} variant="reversed" />
       <GestureDetector gesture={view.periodSwipeGesture}>
         <ScrollView
           style={styles.scrollView}

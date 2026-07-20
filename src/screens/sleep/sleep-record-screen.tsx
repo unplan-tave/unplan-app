@@ -24,7 +24,7 @@ export function SleepRecordScreen() {
 
   return (
     <View style={styles.screen}>
-      <AppBackground />
+      <AppBackground variant="reversed" />
       <SafeAreaView style={styles.safeArea}>
         <Header left={<HeaderBack onPress={sleep.goBack} />} title="컨디션 기록 내역" />
 
