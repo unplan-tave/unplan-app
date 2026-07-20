@@ -5,9 +5,13 @@
 export type SleepCondition = 'risk' | 'lack' | 'good' | 'excess';
 
 export const SLEEP_CONDITION_VISIBLE_MAX_MINUTES = 12 * 60;
-export const SLEEP_CONDITION_EDITABLE_MAX_MINUTES = 10 * 60 + 30;
 export const SLEEP_CONDITION_STEP_MINUTES = 30;
-export const SLEEP_EXCESS_MIN_START_MINUTES = 9 * 60;
+/** 시계에서 한 컨디션 구간이 표시할 수 있는 최대 길이입니다. */
+export const SLEEP_CONDITION_MAX_RANGE_MINUTES = 10 * 60 + 30;
+export const SLEEP_CONDITION_EDITABLE_MIN_MINUTES =
+  SLEEP_CONDITION_VISIBLE_MAX_MINUTES - SLEEP_CONDITION_MAX_RANGE_MINUTES;
+export const SLEEP_CONDITION_EDITABLE_MAX_MINUTES =
+  SLEEP_CONDITION_VISIBLE_MAX_MINUTES - SLEEP_CONDITION_STEP_MINUTES;
 
 export interface SleepConditionThresholds {
   dangerMinutes: number;

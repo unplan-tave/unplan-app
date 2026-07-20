@@ -1,15 +1,16 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { PanResponder, StyleSheet, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Defs, Path, RadialGradient, Stop } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
 import {
   classifySleepMinutes,
   SLEEP_CONDITION_EDITABLE_MAX_MINUTES,
+  SLEEP_CONDITION_EDITABLE_MIN_MINUTES,
+  SLEEP_CONDITION_MAX_RANGE_MINUTES,
   SLEEP_CONDITION_STEP_MINUTES,
   SLEEP_CONDITION_VISIBLE_MAX_MINUTES,
-  SLEEP_EXCESS_MIN_START_MINUTES,
   type SleepCondition,
   type SleepConditionThresholds,
 } from '@/domains/onboarding/sleep-condition';
@@ -37,11 +38,18 @@ const MINIMUM_RANGE_MINUTES = SLEEP_CONDITION_STEP_MINUTES;
 
 const sleepConditionColors = {
   target: colors.secondary,
-  risk: '#8A7AB9',
-  lack: '#91D2C4',
-  good: colors.primary,
-  excess: colors.gray[200],
+  risk: colors.sleepCondition.risk,
+  lack: colors.sleepCondition.lack,
+  good: colors.sleepCondition.good,
+  excess: colors.sleepCondition.excess,
 } as const;
+
+const sleepConditionGradients: Record<SleepCondition, string> = {
+  risk: colors.sleepCondition.risk,
+  lack: colors.sleepCondition.lack,
+  good: colors.sleepCondition.good,
+  excess: colors.sleepCondition.excess,
+};
 
 const sleepConditionLabelKeys: Record<SleepCondition, Parameters<typeof t>[0]> = {
   risk: 'onboarding.sleep.risk',
@@ -165,7 +173,10 @@ export function SleepConditionCircle({
           dangerMinutes: clamp(
             rawMinutes,
             MINIMUM_RANGE_MINUTES,
-            lackThresholdMinutes - MINIMUM_RANGE_MINUTES,
+            Math.min(
+              lackThresholdMinutes - MINIMUM_RANGE_MINUTES,
+              SLEEP_CONDITION_MAX_RANGE_MINUTES,
+            ),
           ),
         });
         return;
@@ -175,7 +186,10 @@ export function SleepConditionCircle({
         const nextLackMinutes = clamp(
           rawMinutes,
           dangerThresholdMinutes + MINIMUM_RANGE_MINUTES,
-          optimalThresholdMinutes - MINIMUM_RANGE_MINUTES,
+          Math.min(
+            optimalThresholdMinutes - MINIMUM_RANGE_MINUTES,
+            dangerThresholdMinutes + SLEEP_CONDITION_MAX_RANGE_MINUTES,
+          ),
         );
 
         onThresholdsChange({
@@ -192,8 +206,14 @@ export function SleepConditionCircle({
       if (line === 'optimal') {
         const nextOptimalMinutes = clamp(
           rawMinutes,
-          Math.max(SLEEP_EXCESS_MIN_START_MINUTES, lackThresholdMinutes + MINIMUM_RANGE_MINUTES),
-          SLEEP_CONDITION_EDITABLE_MAX_MINUTES,
+          Math.max(
+            SLEEP_CONDITION_EDITABLE_MIN_MINUTES,
+            lackThresholdMinutes + MINIMUM_RANGE_MINUTES,
+          ),
+          Math.min(
+            SLEEP_CONDITION_EDITABLE_MAX_MINUTES,
+            lackThresholdMinutes + SLEEP_CONDITION_MAX_RANGE_MINUTES,
+          ),
         );
 
         onThresholdsChange({
@@ -309,11 +329,30 @@ export function SleepConditionCircle({
           style={styles.circle}
         >
           <Svg pointerEvents="none" style={StyleSheet.absoluteFill}>
+            <Defs>
+              {sectors.map((sector) => {
+                const color = sleepConditionGradients[sector.condition];
+
+                return (
+                  <RadialGradient
+                    key={sector.condition}
+                    id={`sleep-condition-${sector.condition}`}
+                    cx={CIRCLE_RADIUS}
+                    cy={CIRCLE_RADIUS}
+                    r={CIRCLE_RADIUS}
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <Stop offset="0" stopColor={color} />
+                    <Stop offset="1" stopColor={color} stopOpacity={0.2} />
+                  </RadialGradient>
+                );
+              })}
+            </Defs>
             {sectors.map((sector) => (
               <Path
                 key={sector.condition}
                 d={describeSector(sector.start, sector.end)}
-                fill={sleepConditionColors[sector.condition]}
+                fill={`url(#sleep-condition-${sector.condition})`}
               />
             ))}
           </Svg>
