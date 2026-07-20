@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { TodayDot } from '@/components/domain/schedule/today-dot';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Card } from '@/components/ui/Card';
 import { Typography } from '@/components/ui/Typography';
@@ -19,7 +20,6 @@ import { parseTimeToMinutes } from '@/domains/schedule/time';
 const DATE_CELL_SIZE = spacing[8];
 const SHEET_HEADER_MAX_WIDTH = 369;
 const DATE_CELL_RADIUS = DATE_CELL_SIZE / 2;
-const TODAY_DOT_SIZE = 4;
 const TIME_HOURS = Array.from({ length: 24 }, (_, index) => String(index).padStart(2, '0'));
 const TIME_MINUTES = [
   '00',
@@ -380,14 +380,14 @@ function DateGridCell({
           <Typography variant="bodyM" color={colors.gray.white} align="center">
             {cell.label}
           </Typography>
-          {cell.isToday ? <View style={styles.todayDot} /> : null}
+          {cell.isToday ? <TodayDot /> : null}
         </View>
       ) : (
         <View style={styles.dateCircle}>
           <Typography variant="bodyM" color={colors.gray[700]} align="center">
             {cell.label}
           </Typography>
-          {cell.isToday ? <View style={styles.todayDot} /> : null}
+          {cell.isToday ? <TodayDot /> : null}
         </View>
       )}
     </Pressable>
@@ -690,14 +690,6 @@ const styles = StyleSheet.create({
   },
   dateCircleSelected: {
     backgroundColor: colors.primary,
-  },
-  todayDot: {
-    position: 'absolute',
-    bottom: spacing[1],
-    width: TODAY_DOT_SIZE,
-    height: TODAY_DOT_SIZE,
-    borderRadius: TODAY_DOT_SIZE / 2,
-    backgroundColor: colors.gray.white,
   },
   timePanel: {
     width: '100%',

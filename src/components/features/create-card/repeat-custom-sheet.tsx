@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { TodayDot } from '@/components/domain/schedule/today-dot';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
@@ -23,7 +24,6 @@ const DRUM_PADDING = 2;
 const DRUM_VISIBLE_HEIGHT = DRUM_ITEM_HEIGHT * (DRUM_PADDING * 2 + 1);
 const WHEEL_WIDTH = 329;
 const SCROLL_MAX_HEIGHT = 520;
-const TODAY_DOT_SIZE = 4;
 
 type OpenMenu = 'none' | 'freq' | 'end';
 type ActivePicker = 'none' | 'interval' | 'count';
@@ -460,7 +460,7 @@ export function RepeatCustomSheet({
                         >
                           {cell.label}
                         </Typography>
-                        {cell.isToday ? <View style={styles.todayDot} /> : null}
+                        {cell.isToday ? <TodayDot /> : null}
                       </Pressable>
                     );
                   })}
@@ -766,14 +766,6 @@ const styles = StyleSheet.create({
   },
   dateCellDisabled: {
     opacity: 0.3,
-  },
-  todayDot: {
-    position: 'absolute',
-    bottom: spacing[1],
-    width: TODAY_DOT_SIZE,
-    height: TODAY_DOT_SIZE,
-    borderRadius: TODAY_DOT_SIZE / 2,
-    backgroundColor: colors.gray.white,
   },
   pressed: {
     opacity: 0.72,
