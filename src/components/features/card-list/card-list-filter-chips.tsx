@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { Chip } from '@/components/ui/Chip';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
@@ -18,6 +17,12 @@ const PROGRESS_OPTIONS: Array<{ value: CardProgressStatus; label: string }> = [
   { value: 'incomplete', label: '미완료' },
   { value: 'in_progress', label: '진행중' },
   { value: 'complete', label: '완료' },
+];
+
+const CARD_TYPE_OPTIONS: Array<{ value: CardTypeFilter; label: string }> = [
+  { value: 'all', label: '전체 카드' },
+  { value: 'pin', label: '핀 카드' },
+  { value: 'queue', label: '큐 카드' },
 ];
 
 interface DropdownOption {
@@ -53,6 +58,7 @@ export function CardListFilterChips({
 }) {
   const [scrollX, setScrollX] = useState(0);
   const [anchorX, setAnchorX] = useState<Record<CardListMultiFilterKey, number>>({
+    cardType: 0,
     progress: 0,
     condition: 0,
     personal: 0,
@@ -62,14 +68,28 @@ export function CardListFilterChips({
     key: CardListMultiFilterKey;
     label: string;
     summary: string;
+    isActive: boolean;
     options: DropdownOption[];
     emptyText?: string;
     onToggleOption: (optionKey: string) => void;
   }> = [
     {
+      key: 'cardType',
+      label: '카드 타입 필터',
+      summary: getCardTypeSummary(cardType),
+      isActive: true,
+      options: CARD_TYPE_OPTIONS.map((option) => ({
+        key: option.value,
+        label: option.label,
+        selected: cardType === option.value,
+      })),
+      onToggleOption: (optionKey) => onChangeCardType(optionKey as CardTypeFilter),
+    },
+    {
       key: 'progress',
       label: '진행 상태 필터',
       summary: getProgressSummary(progressStatuses),
+      isActive: progressStatuses.length > 0,
       options: PROGRESS_OPTIONS.map((option) => ({
         key: option.value,
         label: option.label,
@@ -81,6 +101,7 @@ export function CardListFilterChips({
       key: 'condition',
       label: '컨디션 태그 필터',
       summary: getConditionSummary(conditionTagIds),
+      isActive: conditionTagIds.length > 0,
       options: CONDITION_TAG_OPTIONS.map((option) => ({
         key: option.id,
         label: option.label,
@@ -92,6 +113,7 @@ export function CardListFilterChips({
       key: 'personal',
       label: '개인 태그 필터',
       summary: getPersonalSummary(personalTagIds, personalTags),
+      isActive: personalTagIds.length > 0,
       options: personalTags.map((tag) => ({
         key: tag.id,
         label: tag.label,
@@ -103,7 +125,7 @@ export function CardListFilterChips({
   ];
 
   const expanded = filters.find((filter) => filter.key === expandedFilter) ?? null;
-  const expandedActive = expanded != null && expanded.options.some((option) => option.selected);
+  const expandedActive = expanded?.isActive ?? false;
 
   return (
     <View style={styles.container}>
@@ -114,21 +136,7 @@ export function CardListFilterChips({
         scrollEventThrottle={16}
         onScroll={(event) => setScrollX(event.nativeEvent.contentOffset.x)}
       >
-        <Chip
-          label="핀 카드"
-          selected={cardType === 'pin'}
-          style={styles.chip}
-          onPress={() => onChangeCardType(cardType === 'pin' ? 'all' : 'pin')}
-        />
-        <Chip
-          label="큐 카드"
-          selected={cardType === 'queue'}
-          style={styles.chip}
-          onPress={() => onChangeCardType(cardType === 'queue' ? 'all' : 'queue')}
-        />
         {filters.map((filter) => {
-          const active = filter.options.some((option) => option.selected);
-
           return (
             <View
               key={filter.key}
@@ -142,7 +150,7 @@ export function CardListFilterChips({
               <MultiFilterChip
                 label={filter.label}
                 summary={filter.summary}
-                active={active}
+                active={filter.isActive}
                 onPress={() => onToggleExpanded(filter.key)}
               />
             </View>
@@ -210,6 +218,10 @@ export function CardListFilterChips({
       ) : null}
     </View>
   );
+}
+
+function getCardTypeSummary(cardType: CardTypeFilter) {
+  return CARD_TYPE_OPTIONS.find((option) => option.value === cardType)?.label ?? '전체 카드';
 }
 
 function MultiFilterChip({
@@ -286,11 +298,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing[1],
     paddingRight: spacing[1],
-  },
-  chip: {
-    minHeight: 24,
-    borderRadius: radius['2xl'],
-    paddingHorizontal: spacing[2] + 1,
   },
   multiChip: {
     minHeight: 24,
