@@ -31,6 +31,7 @@ export function useSleepRecordScreen() {
   const [selectedRecordId, setSelectedRecordId] = useState<number | null>(null);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [activeMarkerId, setActiveMarkerId] = useState<string | null>(null);
+  const [selectedConditionRecordId, setSelectedConditionRecordId] = useState<number | null>(null);
 
   const dailyMeasurementQuery = useDailyMeasurementQuery(selectedDateId);
   const deleteConditionMutation = useDeleteConditionRecordMutation();
@@ -67,8 +68,8 @@ export function useSleepRecordScreen() {
     [markers],
   );
   const activeMarker = markers.find((marker) => marker.id === activeMarkerId) ?? null;
-  const selectedMarker = markers.find((marker) => marker.id === selectedMarkerId) ?? null;
-  const selectedBodyMindRecord = selectedMarker?.records[0] ?? null;
+  const selectedBodyMindRecord =
+    conditionRecords.find((record) => record.id === selectedConditionRecordId) ?? null;
   const monthLabel = useMemo(() => format(parseISO(selectedDateId), 'yyyy.MM'), [selectedDateId]);
   const records = dailyMeasurementQuery.data?.sleepRecords ?? [];
   const selectedSleepRecord = records.find((record) => record.id === selectedRecordId) ?? null;
@@ -81,6 +82,7 @@ export function useSleepRecordScreen() {
   const clearMarkerState = useCallback(() => {
     setSelectedMarkerId(null);
     setActiveMarkerId(null);
+    setSelectedConditionRecordId(null);
   }, []);
 
   const selectDate = useCallback(
@@ -104,16 +106,33 @@ export function useSleepRecordScreen() {
   );
 
   /** 단일 기록은 선택·수정하고, 겹친 기록은 시간 목록을 엽니다. */
-  const pressBodyMindMarker = useCallback((point: QuadrantPoint) => {
-    if ((point.count ?? 1) >= 2) {
-      setSelectedMarkerId(null);
-      setActiveMarkerId((current) => (current === point.id ? null : point.id));
-      return;
-    }
+  const pressBodyMindMarker = useCallback(
+    (point: QuadrantPoint) => {
+      if ((point.count ?? 1) >= 2) {
+        setSelectedMarkerId(null);
+        setSelectedConditionRecordId(null);
+        setActiveMarkerId(activeMarkerId === point.id ? null : point.id);
+        return;
+      }
 
-    setActiveMarkerId(null);
-    setSelectedMarkerId((current) => (current === point.id ? null : point.id));
-  }, []);
+      const nextMarkerId = selectedMarkerId === point.id ? null : point.id;
+      const record = markers.find((marker) => marker.id === point.id)?.records[0] ?? null;
+
+      setActiveMarkerId(null);
+      setSelectedMarkerId(nextMarkerId);
+      setSelectedConditionRecordId(nextMarkerId == null ? null : (record?.id ?? null));
+    },
+    [activeMarkerId, markers, selectedMarkerId],
+  );
+
+  const selectActiveBodyMindRecord = useCallback(
+    (id: number) => {
+      if (!activeMarker?.records.some((record) => record.id === id)) return;
+
+      setSelectedConditionRecordId(id);
+    },
+    [activeMarker],
+  );
 
   const addBodyMindRecord = useCallback(() => {
     router.push('/energy/measure');
@@ -129,9 +148,9 @@ export function useSleepRecordScreen() {
     if (selectedBodyMindRecord == null) return;
 
     deleteConditionMutation.mutate(selectedBodyMindRecord.id, {
-      onSuccess: () => setSelectedMarkerId(null),
+      onSuccess: clearMarkerState,
     });
-  }, [deleteConditionMutation, selectedBodyMindRecord]);
+  }, [clearMarkerState, deleteConditionMutation, selectedBodyMindRecord]);
 
   const selectRecord = useCallback((id: number) => {
     setSelectedRecordId((current) => (current === id ? null : id));
@@ -176,9 +195,11 @@ export function useSleepRecordScreen() {
     selectedMarkerTime: formatConditionRecordTime(selectedBodyMindRecord?.dateTime ?? ''),
     hasSelectedMarker: selectedBodyMindRecord != null,
     isDeletingBodyMind: deleteConditionMutation.isPending,
-    activeMarkerTimes: (activeMarker?.records ?? []).map((record) =>
-      formatConditionRecordTime(record.dateTime),
-    ),
+    activeMarkerRecords: (activeMarker?.records ?? []).map((record) => ({
+      id: record.id,
+      label: formatConditionRecordTime(record.dateTime),
+    })),
+    selectedConditionRecordId,
     isLoading: dailyMeasurementQuery.isPending,
     isError: dailyMeasurementQuery.isError,
     changeTab,
@@ -188,6 +209,7 @@ export function useSleepRecordScreen() {
     editSelectedSleep,
     deleteSelectedSleep,
     pressBodyMindMarker,
+    selectActiveBodyMindRecord,
     addBodyMindRecord,
     editSelectedBodyMind,
     deleteSelectedBodyMind,

@@ -14,6 +14,11 @@ import { useConditionQuadrantInteraction } from '@/hooks/use-condition-quadrant-
 
 export type { QuadrantPoint } from '@/domains/condition/quadrant';
 
+export interface ConditionHistoryListItem {
+  id: number;
+  label: string;
+}
+
 interface ConditionQuadrantPlotProps {
   points?: QuadrantPoint[];
   /** 입력 모드에서 선택한 점입니다. */
@@ -26,8 +31,12 @@ interface ConditionQuadrantPlotProps {
   onMarkerPress?: (point: QuadrantPoint) => void;
   /** 활성 단일 마커 아래에 표시할 기록 시각입니다. */
   activeMarkerTime?: string | null;
-  /** 겹친 활성 마커 옆에 표시할 오름차순 기록 시각입니다. */
-  activeMarkerTimes?: string[];
+  /** 겹친 활성 마커 옆에 표시할 오름차순 기록 목록입니다. */
+  activeMarkerRecords?: ConditionHistoryListItem[];
+  /** 겹친 마커의 기록 목록에서 항목을 눌렀을 때 호출합니다. */
+  onHistoryRecordPress?: (recordId: number) => void;
+  /** 겹친 마커의 기록 목록에서 선택된 기록 id입니다. */
+  selectedHistoryRecordId?: number | null;
   /** 마커·목록 밖을 눌렀을 때 선택을 해제합니다. */
   onBackgroundPress?: () => void;
   /** 기록이 없을 때 중앙 원점 마커를 보여줍니다. */
@@ -47,7 +56,9 @@ export function ConditionQuadrantPlot({
   onSelect,
   onMarkerPress,
   activeMarkerTime = null,
-  activeMarkerTimes = [],
+  activeMarkerRecords = [],
+  onHistoryRecordPress,
+  selectedHistoryRecordId = null,
   onBackgroundPress,
   showOrigin = true,
 }: ConditionQuadrantPlotProps) {
@@ -231,16 +242,33 @@ export function ConditionQuadrantPlot({
                   {activeMarkerTime}
                 </Typography>
               ) : null}
-              {active && badge && activeMarkerTimes.length > 0 ? (
+              {active && badge && activeMarkerRecords.length > 0 ? (
                 <View
                   style={[styles.historyList, toConditionHistoryListPosition(point.x, point.y)]}
                 >
-                  {activeMarkerTimes.map((time, index) => (
-                    <View key={`${time}-${index}`}>
+                  {activeMarkerRecords.map((record, index) => (
+                    <View key={record.id}>
                       {index > 0 ? <View style={styles.historyDivider} /> : null}
-                      <Typography variant="caption" align="center" color={colors.gray[700]}>
-                        {time}
-                      </Typography>
+                      <Pressable
+                        accessibilityLabel={`${record.label} 기록 선택`}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: selectedHistoryRecordId === record.id }}
+                        hitSlop={spacing[1]}
+                        style={[
+                          styles.historyRecord,
+                          selectedHistoryRecordId === record.id && styles.historyRecordSelected,
+                        ]}
+                        onPress={() => onHistoryRecordPress?.(record.id)}
+                      >
+                        <Typography
+                          variant="caption"
+                          align="center"
+                          color={colors.gray[700]}
+                          numberOfLines={1}
+                        >
+                          {record.label}
+                        </Typography>
+                      </Pressable>
                     </View>
                   ))}
                 </View>
@@ -363,7 +391,7 @@ const styles = StyleSheet.create({
   historyList: {
     position: 'absolute',
     zIndex: 1,
-    minWidth: 60,
+    width: spacing[16],
     gap: spacing[1],
     paddingHorizontal: spacing[3],
     paddingVertical: spacing[2],
@@ -376,6 +404,15 @@ const styles = StyleSheet.create({
     height: 1,
     marginVertical: spacing[1],
     backgroundColor: colors.gray[300],
+  },
+  historyRecord: {
+    alignSelf: 'stretch',
+    paddingHorizontal: spacing[1],
+    paddingVertical: spacing.px,
+    borderRadius: radius.sm,
+  },
+  historyRecordSelected: {
+    backgroundColor: colors.gray.white,
   },
   valueDot: {
     position: 'absolute',
