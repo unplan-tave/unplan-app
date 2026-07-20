@@ -73,6 +73,7 @@ export const colors = {
     black12: 'rgba(0,0,0,0.12)',
     black35: 'rgba(0,0,0,0.35)',
     black50: 'rgba(0,0,0,0.5)',
+    blueGray15: 'rgba(60,94,103,0.15)',
     primary20: 'rgba(36,141,254,0.2)',
     secondary10: 'rgba(241,94,94,0.1)',
     gray50020: 'rgba(119,127,136,0.2)',

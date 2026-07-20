@@ -3,14 +3,17 @@ import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { CompletedScheduleCard } from '@/components/features/notification/completed-schedule-card';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
-import { ProgressSegment, type ProgressSegmentValue } from '@/components/ui/ProgressSegment';
+import { type ProgressSegmentValue } from '@/components/ui/ProgressSegment';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
+import { withScheduleDetailPersonalTags } from '@/domains/schedule/api/mapper';
 import { useUpdateScheduleMutation } from '@/domains/schedule/api/mutations';
-import { useSchedulesByDateQuery } from '@/domains/schedule/api/queries';
+import { useScheduleDetailQueries, useSchedulesByDateQuery } from '@/domains/schedule/api/queries';
+import { hasScheduleEnded } from '@/domains/schedule/model';
 import { formatDateValue } from '@/lib/utils/date';
 
 import type { ScheduleListItem, ScheduleStatus } from '@/domains/schedule/model';
@@ -21,13 +24,12 @@ const ALARM_NOTIFICATIONS = [
   {
     id: 'sleep-record',
     title: '얼마나 잠들었나요?',
-    description: '목표 기상 시각에 수면 기록 알림 발송',
+    href: '/sleep/measure',
   },
   {
     id: 'energy-record',
     title: '오늘 상태는 어떠신가요?',
-    description:
-      '목표 기상 시각에 에너지 기록 알림 발송\n목표 기상 시각 이후 6시간 간격으로 에너지 기록 알림 발송',
+    href: '/energy/measure',
   },
 ] as const;
 
@@ -36,13 +38,25 @@ export function NotificationScreen() {
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<NotificationTab>('all');
   const schedulesQuery = useSchedulesByDateQuery(formatDateValue(new Date()));
+  const scheduleDetailQueries = useScheduleDetailQueries(
+    (schedulesQuery.data ?? []).map((schedule) => schedule.id),
+    true,
+  );
   const updateScheduleMutation = useUpdateScheduleMutation();
-  const completedSchedules = useMemo(
+  const schedulesWithPersonalTags = useMemo(
     () =>
-      (schedulesQuery.data ?? [])
-        .filter((schedule) => schedule.endTime.length > 0)
+      withScheduleDetailPersonalTags(
+        schedulesQuery.data ?? [],
+        scheduleDetailQueries.flatMap((query) => (query.data == null ? [] : [query.data])),
+      ),
+    [scheduleDetailQueries, schedulesQuery.data],
+  );
+  const endedSchedules = useMemo(
+    () =>
+      schedulesWithPersonalTags
+        .filter((schedule) => schedule.endTime.length > 0 && hasScheduleEnded(schedule))
         .sort((first, second) => second.endTime.localeCompare(first.endTime)),
-    [schedulesQuery.data],
+    [schedulesWithPersonalTags],
   );
 
   const changeScheduleStatus = (scheduleId: number, value: ProgressSegmentValue) => {
@@ -57,7 +71,7 @@ export function NotificationScreen() {
       contentStyle={styles.content}
       useSafeArea={false}
     >
-      <View style={[styles.header, { paddingTop: insets.top + spacing[2] }]}>
+      <View style={[styles.header, { height: insets.top + spacing[12], paddingTop: insets.top }]}>
         <Pressable
           accessibilityLabel="뒤로 가기"
           accessibilityRole="button"
@@ -94,43 +108,93 @@ export function NotificationScreen() {
         </View>
 
         {tab === 'all' ? (
-          <View style={styles.notificationList}>
-            {ALARM_NOTIFICATIONS.map((notification) => (
-              <Card key={notification.id} disabled style={styles.notificationCard}>
-                <Typography variant="bodyM" color={colors.gray[800]}>
-                  {notification.title}
-                </Typography>
-                <Typography variant="bodyS" color={colors.gray[500]} style={styles.description}>
-                  {notification.description}
-                </Typography>
-              </Card>
-            ))}
-          </View>
+          <>
+            <View style={styles.notificationList}>
+              {ALARM_NOTIFICATIONS.map((notification) => (
+                <Card
+                  key={notification.id}
+                  accessibilityLabel={`${notification.title} 입력`}
+                  variant="glass"
+                  style={styles.notificationCard}
+                  onPress={() => router.push(notification.href)}
+                >
+                  <Typography variant="bodyM" color={colors.gray[800]}>
+                    {notification.title}
+                  </Typography>
+                  <Icon name="arrowRight" size={24} color={colors.gray[700]} />
+                </Card>
+              ))}
+            </View>
+            <CompletedSchedules
+              schedules={endedSchedules}
+              isLoading={schedulesQuery.isLoading}
+              isError={schedulesQuery.isError}
+              disabled={updateScheduleMutation.isPending}
+              onChange={changeScheduleStatus}
+            />
+          </>
         ) : (
-          <View style={styles.completedSection}>
-            <Typography variant="bodyM" color={colors.gray[500]}>
-              일정을 완료하셨나요?
-            </Typography>
-            {completedSchedules.length > 0 ? (
-              <View style={styles.scheduleList}>
-                {completedSchedules.map((schedule) => (
-                  <ScheduleStatusCard
-                    key={schedule.id}
-                    schedule={schedule}
-                    disabled={updateScheduleMutation.isPending}
-                    onChange={(value) => changeScheduleStatus(schedule.id, value)}
-                  />
-                ))}
-              </View>
-            ) : (
-              <Typography variant="bodyS" color={colors.gray[400]}>
-                종료된 일정이 없어요.
-              </Typography>
-            )}
-          </View>
+          <CompletedSchedules
+            schedules={endedSchedules}
+            isLoading={schedulesQuery.isLoading}
+            isError={schedulesQuery.isError}
+            disabled={updateScheduleMutation.isPending}
+            onChange={changeScheduleStatus}
+          />
         )}
+        {updateScheduleMutation.isError ? (
+          <Typography variant="bodyS" color={colors.secondary}>
+            일정 상태를 변경하지 못했어요. 다시 시도해 주세요.
+          </Typography>
+        ) : null}
       </ScrollView>
     </ScreenLayout>
+  );
+}
+
+function CompletedSchedules({
+  schedules,
+  isLoading,
+  isError,
+  disabled,
+  onChange,
+}: {
+  schedules: ScheduleListItem[];
+  isLoading: boolean;
+  isError: boolean;
+  disabled: boolean;
+  onChange: (scheduleId: number, value: ProgressSegmentValue) => void;
+}) {
+  if (isLoading) {
+    return (
+      <Typography variant="bodyS" color={colors.gray[400]}>
+        종료된 일정을 불러오는 중이에요.
+      </Typography>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Typography variant="bodyS" color={colors.secondary}>
+        종료된 일정을 불러오지 못했어요.
+      </Typography>
+    );
+  }
+
+  if (schedules.length === 0) return null;
+
+  return (
+    <View style={styles.scheduleList}>
+      {schedules.map((schedule) => (
+        <CompletedScheduleCard
+          key={schedule.id}
+          schedule={schedule}
+          disabled={disabled}
+          progressValue={toProgressSegmentValue(schedule.status)}
+          onChange={(value) => onChange(schedule.id, value)}
+        />
+      ))}
+    </View>
   );
 }
 
@@ -165,29 +229,6 @@ function NotificationTabButton({
   );
 }
 
-function ScheduleStatusCard({
-  schedule,
-  disabled,
-  onChange,
-}: {
-  schedule: ScheduleListItem;
-  disabled: boolean;
-  onChange: (value: ProgressSegmentValue) => void;
-}) {
-  return (
-    <Card disabled style={styles.scheduleCard}>
-      <Typography variant="titleS" color={colors.gray[800]}>
-        {schedule.title}
-      </Typography>
-      <Typography variant="bodyS" color={colors.gray[500]}>
-        {schedule.date} {schedule.startTime} - {schedule.endTime}
-      </Typography>
-      <ProgressSegment value={toProgressSegmentValue(schedule.status)} onChange={onChange} />
-      {disabled ? <View pointerEvents="auto" style={styles.disabledOverlay} /> : null}
-    </Card>
-  );
-}
-
 function toProgressSegmentValue(status: ScheduleStatus): ProgressSegmentValue {
   if (status === 'done') return 'done';
   if (status === 'inProgress') return 'ongoing';
@@ -203,7 +244,6 @@ function toScheduleStatus(value: ProgressSegmentValue): ScheduleStatus {
 const styles = StyleSheet.create({
   content: { flex: 1 },
   header: {
-    height: 88,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -229,25 +269,17 @@ const styles = StyleSheet.create({
   activeTabButton: { backgroundColor: colors.alpha.primary20 },
   notificationList: { gap: spacing[2] },
   notificationCard: {
-    gap: spacing[1],
+    minHeight: spacing[10],
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: spacing[3],
     borderWidth: 1,
     borderColor: colors.gray.white,
     borderRadius: radius.md,
-    backgroundColor: colors.gray.white,
-    boxShadow: `0 0 ${spacing[6]}px ${colors.alpha.black12}`,
+    backgroundColor: colors.alpha.white50,
+    boxShadow: `0 0 ${spacing[6]}px ${colors.alpha.blueGray15}`,
   },
-  description: { lineHeight: 20 },
-  completedSection: { gap: spacing[3] },
   scheduleList: { gap: spacing[2] },
-  scheduleCard: {
-    position: 'relative',
-    gap: spacing[2],
-    padding: spacing[3],
-    borderRadius: radius.panel,
-    backgroundColor: colors.gray.white,
-    boxShadow: `0 0 ${spacing[12]}px ${colors.alpha.black12}`,
-  },
-  disabledOverlay: { ...StyleSheet.absoluteFill },
   pressed: { opacity: 0.72 },
 });
