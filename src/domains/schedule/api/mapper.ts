@@ -22,6 +22,7 @@ import {
 } from '@/lib/api/model';
 
 import { getMonthDayFromDate } from '../recurrence';
+import { normalizeTimeToMinute } from '../time';
 
 import type {
   ConditionTagId,
@@ -36,6 +37,7 @@ import type {
   ScheduleDetail,
   ScheduleListItem,
   ScheduleMonthlyOverview,
+  ScheduleSearchPage,
   ScheduleStatus,
   ScheduleUpdateInput,
 } from '../model';
@@ -133,8 +135,8 @@ export function toScheduleListItem(response: ScheduleGetResponse): ScheduleListI
     id: response.schedule_id ?? 0,
     title: response.title ?? '',
     date: normalizeDateForView(response.date),
-    startTime: response.start_time ?? '',
-    endTime: response.end_time ?? '',
+    startTime: normalizeTimeToMinute(response.start_time ?? ''),
+    endTime: normalizeTimeToMinute(response.end_time ?? ''),
     estimatedMinutes: response.estimated_time ?? null,
     isQueue: response.is_queue ?? false,
     status: toScheduleStatus(response.status),
@@ -143,10 +145,38 @@ export function toScheduleListItem(response: ScheduleGetResponse): ScheduleListI
   };
 }
 
+/** 일별 목록과 상세 응답을 합쳐 목록 화면에 개인 태그를 제공합니다. */
+export function withScheduleDetailPersonalTags(
+  schedules: ScheduleListItem[],
+  details: ScheduleDetail[],
+): ScheduleListItem[] {
+  const detailsById = new Map(details.map((detail) => [detail.id, detail]));
+
+  return schedules.map((schedule) => ({
+    ...schedule,
+    personalTags: detailsById.get(schedule.id)?.personalTags ?? schedule.personalTags,
+  }));
+}
+
 export function toScheduleSearchListItems(
   response?: ApiResponsePageResponseScheduleSearchResponse,
 ): ScheduleListItem[] {
   return (response?.data?.data ?? []).map(toScheduleSearchListItem);
+}
+
+/** 생성 DTO의 페이지 메타데이터를 화면에서 안전하게 쓸 수 있는 모델로 변환합니다. */
+export function toScheduleSearchPage(
+  response?: ApiResponsePageResponseScheduleSearchResponse,
+): ScheduleSearchPage {
+  const pagination = response?.data?.pagination;
+
+  return {
+    schedules: toScheduleSearchListItems(response),
+    page: pagination?.page ?? 0,
+    totalElements: pagination?.total_elements ?? 0,
+    totalPages: pagination?.total_pages ?? 0,
+    hasNext: pagination?.has_next ?? false,
+  };
 }
 
 function toScheduleSearchListItem(response: ScheduleSearchResponse): ScheduleListItem {
@@ -156,8 +186,8 @@ function toScheduleSearchListItem(response: ScheduleSearchResponse): ScheduleLis
     id: response.schedule_id ?? 0,
     title: response.title ?? '',
     date: normalizeDateForView(response.date),
-    startTime: response.start_time ?? '',
-    endTime: response.end_time ?? '',
+    startTime: normalizeTimeToMinute(response.start_time ?? ''),
+    endTime: normalizeTimeToMinute(response.end_time ?? ''),
     estimatedMinutes: response.estimated_time ?? null,
     isQueue,
     status: toScheduleStatus(response.status),
@@ -177,9 +207,11 @@ export function toScheduleSearchParams(input: {
   return {
     keyword: normalizeOptionalParam(input.keyword),
     isQueue: input.isQueue,
-    status: input.status?.map(toSearchScheduleStatus),
-    conditionTags: input.conditionTagIds?.map(toSearchConditionTag),
-    personalTags: input.personalTags?.filter((tag) => tag.trim().length > 0),
+    status: toOptionalArray(input.status?.map(toSearchScheduleStatus)),
+    conditionTags: toOptionalArray(input.conditionTagIds?.map(toSearchConditionTag)),
+    personalTags: toOptionalArray(
+      input.personalTags?.map((tag) => tag.trim()).filter((tag) => tag.length > 0),
+    ),
     page: input.page,
   };
 }
@@ -201,8 +233,8 @@ export function toScheduleDetail(response: ScheduleDetailResponse): ScheduleDeta
     id: response.schedule_id ?? 0,
     title: response.title ?? '',
     date: normalizeDateForView(response.date),
-    startTime: response.start_time ?? '',
-    endTime: response.end_time ?? '',
+    startTime: normalizeTimeToMinute(response.start_time ?? ''),
+    endTime: normalizeTimeToMinute(response.end_time ?? ''),
     estimatedMinutes: response.estimated_time ?? null,
     isQueue: response.is_queue ?? false,
     status: toScheduleStatus(response.status),
@@ -241,8 +273,8 @@ export function toScheduleCreateResult(response: ScheduleCreateResponse): Schedu
     id: response.schedule_id ?? 0,
     title: response.title ?? '',
     date: normalizeDateForView(response.date),
-    startTime: response.start_time ?? '',
-    endTime: response.end_time ?? '',
+    startTime: normalizeTimeToMinute(response.start_time ?? ''),
+    endTime: normalizeTimeToMinute(response.end_time ?? ''),
     estimatedMinutes: response.estimated_time ?? null,
     isQueue: response.is_queue ?? false,
   };
@@ -514,6 +546,10 @@ function normalizeDateForView(value?: string) {
 
 function normalizeDateForRequest(value?: string) {
   return value?.replace(/\./g, '-');
+}
+
+function toOptionalArray<T>(values?: T[]) {
+  return values != null && values.length > 0 ? values : undefined;
 }
 
 function normalizeOptionalParam(value: string | undefined) {

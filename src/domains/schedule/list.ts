@@ -20,7 +20,7 @@ import type {
 } from './model';
 
 export type CardTypeFilter = 'all' | CardTab;
-export type CardListMultiFilterKey = 'progress' | 'condition' | 'personal';
+export type CardListMultiFilterKey = 'cardType' | 'progress' | 'condition' | 'personal';
 
 export interface CardListTagItem {
   label: string;

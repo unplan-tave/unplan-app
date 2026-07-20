@@ -29,6 +29,22 @@ export function formatMinutesToTime(totalMinutes: number): string {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
+/** 서버의 HH:mm:ss 시각을 앱 표준인 HH:mm으로 정규화합니다. */
+export function normalizeTimeToMinute(time: string): string {
+  const match = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(time.trim());
+  if (match == null) {
+    return time.trim();
+  }
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) {
+    return time.trim();
+  }
+
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
 /** "HH:MM"에 분을 더한 "HH:MM"을 돌려줍니다. 파싱 실패 시 원본 반환. */
 export function addMinutesToTime(time: string, minutes: number): string {
   const base = parseTimeToMinutes(time);

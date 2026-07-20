@@ -2,7 +2,7 @@
  * schedule 조회 hook 모음입니다.
  * 날짜/주/월/검색/상세 조회를 화면 단위에 맞는 query key로 분리합니다.
  */
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query';
 
 import {
   fetchDailyMessage,
@@ -13,6 +13,7 @@ import {
   fetchSchedulesByMonth,
   fetchSchedulesByWeek,
   searchSchedules,
+  searchSchedulesPage,
 } from './client';
 import { scheduleQueryKeys } from './query-keys';
 
@@ -23,6 +24,7 @@ import type {
   ScheduleDetail,
   ScheduleListItem,
   ScheduleMonthlyOverview,
+  ScheduleSearchPage,
   PersonalTagOption,
   TagRecommendation,
 } from '../model';
@@ -53,6 +55,21 @@ export function useScheduleSearchQuery(
   });
 }
 
+/** 서버 페이지 정보를 이용해 카드 검색 결과를 끝까지 불러옵니다. */
+export function useInfiniteScheduleSearchQuery(
+  input: Omit<SearchSchedulesInput, 'page'>,
+  options?: { enabled?: boolean },
+) {
+  return useInfiniteQuery<ScheduleSearchPage>({
+    queryKey: scheduleQueryKeys.infiniteSearch(input),
+    queryFn: ({ pageParam }) =>
+      searchSchedulesPage({ ...input, page: typeof pageParam === 'number' ? pageParam : 0 }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.page + 1 : undefined),
+    enabled: options?.enabled ?? true,
+  });
+}
+
 export function useDailyMessageQuery(date: string, options?: ScheduleQueryOptions<DailyMessage>) {
   return useQuery({
     queryKey: scheduleQueryKeys.dailyMessage(date),
@@ -78,6 +95,19 @@ export function useScheduleDetailQuery(
     },
     ...options,
     enabled: scheduleId != null && (options?.enabled ?? true),
+  });
+}
+
+/** 목록 응답에 없는 개인 태그를 일정 상세 응답으로 보강합니다. */
+export function useScheduleDetailQueries(scheduleIds: number[], enabled = true) {
+  const uniqueScheduleIds = [...new Set(scheduleIds)];
+
+  return useQueries({
+    queries: uniqueScheduleIds.map((scheduleId) => ({
+      queryKey: scheduleQueryKeys.detail(scheduleId),
+      queryFn: () => fetchScheduleDetail(scheduleId),
+      enabled,
+    })),
   });
 }
 
