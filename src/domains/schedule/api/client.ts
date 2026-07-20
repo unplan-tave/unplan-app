@@ -67,6 +67,10 @@ export interface SearchSchedulesInput {
   status?: ScheduleStatus[];
   conditionTagIds?: ConditionTagId[];
   personalTags?: string[];
+  /** 기간 시작일(YYYY-MM-DD). `endDate`와 함께 `/schedule/search` 쿼리로 전송됩니다. */
+  startDate?: string;
+  /** 기간 종료일(YYYY-MM-DD). `startDate`와 함께 `/schedule/search` 쿼리로 전송됩니다. */
+  endDate?: string;
   page?: number;
 }
 
