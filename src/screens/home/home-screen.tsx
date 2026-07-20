@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 import { ConditionCalendarModal } from '@/components/domain/condition/condition-calendar-modal';
 import { ConditionScoreBackground } from '@/components/domain/condition/condition-score-background';
@@ -16,6 +16,7 @@ import { HomeExtendTimeSheet } from '@/components/features/home/home-extend-time
 import { HomeProgressSheet } from '@/components/features/home/home-progress-sheet';
 import { TimelineCard } from '@/components/features/home/timeline-card';
 import { OnboardingNotificationModal } from '@/components/features/onboarding/onboarding-notification-modal';
+import { ConvertToPinBottomSheet } from '@/components/features/queue-to-pin/convert-to-pin-sheet';
 import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
@@ -28,17 +29,21 @@ import { useFocusTimelineCurrentTime } from './hooks/use-focus-timeline-current-
 import { useHomeScreen } from './hooks/use-home-screen';
 
 const HOME_STATUS_COLUMN_WIDTH = 112;
-const HOME_MESSAGE_BOX_WIDTH = 226;
+const HOME_MESSAGE_BOX_MAX_WIDTH = 248;
 const HOME_TIMELINE_LEFT = 108;
 const HOME_TIMELINE_LINE_LEFT = 43;
 const HOME_TIMELINE_CARD_LIST_BOTTOM = 160;
-const HOME_HEADER_OVERLAY_HEIGHT = 216;
+// 스크롤된 카드가 헤더 멘트 영역을 침범해도 읽히지 않도록, 카드 시작 지점까지 불투명도를 유지합니다.
+const HOME_HEADER_OVERLAY_HEIGHT = 248;
 
 /** 홈 화면의 JSX와 화면 전용 스타일만 렌더링합니다. */
 export function HomeScreen() {
   const home = useHomeScreen();
   const scoreTheme = getConditionScoreTheme(home.conditionScore);
-  const timelineFocus = useFocusTimelineCurrentTime(home.currentTimeMarkerIndex != null);
+  const timelineFocus = useFocusTimelineCurrentTime(
+    home.currentTimeMarker != null,
+    home.currentTimeMarker?.offsetRatio ?? null,
+  );
 
   return (
     <ScreenLayout
@@ -52,27 +57,37 @@ export function HomeScreen() {
         <View style={styles.canvas}>
           {home.viewMode === 'daily' ? (
             <View style={styles.timeline}>
-              <View style={styles.timelineLine} />
+              <Svg pointerEvents="none" width="1" height="100%" style={styles.timelineLine}>
+                <Defs>
+                  <LinearGradient id="homeTimelineLine" x1="0" y1="0" x2="0" y2="1">
+                    <Stop offset="0" stopColor={colors.gray[400]} stopOpacity="0.25" />
+                    <Stop offset="1" stopColor={colors.gray[400]} stopOpacity="0.65" />
+                  </LinearGradient>
+                </Defs>
+                <Rect width="1" height="100%" fill="url(#homeTimelineLine)" />
+              </Svg>
               <ScrollView
-                ref={timelineFocus.timelineRef}
+                style={styles.timelineScroll}
                 contentContainerStyle={styles.timelineContent}
-                onLayout={timelineFocus.handleTimelineLayout}
                 showsVerticalScrollIndicator={false}
               >
-                {home.timelineCardsForView.map((card, index) => (
+                {timelineFocus.markerTop != null ? (
+                  <HomeCurrentTimeMarker
+                    time={home.currentTimeLabel}
+                    top={timelineFocus.markerTop}
+                  />
+                ) : null}
+                {home.timelineCardsForView.map((card) => (
                   <View
                     key={card.id}
                     style={styles.timelineCardSlot}
                     onLayout={
-                      home.currentTimeMarkerIndex === index + 1
+                      home.currentTimeMarker?.cardId === card.id
                         ? timelineFocus.handleMarkerLayout
                         : undefined
                     }
                   >
                     <TimelineCard {...card} />
-                    {home.currentTimeMarkerIndex === index + 1 ? (
-                      <HomeCurrentTimeMarker time={home.currentTimeLabel} />
-                    ) : null}
                   </View>
                 ))}
               </ScrollView>
@@ -97,15 +112,15 @@ export function HomeScreen() {
         >
           <Defs>
             <LinearGradient id="homeHeaderOverlay" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor={scoreTheme.primary} stopOpacity="0.72" />
-              <Stop offset="0.68" stopColor={scoreTheme.primary} stopOpacity="0.52" />
+              <Stop offset="0" stopColor={scoreTheme.primary} stopOpacity="0.92" />
+              <Stop offset="0.76" stopColor={scoreTheme.primary} stopOpacity="0.86" />
               <Stop offset="1" stopColor={scoreTheme.primary} stopOpacity="0" />
             </LinearGradient>
           </Defs>
           <Rect width={393} height={HOME_HEADER_OVERLAY_HEIGHT} fill="url(#homeHeaderOverlay)" />
         </Svg>
       ) : null}
-      <View style={styles.header}>
+      <View pointerEvents="box-none" style={styles.header}>
         <View style={styles.statusColumn}>
           <ViewModeButton
             mode={home.viewMode}
@@ -125,7 +140,7 @@ export function HomeScreen() {
             onMemoPress={home.handleOpenMemoSheet}
           />
         </View>
-        <View style={styles.messageBox}>
+        <View pointerEvents="box-none" style={styles.messageBox}>
           <Pressable
             accessibilityLabel={t('home.notification')}
             accessibilityRole="button"
@@ -136,6 +151,8 @@ export function HomeScreen() {
             <Icon name="bell" size={24} color={colors.gray.white} />
           </Pressable>
           <Typography
+            pointerEvents="none"
+            lineBreakStrategyIOS="hangul-word"
             variant="titleM"
             color={colors.gray.white}
             align="right"
@@ -170,28 +187,51 @@ export function HomeScreen() {
       />
       <HomeProgressSheet
         visible={
-          home.progressCard != null && !home.isExtendSheetVisible && !home.isQueueSheetVisible
+          home.progressCard != null &&
+          !home.isExtendSheetVisible &&
+          !home.isQueueSheetVisible &&
+          !home.isRescheduleSheetVisible
         }
+        title={home.progressCard?.title ?? ''}
         timeSummary={home.progressTimeSummary}
         status={home.progressStatus}
+        step={home.progressSheetStep}
         onChangeStatus={home.setProgressStatus}
         onCancel={home.handleCloseProgressSheet}
+        onBack={home.handleBackProgressSheet}
         onComplete={home.handleCompleteProgress}
         completeDisabled={home.isUpdatingSchedule}
+        onReschedulePress={home.handleReschedule}
         onLeaveAsQueuePress={home.handleOpenQueueSheet}
         onExtendTimePress={home.handleOpenExtendSheet}
       />
-      {home.progressCard ? (
+      {home.progressCard || home.rescheduleCard ? (
         <DueDurationSheet
           visible={home.isQueueSheetVisible}
           value={home.queueDraftValue}
           title="큐 카드로 남겨두기"
           subtitle={'일정을 수행할 시간을 나중에 찾아볼게요\n마감일과 소요 시간을 확인해 주세요'}
-          scheduleTitle={home.progressCard.title}
+          scheduleTitle={(home.progressCard ?? home.rescheduleCard)?.title}
           leftAction="back"
           allowClearDueDate
           onClose={home.handleCloseQueueSheet}
           onDone={home.handleConfirmQueueConversion}
+        />
+      ) : null}
+      {home.rescheduleCard ? (
+        <ConvertToPinBottomSheet
+          visible={home.isRescheduleSheetVisible && !home.isQueueSheetVisible}
+          card={home.rescheduleCard}
+          candidates={home.rescheduleRecommendationCandidates}
+          isRecommendationLoading={home.isRescheduleRecommendationLoading}
+          recommendationErrorMode={home.rescheduleRecommendationErrorMode}
+          defaultKeepOriginal={false}
+          presentation="reschedule"
+          onClose={home.handleCloseReschedule}
+          onConvert={home.handleRescheduleConvert}
+          onAcceptRecommendation={home.handleAcceptRescheduleRecommendation}
+          onEditDuration={home.handleEditRescheduleDuration}
+          onLeaveAsQueue={home.handleOpenQueueSheet}
         />
       ) : null}
       {home.progressCard ? (
@@ -204,17 +244,14 @@ export function HomeScreen() {
           addedMinutes={home.extensionMinutes}
           decreaseDisabled={home.extendState.decreaseDisabled}
           hasConflict={home.extendState.hasConflict}
+          showConflictToast={home.extendState.hasConflict && !home.isConflictToastDismissed}
           onBack={home.handleCloseExtendSheet}
           onComplete={home.handleCompleteExtension}
           onDecrease={home.handleDecreaseExtension}
           onIncrease={home.handleIncreaseExtension}
+          onDismissConflict={home.dismissConflictToast}
           completeDisabled={home.extendState.hasConflict || home.isUpdatingSchedule}
         />
-      ) : null}
-      {home.isExtendSheetVisible &&
-      home.extendState.hasConflict &&
-      !home.isConflictToastDismissed ? (
-        <CardToast message="다음 일정과 겹쳐요!" onClose={home.dismissConflictToast} />
       ) : null}
       {home.recommendationErrorMessage ? (
         <CardToast
@@ -250,15 +287,36 @@ export function HomeScreen() {
   );
 }
 
-function HomeCurrentTimeMarker({ time }: { time: string }) {
+function HomeCurrentTimeMarker({ time, top }: { time: string; top: number }) {
   return (
-    <View style={styles.currentTime} pointerEvents="none">
+    <View style={[styles.currentTime, { top }]} pointerEvents="none">
       <View style={styles.currentTimeBadge}>
         <Typography variant="caption" color={colors.gray.white}>
           {time}
         </Typography>
       </View>
-      <View style={styles.currentLine} />
+      <Svg
+        width="100%"
+        height="2"
+        viewBox="0 0 247 2"
+        preserveAspectRatio="none"
+        style={styles.currentLine}
+      >
+        <Defs>
+          <LinearGradient
+            id="homeCurrentTimeLine"
+            x1="0"
+            y1="0.5"
+            x2="247"
+            y2="0.5"
+            gradientUnits="userSpaceOnUse"
+          >
+            <Stop offset="0" stopColor={colors.secondary} />
+            <Stop offset="1" stopColor={colors.secondary} stopOpacity="0" />
+          </LinearGradient>
+        </Defs>
+        <Path d="M247 1L0 1" stroke="url(#homeCurrentTimeLine)" strokeWidth="2" />
+      </Svg>
     </View>
   );
 }
@@ -279,7 +337,10 @@ const styles = StyleSheet.create({
   statusColumn: { width: HOME_STATUS_COLUMN_WIDTH },
   viewModeButton: { alignSelf: 'flex-start', marginBottom: spacing[1] },
   messageBox: {
-    width: HOME_MESSAGE_BOX_WIDTH,
+    flexGrow: 1,
+    flexShrink: 1,
+    maxWidth: HOME_MESSAGE_BOX_MAX_WIDTH,
+    marginLeft: spacing[3],
     alignItems: 'flex-end',
     gap: spacing[2],
   },
@@ -298,15 +359,15 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     left: HOME_TIMELINE_LINE_LEFT,
-    width: 1,
-    backgroundColor: colors.gray[300],
   },
   timelineContent: {
     alignItems: 'flex-end',
     gap: spacing[2],
     paddingRight: spacing[3],
     paddingBottom: HOME_TIMELINE_CARD_LIST_BOTTOM,
+    position: 'relative',
   },
+  timelineScroll: { flex: 1 },
   timelineCardSlot: {
     position: 'relative',
     width: '100%',
@@ -314,12 +375,11 @@ const styles = StyleSheet.create({
   },
   currentTime: {
     position: 'absolute',
-    bottom: -spacing[4],
     left: 0,
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    zIndex: 1,
+    transform: [{ translateY: -spacing[3] }],
   },
   currentTimeBadge: {
     alignItems: 'center',
@@ -331,7 +391,6 @@ const styles = StyleSheet.create({
   currentLine: {
     flex: 1,
     height: 2,
-    backgroundColor: colors.secondary,
   },
   pressed: { opacity: 0.72 },
 });

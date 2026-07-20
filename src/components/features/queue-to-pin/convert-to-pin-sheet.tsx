@@ -10,6 +10,7 @@ import { colors, radius, spacing } from '@/constants/theme';
 import { type CardFormValues, type CardItem, type DateTimeDraft } from '@/domains/schedule/model';
 import {
   createQueueToPinValuesFromCandidate,
+  formatDurationInline,
   type RecommendationCandidate,
 } from '@/domains/schedule/queue';
 import { isValidTimeRange } from '@/hooks/use-time-range-validation';
@@ -21,6 +22,7 @@ type SheetMode =
   | 'loading'
   | 'recommend'
   | 'manual'
+  | 'duration'
   | 'error-no-duration'
   | 'error-7day'
   | 'error-14day';
@@ -31,11 +33,14 @@ export function ConvertToPinBottomSheet({
   candidates,
   isRecommendationLoading,
   recommendationErrorMode,
+  defaultKeepOriginal = true,
+  presentation = 'queue-to-pin',
   onClose,
   onConvert,
   onAcceptRecommendation,
-  onSearch14Days,
+  onSearch14Days: _onSearch14Days = () => undefined,
   onEditDuration,
+  onLeaveAsQueue,
 }: {
   visible: boolean;
   card: CardItem;
@@ -45,11 +50,14 @@ export function ConvertToPinBottomSheet({
     SheetMode,
     'error-no-duration' | 'error-7day' | 'error-14day'
   > | null;
+  defaultKeepOriginal?: boolean;
+  presentation?: 'queue-to-pin' | 'reschedule';
   onClose: () => void;
   onConvert: (values: CardFormValues, keepOriginal: boolean) => void;
   onAcceptRecommendation: (recommendId: number, keepOriginal: boolean) => void;
-  onSearch14Days: () => void;
-  onEditDuration: () => void;
+  onSearch14Days?: () => void;
+  onEditDuration: (durationMinutes: number) => void;
+  onLeaveAsQueue?: () => void;
 }) {
   const [mode, setMode] = useState<SheetMode>('loading');
   const [candidateIndex, setCandidateIndex] = useState(0);
@@ -58,17 +66,20 @@ export function ConvertToPinBottomSheet({
   const [manualEndDate, setManualEndDate] = useState('');
   const [manualStartTime, setManualStartTime] = useState('14:00');
   const [manualEndTime, setManualEndTime] = useState('15:00');
+  const originalDurationMinutes = card.durationHours * 60 + card.durationMinutes;
+  const [durationMinutes, setDurationMinutes] = useState(0);
   const currentCandidate = candidates[candidateIndex] ?? candidates[0];
 
   useEffect(() => {
     if (!visible) return;
 
     setCandidateIndex(0);
-    setKeepOriginal(true);
-  }, [visible]);
+    setKeepOriginal(defaultKeepOriginal);
+    setDurationMinutes(Math.max(0, originalDurationMinutes - 10));
+  }, [defaultKeepOriginal, originalDurationMinutes, visible]);
 
   useEffect(() => {
-    if (!visible || mode === 'manual') return;
+    if (!visible || mode === 'manual' || mode === 'duration') return;
 
     if (card.durationUnknown) {
       setMode('error-no-duration');
@@ -125,9 +136,12 @@ export function ConvertToPinBottomSheet({
     setMode('manual');
   }, [currentCandidate]);
 
-  const handleSearch14Day = useCallback(() => {
-    onSearch14Days();
-  }, [onSearch14Days]);
+  const handleDurationDone = useCallback(() => {
+    if (durationMinutes <= 0 || durationMinutes >= originalDurationMinutes) return;
+
+    onEditDuration(durationMinutes);
+    setMode('loading');
+  }, [durationMinutes, onEditDuration, originalDurationMinutes]);
 
   const handleManualDraftChange = useCallback((draft: DateTimeDraft) => {
     setManualStartDate(draft.dateStart);
@@ -143,7 +157,15 @@ export function ConvertToPinBottomSheet({
       manualEndDate.length > 0 &&
       isValidTimeRange(manualStartTime, manualEndTime));
   const showFooter = mode === 'recommend' || mode === 'manual';
-  const sheetTitle = mode === 'error-no-duration' ? '소요 시간 확인' : '추천 시간 확인';
+  const isReschedule = presentation === 'reschedule';
+  const sheetTitle =
+    mode === 'duration'
+      ? '소요시간 변경'
+      : isReschedule
+        ? '다른 시간에 다시 하기'
+        : mode === 'error-no-duration'
+          ? '소요 시간 확인'
+          : '추천 시간 확인';
 
   return (
     <>
@@ -169,17 +191,38 @@ export function ConvertToPinBottomSheet({
           >
             {sheetTitle}
           </Typography>
-          {showFooter ? (
+          {mode === 'duration' ? (
+            <Pressable
+              accessibilityLabel="소요시간 변경 완료"
+              accessibilityRole="button"
+              accessibilityState={{
+                disabled: durationMinutes <= 0 || durationMinutes >= originalDurationMinutes,
+              }}
+              disabled={durationMinutes <= 0 || durationMinutes >= originalDurationMinutes}
+              hitSlop={8}
+              style={({ pressed }) => [styles.headerAction, pressed && styles.pressed]}
+              onPress={handleDurationDone}
+            >
+              <Typography
+                variant="bodyM"
+                color={
+                  durationMinutes <= 0 || durationMinutes >= originalDurationMinutes
+                    ? colors.gray[300]
+                    : colors.primary
+                }
+              >
+                완료
+              </Typography>
+            </Pressable>
+          ) : showFooter && !isReschedule ? (
             <Pressable
               accessibilityLabel="완료"
               accessibilityRole="button"
-              accessibilityState={{ disabled: !canAccept }}
               hitSlop={8}
-              disabled={!canAccept}
-              style={({ pressed }) => [styles.headerAction, pressed && canAccept && styles.pressed]}
-              onPress={handleAccept}
+              style={({ pressed }) => [styles.headerAction, pressed && styles.pressed]}
+              onPress={onClose}
             >
-              <Typography variant="bodyM" color={canAccept ? colors.primary : colors.gray[300]}>
+              <Typography variant="bodyM" color={colors.primary}>
                 완료
               </Typography>
             </Pressable>
@@ -195,6 +238,12 @@ export function ConvertToPinBottomSheet({
             candidates={candidates}
             currentIndex={candidateIndex}
             keepOriginal={keepOriginal}
+            description={
+              isReschedule
+                ? '다음 일정 전까지 충분한 여유가 있으며,\n몰입하기 좋은 시간대예요.'
+                : '일정과 컨디션을 바탕으로 가장 적합한 시간대를 찾았어요.'
+            }
+            showKeepOriginal={!isReschedule}
             onChangeIndex={setCandidateIndex}
             onToggleKeepOriginal={() => setKeepOriginal((prev) => !prev)}
           />
@@ -218,21 +267,35 @@ export function ConvertToPinBottomSheet({
           />
         )}
 
+        {mode === 'duration' && (
+          <DurationChangeContent
+            title={card.title}
+            durationMinutes={durationMinutes}
+            onDecrease={() => setDurationMinutes((previous) => Math.max(0, previous - 10))}
+            onIncrease={() =>
+              setDurationMinutes((previous) => Math.min(originalDurationMinutes, previous + 10))
+            }
+          />
+        )}
+
         {mode === 'error-no-duration' && (
           <ErrorContent
             title="소요 시간이 정해지지 않았어요!"
             description="소요 시간을 입력하면 더 정확한 추천 시간을 찾을 수 있어요."
-            buttons={[{ label: '소요시간 변경하기', onPress: onEditDuration }]}
+            buttons={[
+              { label: '소요시간 변경하기', onPress: () => setMode('duration') },
+              ...(onLeaveAsQueue ? [{ label: '큐 카드로 남겨두기', onPress: onLeaveAsQueue }] : []),
+            ]}
           />
         )}
 
         {mode === 'error-7day' && (
           <ErrorContent
             title="추천 시간대가 없어요!"
-            description={`7일 내로 추천할 시간대를 찾지 못했어요.\n14일 이내의 추천 시간대를 찾아볼까요?`}
+            description="소요시간을 줄이면 시간대를 더 찾아볼 수 있어요"
             buttons={[
-              { label: '다음 주 시간도 보기', onPress: handleSearch14Day },
-              { label: '소요 시간 변경하기', onPress: onEditDuration },
+              { label: '소요 시간 변경하기', onPress: () => setMode('duration') },
+              ...(onLeaveAsQueue ? [{ label: '큐 카드로 남겨두기', onPress: onLeaveAsQueue }] : []),
             ]}
           />
         )}
@@ -241,16 +304,31 @@ export function ConvertToPinBottomSheet({
           <ErrorContent
             title="추천 시간대가 없어요!"
             description="1~2주 뒤에 다시 찾아보는 걸 추천해요."
-            buttons={[{ label: '소요 시간 변경하기', onPress: onEditDuration }]}
+            buttons={[
+              { label: '소요 시간 변경하기', onPress: () => setMode('duration') },
+              ...(onLeaveAsQueue ? [{ label: '큐 카드로 남겨두기', onPress: onLeaveAsQueue }] : []),
+            ]}
           />
         )}
 
         {showFooter && (
           <View style={styles.footer}>
             <SheetActionButton
-              label={mode === 'manual' ? '추천 시간 보기' : '시간 직접 입력'}
+              label={
+                isReschedule
+                  ? '소요 시간 변경'
+                  : mode === 'manual'
+                    ? '추천 시간 보기'
+                    : '시간 직접 입력'
+              }
               variant="secondary"
-              onPress={mode === 'manual' ? () => setMode('recommend') : handleSwitchToManual}
+              onPress={
+                isReschedule
+                  ? () => setMode('duration')
+                  : mode === 'manual'
+                    ? () => setMode('recommend')
+                    : handleSwitchToManual
+              }
             />
             <SheetActionButton
               label="추천 수락"
@@ -283,18 +361,78 @@ function LoadingContent() {
   );
 }
 
+function DurationChangeContent({
+  title,
+  durationMinutes,
+  onDecrease,
+  onIncrease,
+}: {
+  title: string;
+  durationMinutes: number;
+  onDecrease: () => void;
+  onIncrease: () => void;
+}) {
+  return (
+    <View style={styles.durationChangeContent}>
+      <Typography variant="bodyM" color={colors.gray[700]} align="center">
+        소요시간을 줄이면 추천 시간대를 더 찾아볼 수 있어요
+      </Typography>
+      <View style={styles.durationChangeCard}>
+        <Typography variant="titleM" color={colors.gray[900]} align="center">
+          {title}
+        </Typography>
+        <Typography variant="bodyS" color={colors.gray[600]} align="center">
+          <Typography variant="bodyS" color={colors.primary}>
+            {formatDurationInline(Math.floor(durationMinutes / 60), durationMinutes % 60)}
+          </Typography>{' '}
+          소요
+        </Typography>
+      </View>
+      <View style={styles.durationStepperCard}>
+        <Pressable
+          accessibilityLabel="소요시간 10분 줄이기"
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.durationStepperButton, pressed && styles.pressed]}
+          onPress={onDecrease}
+        >
+          <Typography variant="titleM" color={colors.gray[600]}>
+            −
+          </Typography>
+        </Pressable>
+        <Typography variant="titleM" color={colors.gray[700]}>
+          {formatDurationInline(Math.floor(durationMinutes / 60), durationMinutes % 60)}
+        </Typography>
+        <Pressable
+          accessibilityLabel="소요시간 10분 늘리기"
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.durationStepperButton, pressed && styles.pressed]}
+          onPress={onIncrease}
+        >
+          <Typography variant="titleM" color={colors.gray[600]}>
+            +
+          </Typography>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 // ─── Recommend ──────────────────────────────────────────────────────────────
 
 function RecommendContent({
   candidates,
   currentIndex,
   keepOriginal,
+  description,
+  showKeepOriginal,
   onChangeIndex,
   onToggleKeepOriginal,
 }: {
   candidates: ScheduleRecommendation[];
   currentIndex: number;
   keepOriginal: boolean;
+  description: string;
+  showKeepOriginal: boolean;
   onChangeIndex: (index: number) => void;
   onToggleKeepOriginal: () => void;
 }) {
@@ -348,7 +486,7 @@ function RecommendContent({
 
         {/* Description */}
         <Typography variant="bodyS" color={colors.gray[600]}>
-          일정과 컨디션을 바탕으로 가장 적합한 시간대를 찾았어요.
+          {description}
         </Typography>
 
         {/* Datetime rows */}
@@ -356,20 +494,22 @@ function RecommendContent({
       </View>
 
       {/* Keep original checkbox */}
-      <Pressable
-        accessibilityRole="checkbox"
-        accessibilityLabel="기존 큐 카드 유지하기"
-        accessibilityState={{ checked: keepOriginal }}
-        style={({ pressed }) => [styles.checkboxRow, pressed && styles.pressed]}
-        onPress={onToggleKeepOriginal}
-      >
-        <Typography variant="bodyM" color={colors.gray[600]}>
-          기존 큐 카드 유지하기
-        </Typography>
-        <View style={[styles.checkbox, keepOriginal && styles.checkboxChecked]}>
-          {keepOriginal && <Icon name="done" size={14} color={colors.gray.white} />}
-        </View>
-      </Pressable>
+      {showKeepOriginal ? (
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityLabel="기존 큐 카드 유지하기"
+          accessibilityState={{ checked: keepOriginal }}
+          style={({ pressed }) => [styles.checkboxRow, pressed && styles.pressed]}
+          onPress={onToggleKeepOriginal}
+        >
+          <Typography variant="bodyM" color={colors.gray[600]}>
+            기존 큐 카드 유지하기
+          </Typography>
+          <View style={[styles.checkbox, keepOriginal && styles.checkboxChecked]}>
+            {keepOriginal && <Icon name="done" size={14} color={colors.gray.white} />}
+          </View>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -692,6 +832,30 @@ const styles = StyleSheet.create({
   },
   footerFlex: {
     flex: 1,
+  },
+  durationChangeContent: {
+    gap: spacing[3],
+  },
+  durationChangeCard: {
+    alignItems: 'center',
+    gap: spacing[1],
+    padding: spacing[3],
+    borderRadius: radius.md,
+    backgroundColor: colors.alpha.white50,
+  },
+  durationStepperCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing[3],
+    borderRadius: radius.md,
+    backgroundColor: colors.alpha.white50,
+  },
+  durationStepperButton: {
+    width: spacing[8],
+    height: spacing[8],
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // Sheet action buttons
