@@ -203,22 +203,22 @@ export function toScheduleSearchParams(input: {
     personalTags: toOptionalArray(
       input.personalTags?.map((tag) => tag.trim()).filter((tag) => tag.length > 0),
     ),
-    startDate: toSearchDateTime(input.startDate, input.startTime),
-    endDate: toSearchDateTime(input.endDate, input.endTime),
+    startDate: toSearchDateTime(input.startDate, input.startTime, '00:00'),
+    endDate: toSearchDateTime(input.endDate, input.endTime, '23:59'),
     page: input.page,
   };
 }
 
-function toSearchDateTime(date?: string, time?: string) {
+function toSearchDateTime(date?: string, time?: string, defaultTime = '00:00') {
   const normalizedDate = normalizeDateForRequest(date);
 
   if (!normalizedDate) return undefined;
 
-  return `${normalizedDate}T${normalizeSearchTime(time)}`;
+  return `${normalizedDate}T${normalizeSearchTime(time, defaultTime)}`;
 }
 
-function normalizeSearchTime(time?: string) {
-  return /^([01]\d|2[0-3]):[0-5]\d$/.test(time ?? '') ? time : '00:00';
+function normalizeSearchTime(time?: string, defaultTime = '00:00') {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(time ?? '') ? time : defaultTime;
 }
 
 export function toDailyMessage(response?: ApiResponseDailyMessageResponseDto): DailyMessage {
