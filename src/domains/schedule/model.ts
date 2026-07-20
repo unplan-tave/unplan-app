@@ -182,6 +182,8 @@ export interface ScheduleCreateInput {
 export interface ScheduleUpdateInput {
   title?: string;
   conditionTagId?: ConditionTagId;
+  /** 전달 시 일정의 개인 태그 전체를 교체합니다. */
+  personalTags?: string[];
   date?: string;
   startTime?: string;
   endTime?: string;

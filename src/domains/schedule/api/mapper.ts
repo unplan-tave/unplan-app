@@ -292,6 +292,7 @@ export function toScheduleUpdateRequest(input: ScheduleUpdateInput): ScheduleUpd
     title: input.title,
     condition_tag:
       input.conditionTagId == null ? undefined : conditionTagToUpdateDtoMap[input.conditionTagId],
+    personal_tags: input.personalTags,
     date: normalizeDateForRequest(input.date),
     start_time: input.startTime,
     end_time: input.endTime,

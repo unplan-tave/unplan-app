@@ -81,7 +81,30 @@ export function TagPickerSheet({
 
   const normalizedQuery = normalizePersonalTagLabel(query);
   const sortedTags = useMemo(() => sortPersonalTags(personalTags), [personalTags]);
-  const selectedPersonalTags = sortedTags.filter((t) => draftPersonalIds.includes(t.id));
+  const selectedPersonalTags = useMemo(
+    () =>
+      sortedTags
+        .filter((tag) => draftPersonalIds.includes(tag.id))
+        .filter(
+          (tag, index, tags) =>
+            tags.findIndex(
+              (item) =>
+                normalizePersonalTagLabel(item.label) === normalizePersonalTagLabel(tag.label),
+            ) === index,
+        ),
+    [draftPersonalIds, sortedTags],
+  );
+  const selectedServerPersonalTagLabels = useMemo(
+    () => new Set(selectedPersonalTags.map((tag) => normalizePersonalTagLabel(tag.label))),
+    [selectedPersonalTags],
+  );
+  const selectedDraftPersonalLabels = useMemo(
+    () =>
+      [...new Set(draftPersonalLabels.map(normalizePersonalTagLabel))].filter(
+        (label) => label.length > 0 && !selectedServerPersonalTagLabels.has(label),
+      ),
+    [draftPersonalLabels, selectedServerPersonalTagLabels],
+  );
   const visiblePersonalTags = sortedTags.filter(
     (t) =>
       !draftPersonalIds.includes(t.id) &&
@@ -130,7 +153,7 @@ export function TagPickerSheet({
     if (activeTab === 'condition') {
       if (canDoneCondition) onDoneConditionTag();
     } else {
-      onDonePersonalTags(draftPersonalIds, draftPersonalLabels);
+      onDonePersonalTags(draftPersonalIds, selectedDraftPersonalLabels);
     }
   };
 
@@ -249,7 +272,11 @@ export function TagPickerSheet({
                 size={20}
                 color={canCreate ? colors.gray.white : colors.gray[300]}
               />
-              <Typography variant="bodyS" color={canCreate ? colors.gray.white : colors.gray[300]}>
+              <Typography
+                variant="bodyS"
+                color={canCreate ? colors.gray.white : colors.gray[300]}
+                style={styles.createButtonLabel}
+              >
                 생성
               </Typography>
             </Pressable>
@@ -269,7 +296,7 @@ export function TagPickerSheet({
             </View>
           ) : null}
 
-          {selectedPersonalTags.length > 0 || draftPersonalLabels.length > 0 ? (
+          {selectedPersonalTags.length > 0 || selectedDraftPersonalLabels.length > 0 ? (
             <View style={styles.selectedSection}>
               <View style={styles.tagWrap}>
                 {selectedPersonalTags.map((tag) => (
@@ -280,7 +307,7 @@ export function TagPickerSheet({
                     onPress={() => handleTogglePersonalTag(tag.id)}
                   />
                 ))}
-                {draftPersonalLabels.map((label) => (
+                {selectedDraftPersonalLabels.map((label) => (
                   <PersonalTagChip
                     key={`draft-personal-tag:${label}`}
                     selected
@@ -628,11 +655,17 @@ const styles = StyleSheet.create({
   searchInput: {
     ...typography.bodyS,
     flex: 1,
+    height: '100%',
+    lineHeight: typography.bodyS.fontSize,
+    paddingVertical: spacing[0],
+    textAlignVertical: 'center',
+    includeFontPadding: false,
     color: colors.gray[800],
   },
   createButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: spacing[1],
     minWidth: 60,
     height: spacing[10],
@@ -642,6 +675,9 @@ const styles = StyleSheet.create({
   },
   createButtonDisabled: {
     backgroundColor: colors.gray[200],
+  },
+  createButtonLabel: {
+    lineHeight: typography.bodyS.fontSize,
   },
   selectedSection: {
     gap: spacing[3],
