@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
@@ -15,9 +15,16 @@ export function TimePickerBottomSheet({
   onClose,
   ...props
 }: TimePickerBottomSheetProps) {
+  const { height } = useWindowDimensions();
+
   return (
     <BottomSheet onClose={onClose} {...props}>
-      <View style={styles.list}>
+      <ScrollView
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        nestedScrollEnabled
+        style={{ maxHeight: height * 0.48 }}
+      >
         {options.map((option) => {
           const selected = option === value;
 
@@ -44,7 +51,7 @@ export function TimePickerBottomSheet({
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
     </BottomSheet>
   );
 }
@@ -52,6 +59,7 @@ export function TimePickerBottomSheet({
 const styles = StyleSheet.create({
   list: {
     gap: 4,
+    paddingBottom: 4,
   },
   option: {
     minHeight: 44,

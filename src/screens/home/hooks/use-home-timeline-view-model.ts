@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { parseTimeToMinutes } from '@/domains/schedule/time';
 import { isSameDate } from '@/lib/utils/date';
 
 import {
@@ -12,8 +13,35 @@ import type { ScheduleRecommendation } from '@/domains/ai-recommendation/model';
 import type { CardItem, PersonalTagOption } from '@/domains/schedule/model';
 
 const HOME_TIMELINE_TOP_PLACEHOLDER_COUNT = 2;
-const HOME_TIMELINE_TOP_HALF_PLACEHOLDER_HEIGHT = 54;
 const HOME_TIMELINE_EMPTY_ADD_MARKER_OFFSET_RATIO = 1.1;
+
+type TimelineItem =
+  | { kind: 'schedule'; card: CardItem }
+  | { kind: 'recommendation'; recommendation: ScheduleRecommendation };
+
+interface TimelineTimeRange {
+  cardId: string;
+  startMinutes: number;
+  endMinutes: number;
+}
+
+function getTimelineTimeRange(item: TimelineItem): TimelineTimeRange | null {
+  const startTime = item.kind === 'schedule' ? item.card.timeStart : item.recommendation.startTime;
+  const endTime = item.kind === 'schedule' ? item.card.timeEnd : item.recommendation.endTime;
+  const startMinutes = parseTimeToMinutes(startTime);
+  const endMinutes = parseTimeToMinutes(endTime);
+
+  if (startMinutes == null || endMinutes == null || endMinutes <= startMinutes) {
+    return null;
+  }
+
+  return {
+    cardId:
+      item.kind === 'schedule' ? item.card.id : `recommendation-${item.recommendation.recommendId}`,
+    startMinutes,
+    endMinutes,
+  };
+}
 
 /** 타임라인 카드 props와 현재 시각 marker 위치를 조합합니다. */
 export function useHomeTimelineViewModel({
@@ -82,10 +110,6 @@ export function useHomeTimelineViewModel({
         time: '00:00',
         title: '',
         range: '',
-        placeholderHeight:
-          cards.length > 0 && index === HOME_TIMELINE_TOP_PLACEHOLDER_COUNT - 1
-            ? HOME_TIMELINE_TOP_HALF_PLACEHOLDER_HEIGHT
-            : undefined,
       }),
     );
 
@@ -124,56 +148,60 @@ export function useHomeTimelineViewModel({
     if (!isSameDate(selectedDate, now)) return null;
 
     if (timelineItems.length === 0) {
-      return { cardId: 'add-schedule', offsetRatio: HOME_TIMELINE_EMPTY_ADD_MARKER_OFFSET_RATIO };
-    }
-
-    const currentTime = formatHomeCurrentTime(now);
-    const currentItemIndex = timelineItems.findIndex((item) => {
-      const startTime =
-        item.kind === 'schedule' ? item.card.timeStart : item.recommendation.startTime;
-      const endTime = item.kind === 'schedule' ? item.card.timeEnd : item.recommendation.endTime;
-
-      return startTime <= currentTime && currentTime < endTime;
-    });
-
-    if (currentItemIndex >= 0) {
-      const item = timelineItems[currentItemIndex];
-      const startTime =
-        item.kind === 'schedule' ? item.card.timeStart : item.recommendation.startTime;
-      const endTime = item.kind === 'schedule' ? item.card.timeEnd : item.recommendation.endTime;
-      const [startHour, startMinute] = startTime.split(':').map(Number);
-      const [endHour, endMinute] = endTime.split(':').map(Number);
-      const [currentHour, currentMinute] = currentTime.split(':').map(Number);
-      const startMinutes = startHour * 60 + startMinute;
-      const endMinutes = endHour * 60 + endMinute;
-      const currentMinutes = currentHour * 60 + currentMinute;
-
       return {
-        cardId:
-          item.kind === 'schedule'
-            ? item.card.id
-            : `recommendation-${item.recommendation.recommendId}`,
-        offsetRatio:
-          endMinutes - startMinutes > 0
-            ? (currentMinutes - startMinutes) / (endMinutes - startMinutes)
-            : 0,
+        startCardId: 'add-schedule',
+        endCardId: 'add-schedule',
+        offsetRatio: HOME_TIMELINE_EMPTY_ADD_MARKER_OFFSET_RATIO,
       };
     }
 
-    const passedScheduleCount = timelineItems.filter(
-      (item) =>
-        (item.kind === 'schedule' ? item.card.timeStart : item.recommendation.startTime) <=
-        currentTime,
-    ).length;
+    const currentMinutes = parseTimeToMinutes(formatHomeCurrentTime(now));
+    if (currentMinutes == null) return null;
 
-    const previousItem = timelineItems[passedScheduleCount - 1] ?? timelineItems[0];
+    const timeRanges = timelineItems
+      .map(getTimelineTimeRange)
+      .filter((timeRange): timeRange is TimelineTimeRange => timeRange != null);
+    const activeRange = timeRanges.findLast(
+      (timeRange) =>
+        timeRange.startMinutes <= currentMinutes && currentMinutes < timeRange.endMinutes,
+    );
+
+    if (activeRange != null) {
+      return {
+        startCardId: activeRange.cardId,
+        endCardId: activeRange.cardId,
+        offsetRatio:
+          (currentMinutes - activeRange.startMinutes) /
+          (activeRange.endMinutes - activeRange.startMinutes),
+      };
+    }
+
+    const previousRange = timeRanges.findLast(
+      (timeRange) => timeRange.endMinutes <= currentMinutes,
+    );
+    const nextRange = timeRanges.find((timeRange) => timeRange.startMinutes > currentMinutes);
+
+    if (previousRange != null && nextRange != null) {
+      return {
+        startCardId: previousRange.cardId,
+        endCardId: nextRange.cardId,
+        // 일정에 속하지 않는 시간은 기존 카드 간격의 가운데에만 표시합니다.
+        offsetRatio: 0.5,
+      };
+    }
+
+    if (previousRange != null) {
+      return { startCardId: previousRange.cardId, endCardId: previousRange.cardId, offsetRatio: 1 };
+    }
+
+    if (nextRange != null) {
+      return { startCardId: nextRange.cardId, endCardId: nextRange.cardId, offsetRatio: 0 };
+    }
 
     return {
-      cardId:
-        previousItem.kind === 'schedule'
-          ? previousItem.card.id
-          : `recommendation-${previousItem.recommendation.recommendId}`,
-      offsetRatio: passedScheduleCount === 0 ? 0 : 1,
+      startCardId: 'add-schedule',
+      endCardId: 'add-schedule',
+      offsetRatio: HOME_TIMELINE_EMPTY_ADD_MARKER_OFFSET_RATIO,
     };
   }, [now, selectedDate, timelineItems]);
 

@@ -22,12 +22,15 @@ interface SleepRecordCardProps {
 
 /** 기록 내역 화면의 유리질 수면 카드입니다. */
 export function SleepRecordCard({ record, selected = false, onPress }: SleepRecordCardProps) {
+  const isAllNight = record.kind === 'allNight';
+
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
       style={({ pressed }) => [
         styles.card,
+        isAllNight && styles.allNightCard,
         selected && styles.cardSelected,
         pressed && styles.pressed,
       ]}
@@ -38,9 +41,11 @@ export function SleepRecordCard({ record, selected = false, onPress }: SleepReco
         <Typography variant="caption" color={colors.gray[400]}>
           {sleepKindLabel(record.kind)}
         </Typography>
-        <Typography variant="bodyM" color={colors.gray[600]}>
-          {formatSleepTimeRange(record)}
-        </Typography>
+        {!isAllNight ? (
+          <Typography variant="bodyM" color={colors.gray[600]}>
+            {formatSleepTimeRange(record)}
+          </Typography>
+        ) : null}
       </View>
       <View style={styles.bottom}>
         <Typography variant="titleM" color={colors.gray[900]}>
@@ -96,6 +101,11 @@ const styles = StyleSheet.create({
   },
   cardSelected: {
     borderColor: colors.primary,
+  },
+  allNightCard: {
+    minHeight: 126,
+    gap: spacing[2],
+    padding: spacing[6],
   },
   top: {
     flexDirection: 'row',

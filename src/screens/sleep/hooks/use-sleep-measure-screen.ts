@@ -8,6 +8,7 @@ import {
   parseISO,
   startOfDay,
   subDays,
+  subMinutes,
 } from 'date-fns';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -19,11 +20,11 @@ import {
 } from '@/domains/sleep/api/mutations';
 import { useSleepRecordQuery } from '@/domains/sleep/api/queries';
 import { timeToMinutes } from '@/domains/sleep/measure';
+import { isSleepConditionOverlapError } from '@/lib/api/error';
 
 const DATE_ID = 'yyyy-MM-dd';
 const MINUTES_PER_DAY = 24 * 60;
 const MAX_DURATION_MINUTES = 99 * 60 + 59;
-const NAP_THRESHOLD_MINUTES = 3 * 60;
 
 /** 수면 측정 화면의 폼 상태와 저장 로직을 조합합니다. */
 export function useSleepMeasureScreen() {
@@ -32,12 +33,10 @@ export function useSleepMeasureScreen() {
   const isEditMode = sleepId != null && !Number.isNaN(sleepId);
   const now = useMemo(() => new Date(), []);
   const today = useMemo(() => startOfDay(now), [now]);
-  const initialWakeTime = useMemo(() => format(now, 'HH:mm'), [now]);
   const [bedDateId, setBedDateId] = useState(() => format(subDays(today, 1), DATE_ID));
   const [wakeDateId, setWakeDateId] = useState(() => format(today, DATE_ID));
   const [bedTime, setBedTime] = useState<string | null>(null);
-  const [wakeUpTime, setWakeUpTime] = useState<string | null>(initialWakeTime);
-  const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
+  const [wakeUpTime, setWakeUpTime] = useState<string | null>(null);
   const [isNap, setIsNap] = useState(false);
   const [isAllNight, setIsAllNight] = useState(false);
   const [isSelectingEndDate, setIsSelectingEndDate] = useState(false);
@@ -45,6 +44,7 @@ export function useSleepMeasureScreen() {
   const [isAllNightTooltipVisible, setIsAllNightTooltipVisible] = useState(false);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const [isSaveErrorVisible, setIsSaveErrorVisible] = useState(false);
+  const [isConditionConflictVisible, setIsConditionConflictVisible] = useState(false);
 
   const recordQuery = useSleepRecordQuery(isEditMode ? sleepId : null);
   const createMutation = useCreateSleepRecordMutation();
@@ -62,12 +62,6 @@ export function useSleepMeasureScreen() {
     setWakeUpTime(loadedRecord.wakeUpTime);
     setBedDateId(format(crossesDay ? subDays(today, 1) : today, DATE_ID));
     setWakeDateId(format(today, DATE_ID));
-    setDurationMinutes(
-      differenceInMinutes(
-        toDateTime(format(today, DATE_ID), loadedRecord.wakeUpTime),
-        toDateTime(format(crossesDay ? subDays(today, 1) : today, DATE_ID), loadedRecord.bedTime),
-      ),
-    );
     setIsNap(loadedRecord.isNap);
     setIsAllNight(loadedRecord.isAllNight);
   }, [isEditMode, loadedRecord, today]);
@@ -93,21 +87,14 @@ export function useSleepMeasureScreen() {
     [bedDateId, wakeDateId],
   );
   const durationIsValid =
-    durationMinutes != null &&
-    durationMinutes > 0 &&
-    computedDuration != null &&
-    computedDuration > 0 &&
-    durationMinutes <= durationLimitMinutes &&
-    durationMinutes === computedDuration;
+    computedDuration != null && computedDuration > 0 && computedDuration <= durationLimitMinutes;
   const canSubmit =
     !isRecordLoading &&
     !isRecordLoadError &&
     !createMutation.isPending &&
     !updateMutation.isPending &&
     validationMessage == null &&
-    bedTime != null &&
-    wakeUpTime != null &&
-    (isAllNight || durationIsValid);
+    (isAllNight || (bedTime != null && wakeUpTime != null && durationIsValid));
 
   const weekDays = useMemo<SleepWeekDay[]>(() => {
     // Figma의 날짜 레일처럼 기상일을 마지막 칸에 두어 기본 어제~오늘 범위를 항상 보여줍니다.
@@ -138,7 +125,6 @@ export function useSleepMeasureScreen() {
       nextWakeDateId: string,
       nextBedTime: string | null,
       nextWakeTime: string | null,
-      nextDurationMinutes: number | null,
     ) => {
       if (nextBedTime == null || nextWakeTime == null) {
         setValidationMessage(null);
@@ -154,10 +140,8 @@ export function useSleepMeasureScreen() {
 
       if (nextDuration <= 0 || nextDuration > nextLimit) {
         setValidationMessage('취침 날짜/시각을 확인해 주세요!');
-      } else if (nextDurationMinutes == null || nextDuration === nextDurationMinutes) {
-        setValidationMessage(null);
       } else {
-        setValidationMessage('취침 날짜/시각을 확인해 주세요!');
+        setValidationMessage(null);
       }
     },
     [],
@@ -165,32 +149,41 @@ export function useSleepMeasureScreen() {
 
   const selectDate = useCallback(
     (id: string) => {
-      if (isAllNight) return;
-
       if (!isSelectingEndDate) {
         setBedDateId(id);
         setIsSelectingEndDate(true);
-        validateManualInputs(id, wakeDateId, bedTime, wakeUpTime, durationMinutes);
+        if (isAllNight) {
+          setValidationMessage(null);
+          return;
+        }
+        validateManualInputs(id, wakeDateId, bedTime, wakeUpTime);
         return;
       }
 
       if (differenceInCalendarDays(parseISO(id), parseISO(bedDateId)) < 0) {
         setBedDateId(id);
         setIsSelectingEndDate(false);
-        validateManualInputs(id, wakeDateId, bedTime, wakeUpTime, durationMinutes);
+        if (isAllNight) {
+          setValidationMessage(null);
+          return;
+        }
+        validateManualInputs(id, wakeDateId, bedTime, wakeUpTime);
         return;
       }
 
       setWakeDateId(id);
       setIsSelectingEndDate(false);
-      validateManualInputs(bedDateId, id, bedTime, wakeUpTime, durationMinutes);
+      if (isAllNight) {
+        setValidationMessage(null);
+        return;
+      }
+      validateManualInputs(bedDateId, id, bedTime, wakeUpTime);
     },
     [
       bedDateId,
       bedTime,
       isAllNight,
       isSelectingEndDate,
-      durationMinutes,
       validateManualInputs,
       wakeDateId,
       wakeUpTime,
@@ -200,10 +193,7 @@ export function useSleepMeasureScreen() {
   const changeBedTime = useCallback(
     (time: string | null) => {
       setBedTime(time);
-      const nextDurationMinutes = durationFromDateTimes(bedDateId, wakeDateId, time, wakeUpTime);
-
-      setDurationMinutes(nextDurationMinutes);
-      validateManualInputs(bedDateId, wakeDateId, time, wakeUpTime, nextDurationMinutes);
+      validateManualInputs(bedDateId, wakeDateId, time, wakeUpTime);
     },
     [bedDateId, validateManualInputs, wakeDateId, wakeUpTime],
   );
@@ -211,47 +201,32 @@ export function useSleepMeasureScreen() {
   const changeWakeTime = useCallback(
     (time: string | null) => {
       setWakeUpTime(time);
-      const nextDurationMinutes = durationFromDateTimes(bedDateId, wakeDateId, bedTime, time);
-
-      setDurationMinutes(nextDurationMinutes);
-      validateManualInputs(bedDateId, wakeDateId, bedTime, time, nextDurationMinutes);
+      validateManualInputs(bedDateId, wakeDateId, bedTime, time);
     },
     [bedDateId, bedTime, validateManualInputs, wakeDateId],
   );
 
   const changeDuration = useCallback(
-    (nextDuration: number | null) => {
-      if (nextDuration == null) {
-        setDurationMinutes(null);
-        setValidationMessage(null);
+    (nextDurationMinutes: number | null) => {
+      if (nextDurationMinutes == null || wakeUpTime == null) {
+        if (nextDurationMinutes != null) {
+          setValidationMessage('기상 시각을 먼저 입력해 주세요.');
+        }
         return;
       }
 
-      const safeDuration = Math.max(0, Math.min(MAX_DURATION_MINUTES, nextDuration));
+      const durationMinutes = Math.max(1, Math.min(MAX_DURATION_MINUTES, nextDurationMinutes));
+      const nextBedDateTime = subMinutes(toDateTime(wakeDateId, wakeUpTime), durationMinutes);
+      const nextBedDateId = format(nextBedDateTime, DATE_ID);
+      const nextBedTime = format(nextBedDateTime, 'HH:mm');
 
-      if (safeDuration === 0) {
-        setDurationMinutes(0);
-        setIsAllNight(true);
-        setIsNap(false);
-        setIsAllNightTooltipVisible(true);
-        setValidationMessage(null);
-        return;
-      }
-
-      setDurationMinutes(safeDuration);
+      setBedDateId(nextBedDateId);
+      setBedTime(nextBedTime);
       setIsAllNight(false);
       setIsAllNightTooltipVisible(false);
-      validateManualInputs(bedDateId, wakeDateId, bedTime, wakeUpTime, safeDuration);
-
-      if (safeDuration < NAP_THRESHOLD_MINUTES) {
-        setIsNap(true);
-        setIsNapTooltipVisible(true);
-      } else {
-        setIsNap(false);
-        setIsNapTooltipVisible(false);
-      }
+      validateManualInputs(nextBedDateId, wakeDateId, nextBedTime, wakeUpTime);
     },
-    [bedDateId, bedTime, validateManualInputs, wakeDateId, wakeUpTime],
+    [validateManualInputs, wakeDateId, wakeUpTime],
   );
 
   const toggleNap = useCallback(() => {
@@ -266,12 +241,10 @@ export function useSleepMeasureScreen() {
       const next = !value;
 
       if (next) {
-        setDurationMinutes(0);
         setIsNap(false);
         setIsAllNightTooltipVisible(true);
         setValidationMessage(null);
       } else {
-        setDurationMinutes(null);
         setIsAllNightTooltipVisible(false);
       }
 
@@ -289,26 +262,43 @@ export function useSleepMeasureScreen() {
       return;
     }
 
-    if (bedTime == null || wakeUpTime == null) {
-      setValidationMessage('취침 시각과 기상 시각을 입력해 주세요.');
-      return;
+    if (!isAllNight) {
+      if (bedTime == null || wakeUpTime == null) {
+        setValidationMessage('취침 시각과 기상 시각을 입력해 주세요.');
+        return;
+      }
+
+      if (!durationIsValid) {
+        setValidationMessage('취침 날짜와 시각을 확인해 주세요.');
+        return;
+      }
     }
 
-    if (!isAllNight && !durationIsValid) {
-      setValidationMessage('취침 날짜와 시각을 확인해 주세요.');
-      return;
-    }
-
-    const input = {
-      bedTime: toApiDateTime(bedDateId, bedTime),
-      wakeUpTime: toApiDateTime(wakeDateId, wakeUpTime),
-      isNap,
-      isAllNight,
-    };
+    const input = isAllNight
+      ? {
+          bedTime: toApiDateTime(bedDateId, '00:00'),
+          wakeUpTime: toApiDateTime(wakeDateId, '00:00'),
+          isNap: false,
+          isAllNight: true,
+        }
+      : {
+          bedTime: toApiDateTime(bedDateId, bedTime ?? '00:00'),
+          wakeUpTime: toApiDateTime(wakeDateId, wakeUpTime ?? '00:00'),
+          isNap,
+          isAllNight: false,
+        };
     const onSuccess = () => router.back();
-    const onError = () => setIsSaveErrorVisible(true);
+    const onError = (error: Error) => {
+      if (isSleepConditionOverlapError(error)) {
+        setIsConditionConflictVisible(true);
+        return;
+      }
+
+      setIsSaveErrorVisible(true);
+    };
 
     setIsSaveErrorVisible(false);
+    setIsConditionConflictVisible(false);
 
     if (isEditMode) {
       updateMutation.mutate({ sleepId, input }, { onSuccess, onError });
@@ -333,6 +323,11 @@ export function useSleepMeasureScreen() {
 
   const cancel = useCallback(() => router.back(), []);
   const retryRecordLoad = useCallback(() => void recordQuery.refetch(), [recordQuery]);
+  const closeConditionConflict = useCallback(() => setIsConditionConflictVisible(false), []);
+  const openConditionRecords = useCallback(() => {
+    setIsConditionConflictVisible(false);
+    router.push('/sleep/record');
+  }, []);
 
   return {
     title: '얼마나 잠들었나요?',
@@ -341,13 +336,14 @@ export function useSleepMeasureScreen() {
     weekDays,
     bedTime,
     wakeUpTime,
-    durationMinutes,
+    durationMinutes: isAllNight ? 0 : computedDuration,
     isNap,
     isAllNight,
     isNapTooltipVisible,
     isAllNightTooltipVisible,
     validationMessage,
     isSaveErrorVisible,
+    isConditionConflictVisible,
     isRecordLoading,
     isRecordLoadError,
     isSaving: createMutation.isPending || updateMutation.isPending,
@@ -364,6 +360,8 @@ export function useSleepMeasureScreen() {
     submit,
     cancel,
     retryRecordLoad,
+    closeConditionConflict,
+    openConditionRecords,
   };
 }
 
@@ -381,22 +379,4 @@ function durationLimitForDateRange(bedDateId: string, wakeDateId: string): numbe
   const dateDistance = differenceInCalendarDays(parseISO(wakeDateId), parseISO(bedDateId));
 
   return Math.max(1, dateDistance + 1) * MINUTES_PER_DAY;
-}
-
-/** 완성된 취침·기상 시각에서만 화면에 표시할 수면시간을 계산합니다. */
-function durationFromDateTimes(
-  bedDateId: string,
-  wakeDateId: string,
-  bedTime: string | null,
-  wakeUpTime: string | null,
-): number | null {
-  if (bedTime == null || wakeUpTime == null) return null;
-
-  const duration = differenceInMinutes(
-    toDateTime(wakeDateId, wakeUpTime),
-    toDateTime(bedDateId, bedTime),
-  );
-  const limit = durationLimitForDateRange(bedDateId, wakeDateId);
-
-  return duration > 0 && duration <= limit ? duration : null;
 }

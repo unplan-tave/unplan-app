@@ -34,6 +34,10 @@ export interface CardListFilters {
   conditionTagIds: ConditionTagId[];
   personalTagIds: string[];
   searchQuery: string;
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime: string;
 }
 
 export interface CardListMonthSection {
@@ -232,13 +236,55 @@ export function groupCardsByMonth(cards: CardItem[]): CardListMonthSection[] {
 }
 
 export function createDefaultCardListFilters(): CardListFilters {
+  const now = new Date();
+  const startDate = new Date(
+    now.getFullYear(),
+    now.getMonth() - 3,
+    now.getDate(),
+    now.getHours(),
+    now.getMinutes(),
+  );
+  const endDate = new Date(
+    now.getFullYear(),
+    now.getMonth() + 3,
+    now.getDate(),
+    now.getHours(),
+    now.getMinutes(),
+  );
+  const currentTime = formatCardListTimeValue(now);
+
   return {
     cardType: 'all',
     progressStatuses: [],
     conditionTagIds: [],
     personalTagIds: [],
     searchQuery: '',
+    startDate: formatCardListDateValue(startDate),
+    endDate: formatCardListDateValue(endDate),
+    startTime: currentTime,
+    endTime: currentTime,
   };
+}
+
+/** 카드 목록 기간 필터용 날짜 값을 `YYYY.MM.DD` 형식으로 만듭니다. */
+export function formatCardListDateValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}.${month}.${day}`;
+}
+
+function formatCardListTimeValue(date: Date) {
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${hours}:${minutes}`;
+}
+
+/** 카드 목록 상단에 노출할 월 단위 기간 라벨입니다. */
+export function formatCardListPeriodLabel(startDate: string, endDate: string) {
+  return `${startDate.slice(0, 7)}~${endDate.slice(0, 7)}`;
 }
 
 export function hasActiveCardListFilter(filters: CardListFilters): boolean {
@@ -276,7 +322,13 @@ export function getCardPersonalTagLabels(card: CardItem, personalTags: PersonalT
     .filter((tag) => card.personalTagIds.includes(tag.id))
     .map((tag) => tag.label);
 
-  return [...new Set([...card.personalTagLabels, ...selectedLabels])];
+  return [
+    ...new Set(
+      [...card.personalTagLabels, ...selectedLabels]
+        .map((label) => label.trim())
+        .filter((label) => label.length > 0),
+    ),
+  ];
 }
 
 export function toggleCardListFilterValue<T extends string>(values: T[], value: T): T[] {

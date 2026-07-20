@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { getQueueTimeRecommendationErrorMode } from '@/domains/ai-recommendation/api/client';
 import { useAcceptRecommendationMutation } from '@/domains/ai-recommendation/api/mutations';
 import { useQueueTimeRecommendationsQuery } from '@/domains/ai-recommendation/api/queries';
+import { isUpcomingScheduleRecommendation } from '@/domains/ai-recommendation/model';
 import {
   useCreateScheduleMutation,
   useUpdateScheduleMutation,
@@ -113,6 +114,13 @@ export function useHomeScheduleFlow({
         timelineCards,
       ),
     [extensionMinutes, flow, now, timelineCards],
+  );
+  const rescheduleCandidates = useMemo(
+    () =>
+      (rescheduleRecommendationQuery.data?.candidates ?? []).filter((recommendation) =>
+        isUpcomingScheduleRecommendation(recommendation, now),
+      ),
+    [now, rescheduleRecommendationQuery.data?.candidates],
   );
   const queueDraftValue = useMemo(() => createHomeQueueDraft(activeCard), [activeCard]);
 
@@ -404,7 +412,7 @@ export function useHomeScheduleFlow({
       mounted: activeRescheduleCard != null,
       visible: flow.kind === 'reschedule',
       card: activeRescheduleCard,
-      candidates: rescheduleRecommendationQuery.data?.candidates ?? [],
+      candidates: rescheduleCandidates,
       isRecommendationLoading: rescheduleRecommendationQuery.isFetching,
       recommendationErrorMode: getQueueTimeRecommendationErrorMode(
         rescheduleRecommendationQuery.error,

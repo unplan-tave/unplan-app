@@ -1,8 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
-import { Card } from '@/components/ui/Card';
+import { Card, CardTagList, type CardTagItem } from '@/components/ui/Card';
 import { ProgressSegment, type ProgressSegmentValue } from '@/components/ui/ProgressSegment';
-import { Tag } from '@/components/ui/Tag';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 import { getConditionTagById } from '@/domains/schedule/model';
@@ -36,7 +35,14 @@ export function CompletedScheduleCard({
 }: CompletedScheduleCardProps) {
   const isDone = schedule.status === 'done';
   const conditionTag = getConditionTagById(schedule.conditionTagId);
-  const personalTag = schedule.personalTags[0];
+  const tags: CardTagItem[] = [
+    {
+      label: conditionTag.label,
+      variant: 'condition',
+      condition: conditionTag.id,
+    },
+    ...schedule.personalTags.map((label) => ({ label, variant: 'personal' as const })),
+  ];
 
   return (
     <Card disabled style={[styles.card, isDone && styles.completedCard]}>
@@ -58,15 +64,7 @@ export function CompletedScheduleCard({
       </View>
       <View style={styles.actionRow}>
         <View style={styles.tags}>
-          <Tag
-            variant="condition"
-            condition={conditionTag.id}
-            label={conditionTag.label}
-            style={styles.conditionTag}
-          />
-          {personalTag ? (
-            <Tag variant="personal" label={personalTag} style={styles.personalTag} />
-          ) : null}
+          <CardTagList tags={tags} maxVisible={2} style={styles.tagList} />
         </View>
         <View style={styles.divider} />
         <ProgressSegment
@@ -115,24 +113,10 @@ const styles = StyleSheet.create({
     height: spacing[6],
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[1],
     flexWrap: 'nowrap',
     overflow: 'hidden',
   },
-  conditionTag: {
-    height: spacing[6],
-    borderRadius: radius['2xs'],
-    shadowColor: colors.shadow.blueGray,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.15,
-    shadowRadius: 27.342,
-    elevation: 3,
-  },
-  personalTag: {
-    height: spacing[6],
-    borderRadius: radius['2xs'],
-    backgroundColor: colors.gray[300],
-  },
+  tagList: { flexWrap: 'nowrap' },
   divider: {
     position: 'absolute',
     top: spacing.px,

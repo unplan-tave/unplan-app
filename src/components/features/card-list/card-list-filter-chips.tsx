@@ -38,6 +38,8 @@ export function CardListFilterChips({
   personalTagIds,
   expandedFilter,
   personalTags,
+  isPersonalTagsLoading = false,
+  isPersonalTagsError = false,
   onChangeCardType,
   onToggleExpanded,
   onToggleProgressStatus,
@@ -50,6 +52,8 @@ export function CardListFilterChips({
   personalTagIds: string[];
   expandedFilter: CardListMultiFilterKey | null;
   personalTags: PersonalTagOption[];
+  isPersonalTagsLoading?: boolean;
+  isPersonalTagsError?: boolean;
   onChangeCardType: (value: CardTypeFilter) => void;
   onToggleExpanded: (key: CardListMultiFilterKey) => void;
   onToggleProgressStatus: (value: CardProgressStatus) => void;
@@ -57,7 +61,13 @@ export function CardListFilterChips({
   onTogglePersonalTag: (value: string) => void;
 }) {
   const [scrollX, setScrollX] = useState(0);
-  const [anchorX, setAnchorX] = useState<Record<CardListMultiFilterKey, number>>({
+  const [anchors, setAnchors] = useState<Record<CardListMultiFilterKey, { x: number; y: number }>>({
+    cardType: { x: 0, y: 0 },
+    progress: { x: 0, y: 0 },
+    condition: { x: 0, y: 0 },
+    personal: { x: 0, y: 0 },
+  });
+  const [dropdownWidths, setDropdownWidths] = useState<Record<CardListMultiFilterKey, number>>({
     cardType: 0,
     progress: 0,
     condition: 0,
@@ -119,13 +129,14 @@ export function CardListFilterChips({
         label: tag.label,
         selected: personalTagIds.includes(tag.id),
       })),
-      emptyText: '등록된 개인 태그가 없어요',
+      emptyText: '등록된\n개인태그가\n없어요!',
       onToggleOption: onTogglePersonalTag,
     },
   ];
 
   const expanded = filters.find((filter) => filter.key === expandedFilter) ?? null;
-  const expandedActive = expanded?.isActive ?? false;
+  const selectedOptions = expanded?.options.filter((option) => option.selected) ?? [];
+  const unselectedOptions = expanded?.options.filter((option) => !option.selected) ?? [];
 
   return (
     <View style={styles.container}>
@@ -140,11 +151,21 @@ export function CardListFilterChips({
           return (
             <View
               key={filter.key}
+              pointerEvents={expandedFilter === filter.key ? 'none' : 'auto'}
+              style={[
+                expandedFilter === filter.key && styles.expandedChipAnchor,
+                expandedFilter === filter.key && dropdownWidths[filter.key] > 0
+                  ? { width: dropdownWidths[filter.key] }
+                  : undefined,
+              ]}
               onLayout={(event) => {
-                const { x } = event.nativeEvent.layout;
-                setAnchorX((prev) =>
-                  prev[filter.key] === x ? prev : { ...prev, [filter.key]: x },
-                );
+                const { x, y } = event.nativeEvent.layout;
+                setAnchors((previous) => {
+                  const current = previous[filter.key];
+                  return current.x === x && current.y === y
+                    ? previous
+                    : { ...previous, [filter.key]: { x, y } };
+                });
               }}
             >
               <MultiFilterChip
@@ -160,8 +181,20 @@ export function CardListFilterChips({
 
       {expanded != null ? (
         <View
-          style={[styles.dropdown, { left: Math.max(anchorX[expanded.key] - scrollX, 0) }]}
+          style={[
+            styles.dropdown,
+            {
+              top: anchors[expanded.key].y,
+              left: Math.max(anchors[expanded.key].x - scrollX, 0),
+            },
+          ]}
           accessibilityLabel={`${expanded.label} 목록`}
+          onLayout={(event) => {
+            const { width } = event.nativeEvent.layout;
+            setDropdownWidths((previous) =>
+              previous[expanded.key] === width ? previous : { ...previous, [expanded.key]: width },
+            );
+          }}
         >
           <Pressable
             accessibilityLabel={`${expanded.label} 접기`}
@@ -170,49 +203,62 @@ export function CardListFilterChips({
             style={({ pressed }) => [styles.dropdownIcon, pressed && styles.pressed]}
             onPress={() => onToggleExpanded(expanded.key)}
           >
-            <Icon
-              name="chevronUp"
-              size={16}
-              color={expandedActive ? colors.chip.selectedText : colors.gray[700]}
-            />
+            <Icon name="chevronUp" size={16} color={colors.gray[700]} />
           </Pressable>
           <View>
-            {expandedActive ? (
-              <Pressable
-                accessibilityLabel={`${expanded.label} 접기`}
-                accessibilityRole="button"
-                style={({ pressed }) => pressed && styles.pressed}
-                onPress={() => onToggleExpanded(expanded.key)}
-              >
-                <Typography variant="bodyS" color={colors.chip.selectedText} numberOfLines={1}>
-                  {expanded.summary}
+            <View>
+              {expanded.key === 'personal' && isPersonalTagsLoading ? (
+                <Typography variant="bodyS" color={colors.gray[400]}>
+                  개인 태그를 불러오는 중이에요
                 </Typography>
-              </Pressable>
-            ) : null}
-            {expanded.options.length === 0 && expanded.emptyText != null ? (
-              <Typography variant="bodyS" color={colors.gray[400]}>
-                {expanded.emptyText}
-              </Typography>
-            ) : (
-              expanded.options.map((option) => (
-                <Pressable
-                  key={option.key}
-                  accessibilityLabel={option.label}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: option.selected }}
-                  style={({ pressed }) => pressed && styles.pressed}
-                  onPress={() => expanded.onToggleOption(option.key)}
-                >
-                  <Typography
-                    variant="bodyS"
-                    color={option.selected ? colors.chip.selectedText : colors.gray[700]}
-                    numberOfLines={1}
-                  >
-                    {option.label}
-                  </Typography>
-                </Pressable>
-              ))
-            )}
+              ) : expanded.key === 'personal' && isPersonalTagsError ? (
+                <Typography variant="bodyS" color={colors.gray[400]}>
+                  개인 태그를 불러오지 못했어요
+                </Typography>
+              ) : (
+                <>
+                  {selectedOptions.length > 0 ? (
+                    <View style={styles.selectedOptionsRow}>
+                      {selectedOptions.map((option, index) => (
+                        <Pressable
+                          key={option.key}
+                          accessibilityLabel={`${option.label} 선택 해제`}
+                          accessibilityRole="button"
+                          accessibilityState={{ selected: true }}
+                          style={({ pressed }) => pressed && styles.pressed}
+                          onPress={() => expanded.onToggleOption(option.key)}
+                        >
+                          <Typography variant="bodyS" color={colors.chip.selectedText}>
+                            {option.label}
+                            {index < selectedOptions.length - 1 ? ', ' : ''}
+                          </Typography>
+                        </Pressable>
+                      ))}
+                    </View>
+                  ) : null}
+                  {expanded.options.length === 0 && expanded.emptyText != null ? (
+                    <Typography variant="bodyS" color={colors.gray[400]} style={styles.emptyText}>
+                      {expanded.emptyText}
+                    </Typography>
+                  ) : (
+                    unselectedOptions.map((option) => (
+                      <Pressable
+                        key={option.key}
+                        accessibilityLabel={option.label}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: option.selected }}
+                        style={({ pressed }) => pressed && styles.pressed}
+                        onPress={() => expanded.onToggleOption(option.key)}
+                      >
+                        <Typography variant="bodyS" color={colors.gray[700]}>
+                          {option.label}
+                        </Typography>
+                      </Pressable>
+                    ))
+                  )}
+                </>
+              )}
+            </View>
           </View>
         </View>
       ) : null}
@@ -262,8 +308,9 @@ function getProgressSummary(statuses: CardProgressStatus[]) {
     return '진행 상태';
   }
 
-  return PROGRESS_OPTIONS.filter((option) => statuses.includes(option.value))
-    .map((option) => option.label)
+  return statuses
+    .map((status) => PROGRESS_OPTIONS.find((option) => option.value === status)?.label)
+    .filter((label): label is string => label != null)
     .join(', ');
 }
 
@@ -272,8 +319,9 @@ function getConditionSummary(tagIds: ConditionTagId[]) {
     return '컨디션 태그';
   }
 
-  return CONDITION_TAG_OPTIONS.filter((option) => tagIds.includes(option.id))
-    .map((option) => option.label)
+  return tagIds
+    .map((tagId) => CONDITION_TAG_OPTIONS.find((option) => option.id === tagId)?.label)
+    .filter((label): label is string => label != null)
     .join(', ');
 }
 
@@ -282,9 +330,9 @@ function getPersonalSummary(tagIds: string[], personalTags: PersonalTagOption[])
     return '개인 태그';
   }
 
-  return personalTags
-    .filter((tag) => tagIds.includes(tag.id))
-    .map((tag) => tag.label)
+  return tagIds
+    .map((tagId) => personalTags.find((tag) => tag.id === tagId)?.label)
+    .filter((label): label is string => label != null)
     .join(', ');
 }
 
@@ -326,6 +374,15 @@ const styles = StyleSheet.create({
     paddingRight: spacing[2] + 2,
     borderRadius: radius['2xl'],
     backgroundColor: colors.gray.white,
+  },
+  expandedChipAnchor: {
+    opacity: 0,
+  },
+  selectedOptionsRow: {
+    flexDirection: 'row',
+  },
+  emptyText: {
+    textAlign: 'center',
   },
   dropdownIcon: {
     height: 22,

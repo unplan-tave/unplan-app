@@ -18,4 +18,5 @@ export interface ScheduleGetResponse {
   is_queue?: boolean;
   status?: ScheduleGetResponseStatus;
   condition_tag?: ScheduleGetResponseConditionTag;
+  personal_tags?: string[];
 }

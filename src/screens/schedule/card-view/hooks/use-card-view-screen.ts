@@ -13,7 +13,15 @@ import { useCardViewConversion } from './use-card-view-conversion';
 /** 카드 상세 화면의 조회 결과와 화면 이벤트를 조합합니다. */
 export function useCardViewScreen() {
   const goBack = useGoBack();
-  const { cardId, toast: toastParam } = useLocalSearchParams<{ cardId: string; toast?: string }>();
+  const {
+    cardId,
+    toast: toastParam,
+    returnTo,
+  } = useLocalSearchParams<{
+    cardId: string;
+    toast?: string;
+    returnTo?: string;
+  }>();
   const numericCardId = parseNumericCardId(cardId);
   const personalTags = useScheduleStore((store) => store.personalTags);
   const scheduleDetailQuery = useScheduleDetailQuery(numericCardId, {
@@ -42,7 +50,14 @@ export function useCardViewScreen() {
     [card, personalTags],
   );
 
-  const handleBack = goBack;
+  const handleBack = useCallback(() => {
+    if (returnTo === 'card-list') {
+      router.replace('/(tabs)/schedule');
+      return;
+    }
+
+    goBack();
+  }, [goBack, returnTo]);
 
   const handleEdit = useCallback(() => {
     router.push(`/card/card-detail?cardId=${cardId}`);

@@ -27,7 +27,7 @@ export function useHomeScreen() {
 
   const page = useHomePageState();
   const { now, selectedDate, selectedDateValue, todayValue, viewMode } = page;
-  const pageData = useHomePageData({ personalTags, selectedDate, viewMode });
+  const pageData = useHomePageData({ now, personalTags, selectedDate, viewMode });
   const notification = useHomeNotification();
   const conditionPrompt = useHomeConditionPrompt(
     todayValue,

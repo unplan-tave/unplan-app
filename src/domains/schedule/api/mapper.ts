@@ -189,8 +189,10 @@ export function toScheduleSearchParams(input: {
   status?: ScheduleStatus[];
   conditionTagIds?: ConditionTagId[];
   personalTags?: string[];
+  startDate?: string;
+  endDate?: string;
   page?: number;
-}): SearchSchedulesParams {
+}): SearchSchedulesParams & ScheduleSearchDateRangeParams {
   return {
     keyword: normalizeOptionalParam(input.keyword),
     isQueue: input.isQueue,
@@ -199,9 +201,20 @@ export function toScheduleSearchParams(input: {
     personalTags: toOptionalArray(
       input.personalTags?.map((tag) => tag.trim()).filter((tag) => tag.length > 0),
     ),
+    startDate: normalizeDateForRequest(input.startDate),
+    endDate: normalizeDateForRequest(input.endDate),
     page: input.page,
   };
 }
+
+/**
+ * 스웨거 응답이 갱신되기 전까지 검색 기간 파라미터를 API 경계에서 보완합니다.
+ * 서버는 camelCase 쿼리 키(`startDate`, `endDate`)를 받습니다.
+ */
+type ScheduleSearchDateRangeParams = {
+  startDate?: string;
+  endDate?: string;
+};
 
 export function toDailyMessage(response?: ApiResponseDailyMessageResponseDto): DailyMessage {
   const message = response?.data;
