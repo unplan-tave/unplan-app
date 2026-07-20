@@ -40,14 +40,18 @@ export function DateTimeSheet({
   visible,
   focus,
   value,
+  presentation = 'sheet',
   onClose,
   onDone,
+  onDraftChange,
 }: {
   visible: boolean;
   focus: TimeFocus;
   value: DateTimeDraft;
+  presentation?: 'sheet' | 'embedded';
   onClose: () => void;
   onDone: (draft: DateTimeDraft) => void;
+  onDraftChange?: (draft: DateTimeDraft) => void;
 }) {
   const [draft, setDraft] = useState<DateTimeDraft>(value);
   const [activeTimeField, setActiveTimeField] = useState<TimeFocus>(focus);
@@ -79,6 +83,10 @@ export function DateTimeSheet({
     value.timeStart,
     visible,
   ]);
+
+  useEffect(() => {
+    onDraftChange?.(draft);
+  }, [draft, onDraftChange]);
 
   const handleSelectDate = useCallback((dateValue: string) => {
     setDraft((prev) => {
@@ -133,41 +141,43 @@ export function DateTimeSheet({
     onDone(draft);
   }, [draft, onDone]);
 
-  return (
-    <BottomSheet visible={visible} contentStyle={styles.dateTimeSheet} onClose={onClose}>
-      <View style={styles.sheetHeader}>
-        <Pressable
-          accessibilityLabel="날짜와 시간 선택 취소"
-          accessibilityRole="button"
-          hitSlop={8}
-          style={({ pressed }) => [styles.sheetHeaderAction, pressed && styles.pressed]}
-          onPress={onClose}
-        >
-          <Typography variant="bodyM" color={colors.primary}>
-            취소
+  const content = (
+    <View style={presentation === 'sheet' ? styles.dateTimeSheet : styles.embeddedContent}>
+      {presentation === 'sheet' ? (
+        <View style={styles.sheetHeader}>
+          <Pressable
+            accessibilityLabel="날짜와 시간 선택 취소"
+            accessibilityRole="button"
+            hitSlop={8}
+            style={({ pressed }) => [styles.sheetHeaderAction, pressed && styles.pressed]}
+            onPress={onClose}
+          >
+            <Typography variant="bodyM" color={colors.primary}>
+              취소
+            </Typography>
+          </Pressable>
+          <Typography
+            pointerEvents="none"
+            variant="bodyM"
+            color={colors.gray[900]}
+            align="center"
+            style={styles.sheetTitle}
+          >
+            날짜/시간
           </Typography>
-        </Pressable>
-        <Typography
-          pointerEvents="none"
-          variant="bodyM"
-          color={colors.gray[900]}
-          align="center"
-          style={styles.sheetTitle}
-        >
-          날짜/시간
-        </Typography>
-        <Pressable
-          accessibilityLabel="날짜와 시간 선택 완료"
-          accessibilityRole="button"
-          hitSlop={8}
-          style={({ pressed }) => [styles.sheetHeaderAction, pressed && styles.pressed]}
-          onPress={handleDone}
-        >
-          <Typography variant="bodyM" color={colors.primary}>
-            완료
-          </Typography>
-        </Pressable>
-      </View>
+          <Pressable
+            accessibilityLabel="날짜와 시간 선택 완료"
+            accessibilityRole="button"
+            hitSlop={8}
+            style={({ pressed }) => [styles.sheetHeaderAction, pressed && styles.pressed]}
+            onPress={handleDone}
+          >
+            <Typography variant="bodyM" color={colors.primary}>
+              완료
+            </Typography>
+          </Pressable>
+        </View>
+      ) : null}
 
       <View style={styles.dateTimeSheetContent}>
         <Card variant="solid" accessibilityRole="none" style={styles.calendarPanel}>
@@ -280,6 +290,16 @@ export function DateTimeSheet({
           ) : null}
         </Card>
       </View>
+    </View>
+  );
+
+  if (presentation === 'embedded') {
+    return content;
+  }
+
+  return (
+    <BottomSheet visible={visible} contentStyle={styles.sheetWrapper} onClose={onClose}>
+      {content}
     </BottomSheet>
   );
 }
@@ -549,11 +569,21 @@ function getInitialCalendarBaseDate(dateValue: string) {
 }
 
 const styles = StyleSheet.create({
+  sheetWrapper: {
+    gap: 0,
+    paddingHorizontal: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
   dateTimeSheet: {
     gap: spacing[4],
     paddingHorizontal: spacing[5],
     paddingTop: spacing[3],
     paddingBottom: spacing[15],
+  },
+  embeddedContent: {
+    width: '100%',
+    gap: spacing[3],
   },
   sheetHeader: {
     width: '100%',
