@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import Svg, { Defs, G, Line, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Defs, G, Line, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
@@ -37,17 +37,7 @@ interface ConditionQuadrantPlotProps {
 const VIEW = CONDITION_QUADRANT.view;
 const GRID_INSET = CONDITION_QUADRANT.gridInset;
 const GRID_SIZE = CONDITION_QUADRANT.gridSize;
-const FIGMA_TO_VIEW_SCALE = VIEW / 313.515;
-const HORIZONTAL_AXIS = {
-  x: 68.2575,
-  y: 153.078,
-  path: 'M0.146447 3.32843C-0.0488155 3.52369 -0.0488155 3.84027 0.146447 4.03553L3.32843 7.21751C3.52369 7.41278 3.84027 7.41278 4.03553 7.21751C4.2308 7.02225 4.2308 6.70567 4.03553 6.51041L1.20711 3.68198L4.03553 0.853554C4.2308 0.658291 4.2308 0.341709 4.03553 0.146447C3.84027 -0.0488155 3.52369 -0.0488155 3.32843 0.146447L0.146447 3.32843ZM177.857 4.03553C178.053 3.84027 178.053 3.52369 177.857 3.32843L174.675 0.146447C174.48 -0.0488155 174.164 -0.0488155 173.968 0.146447C173.773 0.341709 173.773 0.658291 173.968 0.853554L176.797 3.68198L173.968 6.51041C173.773 6.70567 173.773 7.02225 173.968 7.21751C174.164 7.41278 174.48 7.41278 174.675 7.21751L177.857 4.03553ZM0.5 3.68198V4.18198H177.504V3.68198V3.18198H0.5V3.68198Z',
-} as const;
-const VERTICAL_AXIS = {
-  x: 157.9325,
-  y: 56.59,
-  path: 'M0.146447 3.32843C-0.0488155 3.52369 -0.0488155 3.84027 0.146447 4.03553L3.32843 7.21751C3.52369 7.41278 3.84027 7.41278 4.03553 7.21751C4.2308 7.02225 4.2308 6.70567 4.03553 6.51041L1.20711 3.68198L4.03553 0.853554C4.2308 0.658291 4.2308 0.341709 4.03553 0.146447C3.84027 -0.0488155 3.52369 -0.0488155 3.32843 0.146447L0.146447 3.32843ZM201.91 4.03553C202.105 3.84027 202.105 3.52369 201.91 3.32843L198.728 0.146447C198.533 -0.0488155 198.216 -0.0488155 198.021 0.146447C197.826 0.341709 197.826 0.658291 198.021 0.853554L200.85 3.68198L198.021 6.51041C197.826 6.70567 197.826 7.02225 198.021 7.21751C198.216 7.41278 198.533 7.41278 198.728 7.21751L201.91 4.03553ZM0.5 3.68198V4.18198H201.557V3.68198V3.18198H0.5V3.68198Z',
-} as const;
+const GRID_CENTER = GRID_INSET + GRID_SIZE / 2;
 
 /** Body(세로)·Mind(가로) 2축 사분면에 컨디션 기록을 찍는 플롯입니다. */
 export function ConditionQuadrantPlot({
@@ -129,20 +119,22 @@ export function ConditionQuadrantPlot({
           </G>
         ))}
 
-        <Path
-          d={HORIZONTAL_AXIS.path}
-          fill={colors.gray[400]}
-          transform={`translate(${HORIZONTAL_AXIS.x * FIGMA_TO_VIEW_SCALE} ${
-            HORIZONTAL_AXIS.y * FIGMA_TO_VIEW_SCALE
-          }) scale(${FIGMA_TO_VIEW_SCALE})`}
+        <Line
+          x1={GRID_INSET}
+          y1={GRID_CENTER}
+          x2={GRID_INSET + GRID_SIZE}
+          y2={GRID_CENTER}
+          stroke={colors.gray[400]}
+          strokeWidth={0.8}
         />
-        <G
-          transform={`translate(${VERTICAL_AXIS.x * FIGMA_TO_VIEW_SCALE} ${
-            VERTICAL_AXIS.y * FIGMA_TO_VIEW_SCALE
-          }) rotate(90) scale(${FIGMA_TO_VIEW_SCALE})`}
-        >
-          <Path d={VERTICAL_AXIS.path} fill={colors.gray[400]} />
-        </G>
+        <Line
+          x1={GRID_CENTER}
+          y1={GRID_INSET}
+          x2={GRID_CENTER}
+          y2={GRID_INSET + GRID_SIZE}
+          stroke={colors.gray[400]}
+          strokeWidth={0.8}
+        />
       </Svg>
 
       {onSelect ? (
@@ -219,13 +211,23 @@ export function ConditionQuadrantPlot({
                 accessibilityRole="button"
                 accessibilityState={{ selected: active }}
                 hitSlop={8}
-                style={[styles.marker, badge && styles.markerBadge, active && styles.markerActive]}
+                style={[
+                  styles.marker,
+                  styles.markerInAnchor,
+                  badge && styles.markerBadgeInAnchor,
+                  active && styles.markerActive,
+                ]}
                 onPress={() => onMarkerPress(point)}
               >
                 {content}
               </Pressable>
               {active && !badge && activeMarkerTime != null ? (
-                <Typography variant="caption" align="center" color={colors.secondary}>
+                <Typography
+                  variant="caption"
+                  align="center"
+                  color={colors.secondary}
+                  style={styles.markerTime}
+                >
                   {activeMarkerTime}
                 </Typography>
               ) : null}
@@ -335,12 +337,28 @@ const styles = StyleSheet.create({
   markerActive: {
     backgroundColor: colors.primary,
   },
+  markerInAnchor: {
+    marginLeft: spacing[0],
+    marginTop: spacing[0],
+  },
+  markerBadgeInAnchor: {
+    marginLeft: -spacing.px,
+    marginTop: -spacing.px,
+  },
   markerAnchor: {
     position: 'absolute',
+    width: MARKER_SIZE,
+    height: MARKER_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: -MARKER_SIZE / 2,
     marginTop: -MARKER_SIZE / 2,
+  },
+  markerTime: {
+    position: 'absolute',
+    top: MARKER_SIZE,
+    width: spacing[15],
+    marginLeft: -spacing[5],
   },
   historyList: {
     position: 'absolute',
