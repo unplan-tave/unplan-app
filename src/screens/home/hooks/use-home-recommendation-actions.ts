@@ -2,7 +2,10 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { getRecommendationAcceptErrorKind } from '@/domains/ai-recommendation/api/client';
-import { useAcceptRecommendationMutation } from '@/domains/ai-recommendation/api/mutations';
+import {
+  useAcceptRecommendationMutation,
+  usePassRecommendationMutation,
+} from '@/domains/ai-recommendation/api/mutations';
 import { t } from '@/lib/i18n';
 
 import type { ScheduleRecommendation } from '@/domains/ai-recommendation/model';
@@ -21,6 +24,7 @@ export function useHomeRecommendationActions({
     () => new Set(),
   );
   const acceptRecommendationMutation = useAcceptRecommendationMutation();
+  const passRecommendationMutation = usePassRecommendationMutation();
 
   useEffect(() => {
     if (params.openAddSheet !== '1') {
@@ -45,11 +49,19 @@ export function useHomeRecommendationActions({
   const handleOpenAddSheet = useCallback(() => setIsAddSheetVisible(true), []);
   /** 카드 추가 sheet를 닫습니다. */
   const handleCloseAddSheet = useCallback(() => setIsAddSheetVisible(false), []);
-  /** 추천 카드를 현재 세션에서 숨깁니다. */
+  /** 추천을 서버에 건너뛰기 처리하고, 성공 시 목록에서 숨깁니다. */
   const handleDismissRecommendation = useCallback(
-    (recommendId: number) =>
-      setDismissedRecommendationIds((previous) => new Set(previous).add(recommendId)),
-    [],
+    async (recommendId: number) => {
+      if (passRecommendationMutation.isPending) return;
+
+      try {
+        await passRecommendationMutation.mutateAsync(recommendId);
+        setDismissedRecommendationIds((previous) => new Set(previous).add(recommendId));
+      } catch {
+        onError('추천 삭제에 실패했어요. 다시 시도해 주세요.');
+      }
+    },
+    [onError, passRecommendationMutation],
   );
   /** 서버가 계산한 추천을 수락해 실제 핀 카드로 반영합니다. */
   const handleAddRecommendation = useCallback(

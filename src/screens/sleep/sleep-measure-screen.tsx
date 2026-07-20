@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ConditionSleepConflictSheet } from '@/components/features/condition/condition-sleep-conflict-sheet';
 import { SleepWeekPicker } from '@/components/features/sleep/sleep-week-picker';
 import { AppBackground } from '@/components/ui/AppBackground';
 import { Header, HeaderCancel } from '@/components/ui/Header';
@@ -104,58 +105,69 @@ export function SleepMeasureScreen() {
                 </View>
               ) : (
                 <View style={styles.card}>
-                  {!sleep.isAllNight ? (
+                  <View style={styles.dateSection}>
                     <SleepWeekPicker
                       monthLabel={sleep.monthLabel}
                       days={sleep.weekDays}
                       onSelect={sleep.selectDate}
                     />
-                  ) : (
                     <SleepTooltip
-                      message="밤샘으로 기록할까요?"
+                      placement="date"
+                      message="밤을 샌 기간을 확인해주세요"
                       accessibilityLabel="밤샘 기록 안내 닫기"
                       onDismiss={sleep.dismissAllNightTooltip}
                       visible={sleep.isAllNightTooltipVisible}
                     />
-                  )}
+                  </View>
 
-                  <View style={styles.timeRange}>
-                    <TwoDigitTimeInput
-                      value={sleep.bedTime}
-                      error={sleep.validationMessage != null}
-                      accessibilityLabel="취침 시각 선택"
-                      onChange={sleep.changeBedTime}
+                  {!sleep.isAllNight ? (
+                    <>
+                      <View style={styles.timeRange}>
+                        <TwoDigitTimeInput
+                          value={sleep.bedTime}
+                          error={sleep.validationMessage != null}
+                          accessibilityLabel="취침 시각 선택"
+                          onChange={sleep.changeBedTime}
+                        />
+                        <Typography variant="bodyM" color={colors.gray[400]}>
+                          –
+                        </Typography>
+                        <TwoDigitTimeInput
+                          value={sleep.wakeUpTime}
+                          accessibilityLabel="기상 시각 선택"
+                          onChange={sleep.changeWakeTime}
+                        />
+                      </View>
+
+                      <View style={styles.divider} />
+                    </>
+                  ) : null}
+
+                  <View style={styles.toggleSection}>
+                    <SleepTooltip
+                      placement="toggle"
+                      message="낮잠으로 기록할까요?"
+                      accessibilityLabel="낮잠 기록 안내 닫기"
+                      onDismiss={sleep.dismissNapTooltip}
+                      visible={sleep.isNapTooltipVisible}
                     />
-                    <Typography variant="bodyM" color={colors.gray[400]}>
-                      –
-                    </Typography>
-                    <TwoDigitTimeInput
-                      value={sleep.wakeUpTime}
-                      accessibilityLabel="기상 시각 선택"
-                      onChange={sleep.changeWakeTime}
+                    <ToggleRow
+                      label="낮잠으로 기록"
+                      value={sleep.isNap}
+                      onChange={sleep.toggleNap}
+                    />
+                    <ToggleRow
+                      label="밤샘으로 기록"
+                      value={sleep.isAllNight}
+                      onChange={sleep.toggleAllNight}
                     />
                   </View>
 
                   <View style={styles.divider} />
 
-                  <SleepTooltip
-                    message="낮잠으로 기록할까요?"
-                    accessibilityLabel="낮잠 기록 안내 닫기"
-                    onDismiss={sleep.dismissNapTooltip}
-                    visible={sleep.isNapTooltipVisible}
-                  />
-                  <ToggleRow label="낮잠으로 기록" value={sleep.isNap} onChange={sleep.toggleNap} />
-                  <ToggleRow
-                    label="밤샘으로 기록"
-                    value={sleep.isAllNight}
-                    onChange={sleep.toggleAllNight}
-                  />
-
-                  <View style={styles.divider} />
-
                   <SleepDurationInput
+                    disabled={sleep.isAllNight}
                     durationMinutes={sleep.durationMinutes}
-                    error={sleep.validationMessage != null}
                     onChange={sleep.changeDuration}
                   />
                 </View>
@@ -184,6 +196,12 @@ export function SleepMeasureScreen() {
       {sleep.validationMessage ? (
         <SleepErrorToast onDismiss={sleep.dismissValidationMessage} />
       ) : null}
+      <ConditionSleepConflictSheet
+        visible={sleep.isConditionConflictVisible}
+        source="sleep"
+        onClose={sleep.closeConditionConflict}
+        onOpenSleepRecords={sleep.openConditionRecords}
+      />
     </View>
   );
 }
@@ -309,12 +327,12 @@ function TwoDigitTimeInput({
 }
 
 function SleepDurationInput({
+  disabled,
   durationMinutes,
-  error = false,
   onChange,
 }: {
+  disabled: boolean;
   durationMinutes: number | null;
-  error?: boolean;
   onChange: (durationMinutes: number | null) => void;
 }) {
   const initial = durationParts(durationMinutes);
@@ -352,68 +370,50 @@ function SleepDurationInput({
   };
 
   return (
-    <View style={[styles.durationInput, error && styles.durationInputError]}>
-      {activePart === 'hours' ? (
-        <TextInput
-          ref={hoursInputRef}
-          accessibilityLabel="수면 시간"
-          keyboardType="number-pad"
-          inputAccessoryViewID={SLEEP_INPUT_ACCESSORY_ID}
-          maxLength={2}
-          placeholder="--"
-          placeholderTextColor={colors.gray[500]}
-          selectTextOnFocus
-          style={styles.durationNumberInput}
-          value={hours}
-          returnKeyType="done"
-          blurOnSubmit
-          onSubmitEditing={Keyboard.dismiss}
-          onChangeText={(text) => {
-            const nextHours = digitsOnly(text);
-            setHours(nextHours);
-            commit(nextHours, minutes);
+    <View accessibilityLabel="수면 시간" style={styles.durationInput}>
+      <TextInput
+        ref={hoursInputRef}
+        accessibilityLabel="수면 시간"
+        editable={!disabled}
+        keyboardType="number-pad"
+        inputAccessoryViewID={SLEEP_INPUT_ACCESSORY_ID}
+        maxLength={2}
+        placeholder="--"
+        placeholderTextColor={colors.gray[500]}
+        selectTextOnFocus
+        style={styles.durationNumberInput}
+        value={hours}
+        onFocus={() => setActivePart('hours')}
+        onChangeText={(text) => {
+          const nextHours = digitsOnly(text);
+          setHours(nextHours);
+          commit(nextHours, minutes);
 
-            if (nextHours.length === 2) setActivePart('minutes');
-          }}
-        />
-      ) : (
-        <DurationValue
-          accessibilityLabel="수면 시간 입력"
-          value={hours}
-          onPress={() => setActivePart('hours')}
-        />
-      )}
+          if (nextHours.length === 2) setActivePart('minutes');
+        }}
+      />
       <Typography variant="titleS" color={colors.gray[600]}>
         시간
       </Typography>
-      {activePart === 'minutes' ? (
-        <TextInput
-          ref={minutesInputRef}
-          accessibilityLabel="수면 분"
-          keyboardType="number-pad"
-          inputAccessoryViewID={SLEEP_INPUT_ACCESSORY_ID}
-          maxLength={2}
-          placeholder="--"
-          placeholderTextColor={colors.gray[500]}
-          selectTextOnFocus
-          style={styles.durationNumberInput}
-          value={minutes}
-          returnKeyType="done"
-          blurOnSubmit
-          onSubmitEditing={Keyboard.dismiss}
-          onChangeText={(text) => {
-            const nextMinutes = minutesOnly(text);
-            setMinutes(nextMinutes);
-            commit(hours, nextMinutes);
-          }}
-        />
-      ) : (
-        <DurationValue
-          accessibilityLabel="수면 분 입력"
-          value={minutes}
-          onPress={() => setActivePart('minutes')}
-        />
-      )}
+      <TextInput
+        ref={minutesInputRef}
+        accessibilityLabel="수면 분"
+        editable={!disabled}
+        keyboardType="number-pad"
+        inputAccessoryViewID={SLEEP_INPUT_ACCESSORY_ID}
+        maxLength={2}
+        placeholder="--"
+        placeholderTextColor={colors.gray[500]}
+        selectTextOnFocus
+        style={styles.durationNumberInput}
+        value={minutes}
+        onFocus={() => setActivePart('minutes')}
+        onChangeText={(text) => {
+          const nextMinutes = minutesOnly(text);
+          setMinutes(nextMinutes);
+          commit(hours, nextMinutes);
+        }}
+      />
       <Typography variant="titleS" color={colors.gray[600]}>
         분
       </Typography>
@@ -448,33 +448,6 @@ function TimeValue({
   );
 }
 
-function DurationValue({
-  accessibilityLabel,
-  value,
-  onPress,
-}: {
-  accessibilityLabel: string;
-  value: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      accessibilityLabel={accessibilityLabel}
-      accessibilityRole="button"
-      style={styles.durationValue}
-      onPress={onPress}
-    >
-      <Typography
-        variant="display"
-        align="center"
-        color={value ? colors.primary : colors.gray[500]}
-      >
-        {value || '--'}
-      </Typography>
-    </Pressable>
-  );
-}
-
 function timeParts(time: string | null) {
   if (time == null) return { hours: '', minutes: '' };
 
@@ -491,12 +464,8 @@ function durationParts(durationMinutes: number | null) {
   };
 }
 
-function digitsOnly(value: string) {
-  return value.replace(/\D/g, '').slice(0, 2);
-}
-
 function timeHoursOnly(value: string) {
-  const digits = digitsOnly(value);
+  const digits = value.replace(/\D/g, '').slice(0, 2);
   if (digits.length === 0 || Number(digits[0]) <= 2) {
     return digits.length < 2 || Number(digits) <= 23 ? digits : digits[0];
   }
@@ -505,8 +474,12 @@ function timeHoursOnly(value: string) {
 }
 
 function minutesOnly(value: string) {
-  const digits = digitsOnly(value);
+  const digits = value.replace(/\D/g, '').slice(0, 2);
   return digits.length === 0 || Number(digits[0]) <= 5 ? digits : '';
+}
+
+function digitsOnly(value: string) {
+  return value.replace(/\D/g, '').slice(0, 2);
 }
 
 function ToggleRow({
@@ -539,16 +512,20 @@ function SleepTooltip({
   visible,
   accessibilityLabel,
   onDismiss,
+  placement,
 }: {
   message: string;
   visible: boolean;
   accessibilityLabel: string;
   onDismiss: () => void;
+  placement: 'date' | 'toggle';
 }) {
   if (!visible) return null;
 
   return (
-    <View style={styles.tooltipRow}>
+    <View
+      style={[styles.tooltipRow, placement === 'date' ? styles.dateTooltip : styles.toggleTooltip]}
+    >
       <View style={styles.tooltip}>
         <Typography variant="caption" color={colors.gray.white}>
           {message}
@@ -563,6 +540,7 @@ function SleepTooltip({
           </Typography>
         </Pressable>
       </View>
+      <View style={styles.tooltipPointer} />
     </View>
   );
 }
@@ -641,6 +619,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing[4],
   },
+  dateSection: {
+    position: 'relative',
+  },
   timePill: {
     flex: 1,
     height: 32,
@@ -680,8 +661,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  toggleSection: {
+    position: 'relative',
+    gap: spacing[1.5],
+  },
   tooltipRow: {
-    alignItems: 'flex-start',
+    position: 'absolute',
+    right: spacing[0],
+    zIndex: 1,
+    alignItems: 'flex-end',
+  },
+  dateTooltip: {
+    top: spacing[1],
+  },
+  toggleTooltip: {
+    top: -spacing[8],
   },
   tooltip: {
     flexDirection: 'row',
@@ -690,6 +684,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[3],
     paddingVertical: 6,
     borderRadius: radius['2xs'],
+    backgroundColor: colors.gray[600],
+  },
+  tooltipPointer: {
+    width: spacing[2],
+    height: spacing[2],
+    marginTop: -spacing[1],
+    marginRight: spacing[4],
+    transform: [{ rotate: '45deg' }],
     backgroundColor: colors.gray[600],
   },
   durationInput: {
@@ -702,10 +704,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     backgroundColor: colors.alpha.white70,
   },
-  durationInputError: {
-    borderWidth: 1,
-    borderColor: colors.secondary,
-  },
   durationNumberInput: {
     ...typography.display,
     width: 48,
@@ -715,12 +713,6 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     textAlign: 'center',
     color: colors.primary,
-  },
-  durationValue: {
-    width: 48,
-    height: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   keyboardAccessory: {
     alignItems: 'flex-end',

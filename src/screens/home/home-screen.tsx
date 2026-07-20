@@ -22,7 +22,7 @@ import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { ViewModeButton } from '@/components/ui/ViewModeButton';
-import { colors, radius, spacing } from '@/constants/theme';
+import { colors, radius, spacing, typography } from '@/constants/theme';
 import { getConditionScoreTheme } from '@/domains/condition/score-theme';
 import { t } from '@/lib/i18n';
 
@@ -54,8 +54,8 @@ export function HomeScreen() {
   } = home;
   const scoreTheme = getConditionScoreTheme(header.conditionScore);
   const timelineFocus = useFocusTimelineCurrentTime(
-    timeline.currentTimeMarker != null,
-    timeline.currentTimeMarker?.offsetRatio ?? null,
+    timeline.currentTimeMarker,
+    HOME_HEADER_OVERLAY_HEIGHT,
   );
 
   return (
@@ -80,6 +80,7 @@ export function HomeScreen() {
                 <Rect width="1" height="100%" fill="url(#homeTimelineLine)" />
               </Svg>
               <ScrollView
+                ref={timelineFocus.scrollRef}
                 style={styles.timelineScroll}
                 contentContainerStyle={styles.timelineContent}
                 showsVerticalScrollIndicator={false}
@@ -94,11 +95,7 @@ export function HomeScreen() {
                   <View
                     key={card.id}
                     style={styles.timelineCardSlot}
-                    onLayout={
-                      timeline.currentTimeMarker?.cardId === card.id
-                        ? timelineFocus.handleMarkerLayout
-                        : undefined
-                    }
+                    onLayout={(event) => timelineFocus.handleCardLayout(card.id, event)}
                   >
                     <TimelineCard {...card} />
                   </View>
@@ -400,7 +397,8 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    transform: [{ translateY: -spacing[3] }],
+    // 전달된 top 좌표와 수평선의 중심을 일치시킵니다.
+    transform: [{ translateY: -(typography.caption.lineHeight / 2) }],
   },
   currentTimeBadge: {
     alignItems: 'center',

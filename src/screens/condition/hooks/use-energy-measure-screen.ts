@@ -3,9 +3,11 @@ import { format, parse } from 'date-fns';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { getConditionSubmissionErrorMessage } from '@/domains/condition/api/client';
 import { useSaveConditionRecordMutation } from '@/domains/condition/api/mutations';
 import { useConditionRecordQuery } from '@/domains/condition/api/queries';
 import { normalizedToScore, scoreToNormalized } from '@/domains/condition/energy';
+import { isSleepConditionOverlapError } from '@/lib/api/error';
 
 const DATE_ID = 'yyyy-MM-dd';
 const DATE_LABEL = 'yyyy.MM.dd';
@@ -27,14 +29,26 @@ export function useEnergyMeasureScreen() {
   const now = useMemo(() => new Date(), []);
   const [bodyScore, setBodyScore] = useState(3);
   const [mindScore, setMindScore] = useState(3);
-  const [hasValue, setHasValue] = useState(false);
+  // 피그마의 신규 입력 화면은 중앙값(Body/Mind 3점)을 기본 선택 상태로 보여줍니다.
+  const [hasValue, setHasValue] = useState(!isEditMode);
   const [dateId, setDateId] = useState(() => format(now, DATE_ID));
   const [time, setTime] = useState(() => format(now, 'HH:mm'));
   const [activeField, setActiveField] = useState<PickerField | null>(null);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
+  const [isSleepConflictVisible, setIsSleepConflictVisible] = useState(false);
 
   const recordQuery = useConditionRecordQuery(isEditMode ? conditionId : null);
-  const saveMutation = useSaveConditionRecordMutation({ onSuccess: () => router.back() });
+  const saveMutation = useSaveConditionRecordMutation({
+    onSuccess: () => router.back(),
+    onError: (error) => {
+      if (isSleepConditionOverlapError(error)) {
+        setIsSleepConflictVisible(true);
+        return;
+      }
+
+      setValidationMessage(getConditionSubmissionErrorMessage(error));
+    },
+  });
 
   const loadedRecord = recordQuery.data;
   useEffect(() => {
@@ -66,17 +80,32 @@ export function useEnergyMeasureScreen() {
 
     return options.includes(dateLabel) ? options : [dateLabel, ...options];
   }, [dateLabel, now]);
+  const timeOptions = useMemo(() => {
+    if (dateId !== format(now, DATE_ID)) {
+      return TIME_OPTIONS;
+    }
+
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    return TIME_OPTIONS.filter((option) => timeToMinutes(option) <= currentMinutes);
+  }, [dateId, now]);
 
   const selectPoint = useCallback((x: number, y: number) => {
     setMindScore(normalizedToScore(x));
     setBodyScore(normalizedToScore(y));
     setHasValue(true);
     setValidationMessage(null);
+    setIsSleepConflictVisible(false);
   }, []);
 
   const openDateField = useCallback(() => setActiveField('date'), []);
   const openTimeField = useCallback(() => setActiveField('time'), []);
   const closeField = useCallback(() => setActiveField(null), []);
+  const closeSleepConflict = useCallback(() => setIsSleepConflictVisible(false), []);
+  const openSleepRecords = useCallback(() => {
+    setIsSleepConflictVisible(false);
+    router.push('/sleep/record');
+  }, []);
 
   const selectOption = useCallback((option: string) => {
     setActiveField((field) => {
@@ -115,15 +144,18 @@ export function useEnergyMeasureScreen() {
     dateLabel,
     timeLabel: time,
     activeField,
-    fieldOptions: activeField === 'date' ? dateOptions : TIME_OPTIONS,
+    fieldOptions: activeField === 'date' ? dateOptions : timeOptions,
     fieldValue: activeField === 'date' ? dateLabel : time,
     validationMessage,
+    isSleepConflictVisible,
     canSubmit: hasValue && !saveMutation.isPending,
     isSaving: saveMutation.isPending,
     selectPoint,
     openDateField,
     openTimeField,
     closeField,
+    closeSleepConflict,
+    openSleepRecords,
     selectOption,
     submit,
     cancel,
@@ -132,4 +164,10 @@ export function useEnergyMeasureScreen() {
 
 function pad2(value: number): string {
   return value.toString().padStart(2, '0');
+}
+
+function timeToMinutes(value: string): number {
+  const [hours = '0', minutes = '0'] = value.split(':');
+
+  return Number(hours) * 60 + Number(minutes);
 }

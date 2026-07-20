@@ -8,6 +8,7 @@ import {
   getCondition,
   updateCondition,
 } from '@/lib/api/endpoints/condition/condition';
+import { isSleepConditionOverlapError } from '@/lib/api/error';
 
 import {
   toConditionCreateRequest,
@@ -29,6 +30,15 @@ export async function submitConditionRecord(
   const response = await updateCondition(input.id, toConditionUpdateRequest(input));
 
   return toConditionRecordEntryFromResponse(response.data);
+}
+
+/** 수면 기록과 같은 시간대에 컨디션을 저장할 때 사용자에게 보여줄 문구입니다. */
+export function getConditionSubmissionErrorMessage(error: unknown): string {
+  if (isSleepConditionOverlapError(error)) {
+    return '수면 시간대와 컨디션 시간이 겹칩니다.';
+  }
+
+  return '저장하지 못했어요. 네트워크 연결을 확인한 뒤 다시 시도해 주세요.';
 }
 
 /** 단일 컨디션 기록을 domain model로 조회합니다. */

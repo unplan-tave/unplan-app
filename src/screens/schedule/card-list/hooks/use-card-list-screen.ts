@@ -1,10 +1,14 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useInfiniteScheduleSearchQuery } from '@/domains/schedule/api/queries';
+import {
+  useInfiniteScheduleSearchQuery,
+  usePersonalTagsQuery,
+} from '@/domains/schedule/api/queries';
 import { toCardItemsFromScheduleList } from '@/domains/schedule/card-mapper';
 import {
+  formatCardListPeriodLabel,
   groupCardsByMonth,
   hasActiveCardListFilter,
   progressStatusToScheduleStatus,
@@ -18,7 +22,8 @@ import { useCardListInfiniteScroll } from './use-card-list-infinite-scroll';
 export function useCardListScreen() {
   const insets = useSafeAreaInsets();
   const { q } = useLocalSearchParams<{ q?: string }>();
-  const personalTags = useScheduleStore((store) => store.personalTags);
+  const storedPersonalTags = useScheduleStore((store) => store.personalTags);
+  const setPersonalTags = useScheduleStore((store) => store.setPersonalTags);
   const {
     filters,
     expandedFilter,
@@ -27,8 +32,22 @@ export function useCardListScreen() {
     toggleExpandedFilter,
     togglePersonalTag,
     toggleProgressStatus,
+    isDateRangeSheetVisible,
+    openDateRangeSheet,
+    closeDateRangeSheet,
+    applyDateRange,
   } = useCardListFilters(q);
+  const personalTagsQuery = usePersonalTagsQuery({
+    enabled: expandedFilter === 'personal',
+  });
+  const personalTags = personalTagsQuery.data ?? storedPersonalTags;
   const [isScreenFocused, setIsScreenFocused] = useState(false);
+
+  useEffect(() => {
+    if (personalTagsQuery.data != null) {
+      setPersonalTags(personalTagsQuery.data);
+    }
+  }, [personalTagsQuery.data, setPersonalTags]);
 
   useFocusEffect(
     useCallback(() => {
@@ -47,6 +66,8 @@ export function useCardListScreen() {
       personalTags: personalTags
         .filter((tag) => filters.personalTagIds.includes(tag.id))
         .map((tag) => tag.label),
+      startDate: filters.startDate,
+      endDate: filters.endDate,
     }),
     [
       filters.cardType,
@@ -54,6 +75,8 @@ export function useCardListScreen() {
       filters.personalTagIds,
       filters.progressStatuses,
       filters.searchQuery,
+      filters.startDate,
+      filters.endDate,
       personalTags,
     ],
   );
@@ -73,7 +96,7 @@ export function useCardListScreen() {
   const hasActiveFilter = useMemo(() => hasActiveCardListFilter(filters), [filters]);
 
   const handleCardPress = useCallback((cardId: string) => {
-    router.push(`/card/view?cardId=${cardId}`);
+    router.push(`/card/view?cardId=${cardId}&returnTo=card-list`);
   }, []);
 
   const handleSearchPress = useCallback(() => {
@@ -98,6 +121,7 @@ export function useCardListScreen() {
     sections,
     hasActiveFilter,
     totalCards: scheduleSearchQuery.data?.pages[0]?.totalElements ?? 0,
+    periodLabel: formatCardListPeriodLabel(filters.startDate, filters.endDate),
     isLoading: scheduleSearchQuery.isLoading,
     isError: scheduleSearchQuery.isError,
     isFetchingNextPage: scheduleSearchQuery.isFetchingNextPage,
@@ -110,5 +134,11 @@ export function useCardListScreen() {
     toggleProgressStatus,
     toggleConditionTag,
     togglePersonalTag,
+    isDateRangeSheetVisible,
+    openDateRangeSheet,
+    closeDateRangeSheet,
+    applyDateRange,
+    isPersonalTagsLoading: expandedFilter === 'personal' && personalTagsQuery.isLoading,
+    isPersonalTagsError: expandedFilter === 'personal' && personalTagsQuery.isError,
   };
 }

@@ -8,7 +8,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { scheduleQueryKeys } from '@/domains/schedule/api/query-keys';
 import { useOptimisticQueryMutation } from '@/lib/api/optimistic-query-mutation';
 
-import { submitAcceptRecommendation, submitRecommendationCriteriaSettings } from './client';
+import {
+  submitAcceptRecommendation,
+  submitPassRecommendation,
+  submitRecommendationCriteriaSettings,
+} from './client';
 import { aiRecommendationQueryKeys, recommendationCriteriaQueryKeys } from './query-keys';
 
 import type {
@@ -55,6 +59,25 @@ export function useAcceptRecommendationMutation(
     onSuccess: (data, variables, onMutateResult, context) => {
       void queryClient.invalidateQueries({ queryKey: aiRecommendationQueryKeys.all });
       void queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.all });
+      options?.onSuccess?.(data, variables, onMutateResult, context);
+    },
+  });
+}
+
+type PassRecommendationMutationOptions = Omit<
+  UseMutationOptions<void, Error, number>,
+  'mutationFn'
+>;
+
+/** 추천을 건너뛴 뒤 추천 목록 캐시를 갱신합니다. */
+export function usePassRecommendationMutation(options?: PassRecommendationMutationOptions) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: submitPassRecommendation,
+    ...options,
+    onSuccess: (data, variables, onMutateResult, context) => {
+      void queryClient.invalidateQueries({ queryKey: aiRecommendationQueryKeys.all });
       options?.onSuccess?.(data, variables, onMutateResult, context);
     },
   });

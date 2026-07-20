@@ -4,11 +4,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { getQueueTimeRecommendationErrorMode } from '@/domains/ai-recommendation/api/client';
 import { useAcceptRecommendationMutation } from '@/domains/ai-recommendation/api/mutations';
 import { useQueueTimeRecommendationsQuery } from '@/domains/ai-recommendation/api/queries';
+import { isUpcomingScheduleRecommendation } from '@/domains/ai-recommendation/model';
 import {
   useCreateScheduleMutation,
   useUpdateScheduleMutation,
 } from '@/domains/schedule/api/mutations';
 import { toScheduleCreateInput, toScheduleUpdateInput } from '@/domains/schedule/card-mapper';
+import { useCurrentTime } from '@/hooks/use-current-time';
 
 import type { CardFormValues, CardItem, PersonalTagOption } from '@/domains/schedule/model';
 
@@ -33,6 +35,7 @@ export function useCardViewConversion({
   personalTags,
   initialToast,
 }: UseCardViewConversionParams) {
+  const now = useCurrentTime();
   const createScheduleMutation = useCreateScheduleMutation();
   const updateScheduleMutation = useUpdateScheduleMutation();
   const acceptRecommendationMutation = useAcceptRecommendationMutation();
@@ -51,6 +54,9 @@ export function useCardViewConversion({
     createScheduleMutation.isPending ||
     updateScheduleMutation.isPending ||
     acceptRecommendationMutation.isPending;
+  const queueRecommendationCandidates = (queueRecommendationQuery.data?.candidates ?? []).filter(
+    (recommendation) => isUpcomingScheduleRecommendation(recommendation, now),
+  );
 
   useEffect(() => {
     if (toast == null) {
@@ -175,7 +181,7 @@ export function useCardViewConversion({
     handleAcceptRecommendation,
     handleSearch14Days,
     handleEditDuration,
-    queueRecommendationCandidates: queueRecommendationQuery.data?.candidates ?? [],
+    queueRecommendationCandidates,
     isQueueRecommendationLoading: queueRecommendationQuery.isFetching,
     queueRecommendationErrorMode: getQueueTimeRecommendationErrorMode(
       queueRecommendationQuery.error,

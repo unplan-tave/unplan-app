@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ConditionQuadrantPlot } from '@/components/features/condition/condition-quadrant-plot';
+import { ConditionSleepConflictSheet } from '@/components/features/condition/condition-sleep-conflict-sheet';
 import { AppBackground } from '@/components/ui/AppBackground';
 import { TimePickerBottomSheet } from '@/components/ui/BottomSheet';
 import { Header, HeaderCancel } from '@/components/ui/Header';
@@ -78,6 +79,12 @@ export function EnergyMeasureScreen() {
         options={energy.fieldOptions}
         onSelect={energy.selectOption}
         onClose={energy.closeField}
+      />
+      <ConditionSleepConflictSheet
+        visible={energy.isSleepConflictVisible}
+        source="condition"
+        onClose={energy.closeSleepConflict}
+        onOpenSleepRecords={energy.openSleepRecords}
       />
     </View>
   );
