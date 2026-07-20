@@ -5,10 +5,8 @@ import { useDailyMemosQuery } from '@/domains/daily-memo/api/queries';
 import { useMeasurementAveragesQuery } from '@/domains/measurement/api/queries';
 import { toConditionSummaryFromAverage } from '@/domains/measurement/model';
 import { getMeasurementMonthRange, getMeasurementWeekRange } from '@/domains/measurement/period';
-import { withScheduleDetailPersonalTags } from '@/domains/schedule/api/mapper';
 import {
   useDailyMessageQuery,
-  useScheduleDetailQueries,
   useSchedulesByDateQuery,
   useSchedulesByMonthQuery,
   useSchedulesByWeekQuery,
@@ -56,10 +54,6 @@ export function useHomePageData({
   const schedulesByDateQuery = useSchedulesByDateQuery(selectedDateValue, {
     enabled: viewMode === 'daily',
   });
-  const scheduleDetailQueries = useScheduleDetailQueries(
-    (schedulesByDateQuery.data ?? []).map((schedule) => schedule.id),
-    viewMode === 'daily',
-  );
   const schedulesByWeekQuery = useSchedulesByWeekQuery(selectedDateValue, {
     enabled: viewMode === 'weekly',
   });
@@ -100,17 +94,9 @@ export function useHomePageData({
     enabled: canShowRecommendations,
   });
 
-  const schedulesWithPersonalTags = useMemo(
-    () =>
-      withScheduleDetailPersonalTags(
-        schedulesByDateQuery.data ?? [],
-        scheduleDetailQueries.flatMap((query) => (query.data == null ? [] : [query.data])),
-      ),
-    [scheduleDetailQueries, schedulesByDateQuery.data],
-  );
   const cards = useMemo(
-    () => toCardItemsFromScheduleList(schedulesWithPersonalTags, personalTags),
-    [personalTags, schedulesWithPersonalTags],
+    () => toCardItemsFromScheduleList(schedulesByDateQuery.data ?? [], personalTags),
+    [personalTags, schedulesByDateQuery.data],
   );
   const timelineCards = useMemo(
     () =>

@@ -145,19 +145,6 @@ export function toScheduleListItem(response: ScheduleGetResponse): ScheduleListI
   };
 }
 
-/** 일별 목록과 상세 응답을 합쳐 목록 화면에 개인 태그를 제공합니다. */
-export function withScheduleDetailPersonalTags(
-  schedules: ScheduleListItem[],
-  details: ScheduleDetail[],
-): ScheduleListItem[] {
-  const detailsById = new Map(details.map((detail) => [detail.id, detail]));
-
-  return schedules.map((schedule) => ({
-    ...schedule,
-    personalTags: detailsById.get(schedule.id)?.personalTags ?? schedule.personalTags,
-  }));
-}
-
 export function toScheduleSearchListItems(
   response?: ApiResponsePageResponseScheduleSearchResponse,
 ): ScheduleListItem[] {

@@ -2,7 +2,7 @@
  * schedule 조회 hook 모음입니다.
  * 날짜/주/월/검색/상세 조회를 화면 단위에 맞는 query key로 분리합니다.
  */
-import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import {
   fetchDailyMessage,
@@ -95,19 +95,6 @@ export function useScheduleDetailQuery(
     },
     ...options,
     enabled: scheduleId != null && (options?.enabled ?? true),
-  });
-}
-
-/** 목록 응답에 없는 개인 태그를 일정 상세 응답으로 보강합니다. */
-export function useScheduleDetailQueries(scheduleIds: number[], enabled = true) {
-  const uniqueScheduleIds = [...new Set(scheduleIds)];
-
-  return useQueries({
-    queries: uniqueScheduleIds.map((scheduleId) => ({
-      queryKey: scheduleQueryKeys.detail(scheduleId),
-      queryFn: () => fetchScheduleDetail(scheduleId),
-      enabled,
-    })),
   });
 }
 

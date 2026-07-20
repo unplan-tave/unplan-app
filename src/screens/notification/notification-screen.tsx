@@ -10,10 +10,10 @@ import { type ProgressSegmentValue } from '@/components/ui/ProgressSegment';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { withScheduleDetailPersonalTags } from '@/domains/schedule/api/mapper';
 import { useUpdateScheduleMutation } from '@/domains/schedule/api/mutations';
-import { useScheduleDetailQueries, useSchedulesByDateQuery } from '@/domains/schedule/api/queries';
+import { useSchedulesByDateQuery } from '@/domains/schedule/api/queries';
 import { hasScheduleEnded } from '@/domains/schedule/model';
+import { t } from '@/lib/i18n';
 import { formatDateValue } from '@/lib/utils/date';
 
 import type { ScheduleListItem, ScheduleStatus } from '@/domains/schedule/model';
@@ -23,12 +23,12 @@ type NotificationTab = 'all' | 'completed';
 const ALARM_NOTIFICATIONS = [
   {
     id: 'sleep-record',
-    title: '얼마나 잠들었나요?',
+    titleKey: 'notification.sleepRecord',
     href: '/sleep/measure',
   },
   {
     id: 'energy-record',
-    title: '오늘 상태는 어떠신가요?',
+    titleKey: 'notification.energyRecord',
     href: '/energy/measure',
   },
 ] as const;
@@ -38,25 +38,13 @@ export function NotificationScreen() {
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<NotificationTab>('all');
   const schedulesQuery = useSchedulesByDateQuery(formatDateValue(new Date()));
-  const scheduleDetailQueries = useScheduleDetailQueries(
-    (schedulesQuery.data ?? []).map((schedule) => schedule.id),
-    true,
-  );
   const updateScheduleMutation = useUpdateScheduleMutation();
-  const schedulesWithPersonalTags = useMemo(
-    () =>
-      withScheduleDetailPersonalTags(
-        schedulesQuery.data ?? [],
-        scheduleDetailQueries.flatMap((query) => (query.data == null ? [] : [query.data])),
-      ),
-    [scheduleDetailQueries, schedulesQuery.data],
-  );
   const endedSchedules = useMemo(
     () =>
-      schedulesWithPersonalTags
+      (schedulesQuery.data ?? [])
         .filter((schedule) => schedule.endTime.length > 0 && hasScheduleEnded(schedule))
         .sort((first, second) => second.endTime.localeCompare(first.endTime)),
-    [schedulesWithPersonalTags],
+    [schedulesQuery.data],
   );
 
   const changeScheduleStatus = (scheduleId: number, value: ProgressSegmentValue) => {
@@ -73,7 +61,7 @@ export function NotificationScreen() {
     >
       <View style={[styles.header, { height: insets.top + spacing[12], paddingTop: insets.top }]}>
         <Pressable
-          accessibilityLabel="뒤로 가기"
+          accessibilityLabel={t('notification.back')}
           accessibilityRole="button"
           hitSlop={spacing[2]}
           style={({ pressed }) => [styles.headerButton, pressed && styles.pressed]}
@@ -82,7 +70,7 @@ export function NotificationScreen() {
           <Icon name="arrowLeft" size={24} color={colors.gray[700]} />
         </Pressable>
         <Typography variant="bodyM" color={colors.gray[600]} align="center" style={styles.title}>
-          알림
+          {t('notification.title')}
         </Typography>
         <View style={styles.headerButton} />
       </View>
@@ -97,12 +85,12 @@ export function NotificationScreen() {
         <View style={styles.tabs}>
           <NotificationTabButton
             active={tab === 'all'}
-            label="전체"
+            label={t('notification.allTab')}
             onPress={() => setTab('all')}
           />
           <NotificationTabButton
             active={tab === 'completed'}
-            label="완료"
+            label={t('notification.completedTab')}
             onPress={() => setTab('completed')}
           />
         </View>
@@ -113,13 +101,16 @@ export function NotificationScreen() {
               {ALARM_NOTIFICATIONS.map((notification) => (
                 <Card
                   key={notification.id}
-                  accessibilityLabel={`${notification.title} 입력`}
+                  accessibilityLabel={t('notification.recordAccessibilityLabel').replace(
+                    '{title}',
+                    t(notification.titleKey),
+                  )}
                   variant="glass"
                   style={styles.notificationCard}
                   onPress={() => router.push(notification.href)}
                 >
                   <Typography variant="bodyM" color={colors.gray[800]}>
-                    {notification.title}
+                    {t(notification.titleKey)}
                   </Typography>
                   <Icon name="arrowRight" size={24} color={colors.gray[700]} />
                 </Card>
@@ -144,7 +135,7 @@ export function NotificationScreen() {
         )}
         {updateScheduleMutation.isError ? (
           <Typography variant="bodyS" color={colors.secondary}>
-            일정 상태를 변경하지 못했어요. 다시 시도해 주세요.
+            {t('notification.updateError')}
           </Typography>
         ) : null}
       </ScrollView>
@@ -168,7 +159,7 @@ function CompletedSchedules({
   if (isLoading) {
     return (
       <Typography variant="bodyS" color={colors.gray[400]}>
-        종료된 일정을 불러오는 중이에요.
+        {t('notification.completedLoading')}
       </Typography>
     );
   }
@@ -176,7 +167,7 @@ function CompletedSchedules({
   if (isError) {
     return (
       <Typography variant="bodyS" color={colors.secondary}>
-        종료된 일정을 불러오지 못했어요.
+        {t('notification.completedLoadError')}
       </Typography>
     );
   }
