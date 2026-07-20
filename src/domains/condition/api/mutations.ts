@@ -11,6 +11,7 @@ import { submitConditionRecord, submitConditionRecordDelete } from './client';
 import { conditionQueryKeys } from './query-keys';
 
 import type { ConditionRecordEntry, ConditionRecordInput } from '../model';
+import type { DailyMeasurementSummary } from '@/domains/measurement/model';
 import type { UseMutationOptions } from '@tanstack/react-query';
 
 type ConditionRecordMutationOptions = Omit<
@@ -25,6 +26,29 @@ export function useSaveConditionRecordMutation(options?: ConditionRecordMutation
     mutationFn: submitConditionRecord,
     ...options,
     onSuccess: (data, variables, onMutateResult, context) => {
+      const recordDate = data.dateTime.slice(0, 10);
+
+      if (recordDate.length === 10) {
+        queryClient.setQueryData<DailyMeasurementSummary>(
+          measurementQueryKeys.daily(recordDate),
+          (current) => {
+            if (current == null) return current;
+
+            const conditionRecords = [
+              ...current.conditionRecords.filter((record) => record.id !== data.id),
+              data,
+            ];
+
+            return {
+              ...current,
+              isEnergyRecorded: true,
+              bodyScorePercent: data.bodyScorePercent,
+              mindScorePercent: data.mindScorePercent,
+              conditionRecords,
+            };
+          },
+        );
+      }
       void queryClient.invalidateQueries({ queryKey: measurementQueryKeys.all });
       void queryClient.invalidateQueries({ queryKey: aiRecommendationQueryKeys.all });
       void queryClient.invalidateQueries({ queryKey: conditionQueryKeys.all });
