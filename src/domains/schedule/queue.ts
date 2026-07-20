@@ -131,14 +131,10 @@ export function hasDueDate(dueDate: string): boolean {
 }
 
 export function isQueueFormComplete(
-  values: Pick<
-    CardFormValues,
-    'title' | 'dueDate' | 'durationHours' | 'durationMinutes' | 'durationUnknown'
-  >,
+  values: Pick<CardFormValues, 'title' | 'durationHours' | 'durationMinutes' | 'durationUnknown'>,
 ): boolean {
   return (
     values.title.trim().length > 0 &&
-    hasDueDate(values.dueDate) &&
     hasQueueDurationOrUnknown(values.durationHours, values.durationMinutes, values.durationUnknown)
   );
 }

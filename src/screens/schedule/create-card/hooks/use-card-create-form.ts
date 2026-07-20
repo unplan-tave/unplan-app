@@ -167,7 +167,6 @@ export function useCardCreateForm() {
     title: values.title,
     dateMode: values.dateMode,
     timeFilled: values.timeFilled,
-    dueDate: values.dueDate,
     durationHours: values.durationHours,
     durationMinutes: values.durationMinutes,
     durationUnknown: values.durationUnknown,
