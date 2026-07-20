@@ -8,6 +8,7 @@ import { colors, radius, spacing } from '@/constants/theme';
 import { DEFAULT_TIME_RANGE, WEEKDAY_LABELS } from '@/domains/schedule/data';
 import {
   type DateTimeDraft,
+  type CalendarCell,
   getCalendarMonth,
   isDateInDraftRange,
   sortDateValues,
@@ -18,6 +19,7 @@ import { parseTimeToMinutes } from '@/domains/schedule/time';
 const DATE_CELL_SIZE = spacing[8];
 const SHEET_HEADER_MAX_WIDTH = 369;
 const DATE_CELL_RADIUS = DATE_CELL_SIZE / 2;
+const TODAY_DOT_SIZE = 4;
 const TIME_HOURS = Array.from({ length: 24 }, (_, index) => String(index).padStart(2, '0'));
 const TIME_MINUTES = [
   '00',
@@ -319,7 +321,7 @@ function DateGridCell({
   nextValue,
   onSelect,
 }: {
-  cell: { label: string; value: string };
+  cell: CalendarCell;
   column: number;
   draft: DateTimeDraft;
   previousValue?: string;
@@ -378,12 +380,14 @@ function DateGridCell({
           <Typography variant="bodyM" color={colors.gray.white} align="center">
             {cell.label}
           </Typography>
+          {cell.isToday ? <View style={styles.todayDot} /> : null}
         </View>
       ) : (
         <View style={styles.dateCircle}>
           <Typography variant="bodyM" color={colors.gray[700]} align="center">
             {cell.label}
           </Typography>
+          {cell.isToday ? <View style={styles.todayDot} /> : null}
         </View>
       )}
     </Pressable>
@@ -686,6 +690,14 @@ const styles = StyleSheet.create({
   },
   dateCircleSelected: {
     backgroundColor: colors.primary,
+  },
+  todayDot: {
+    position: 'absolute',
+    bottom: spacing[1],
+    width: TODAY_DOT_SIZE,
+    height: TODAY_DOT_SIZE,
+    borderRadius: TODAY_DOT_SIZE / 2,
+    backgroundColor: colors.gray.white,
   },
   timePanel: {
     width: '100%',

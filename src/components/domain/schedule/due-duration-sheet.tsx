@@ -80,7 +80,10 @@ export function DueDurationSheet({
       return;
     }
 
-    setDraft((prev) => ({ ...prev, dueDate: dateValue }));
+    setDraft((prev) => ({
+      ...prev,
+      dueDate: prev.dueDate === dateValue ? '' : dateValue,
+    }));
   }, []);
 
   const handleClearDueDate = useCallback(() => {
@@ -341,7 +344,9 @@ function DueDateCell({
 
   return (
     <Pressable
-      accessibilityLabel={cell.value ? `${cell.value} 선택` : '빈 날짜'}
+      accessibilityLabel={
+        cell.value ? `${cell.value} ${isSelected ? '선택 취소' : '선택'}` : '빈 날짜'
+      }
       accessibilityRole="button"
       accessibilityState={{ selected: isSelected, disabled: isDisabled }}
       disabled={isDisabled}
@@ -357,6 +362,7 @@ function DueDateCell({
           <Typography variant="bodyM" color={textColor} align="center">
             {cell.label}
           </Typography>
+          {isToday ? <View style={styles.todayDot} /> : null}
         </View>
       ) : (
         <View style={styles.dateCircle}>

@@ -23,6 +23,7 @@ const DRUM_PADDING = 2;
 const DRUM_VISIBLE_HEIGHT = DRUM_ITEM_HEIGHT * (DRUM_PADDING * 2 + 1);
 const WHEEL_WIDTH = 329;
 const SCROLL_MAX_HEIGHT = 520;
+const TODAY_DOT_SIZE = 4;
 
 type OpenMenu = 'none' | 'freq' | 'end';
 type ActivePicker = 'none' | 'interval' | 'count';
@@ -459,6 +460,7 @@ export function RepeatCustomSheet({
                         >
                           {cell.label}
                         </Typography>
+                        {cell.isToday ? <View style={styles.todayDot} /> : null}
                       </Pressable>
                     );
                   })}
@@ -752,6 +754,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dateCell: {
+    position: 'relative',
     width: '14.285%',
     height: spacing[8],
     alignItems: 'center',
@@ -763,6 +766,14 @@ const styles = StyleSheet.create({
   },
   dateCellDisabled: {
     opacity: 0.3,
+  },
+  todayDot: {
+    position: 'absolute',
+    bottom: spacing[1],
+    width: TODAY_DOT_SIZE,
+    height: TODAY_DOT_SIZE,
+    borderRadius: TODAY_DOT_SIZE / 2,
+    backgroundColor: colors.gray.white,
   },
   pressed: {
     opacity: 0.72,
