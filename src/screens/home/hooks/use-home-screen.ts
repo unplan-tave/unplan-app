@@ -1,10 +1,13 @@
 /** 홈 화면의 서버 상태, 로컬 interaction, 라우팅, mutation을 조합합니다. */
-import { isAxiosError } from 'axios';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 
+import {
+  getQueueTimeRecommendationErrorMode,
+  getRecommendationAcceptErrorKind,
+} from '@/domains/ai-recommendation/api/client';
 import { useAcceptRecommendationMutation } from '@/domains/ai-recommendation/api/mutations';
 import { useQueueTimeRecommendationsQuery } from '@/domains/ai-recommendation/api/queries';
 import {
@@ -27,7 +30,7 @@ import {
   type CardItem,
   type CardProgressStatus,
 } from '@/domains/schedule/model';
-import { type DueDurationDraft } from '@/domains/schedule/queue';
+import { createQueueCardForReschedule, type DueDurationDraft } from '@/domains/schedule/queue';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 import { useConditionCalendar } from '@/hooks/use-condition-calendar';
 import { t } from '@/lib/i18n';
@@ -268,15 +271,15 @@ export function useHomeScreen() {
         await acceptRecommendationMutation.mutateAsync({ recommendId });
         setIsAddSheetVisible(false);
       } catch (error) {
-        const status = getHttpErrorStatus(error);
+        const errorKind = getRecommendationAcceptErrorKind(error);
 
-        if (status === 404) {
+        if (errorKind === 'expired') {
           setDismissedRecommendationIds((previous) => new Set(previous).add(recommendId));
           setRecommendationErrorMessage('추천 일정이 만료되었어요. 새 추천을 확인해 주세요.');
           return;
         }
 
-        if (status === 409) {
+        if (errorKind === 'conflict') {
           setDismissedRecommendationIds((previous) => new Set(previous).add(recommendId));
           setRecommendationErrorMessage(
             '추천 시간이 더 이상 비어 있지 않아요. 새 추천을 확인해 주세요.',
@@ -284,7 +287,7 @@ export function useHomeScreen() {
           return;
         }
 
-        if (status == null) {
+        if (errorKind === 'network') {
           setRecommendationErrorMessage('네트워크 연결을 확인한 뒤 다시 시도해 주세요.');
           return;
         }
@@ -340,7 +343,7 @@ export function useHomeScreen() {
       },
       {
         onSuccess: () => {
-          setRescheduleCard(createRescheduleQueueCard(progressCard, queueDraft));
+          setRescheduleCard(createQueueCardForReschedule(progressCard, queueDraft));
           setRescheduleRecommendationDays(7);
           setProgressCard(null);
           setIsRescheduleSheetVisible(true);
@@ -650,7 +653,10 @@ export function useHomeScreen() {
           item.kind === 'schedule'
             ? item.card.id
             : `recommendation-${item.recommendation.recommendId}`,
-        offsetRatio: (currentMinutes - startMinutes) / (endMinutes - startMinutes),
+        offsetRatio:
+          endMinutes - startMinutes > 0
+            ? (currentMinutes - startMinutes) / (endMinutes - startMinutes)
+            : 0,
       };
     }
 
@@ -719,9 +725,8 @@ export function useHomeScreen() {
     isUpdatingSchedule: updateScheduleMutation.isPending,
     isRescheduleRecommendationLoading: rescheduleRecommendationQuery.isFetching,
     rescheduleRecommendationCandidates: rescheduleRecommendationQuery.data?.candidates ?? [],
-    rescheduleRecommendationErrorMode: getQueueRecommendationErrorMode(
+    rescheduleRecommendationErrorMode: getQueueTimeRecommendationErrorMode(
       rescheduleRecommendationQuery.error,
-      rescheduleRecommendationDays,
     ),
     isUpdatingNotification: updateAlarmSettingsMutation.isPending,
     handleCreateCard,
@@ -767,58 +772,4 @@ export function useHomeScreen() {
     dismissConflictToast,
     dismissRecommendationErrorToast,
   };
-}
-
-function getHttpErrorStatus(error: unknown): number | null {
-  if (typeof error !== 'object' || error == null || !('response' in error)) {
-    return null;
-  }
-
-  const response = error.response;
-  if (typeof response !== 'object' || response == null || !('status' in response)) {
-    return null;
-  }
-
-  return typeof response.status === 'number' ? response.status : null;
-}
-
-function createRescheduleQueueCard(card: CardItem, draft: DueDurationDraft): CardItem {
-  return {
-    ...card,
-    cardType: 'queue',
-    dateMode: 'empty',
-    dateStart: '',
-    dateEnd: '',
-    timeFilled: false,
-    timeStart: '',
-    timeEnd: '',
-    dueDate: draft.dueDate,
-    durationHours: draft.durationHours,
-    durationMinutes: draft.durationMinutes,
-    durationUnknown: draft.durationUnknown,
-  };
-}
-
-function getQueueRecommendationErrorMode(
-  error: unknown,
-  days: number,
-): 'error-no-duration' | 'error-7day' | 'error-14day' | null {
-  if (!isAxiosError(error) || error.response?.status !== 409) {
-    return null;
-  }
-
-  const data = error.response.data;
-  if (typeof data !== 'object' || data == null) {
-    return days === 7 ? 'error-7day' : 'error-14day';
-  }
-
-  const { canExtendTo14Days, mustChangeDuration } = data as {
-    canExtendTo14Days?: unknown;
-    mustChangeDuration?: unknown;
-  };
-
-  if (mustChangeDuration === true) return 'error-no-duration';
-  if (days === 7 && canExtendTo14Days === true) return 'error-7day';
-
-  return 'error-14day';
 }

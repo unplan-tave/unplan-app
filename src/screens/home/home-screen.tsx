@@ -230,6 +230,7 @@ export function HomeScreen() {
           onClose={home.handleCloseReschedule}
           onConvert={home.handleRescheduleConvert}
           onAcceptRecommendation={home.handleAcceptRescheduleRecommendation}
+          onSearch14Days={home.handleSearchReschedule14Days}
           onEditDuration={home.handleEditRescheduleDuration}
           onLeaveAsQueue={home.handleOpenQueueSheet}
         />

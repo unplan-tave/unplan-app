@@ -38,7 +38,7 @@ export function ConvertToPinBottomSheet({
   onClose,
   onConvert,
   onAcceptRecommendation,
-  onSearch14Days: _onSearch14Days = () => undefined,
+  onSearch14Days,
   onEditDuration,
   onLeaveAsQueue,
 }: {
@@ -55,7 +55,7 @@ export function ConvertToPinBottomSheet({
   onClose: () => void;
   onConvert: (values: CardFormValues, keepOriginal: boolean) => void;
   onAcceptRecommendation: (recommendId: number, keepOriginal: boolean) => void;
-  onSearch14Days?: () => void;
+  onSearch14Days: () => void;
   onEditDuration: (durationMinutes: number) => void;
   onLeaveAsQueue?: () => void;
 }) {
@@ -294,6 +294,7 @@ export function ConvertToPinBottomSheet({
             title="추천 시간대가 없어요!"
             description="소요시간을 줄이면 시간대를 더 찾아볼 수 있어요"
             buttons={[
+              { label: '다음 주 시간도 보기', onPress: onSearch14Days },
               { label: '소요 시간 변경하기', onPress: () => setMode('duration') },
               ...(onLeaveAsQueue ? [{ label: '큐 카드로 남겨두기', onPress: onLeaveAsQueue }] : []),
             ]}
