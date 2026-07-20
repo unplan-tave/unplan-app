@@ -86,6 +86,8 @@ export * from './recommendationAcceptRequest';
 export * from './recommendationAcceptResponse';
 export * from './recommendationItem';
 export * from './recommendationListResponse';
+export * from './recurrence';
+export * from './recurrenceFreq';
 export * from './recurrenceRequest';
 export * from './recurrenceRequestFreq';
 export * from './scheduleCreateRequest';
