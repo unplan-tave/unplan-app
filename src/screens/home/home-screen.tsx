@@ -11,6 +11,7 @@ import { DueDurationSheet } from '@/components/domain/schedule/due-duration-shee
 import { DailyMemoBottomSheet } from '@/components/features/home/daily-memo-bottom-sheet';
 import { HomeAddBottomSheet } from '@/components/features/home/home-add-bottom-sheet';
 import { HomeCalendarView } from '@/components/features/home/home-calendar-view';
+import { HomeCardDetailSheet } from '@/components/features/home/home-card-detail-sheet';
 import { HomeConditionPromptModal } from '@/components/features/home/home-condition-prompt-modal';
 import { HomeExtendTimeSheet } from '@/components/features/home/home-extend-time-sheet';
 import { HomeProgressSheet } from '@/components/features/home/home-progress-sheet';
@@ -39,10 +40,22 @@ const HOME_HEADER_OVERLAY_HEIGHT = 248;
 /** 홈 화면의 JSX와 화면 전용 스타일만 렌더링합니다. */
 export function HomeScreen() {
   const home = useHomeScreen();
-  const scoreTheme = getConditionScoreTheme(home.conditionScore);
+  const {
+    page,
+    header,
+    timeline,
+    addSheet,
+    memo,
+    scheduleFlow,
+    cardDetail,
+    notification,
+    conditionPrompt,
+    feedback,
+  } = home;
+  const scoreTheme = getConditionScoreTheme(header.conditionScore);
   const timelineFocus = useFocusTimelineCurrentTime(
-    home.currentTimeMarker != null,
-    home.currentTimeMarker?.offsetRatio ?? null,
+    timeline.currentTimeMarker != null,
+    timeline.currentTimeMarker?.offsetRatio ?? null,
   );
 
   return (
@@ -52,10 +65,10 @@ export function HomeScreen() {
       useSafeArea={false}
     >
       <StatusBar style="light" />
-      <ConditionScoreBackground score={home.conditionScore} />
-      <GestureDetector gesture={home.homeGesture}>
+      <ConditionScoreBackground score={header.conditionScore} />
+      <GestureDetector gesture={page.homeGesture}>
         <View style={styles.canvas}>
-          {home.viewMode === 'daily' ? (
+          {page.viewMode === 'daily' ? (
             <View style={styles.timeline}>
               <Svg pointerEvents="none" width="1" height="100%" style={styles.timelineLine}>
                 <Defs>
@@ -73,16 +86,16 @@ export function HomeScreen() {
               >
                 {timelineFocus.markerTop != null ? (
                   <HomeCurrentTimeMarker
-                    time={home.currentTimeLabel}
+                    time={timeline.currentTimeLabel}
                     top={timelineFocus.markerTop}
                   />
                 ) : null}
-                {home.timelineCardsForView.map((card) => (
+                {timeline.cards.map((card) => (
                   <View
                     key={card.id}
                     style={styles.timelineCardSlot}
                     onLayout={
-                      home.currentTimeMarker?.cardId === card.id
+                      timeline.currentTimeMarker?.cardId === card.id
                         ? timelineFocus.handleMarkerLayout
                         : undefined
                     }
@@ -94,14 +107,14 @@ export function HomeScreen() {
             </View>
           ) : (
             <HomeCalendarView
-              mode={home.viewMode}
-              days={home.calendarDays}
-              onSelectDate={home.handleSelectDate}
+              mode={page.viewMode}
+              days={page.calendarDays}
+              onSelectDate={page.handleSelectDate}
             />
           )}
         </View>
       </GestureDetector>
-      {home.viewMode === 'daily' ? (
+      {page.viewMode === 'daily' ? (
         <Svg
           pointerEvents="none"
           preserveAspectRatio="none"
@@ -123,21 +136,21 @@ export function HomeScreen() {
       <View pointerEvents="box-none" style={styles.header}>
         <View style={styles.statusColumn}>
           <ViewModeButton
-            mode={home.viewMode}
+            mode={page.viewMode}
             accessibilityLabel="보기 방식 변경"
             style={styles.viewModeButton}
-            onPress={home.handleCycleViewMode}
+            onPress={page.handleCycleViewMode}
           />
           <ConditionSummaryPanel
-            year={home.homeDate.year}
-            dateLabel={home.homeDate.date}
-            summary={home.conditionSummary}
-            memoLabel={home.dailyMemos[0]?.content ?? t('home.dailyMemo.emptyLabel')}
-            memoCount={home.dailyMemos.length}
-            showMeters={home.viewMode === 'daily'}
-            onDatePress={home.handleOpenCalendar}
-            onScorePress={home.openConditionTab}
-            onMemoPress={home.handleOpenMemoSheet}
+            year={page.homeDate.year}
+            dateLabel={page.homeDate.date}
+            summary={header.conditionSummary}
+            memoLabel={header.dailyMemos[0]?.content ?? t('home.dailyMemo.emptyLabel')}
+            memoCount={header.dailyMemos.length}
+            showMeters={page.viewMode === 'daily'}
+            onDatePress={page.handleOpenCalendar}
+            onScorePress={header.openConditionTab}
+            onMemoPress={memo.onOpen}
           />
         </View>
         <View pointerEvents="box-none" style={styles.messageBox}>
@@ -146,7 +159,7 @@ export function HomeScreen() {
             accessibilityRole="button"
             hitSlop={spacing[2]}
             style={({ pressed }) => pressed && styles.pressed}
-            onPress={() => home.openNotifications()}
+            onPress={() => header.openNotifications()}
           >
             <Icon name="bell" size={24} color={colors.gray.white} />
           </Pressable>
@@ -158,131 +171,138 @@ export function HomeScreen() {
             align="right"
             style={styles.message}
           >
-            {home.headerMessage}
+            {header.message}
           </Typography>
         </View>
       </View>
       <HomeAddBottomSheet
-        visible={home.isAddSheetVisible}
-        recommendations={home.visibleRecommendations}
-        onClose={home.handleCloseAddSheet}
-        onCreatePress={home.handleCreateCard}
-        onDismissRecommendation={home.handleDismissRecommendation}
-        onRecommendationAddPress={home.handleAddRecommendation}
-        onViewQueuePress={home.handleViewQueue}
+        visible={addSheet.visible}
+        recommendations={addSheet.recommendations}
+        onClose={addSheet.onClose}
+        onCreatePress={addSheet.onCreatePress}
+        onDismissRecommendation={addSheet.onDismissRecommendation}
+        onRecommendationAddPress={addSheet.onRecommendationAddPress}
+        onViewQueuePress={addSheet.onViewQueuePress}
       />
       <DailyMemoBottomSheet
-        visible={home.isDailyMemoSheetVisible}
-        dateLabel={home.dailyMemoDateLabel}
-        memos={home.dailyMemos}
-        isLoading={home.dailyMemosQuery.isLoading}
-        isError={home.dailyMemosQuery.isError}
-        hasMutationError={home.hasMemoMutationError}
-        isCreating={home.isCreatingMemo}
-        deletingMemoId={home.deletingMemoId}
-        onClose={home.handleCloseMemoSheet}
-        onRetry={() => void home.dailyMemosQuery.refetch()}
-        onCreate={home.handleCreateDailyMemo}
-        onDelete={home.handleDeleteDailyMemo}
+        visible={memo.visible}
+        dateLabel={memo.dateLabel}
+        memos={memo.memos}
+        isLoading={memo.query.isLoading}
+        isError={memo.query.isError}
+        hasMutationError={memo.hasMutationError}
+        isCreating={memo.isCreating}
+        deletingMemoId={memo.deletingMemoId}
+        onClose={memo.onClose}
+        onRetry={() => void memo.query.refetch()}
+        onCreate={memo.onCreate}
+        onDelete={memo.onDelete}
       />
       <HomeProgressSheet
-        visible={
-          home.progressCard != null &&
-          !home.isExtendSheetVisible &&
-          !home.isQueueSheetVisible &&
-          !home.isRescheduleSheetVisible
-        }
-        title={home.progressCard?.title ?? ''}
-        timeSummary={home.progressTimeSummary}
-        status={home.progressStatus}
-        step={home.progressSheetStep}
-        onChangeStatus={home.setProgressStatus}
-        onCancel={home.handleCloseProgressSheet}
-        onBack={home.handleBackProgressSheet}
-        onComplete={home.handleCompleteProgress}
-        completeDisabled={home.isUpdatingSchedule}
-        onReschedulePress={home.handleReschedule}
-        onLeaveAsQueuePress={home.handleOpenQueueSheet}
-        onExtendTimePress={home.handleOpenExtendSheet}
+        visible={scheduleFlow.progress.visible}
+        title={scheduleFlow.progress.title}
+        timeSummary={scheduleFlow.progress.timeSummary}
+        status={scheduleFlow.progress.status}
+        step={scheduleFlow.progress.step}
+        onChangeStatus={scheduleFlow.progress.setStatus}
+        onCancel={scheduleFlow.progress.onCancel}
+        onBack={scheduleFlow.progress.onBack}
+        onComplete={scheduleFlow.progress.onComplete}
+        completeDisabled={scheduleFlow.isUpdatingSchedule}
+        onReschedulePress={scheduleFlow.progress.onReschedule}
+        onLeaveAsQueuePress={scheduleFlow.progress.onLeaveAsQueue}
+        onExtendTimePress={scheduleFlow.progress.onExtend}
       />
-      {home.progressCard || home.rescheduleCard ? (
+      <HomeCardDetailSheet
+        visible={cardDetail.visible}
+        card={cardDetail.card}
+        conditionTag={cardDetail.conditionTag}
+        personalTagLabels={cardDetail.personalTagLabels}
+        isLoading={cardDetail.isLoading}
+        isError={cardDetail.isError}
+        status={cardDetail.status}
+        onChangeStatus={cardDetail.onChangeStatus}
+        onClose={cardDetail.onClose}
+        onEdit={cardDetail.onEdit}
+      />
+      {scheduleFlow.queue.mounted ? (
         <DueDurationSheet
-          visible={home.isQueueSheetVisible}
-          value={home.queueDraftValue}
+          visible={scheduleFlow.queue.visible}
+          value={scheduleFlow.queue.value}
           title="큐 카드로 남겨두기"
           subtitle={'일정을 수행할 시간을 나중에 찾아볼게요\n마감일과 소요 시간을 확인해 주세요'}
-          scheduleTitle={(home.progressCard ?? home.rescheduleCard)?.title}
+          scheduleTitle={scheduleFlow.queue.scheduleTitle}
           leftAction="back"
           allowClearDueDate
-          onClose={home.handleCloseQueueSheet}
-          onDone={home.handleConfirmQueueConversion}
+          onClose={scheduleFlow.queue.onClose}
+          onDone={scheduleFlow.queue.onDone}
         />
       ) : null}
-      {home.rescheduleCard ? (
+      {scheduleFlow.reschedule.mounted && scheduleFlow.reschedule.card ? (
         <ConvertToPinBottomSheet
-          visible={home.isRescheduleSheetVisible && !home.isQueueSheetVisible}
-          card={home.rescheduleCard}
-          candidates={home.rescheduleRecommendationCandidates}
-          isRecommendationLoading={home.isRescheduleRecommendationLoading}
-          recommendationErrorMode={home.rescheduleRecommendationErrorMode}
+          visible={scheduleFlow.reschedule.visible}
+          card={scheduleFlow.reschedule.card}
+          candidates={scheduleFlow.reschedule.candidates}
+          isRecommendationLoading={scheduleFlow.reschedule.isRecommendationLoading}
+          recommendationErrorMode={scheduleFlow.reschedule.recommendationErrorMode}
           defaultKeepOriginal={false}
           presentation="reschedule"
-          onClose={home.handleCloseReschedule}
-          onConvert={home.handleRescheduleConvert}
-          onAcceptRecommendation={home.handleAcceptRescheduleRecommendation}
-          onSearch14Days={home.handleSearchReschedule14Days}
-          onEditDuration={home.handleEditRescheduleDuration}
-          onLeaveAsQueue={home.handleOpenQueueSheet}
+          onClose={scheduleFlow.reschedule.onClose}
+          onConvert={scheduleFlow.reschedule.onConvert}
+          onAcceptRecommendation={scheduleFlow.reschedule.onAcceptRecommendation}
+          onSearch14Days={scheduleFlow.reschedule.onSearch14Days}
+          onEditDuration={scheduleFlow.reschedule.onEditDuration}
+          onLeaveAsQueue={scheduleFlow.reschedule.onLeaveAsQueue}
         />
       ) : null}
-      {home.progressCard ? (
+      {scheduleFlow.extend.mounted ? (
         <HomeExtendTimeSheet
-          visible={home.isExtendSheetVisible}
-          title={home.progressCard.title}
-          dateLabel={home.progressDateLabel}
-          startTime={home.progressCard.timeStart}
-          newEndTime={home.extendState.newEndTime}
-          addedMinutes={home.extensionMinutes}
-          decreaseDisabled={home.extendState.decreaseDisabled}
-          hasConflict={home.extendState.hasConflict}
-          showConflictToast={home.extendState.hasConflict && !home.isConflictToastDismissed}
-          onBack={home.handleCloseExtendSheet}
-          onComplete={home.handleCompleteExtension}
-          onDecrease={home.handleDecreaseExtension}
-          onIncrease={home.handleIncreaseExtension}
-          onDismissConflict={home.dismissConflictToast}
-          completeDisabled={home.extendState.hasConflict || home.isUpdatingSchedule}
+          visible={scheduleFlow.extend.visible}
+          title={scheduleFlow.extend.title}
+          dateLabel={scheduleFlow.extend.dateLabel}
+          startTime={scheduleFlow.extend.startTime}
+          newEndTime={scheduleFlow.extend.state.newEndTime}
+          addedMinutes={scheduleFlow.extend.addedMinutes}
+          decreaseDisabled={scheduleFlow.extend.state.decreaseDisabled}
+          hasConflict={scheduleFlow.extend.state.hasConflict}
+          showConflictToast={scheduleFlow.extend.showConflictToast}
+          onBack={scheduleFlow.extend.onBack}
+          onComplete={scheduleFlow.extend.onComplete}
+          onDecrease={scheduleFlow.extend.onDecrease}
+          onIncrease={scheduleFlow.extend.onIncrease}
+          onDismissConflict={scheduleFlow.extend.onDismissConflict}
+          completeDisabled={scheduleFlow.extend.completeDisabled}
         />
       ) : null}
-      {home.recommendationErrorMessage ? (
+      {feedback.recommendationErrorMessage ? (
         <CardToast
-          message={home.recommendationErrorMessage}
-          onClose={home.dismissRecommendationErrorToast}
+          message={feedback.recommendationErrorMessage}
+          onClose={feedback.dismissRecommendationErrorToast}
         />
       ) : null}
       <OnboardingNotificationModal
-        visible={home.isNotificationModalVisible}
-        isSubmitting={home.isUpdatingNotification}
-        errorMessage={home.notificationErrorMessage}
-        onAllow={() => home.updateNotificationSettings(true)}
-        onDeny={() => home.updateNotificationSettings(false)}
+        visible={notification.visible}
+        isSubmitting={notification.isSubmitting}
+        errorMessage={notification.errorMessage}
+        onAllow={() => notification.updateSettings(true)}
+        onDeny={() => notification.updateSettings(false)}
       />
       <HomeConditionPromptModal
-        visible={home.isConditionPromptVisible}
-        onClose={home.closeConditionPrompt}
-        onConditionPress={home.openConditionMeasureFromPrompt}
+        visible={conditionPrompt.visible}
+        onClose={conditionPrompt.onClose}
+        onConditionPress={conditionPrompt.onConditionPress}
       />
       <ConditionCalendarModal
-        visible={home.calendar.visible}
-        title={home.calendar.title}
-        days={home.calendar.days}
-        selectedDate={home.selectedDate}
+        visible={page.calendar.visible}
+        title={page.calendar.title}
+        days={page.calendar.days}
+        selectedDate={page.selectedDate}
         periodMode="daily"
-        canGoNext={home.calendar.canGoNext}
-        onSelectDate={home.handleCalendarDateSelect}
-        onPreviousMonth={() => home.handleMoveCalendarMonth('previous')}
-        onNextMonth={() => home.handleMoveCalendarMonth('next')}
-        onClose={home.handleCloseCalendar}
+        canGoNext={page.calendar.canGoNext}
+        onSelectDate={page.handleCalendarDateSelect}
+        onPreviousMonth={() => page.handleMoveCalendarMonth('previous')}
+        onNextMonth={() => page.handleMoveCalendarMonth('next')}
+        onClose={page.handleCloseCalendar}
       />
     </ScreenLayout>
   );
