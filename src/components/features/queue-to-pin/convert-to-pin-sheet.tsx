@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useId, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { DateTimeSheet } from '@/components/domain/schedule/date-time-editor';
@@ -7,22 +7,15 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
-import { type CardFormValues, type CardItem, getCalendarMonth } from '@/domains/schedule/model';
+import { type CardFormValues, type CardItem, type DateTimeDraft } from '@/domains/schedule/model';
 import {
   createQueueToPinValuesFromCandidate,
-  formatDueDateForStorage,
   type RecommendationCandidate,
 } from '@/domains/schedule/queue';
-import { isValidTimeRange, useTimeRangeValidation } from '@/hooks/use-time-range-validation';
+import { isValidTimeRange } from '@/hooks/use-time-range-validation';
 
 import type { ScheduleRecommendation } from '@/domains/ai-recommendation/model';
-const WEEKDAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-const TIME_HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
-const TIME_MINUTES = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
-const DRUM_ITEM_HEIGHT = 32;
-const DRUM_PADDING = 2;
 const SHEET_HEADER_MAX_WIDTH = 369;
-const DATE_CELL_SIZE = 32;
 
 type SheetMode =
   | 'loading'
@@ -136,6 +129,13 @@ export function ConvertToPinBottomSheet({
     onSearch14Days();
   }, [onSearch14Days]);
 
+  const handleManualDraftChange = useCallback((draft: DateTimeDraft) => {
+    setManualStartDate(draft.dateStart);
+    setManualEndDate(draft.dateEnd || draft.dateStart);
+    setManualStartTime(draft.timeStart);
+    setManualEndTime(draft.timeEnd);
+  }, []);
+
   const canAccept =
     mode === 'recommend' ||
     (mode === 'manual' &&
@@ -214,12 +214,7 @@ export function ConvertToPinBottomSheet({
             }}
             onClose={onClose}
             onDone={handleAccept}
-            onDraftChange={(draft) => {
-              setManualStartDate(draft.dateStart);
-              setManualEndDate(draft.dateEnd || draft.dateStart);
-              setManualStartTime(draft.timeStart);
-              setManualEndTime(draft.timeEnd);
-            }}
+            onDraftChange={handleManualDraftChange}
           />
         )}
 
@@ -428,260 +423,6 @@ function DatetimeRows({
   );
 }
 
-// ─── Manual ─────────────────────────────────────────────────────────────────
-
-export function ManualContent({
-  calendarBase,
-  startDate,
-  endDate,
-  startTime,
-  endTime,
-  activeDateField,
-  activeTimeField,
-  isTimeWheelVisible,
-  onChangeCalendarBase,
-  onSelectDate,
-  onActivateDate,
-  onActivateTime,
-  onSelectTimePart,
-}: {
-  calendarBase: Date;
-  startDate: string;
-  endDate: string;
-  startTime: string;
-  endTime: string;
-  activeDateField: 'start' | 'end';
-  activeTimeField: 'start' | 'end';
-  isTimeWheelVisible: boolean;
-  onChangeCalendarBase: (date: Date) => void;
-  onSelectDate: (date: string) => void;
-  onActivateDate: (field: 'start' | 'end') => void;
-  onActivateTime: (field: 'start' | 'end') => void;
-  onSelectTimePart: (part: 'hour' | 'minute', value: string) => void;
-}) {
-  const calendar = useMemo(() => getCalendarMonth(calendarBase), [calendarBase]);
-  const todayStr = useMemo(() => formatDueDateForStorage(new Date()), []);
-  const { isValid: isTimeValid } = useTimeRangeValidation(startTime, endTime);
-
-  return (
-    <View style={styles.manualContent}>
-      <View style={styles.manualCard}>
-        <Typography variant="titleS" color={colors.gray[900]}>
-          직접 입력
-        </Typography>
-
-        {/* Datetime rows for manual entry */}
-        <View
-          style={[styles.manualDatetimeSection, !isTimeValid && styles.manualDatetimeSectionError]}
-        >
-          <View style={styles.datetimeRow}>
-            <Typography variant="bodyM" color={colors.gray[600]}>
-              시작 일시
-            </Typography>
-            <View style={styles.datetimeChips}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="시작 날짜 선택"
-                style={({ pressed }) => [
-                  styles.dateChip,
-                  startDate.length > 0 && styles.chipActive,
-                  pressed && styles.pressed,
-                ]}
-                onPress={() => onActivateDate('start')}
-              >
-                <Typography
-                  variant="bodyM"
-                  color={startDate.length > 0 ? colors.gray[800] : colors.gray[300]}
-                >
-                  {startDate.length > 0 ? startDate : '--.--.--'}
-                </Typography>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="시작 시간 선택"
-                accessibilityState={{ selected: isTimeWheelVisible && activeTimeField === 'start' }}
-                style={({ pressed }) => [
-                  styles.timeChip,
-                  isTimeWheelVisible && activeTimeField === 'start' && styles.chipSelected,
-                  pressed && styles.pressed,
-                ]}
-                onPress={() => onActivateTime('start')}
-              >
-                <Typography
-                  variant="bodyM"
-                  color={
-                    isTimeWheelVisible && activeTimeField === 'start'
-                      ? colors.primary
-                      : colors.gray[800]
-                  }
-                >
-                  {startTime}
-                </Typography>
-              </Pressable>
-            </View>
-          </View>
-
-          <View style={styles.datetimeRow}>
-            <Typography variant="bodyM" color={colors.gray[600]}>
-              종료 일시
-            </Typography>
-            <View style={styles.datetimeChips}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="종료 날짜 선택"
-                accessibilityState={{ selected: activeDateField === 'end' && !isTimeWheelVisible }}
-                style={({ pressed }) => [
-                  styles.dateChip,
-                  endDate.length > 0 && styles.chipActive,
-                  activeDateField === 'end' && !isTimeWheelVisible && styles.chipSelected,
-                  pressed && styles.pressed,
-                ]}
-                onPress={() => onActivateDate('end')}
-              >
-                <Typography
-                  variant="bodyM"
-                  color={endDate.length > 0 ? colors.gray[800] : colors.gray[300]}
-                >
-                  {endDate.length > 0 ? endDate : '--.--.--'}
-                </Typography>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="종료 시간 선택"
-                accessibilityState={{ selected: isTimeWheelVisible && activeTimeField === 'end' }}
-                style={({ pressed }) => [
-                  styles.timeChip,
-                  isTimeWheelVisible && activeTimeField === 'end' && styles.chipSelected,
-                  pressed && styles.pressed,
-                ]}
-                onPress={() => onActivateTime('end')}
-              >
-                <Typography
-                  variant="bodyM"
-                  color={
-                    isTimeWheelVisible && activeTimeField === 'end'
-                      ? colors.primary
-                      : colors.gray[800]
-                  }
-                >
-                  {endTime}
-                </Typography>
-              </Pressable>
-            </View>
-          </View>
-          {!isTimeValid && (
-            <Typography variant="caption" color={colors.secondary}>
-              종료 시간이 시작 시간보다 늦어야 해요.
-            </Typography>
-          )}
-        </View>
-
-        {/* Calendar — shows for date picking */}
-        {!isTimeWheelVisible && (
-          <View style={styles.calendarSection}>
-            <View style={styles.calendarMonthRow}>
-              <Pressable
-                accessibilityLabel="이전 달"
-                accessibilityRole="button"
-                hitSlop={8}
-                style={({ pressed }) => [styles.monthBtn, pressed && styles.pressed]}
-                onPress={() =>
-                  onChangeCalendarBase(
-                    new Date(calendarBase.getFullYear(), calendarBase.getMonth() - 1, 1),
-                  )
-                }
-              >
-                <Icon name="arrowLeft" size={24} color={colors.gray[400]} />
-              </Pressable>
-              <Typography variant="titleS" color={colors.gray[900]} align="center">
-                {calendar.title}
-              </Typography>
-              <Pressable
-                accessibilityLabel="다음 달"
-                accessibilityRole="button"
-                hitSlop={8}
-                style={({ pressed }) => [styles.monthBtn, pressed && styles.pressed]}
-                onPress={() =>
-                  onChangeCalendarBase(
-                    new Date(calendarBase.getFullYear(), calendarBase.getMonth() + 1, 1),
-                  )
-                }
-              >
-                <Icon name="arrowRight" size={24} color={colors.gray[400]} />
-              </Pressable>
-            </View>
-
-            <View style={styles.weekRow}>
-              {WEEKDAY_LABELS.map((label) => (
-                <Typography
-                  key={label}
-                  variant="caption"
-                  color={colors.gray[400]}
-                  align="center"
-                  style={styles.weekCell}
-                >
-                  {label}
-                </Typography>
-              ))}
-            </View>
-
-            <View style={styles.dateGrid}>
-              {calendar.cells.map((cell) => {
-                const isSelected =
-                  cell.value === (activeDateField === 'start' ? startDate : endDate);
-                const isPast = cell.value.length > 0 && cell.value < todayStr;
-                const isEmpty = cell.value.length === 0;
-                return (
-                  <Pressable
-                    key={cell.key}
-                    accessibilityRole={isEmpty ? undefined : 'button'}
-                    accessibilityLabel={isEmpty ? undefined : `${cell.value} 선택`}
-                    accessibilityState={
-                      isEmpty ? undefined : { selected: isSelected, disabled: isPast }
-                    }
-                    disabled={isEmpty || isPast}
-                    style={({ pressed }) => [
-                      styles.dateCell,
-                      pressed && !isEmpty && !isPast && styles.pressed,
-                    ]}
-                    onPress={() => !isEmpty && !isPast && onSelectDate(cell.value)}
-                  >
-                    <View style={[styles.dateDot, isSelected && styles.dateDotSelected]}>
-                      <Typography
-                        variant="bodyM"
-                        color={
-                          isEmpty
-                            ? colors.alpha.transparent
-                            : isSelected
-                              ? colors.gray.white
-                              : isPast
-                                ? colors.gray[300]
-                                : colors.gray[700]
-                        }
-                        align="center"
-                      >
-                        {cell.label}
-                      </Typography>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        )}
-
-        {/* Time wheel — shows when time chip is tapped */}
-        {isTimeWheelVisible && (
-          <DrumTimePicker
-            value={activeTimeField === 'start' ? startTime : endTime}
-            onSelectPart={onSelectTimePart}
-          />
-        )}
-      </View>
-    </View>
-  );
-}
-
 // ─── Error ──────────────────────────────────────────────────────────────────
 
 function ErrorContent({
@@ -794,114 +535,6 @@ function SheetActionButton({
   );
 }
 
-// ─── Drum time picker ────────────────────────────────────────────────────────
-
-function DrumTimePicker({
-  value,
-  onSelectPart,
-}: {
-  value: string;
-  onSelectPart: (part: 'hour' | 'minute', value: string) => void;
-}) {
-  const [hourStr, minuteStr] = (value || '00:00').split(':');
-  const hourIndex = Math.max(0, TIME_HOURS.indexOf(hourStr));
-  const minuteIndex = Math.max(0, (TIME_MINUTES as string[]).indexOf(minuteStr));
-
-  return (
-    <View style={styles.drum}>
-      <View style={styles.drumHighlight} pointerEvents="none" />
-      <DrumColumn
-        items={TIME_HOURS}
-        selectedIndex={hourIndex}
-        onSelect={(v) => onSelectPart('hour', v)}
-      />
-      <Typography variant="bodyM" color={colors.gray[900]} align="center">
-        :
-      </Typography>
-      <DrumColumn
-        items={TIME_MINUTES as unknown as string[]}
-        selectedIndex={minuteIndex}
-        onSelect={(v) => onSelectPart('minute', v)}
-      />
-    </View>
-  );
-}
-
-function DrumColumn({
-  items,
-  selectedIndex,
-  onSelect,
-}: {
-  items: string[];
-  selectedIndex: number;
-  onSelect: (value: string) => void;
-}) {
-  const scrollRef = useRef<ScrollView>(null);
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ y: selectedIndex * DRUM_ITEM_HEIGHT, animated: false });
-  }, [selectedIndex]);
-
-  const handleMomentumScrollEnd = useCallback(
-    (e: { nativeEvent: { contentOffset: { y: number } } }) => {
-      const index = Math.round(e.nativeEvent.contentOffset.y / DRUM_ITEM_HEIGHT);
-      const clamped = Math.max(0, Math.min(items.length - 1, index));
-      if (items[clamped] !== undefined) {
-        onSelect(items[clamped]);
-      }
-    },
-    [items, onSelect],
-  );
-
-  const handlePress = useCallback(
-    (actualIndex: number) => {
-      const clamped = Math.max(0, Math.min(items.length - 1, actualIndex));
-      scrollRef.current?.scrollTo({ y: clamped * DRUM_ITEM_HEIGHT, animated: true });
-      onSelect(items[clamped]);
-    },
-    [items, onSelect],
-  );
-
-  const padded = useMemo(
-    () => [...Array(DRUM_PADDING).fill(''), ...items, ...Array(DRUM_PADDING).fill('')],
-    [items],
-  );
-
-  return (
-    <ScrollView
-      ref={scrollRef}
-      style={styles.drumColumn}
-      showsVerticalScrollIndicator={false}
-      snapToInterval={DRUM_ITEM_HEIGHT}
-      decelerationRate="fast"
-      scrollEventThrottle={16}
-      onMomentumScrollEnd={handleMomentumScrollEnd}
-    >
-      {padded.map((item, i) => {
-        const actualIndex = i - DRUM_PADDING;
-        const isActual = actualIndex >= 0 && actualIndex < items.length;
-        const dist = Math.abs(actualIndex - selectedIndex);
-        const opacity = !isActual ? 0 : dist === 0 ? 1 : dist === 1 ? 0.45 : 0.18;
-        return (
-          <Pressable
-            key={i}
-            style={styles.drumItem}
-            disabled={!isActual}
-            accessibilityRole={isActual ? 'button' : undefined}
-            accessibilityLabel={isActual ? `${item} 선택` : undefined}
-            accessibilityState={isActual ? { selected: dist === 0 } : undefined}
-            onPress={isActual ? () => handlePress(actualIndex) : undefined}
-          >
-            <Typography variant="bodyM" color={colors.gray[900]} align="center" style={{ opacity }}>
-              {item}
-            </Typography>
-          </Pressable>
-        );
-      })}
-    </ScrollView>
-  );
-}
-
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
@@ -974,7 +607,7 @@ const styles = StyleSheet.create({
     gap: spacing[1],
   },
 
-  // Datetime rows (shared between recommend and manual)
+  // Datetime rows
   datetimeRows: {
     gap: 6,
   },
@@ -982,7 +615,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: DATE_CELL_SIZE,
+    minHeight: spacing[8],
   },
   datetimeChips: {
     flexDirection: 'row',
@@ -990,7 +623,7 @@ const styles = StyleSheet.create({
     gap: spacing[1],
   },
   dateChip: {
-    height: DATE_CELL_SIZE,
+    height: spacing[8],
     paddingHorizontal: 7,
     alignItems: 'center',
     justifyContent: 'center',
@@ -999,7 +632,7 @@ const styles = StyleSheet.create({
   },
   timeChip: {
     width: spacing[15],
-    height: DATE_CELL_SIZE,
+    height: spacing[8],
     paddingHorizontal: 7,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1018,7 +651,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: DATE_CELL_SIZE,
+    minHeight: spacing[8],
     paddingHorizontal: spacing[1],
   },
   checkbox: {
@@ -1033,99 +666,6 @@ const styles = StyleSheet.create({
   checkboxChecked: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
-  },
-
-  // Manual content
-  manualContent: {
-    gap: spacing[3],
-  },
-  manualCard: {
-    gap: spacing[6],
-    padding: spacing[3],
-    borderRadius: radius.panel,
-    backgroundColor: colors.alpha.white50,
-    borderWidth: 1,
-    borderColor: colors.gray.white,
-  },
-  manualDatetimeSection: {
-    gap: 6,
-  },
-  manualDatetimeSectionError: {
-    gap: spacing[2],
-  },
-
-  // Calendar
-  calendarSection: {
-    gap: spacing[2],
-  },
-  calendarMonthRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    minHeight: spacing[8],
-  },
-  monthBtn: {
-    minWidth: spacing[8],
-    minHeight: spacing[8],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  weekRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  weekCell: {
-    width: '14.285%',
-  },
-  dateGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-  },
-  dateCell: {
-    width: '14.285%',
-    height: DATE_CELL_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dateDot: {
-    width: DATE_CELL_SIZE,
-    height: DATE_CELL_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: DATE_CELL_SIZE / 2,
-  },
-  dateDotSelected: {
-    backgroundColor: colors.primary,
-  },
-
-  // Drum picker
-  drum: {
-    width: '100%',
-    height: DRUM_ITEM_HEIGHT * (DRUM_PADDING * 2 + 1),
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing[3],
-    marginTop: spacing[1],
-  },
-  drumHighlight: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: DRUM_ITEM_HEIGHT * DRUM_PADDING,
-    height: DRUM_ITEM_HEIGHT,
-    borderRadius: radius['2xs'],
-    backgroundColor: colors.alpha.white50,
-  },
-  drumColumn: {
-    width: 40,
-    height: DRUM_ITEM_HEIGHT * (DRUM_PADDING * 2 + 1),
-  },
-  drumItem: {
-    height: DRUM_ITEM_HEIGHT,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 
   // Error
