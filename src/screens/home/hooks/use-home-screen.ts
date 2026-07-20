@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 
+import { useAcceptRecommendationMutation } from '@/domains/ai-recommendation/api/mutations';
 import {
   useCreateDailyMemoMutation,
   useDeleteDailyMemoMutation,
@@ -34,6 +35,7 @@ import {
   getHomeHeaderMessage,
   getHomeProgressTimeSummary,
   isHomeScheduleEnded,
+  toHomeRecommendationTimelineCardViewModel,
   toHomeTimelineCardViewModel,
 } from '../home-screen-logic';
 
@@ -43,6 +45,7 @@ import { useHomePageData } from './use-home-page-data';
 import type { AlarmSettings } from '@/domains/member/model';
 
 const EXTEND_STEP_MINUTES = 10;
+const HOME_TIMELINE_TOP_PLACEHOLDER_COUNT = 2;
 
 /** 홈 화면 컴포넌트가 렌더링에 사용할 값과 이벤트를 반환합니다. */
 export function useHomeScreen() {
@@ -57,7 +60,7 @@ export function useHomeScreen() {
     () => params.onboardingNotification === '1',
   );
   const [notificationErrorMessage, setNotificationErrorMessage] = useState<string | null>(null);
-  const [dismissedRecommendationIds, setDismissedRecommendationIds] = useState<Set<string>>(
+  const [dismissedRecommendationIds, setDismissedRecommendationIds] = useState<Set<number>>(
     () => new Set(),
   );
   const [progressCard, setProgressCard] = useState<CardItem | null>(null);
@@ -71,20 +74,32 @@ export function useHomeScreen() {
   const updateScheduleMutation = useUpdateScheduleMutation();
   const createDailyMemoMutation = useCreateDailyMemoMutation();
   const deleteDailyMemoMutation = useDeleteDailyMemoMutation();
+  const acceptRecommendationMutation = useAcceptRecommendationMutation();
   const selectedDateValue = useMemo(() => formatDateValue(selectedDate), [selectedDate]);
   const todayValue = useMemo(() => formatDateValue(now), [now]);
   const pageData = useHomePageData({ personalTags, selectedDate, viewMode });
   const conditionPrompt = useHomeConditionPrompt(todayValue, !isNotificationModalVisible);
   const visibleRecommendations = useMemo(
-    () => pageData.recommendations.filter((item) => !dismissedRecommendationIds.has(item.card.id)),
+    () =>
+      pageData.recommendations.filter((item) => !dismissedRecommendationIds.has(item.recommendId)),
     [dismissedRecommendationIds, pageData.recommendations],
   );
   const timelineItems = useMemo(
     () =>
       [
-        ...pageData.timelineCards.map((card) => ({ card, isRecommendation: false })),
-        ...visibleRecommendations.map((item) => ({ card: item.card, isRecommendation: true })),
-      ].sort((first, second) => first.card.timeStart.localeCompare(second.card.timeStart)),
+        ...pageData.timelineCards.map((card) => ({ kind: 'schedule' as const, card })),
+        ...visibleRecommendations.map((recommendation) => ({
+          kind: 'recommendation' as const,
+          recommendation,
+        })),
+      ].sort((first, second) => {
+        const firstStartTime =
+          first.kind === 'schedule' ? first.card.timeStart : first.recommendation.startTime;
+        const secondStartTime =
+          second.kind === 'schedule' ? second.card.timeStart : second.recommendation.startTime;
+
+        return firstStartTime.localeCompare(secondStartTime);
+      }),
     [pageData.timelineCards, visibleRecommendations],
   );
   const extendState = useMemo(
@@ -204,14 +219,20 @@ export function useHomeScreen() {
   );
   /** 추천 카드를 현재 세션에서 숨깁니다. */
   const handleDismissRecommendation = useCallback(
-    (cardId: string) => setDismissedRecommendationIds((previous) => new Set(previous).add(cardId)),
+    (recommendId: number) =>
+      setDismissedRecommendationIds((previous) => new Set(previous).add(recommendId)),
     [],
   );
-  /** 추천 카드 상세로 이동합니다. */
-  const handleAddRecommendation = useCallback((cardId: string) => {
-    setIsAddSheetVisible(false);
-    router.push(`/card/view?cardId=${cardId}`);
-  }, []);
+  /** 서버가 계산한 추천을 수락해 실제 핀 카드로 반영합니다. */
+  const handleAddRecommendation = useCallback(
+    async (recommendId: number) => {
+      if (acceptRecommendationMutation.isPending) return;
+
+      await acceptRecommendationMutation.mutateAsync({ recommendId });
+      setIsAddSheetVisible(false);
+    },
+    [acceptRecommendationMutation],
+  );
   /** 카드 목록 화면으로 이동합니다. */
   const handleViewQueue = useCallback(() => {
     setIsAddSheetVisible(false);
@@ -328,22 +349,32 @@ export function useHomeScreen() {
   const dismissConflictToast = useCallback(() => setIsConflictToastDismissed(true), []);
   /** 타임라인 렌더링에 필요한 카드 props와 이벤트를 조합합니다. */
   const timelineCardsForView = useMemo(() => {
-    const cards = timelineItems.map(({ card, isRecommendation }) => ({
-      ...toHomeTimelineCardViewModel(card, personalTags, isRecommendation),
-      helperText: isRecommendation ? '잠깐 쉬는 게 어떨까요?' : undefined,
-      onPress: isRecommendation ? undefined : () => handleCardPress(card),
-      onAddPress: isRecommendation ? () => handleAddRecommendation(card.id) : undefined,
-      onDismissPress: isRecommendation ? () => handleDismissRecommendation(card.id) : undefined,
-    }));
+    const cards = timelineItems.map((item) => {
+      if (item.kind === 'recommendation') {
+        return {
+          ...toHomeRecommendationTimelineCardViewModel(item.recommendation),
+          helperText: '잠깐 쉬는 게 어떨까요?',
+          onAddPress: () => void handleAddRecommendation(item.recommendation.recommendId),
+          onDismissPress: () => handleDismissRecommendation(item.recommendation.recommendId),
+        };
+      }
 
-    const placeholderCount = cards.length <= 1 ? 2 : 1;
-    const placeholders = Array.from({ length: placeholderCount }, (_, index) => ({
-      id: `placeholder-${index}`,
-      kind: 'placeholder' as const,
-      time: '00:00',
-      title: '',
-      range: '',
-    }));
+      return {
+        ...toHomeTimelineCardViewModel(item.card, personalTags, false),
+        onPress: () => handleCardPress(item.card),
+      };
+    });
+
+    const placeholders = Array.from(
+      { length: HOME_TIMELINE_TOP_PLACEHOLDER_COUNT },
+      (_, index) => ({
+        id: `placeholder-${index}`,
+        kind: 'placeholder' as const,
+        time: '00:00',
+        title: '',
+        range: '',
+      }),
+    );
 
     const addCard =
       cards.length === 0
@@ -380,9 +411,11 @@ export function useHomeScreen() {
 
     if (timelineItems.length === 0) return timelineCardsForView.length;
 
-    const placeholderCount = timelineItems.length <= 1 ? 2 : 1;
+    const placeholderCount = HOME_TIMELINE_TOP_PLACEHOLDER_COUNT;
     const passedScheduleCount = timelineItems.filter(
-      ({ card }) => card.timeStart <= formatHomeCurrentTime(now),
+      (item) =>
+        (item.kind === 'schedule' ? item.card.timeStart : item.recommendation.startTime) <=
+        formatHomeCurrentTime(now),
     ).length;
 
     return placeholderCount + passedScheduleCount;

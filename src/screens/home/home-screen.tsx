@@ -24,13 +24,13 @@ import { colors, radius, spacing } from '@/constants/theme';
 import { getConditionScoreTheme } from '@/domains/condition/score-theme';
 import { t } from '@/lib/i18n';
 
+import { useFocusTimelineCurrentTime } from './hooks/use-focus-timeline-current-time';
 import { useHomeScreen } from './hooks/use-home-screen';
 
 const HOME_STATUS_COLUMN_WIDTH = 112;
 const HOME_MESSAGE_BOX_WIDTH = 226;
 const HOME_TIMELINE_LEFT = 108;
 const HOME_TIMELINE_LINE_LEFT = 43;
-const HOME_TIMELINE_CARD_LIST_TOP = 107;
 const HOME_TIMELINE_CARD_LIST_BOTTOM = 160;
 const HOME_HEADER_OVERLAY_HEIGHT = 216;
 
@@ -38,6 +38,7 @@ const HOME_HEADER_OVERLAY_HEIGHT = 216;
 export function HomeScreen() {
   const home = useHomeScreen();
   const scoreTheme = getConditionScoreTheme(home.conditionScore);
+  const timelineFocus = useFocusTimelineCurrentTime(home.currentTimeMarkerIndex != null);
 
   return (
     <ScreenLayout
@@ -53,11 +54,21 @@ export function HomeScreen() {
             <View style={styles.timeline}>
               <View style={styles.timelineLine} />
               <ScrollView
+                ref={timelineFocus.timelineRef}
                 contentContainerStyle={styles.timelineContent}
+                onLayout={timelineFocus.handleTimelineLayout}
                 showsVerticalScrollIndicator={false}
               >
                 {home.timelineCardsForView.map((card, index) => (
-                  <View key={card.id} style={styles.timelineCardSlot}>
+                  <View
+                    key={card.id}
+                    style={styles.timelineCardSlot}
+                    onLayout={
+                      home.currentTimeMarkerIndex === index + 1
+                        ? timelineFocus.handleMarkerLayout
+                        : undefined
+                    }
+                  >
                     <TimelineCard {...card} />
                     {home.currentTimeMarkerIndex === index + 1 ? (
                       <HomeCurrentTimeMarker time={home.currentTimeLabel} />
@@ -287,7 +298,6 @@ const styles = StyleSheet.create({
   timelineContent: {
     alignItems: 'flex-end',
     gap: spacing[2],
-    paddingTop: HOME_TIMELINE_CARD_LIST_TOP,
     paddingRight: spacing[3],
     paddingBottom: HOME_TIMELINE_CARD_LIST_BOTTOM,
   },

@@ -1,11 +1,14 @@
 import { useMemo } from 'react';
 
+import { useScheduleRecommendationsQuery } from '@/domains/ai-recommendation/api/queries';
 import { useDailyMemosQuery } from '@/domains/daily-memo/api/queries';
 import { useMeasurementAveragesQuery } from '@/domains/measurement/api/queries';
 import { toConditionSummaryFromAverage } from '@/domains/measurement/model';
 import { getMeasurementMonthRange, getMeasurementWeekRange } from '@/domains/measurement/period';
+import { withScheduleDetailPersonalTags } from '@/domains/schedule/api/mapper';
 import {
   useDailyMessageQuery,
+  useScheduleDetailQueries,
   useSchedulesByDateQuery,
   useSchedulesByMonthQuery,
   useSchedulesByWeekQuery,
@@ -22,7 +25,7 @@ import {
   type HomeViewMode,
 } from '../home-calendar';
 
-import type { HomeRecommendationItem, PersonalTagOption } from '@/domains/schedule/model';
+import type { PersonalTagOption } from '@/domains/schedule/model';
 
 const HOME_RECOMMENDATION_FUTURE_DAYS = 7;
 
@@ -53,6 +56,10 @@ export function useHomePageData({
   const schedulesByDateQuery = useSchedulesByDateQuery(selectedDateValue, {
     enabled: viewMode === 'daily',
   });
+  const scheduleDetailQueries = useScheduleDetailQueries(
+    (schedulesByDateQuery.data ?? []).map((schedule) => schedule.id),
+    viewMode === 'daily',
+  );
   const schedulesByWeekQuery = useSchedulesByWeekQuery(selectedDateValue, {
     enabled: viewMode === 'weekly',
   });
@@ -89,10 +96,21 @@ export function useHomePageData({
     viewMode === 'daily' &&
     !isPastDate(selectedDate) &&
     isWithinFutureDays(selectedDate, HOME_RECOMMENDATION_FUTURE_DAYS);
+  const scheduleRecommendationsQuery = useScheduleRecommendationsQuery(selectedDateValue, {
+    enabled: canShowRecommendations,
+  });
 
+  const schedulesWithPersonalTags = useMemo(
+    () =>
+      withScheduleDetailPersonalTags(
+        schedulesByDateQuery.data ?? [],
+        scheduleDetailQueries.flatMap((query) => (query.data == null ? [] : [query.data])),
+      ),
+    [scheduleDetailQueries, schedulesByDateQuery.data],
+  );
   const cards = useMemo(
-    () => toCardItemsFromScheduleList(schedulesByDateQuery.data ?? [], personalTags),
-    [personalTags, schedulesByDateQuery.data],
+    () => toCardItemsFromScheduleList(schedulesWithPersonalTags, personalTags),
+    [personalTags, schedulesWithPersonalTags],
   );
   const timelineCards = useMemo(
     () =>
@@ -101,15 +119,7 @@ export function useHomePageData({
         .sort((first, second) => first.timeStart.localeCompare(second.timeStart)),
     [cards],
   );
-  const recommendations = useMemo<HomeRecommendationItem[]>(() => {
-    // TODO: Home recommendation needs a dedicated ai-recommendation endpoint.
-    // Do not reuse /schedule/search here; that endpoint is owned by the card list search flow.
-    if (!canShowRecommendations) {
-      return [];
-    }
-
-    return [];
-  }, [canShowRecommendations]);
+  const recommendations = scheduleRecommendationsQuery.data ?? [];
   const calendarDays = useMemo(
     () =>
       buildHomeCalendarDays({
@@ -143,6 +153,7 @@ export function useHomePageData({
     dailyMessage: viewMode === 'daily' ? dailyMessageQuery.data : undefined,
     dailyMemos: dailyMemosQuery.data ?? [],
     dailyMemosQuery,
+    scheduleRecommendationsQuery,
     isLoading:
       measurementAveragesQuery.isLoading ||
       (viewMode === 'daily' && schedulesByDateQuery.isLoading) ||
