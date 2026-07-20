@@ -4,6 +4,7 @@
  * condition 화면과 settings 화면이 generated DTO 구조에 의존하지 않게 합니다.
  */
 import { formatDurationCaption } from '@/domains/condition/recommendation';
+import { normalizeTimeToMinute } from '@/domains/schedule/time';
 
 import { parseClockToMinutes, toClockTime } from '../model';
 
@@ -29,6 +30,7 @@ import type {
   RecommendBanTime,
   RecommendationAcceptRequest,
   RecommendationItem,
+  RecommendationListResponse,
 } from '@/lib/api/model';
 
 function toMinuteRange(banTime: RecommendBanTime): MinuteRange {
@@ -105,36 +107,83 @@ export function toRecommendationAcceptRequest(input: {
 }
 
 /** 일반 추천 목록 DTO를 화면 독립 추천 모델로 변환합니다. */
-export function toScheduleRecommendations(response?: { recommendations?: RecommendationItem[] }) {
-  return (response?.recommendations ?? []).flatMap(toScheduleRecommendation);
+export function toScheduleRecommendations(
+  response?: RecommendationListResponse,
+): ScheduleRecommendation[] {
+  return [...(response?.recommendations ?? [])]
+    .sort(
+      (first, second) =>
+        (first.display_order ?? Number.MAX_SAFE_INTEGER) -
+        (second.display_order ?? Number.MAX_SAFE_INTEGER),
+    )
+    .flatMap((item) =>
+      toScheduleRecommendation(item, response?.date ?? '', response?.condition_tag),
+    );
 }
 
 /** 불완전한 큐 시간 추천 응답을 검증한 값만 domain model로 노출합니다. */
 export function toQueueTimeRecommendationResult(response: unknown): QueueTimeRecommendationResult {
   const value = isRecord(response) ? response : {};
-  const items = Array.isArray(value.recommendations) ? value.recommendations : [];
+  const slots = Array.isArray(value.slots) ? value.slots : [];
+  const title = typeof value.title === 'string' ? value.title : '';
+  const estimatedMinutes = typeof value.estimated_time === 'number' ? value.estimated_time : null;
 
   return {
-    candidates: items.flatMap((item) =>
-      isRecord(item) ? toScheduleRecommendation(item as RecommendationItem) : [],
+    candidates: slots.flatMap((slot) =>
+      isRecord(slot) ? toQueueTimeRecommendation(slot, title, estimatedMinutes) : [],
     ),
     canExtendTo14Days: value.canExtendTo14Days === true,
     mustChangeDuration: value.mustChangeDuration === true,
   };
 }
 
-function toScheduleRecommendation(item: RecommendationItem): ScheduleRecommendation[] {
+/** 실제 큐 카드 추천 응답은 상위 일정 정보와 slots 배열을 분리해 반환합니다. */
+function toQueueTimeRecommendation(
+  slot: Record<string, unknown>,
+  title: string,
+  estimatedMinutes: number | null,
+): ScheduleRecommendation[] {
+  const recommendId = typeof slot.recommend_id === 'number' ? slot.recommend_id : null;
+  const date = typeof slot.date === 'string' ? slot.date : '';
+  const startTime =
+    typeof slot.start_time === 'string' ? normalizeTimeToMinute(slot.start_time) : '';
+  const endTime = typeof slot.end_time === 'string' ? normalizeTimeToMinute(slot.end_time) : '';
+
+  if (recommendId == null || !date || !startTime || !endTime) return [];
+
+  return [
+    {
+      recommendId,
+      title,
+      date,
+      startTime,
+      endTime,
+      estimatedMinutes,
+      deadline: null,
+      conditionTagId: toConditionTagId(undefined),
+      displayOrder: typeof slot.display_order === 'number' ? slot.display_order : null,
+    },
+  ];
+}
+
+function toScheduleRecommendation(
+  item: RecommendationItem,
+  date: string,
+  fallbackConditionTag?: string,
+): ScheduleRecommendation[] {
   if (item.recommend_id == null || !item.title || !item.start_time || !item.end_time) return [];
 
   return [
     {
       recommendId: item.recommend_id,
       title: item.title,
-      date: item.deadline ?? '',
-      startTime: item.start_time,
-      endTime: item.end_time,
+      date,
+      startTime: normalizeTimeToMinute(item.start_time),
+      endTime: normalizeTimeToMinute(item.end_time),
       estimatedMinutes: item.estimated_time ?? null,
       deadline: item.deadline ?? null,
+      conditionTagId: toConditionTagId(item.condition_tag ?? fallbackConditionTag),
+      displayOrder: item.display_order ?? null,
     },
   ];
 }
@@ -153,8 +202,8 @@ function toConditionFreeSlot(emptyTime: EmptyTime | undefined): ConditionFreeSlo
   }
 
   return {
-    startTime: emptyTime.start_time,
-    endTime: emptyTime.end_time,
+    startTime: normalizeTimeToMinute(emptyTime.start_time),
+    endTime: normalizeTimeToMinute(emptyTime.end_time),
     durationMinutes: emptyTime.duration_minutes,
   };
 }
