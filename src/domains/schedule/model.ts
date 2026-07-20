@@ -137,13 +137,13 @@ export function hasScheduleEnded(
 export interface ScheduleDetail extends ScheduleListItem {
   memo: string;
   location: string;
-  latitude: number | null;
-  longitude: number | null;
+  locationDetail: string;
   isReminderEnabled: boolean;
   reminderMinutes: number | null;
   reminderType: ReminderType | null;
   reminderSoundType: ReminderSoundType | null;
   isRecurring: boolean;
+  recurrence: RecurrenceValue | null;
   isConflict: boolean;
 }
 
@@ -155,6 +155,10 @@ export interface ScheduleCreateResult {
   endTime: string;
   estimatedMinutes: number | null;
   isQueue: boolean;
+  location: string;
+  locationDetail: string;
+  isRecurring: boolean;
+  recurrence: RecurrenceValue | null;
 }
 
 export interface DailyScheduleSummary {
@@ -193,8 +197,8 @@ export interface ScheduleCreateInput {
   startTime?: string;
   endTime?: string;
   estimatedMinutes?: number;
-  latitude?: number;
-  longitude?: number;
+  location?: string;
+  locationDetail?: string;
   memo?: string;
   isReminderEnabled?: boolean;
   reminderMinutes?: number;
@@ -212,6 +216,8 @@ export interface ScheduleUpdateInput {
   startTime?: string;
   endTime?: string;
   estimatedMinutes?: number;
+  location?: string;
+  locationDetail?: string;
   memo?: string;
   status?: ScheduleStatus;
   isReminderEnabled?: boolean;

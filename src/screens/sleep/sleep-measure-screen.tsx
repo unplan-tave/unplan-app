@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import {
   InputAccessoryView,
   Keyboard,
@@ -26,6 +26,7 @@ const SLEEP_INPUT_ACCESSORY_ID = 'sleep-input-accessory';
 
 export function SleepMeasureScreen() {
   const sleep = useSleepMeasureScreen();
+  const wakeTimeInputRef = useRef<TimeInputHandle>(null);
   const isDoneDisabled = sleep.isRecordLoading || sleep.isRecordLoadError || sleep.isSaving;
 
   return (
@@ -110,6 +111,7 @@ export function SleepMeasureScreen() {
                       monthLabel={sleep.monthLabel}
                       days={sleep.weekDays}
                       onSelect={sleep.selectDate}
+                      onMoveWeek={sleep.moveWeek}
                     />
                     <SleepTooltip
                       placement="date"
@@ -128,11 +130,13 @@ export function SleepMeasureScreen() {
                           error={sleep.validationMessage != null}
                           accessibilityLabel="취침 시각 선택"
                           onChange={sleep.changeBedTime}
+                          onComplete={() => wakeTimeInputRef.current?.focusHours()}
                         />
                         <Typography variant="bodyM" color={colors.gray[400]}>
                           –
                         </Typography>
                         <TwoDigitTimeInput
+                          ref={wakeTimeInputRef}
                           value={sleep.wakeUpTime}
                           accessibilityLabel="기상 시각 선택"
                           onChange={sleep.changeWakeTime}
@@ -206,21 +210,26 @@ export function SleepMeasureScreen() {
   );
 }
 
-function TwoDigitTimeInput({
-  value,
-  error = false,
-  accessibilityLabel,
-  onChange,
-}: {
-  value: string | null;
-  error?: boolean;
-  accessibilityLabel: string;
-  onChange: (time: string | null) => void;
-}) {
+interface TimeInputHandle {
+  focusHours: () => void;
+}
+
+const TwoDigitTimeInput = forwardRef<
+  TimeInputHandle,
+  {
+    value: string | null;
+    error?: boolean;
+    accessibilityLabel: string;
+    onChange: (time: string | null) => void;
+    onComplete?: () => void;
+  }
+>(function TwoDigitTimeInput(
+  { value, error = false, accessibilityLabel, onChange, onComplete },
+  ref,
+) {
   const initial = timeParts(value);
   const [hours, setHours] = useState(initial.hours);
   const [minutes, setMinutes] = useState(initial.minutes);
-  const [activePart, setActivePart] = useState<'hours' | 'minutes' | null>(null);
   const hoursInputRef = useRef<TextInput>(null);
   const minutesInputRef = useRef<TextInput>(null);
 
@@ -232,15 +241,9 @@ function TwoDigitTimeInput({
     setMinutes(next.minutes);
   }, [value]);
 
-  useEffect(() => {
-    if (activePart === 'hours') hoursInputRef.current?.focus();
-    if (activePart === 'minutes') minutesInputRef.current?.focus();
-  }, [activePart]);
-
-  useEffect(() => {
-    const subscription = Keyboard.addListener('keyboardDidHide', () => setActivePart(null));
-    return () => subscription.remove();
-  }, []);
+  useImperativeHandle(ref, () => ({
+    focusHours: () => hoursInputRef.current?.focus(),
+  }));
 
   const commit = (nextHours: string, nextMinutes: string) => {
     if (
@@ -261,70 +264,56 @@ function TwoDigitTimeInput({
       accessibilityLabel={accessibilityLabel}
       style={[styles.timePill, error && styles.timePillError]}
     >
-      {activePart === 'hours' ? (
-        <TextInput
-          ref={hoursInputRef}
-          accessibilityLabel={`${accessibilityLabel} 시`}
-          keyboardType="number-pad"
-          inputAccessoryViewID={SLEEP_INPUT_ACCESSORY_ID}
-          maxLength={2}
-          placeholder="--"
-          placeholderTextColor={colors.gray[500]}
-          selectTextOnFocus
-          style={styles.timeInput}
-          value={hours}
-          returnKeyType="done"
-          blurOnSubmit
-          onSubmitEditing={Keyboard.dismiss}
-          onChangeText={(text) => {
-            const nextHours = timeHoursOnly(text);
-            setHours(nextHours);
-            commit(nextHours, minutes);
+      <TextInput
+        ref={hoursInputRef}
+        accessibilityLabel={`${accessibilityLabel} 시`}
+        keyboardType="number-pad"
+        inputAccessoryViewID={SLEEP_INPUT_ACCESSORY_ID}
+        maxLength={2}
+        placeholder="--"
+        placeholderTextColor={colors.gray[500]}
+        selectTextOnFocus
+        style={styles.timeInput}
+        value={hours}
+        returnKeyType="next"
+        blurOnSubmit={false}
+        onSubmitEditing={() => minutesInputRef.current?.focus()}
+        onChangeText={(text) => {
+          const nextHours = timeHoursOnly(text);
+          setHours(nextHours);
+          commit(nextHours, minutes);
 
-            if (nextHours.length === 2) setActivePart('minutes');
-          }}
-        />
-      ) : (
-        <TimeValue
-          accessibilityLabel={`${accessibilityLabel} 시 입력`}
-          value={hours}
-          onPress={() => setActivePart('hours')}
-        />
-      )}
+          if (nextHours.length === 2) minutesInputRef.current?.focus();
+        }}
+      />
       <Typography variant="bodyM" color={colors.gray[500]}>
         :
       </Typography>
-      {activePart === 'minutes' ? (
-        <TextInput
-          ref={minutesInputRef}
-          accessibilityLabel={`${accessibilityLabel} 분`}
-          keyboardType="number-pad"
-          inputAccessoryViewID={SLEEP_INPUT_ACCESSORY_ID}
-          maxLength={2}
-          placeholder="--"
-          placeholderTextColor={colors.gray[500]}
-          selectTextOnFocus
-          style={styles.timeInput}
-          value={minutes}
-          returnKeyType="done"
-          blurOnSubmit
-          onSubmitEditing={Keyboard.dismiss}
-          onChangeText={(text) => {
-            const nextMinutes = minutesOnly(text);
-            setMinutes(nextMinutes);
-            commit(hours, nextMinutes);
-          }}
-        />
-      ) : (
-        <TimeValue
-          accessibilityLabel={`${accessibilityLabel} 분 입력`}
-          value={minutes}
-          onPress={() => setActivePart('minutes')}
-        />
-      )}
+      <TextInput
+        ref={minutesInputRef}
+        accessibilityLabel={`${accessibilityLabel} 분`}
+        keyboardType="number-pad"
+        inputAccessoryViewID={SLEEP_INPUT_ACCESSORY_ID}
+        maxLength={2}
+        placeholder="--"
+        placeholderTextColor={colors.gray[500]}
+        selectTextOnFocus
+        style={styles.timeInput}
+        value={minutes}
+        returnKeyType={onComplete == null ? 'done' : 'next'}
+        blurOnSubmit={onComplete == null}
+        onSubmitEditing={onComplete ?? Keyboard.dismiss}
+        onChangeText={(text) => {
+          const nextMinutes = minutesOnly(text);
+          setMinutes(nextMinutes);
+          commit(hours, nextMinutes);
+
+          if (nextMinutes.length === 2) onComplete?.();
+        }}
+      />
     </View>
   );
-}
+});
 
 function SleepDurationInput({
   disabled,
@@ -338,8 +327,6 @@ function SleepDurationInput({
   const initial = durationParts(durationMinutes);
   const [hours, setHours] = useState(initial.hours);
   const [minutes, setMinutes] = useState(initial.minutes);
-  const [activePart, setActivePart] = useState<'hours' | 'minutes' | null>(null);
-  const hoursInputRef = useRef<TextInput>(null);
   const minutesInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
@@ -349,16 +336,6 @@ function SleepDurationInput({
     setHours(next.hours);
     setMinutes(next.minutes);
   }, [durationMinutes]);
-
-  useEffect(() => {
-    if (activePart === 'hours') hoursInputRef.current?.focus();
-    if (activePart === 'minutes') minutesInputRef.current?.focus();
-  }, [activePart]);
-
-  useEffect(() => {
-    const subscription = Keyboard.addListener('keyboardDidHide', () => setActivePart(null));
-    return () => subscription.remove();
-  }, []);
 
   const commit = (nextHours: string, nextMinutes: string) => {
     if (nextHours.length !== 2 || nextMinutes.length !== 2 || Number(nextMinutes) > 59) {
@@ -372,7 +349,6 @@ function SleepDurationInput({
   return (
     <View accessibilityLabel="수면 시간" style={styles.durationInput}>
       <TextInput
-        ref={hoursInputRef}
         accessibilityLabel="수면 시간"
         editable={!disabled}
         keyboardType="number-pad"
@@ -383,13 +359,12 @@ function SleepDurationInput({
         selectTextOnFocus
         style={styles.durationNumberInput}
         value={hours}
-        onFocus={() => setActivePart('hours')}
         onChangeText={(text) => {
           const nextHours = digitsOnly(text);
           setHours(nextHours);
           commit(nextHours, minutes);
 
-          if (nextHours.length === 2) setActivePart('minutes');
+          if (nextHours.length === 2) minutesInputRef.current?.focus();
         }}
       />
       <Typography variant="titleS" color={colors.gray[600]}>
@@ -407,7 +382,6 @@ function SleepDurationInput({
         selectTextOnFocus
         style={styles.durationNumberInput}
         value={minutes}
-        onFocus={() => setActivePart('minutes')}
         onChangeText={(text) => {
           const nextMinutes = minutesOnly(text);
           setMinutes(nextMinutes);
@@ -418,33 +392,6 @@ function SleepDurationInput({
         분
       </Typography>
     </View>
-  );
-}
-
-function TimeValue({
-  accessibilityLabel,
-  value,
-  onPress,
-}: {
-  accessibilityLabel: string;
-  value: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      accessibilityLabel={accessibilityLabel}
-      accessibilityRole="button"
-      style={styles.timeValue}
-      onPress={onPress}
-    >
-      <Typography
-        variant="bodyM"
-        align="center"
-        color={value ? colors.gray[700] : colors.gray[500]}
-      >
-        {value || '--'}
-      </Typography>
-    </Pressable>
   );
 }
 
@@ -645,12 +592,6 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     textAlign: 'center',
     color: colors.gray[700],
-  },
-  timeValue: {
-    flex: 1,
-    minWidth: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   divider: {
     height: 1,

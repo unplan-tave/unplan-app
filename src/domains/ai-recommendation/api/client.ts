@@ -10,12 +10,12 @@ import {
   getConditionRecommendations,
   getQueueCardRecommendations,
   getRecommendations,
+  passRecommendation,
 } from '@/lib/api/endpoints/recommendation/recommendation';
 import {
   getEmptyTimeRecommendSetting as getRecommendationCriteriaSetting,
   updateEmptyTimeRecommendSetting as updateRecommendationCriteriaSetting,
 } from '@/lib/api/endpoints/setting-controller/setting-controller';
-import { apiMutator } from '@/lib/api/mutator/orval-mutator';
 
 import {
   toConditionRecommendationViewModel,
@@ -109,12 +109,9 @@ export async function submitAcceptRecommendation(
   }
 }
 
-/** 추천을 건너뛰어 이후 추천 목록에서 제외합니다. */
+/** 추천을 당일 목록에서만 건너뜁니다. 원본 큐 카드는 유지됩니다. */
 export async function submitPassRecommendation(recommendId: number): Promise<void> {
-  await apiMutator<unknown>({
-    url: `/schedule/recommendations/${recommendId}/pass`,
-    method: 'POST',
-  });
+  await passRecommendation(recommendId);
 }
 
 /** 특정 날짜의 일반 큐 카드 추천을 조회합니다. */

@@ -92,7 +92,10 @@ export function useHomeTimelineViewModel({
           ...toHomeRecommendationTimelineCardViewModel(item.recommendation),
           helperText: '잠깐 쉬는 게 어떨까요?',
           onAddPress: () => onAddRecommendation(item.recommendation.recommendId),
-          onDismissPress: () => onDismissRecommendation(item.recommendation.recommendId),
+          onDismissPress:
+            item.recommendation.conditionTagId === 'rest'
+              ? undefined
+              : () => onDismissRecommendation(item.recommendation.recommendId),
         };
       }
 

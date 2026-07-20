@@ -4,7 +4,6 @@
  */
 import { create } from 'zustand';
 
-import { addLocationRecentSearch, removeLocationRecentSearch } from './location';
 import {
   cloneCardFormValues,
   canCreatePersonalTag,
@@ -27,14 +26,10 @@ interface ScheduleStoreState {
   cards: CardItem[];
   draft: CardDraft | null;
   personalTags: PersonalTagOption[];
-  locationRecentSearches: string[];
   cardRecentSearches: string[];
   createCard: (cardType: CardTab, values: CardFormValues) => CardItem;
   createPersonalTag: (label: string) => PersonalTagOption | null;
   setPersonalTags: (serverTags: PersonalTagOption[]) => void;
-  addLocationRecentSearch: (label: string) => void;
-  deleteLocationRecentSearch: (label: string) => void;
-  deleteAllLocationRecentSearches: () => void;
   addCardRecentSearch: (query: string) => void;
   deleteCardRecentSearch: (query: string) => void;
   deleteAllCardRecentSearches: () => void;
@@ -55,7 +50,6 @@ export const useScheduleStore = create<ScheduleStoreState>()((set, get) => ({
   cards: [],
   draft: null,
   personalTags: [],
-  locationRecentSearches: [],
   cardRecentSearches: [],
   createCard: (cardType, values) => {
     const card = createCardItem(cardType, values);
@@ -85,19 +79,6 @@ export const useScheduleStore = create<ScheduleStoreState>()((set, get) => ({
     set({
       personalTags: sortPersonalTags(serverTags),
     });
-  },
-  addLocationRecentSearch: (label) => {
-    set((state) => ({
-      locationRecentSearches: addLocationRecentSearch(state.locationRecentSearches, label),
-    }));
-  },
-  deleteLocationRecentSearch: (label) => {
-    set((state) => ({
-      locationRecentSearches: removeLocationRecentSearch(state.locationRecentSearches, label),
-    }));
-  },
-  deleteAllLocationRecentSearches: () => {
-    set({ locationRecentSearches: [] });
   },
   addCardRecentSearch: (query) => {
     set((state) => ({
@@ -262,7 +243,6 @@ export const useScheduleStore = create<ScheduleStoreState>()((set, get) => ({
       cards: [],
       draft: null,
       personalTags: [],
-      locationRecentSearches: [],
       cardRecentSearches: [],
     });
   },

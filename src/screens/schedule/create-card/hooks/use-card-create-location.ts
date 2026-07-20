@@ -8,7 +8,6 @@ import type { UseFormSetValue } from 'react-hook-form';
 interface UseCardCreateLocationParams {
   setValue: UseFormSetValue<CardFormValues>;
   updateDraftValues: (values: Partial<CardFormValues>) => void;
-  addLocationRecentSearch: (query: string) => void;
   setSheet: Dispatch<SetStateAction<CardCreateSheetState>>;
 }
 
@@ -16,7 +15,6 @@ interface UseCardCreateLocationParams {
 export function useCardCreateLocation({
   setValue,
   updateDraftValues,
-  addLocationRecentSearch,
   setSheet,
 }: UseCardCreateLocationParams) {
   const openLocationSheet = useCallback(() => setSheet({ kind: 'location' }), [setSheet]);
@@ -26,10 +24,9 @@ export function useCardCreateLocation({
       setValue('location', nextLocation, { shouldDirty: true });
       setValue('locationDetail', '', { shouldDirty: true });
       updateDraftValues({ location: nextLocation, locationDetail: '' });
-      addLocationRecentSearch(nextLocation);
       setSheet({ kind: 'none' });
     },
-    [addLocationRecentSearch, setSheet, setValue, updateDraftValues],
+    [setSheet, setValue, updateDraftValues],
   );
 
   return {

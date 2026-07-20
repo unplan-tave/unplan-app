@@ -82,19 +82,23 @@ export function TagPickerSheet({
 
   const normalizedQuery = normalizePersonalTagLabel(query);
   const sortedTags = useMemo(() => sortPersonalTags(personalTags), [personalTags]);
-  const selectedPersonalTags = useMemo(
-    () =>
-      sortedTags
-        .filter((tag) => draftPersonalIds.includes(tag.id))
-        .filter(
-          (tag, index, tags) =>
-            tags.findIndex(
-              (item) =>
-                normalizePersonalTagLabel(item.label) === normalizePersonalTagLabel(tag.label),
-            ) === index,
-        ),
-    [draftPersonalIds, sortedTags],
-  );
+  const selectedPersonalTags = useMemo(() => {
+    const selectedLabelSet = new Set(draftPersonalLabels.map(normalizePersonalTagLabel));
+
+    return sortedTags
+      .filter(
+        (tag) =>
+          draftPersonalIds.includes(tag.id) ||
+          selectedLabelSet.has(normalizePersonalTagLabel(tag.label)),
+      )
+      .filter(
+        (tag, index, tags) =>
+          tags.findIndex(
+            (item) =>
+              normalizePersonalTagLabel(item.label) === normalizePersonalTagLabel(tag.label),
+          ) === index,
+      );
+  }, [draftPersonalIds, draftPersonalLabels, sortedTags]);
   const selectedServerPersonalTagLabels = useMemo(
     () => new Set(selectedPersonalTags.map((tag) => normalizePersonalTagLabel(tag.label))),
     [selectedPersonalTags],
@@ -131,13 +135,23 @@ export function TagPickerSheet({
   const canDoneCondition = selectedConditionTagId != null;
 
   const handleTogglePersonalTag = (tagId: string) => {
+    const tag = sortedTags.find((item) => item.id === tagId);
+    const normalizedLabel = tag == null ? '' : normalizePersonalTagLabel(tag.label);
+
     setDraftPersonalIds((prev) => {
-      if (prev.includes(tagId)) {
+      if (
+        prev.includes(tagId) ||
+        draftPersonalLabels.some((label) => normalizePersonalTagLabel(label) === normalizedLabel)
+      ) {
         return prev.filter((id) => id !== tagId);
       }
 
       return hasReachedPersonalTagLimit ? prev : [...prev, tagId];
     });
+
+    setDraftPersonalLabels((prev) =>
+      prev.filter((label) => normalizePersonalTagLabel(label) !== normalizedLabel),
+    );
   };
 
   const handleToggleDraftLabel = (label: string) => {
@@ -559,8 +573,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   tabHighlightRight: {
-    left: undefined,
-    right: 0,
+    left: '50%',
   },
   tabLabel: {
     flex: 1,

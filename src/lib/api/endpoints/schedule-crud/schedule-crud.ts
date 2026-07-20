@@ -775,7 +775,7 @@ export function useGetPersonalTags<
 }
 
 /**
- * 저장된 일정 카드를 키워드·필터로 검색해 날짜 오름차순으로 페이지네이션(30개)해 반환합니다. 필터는 넘어온 것만 AND 로 조합되며, status·conditionTags·personalTags 는 복수 지정 시 OR 입니다.
+ * 저장된 일정 카드를 키워드·필터로 검색해 최신순(날짜 내림차순)으로 페이지네이션(30개)해 반환합니다. 필터는 넘어온 것만 AND 로 조합되며, status·conditionTags·personalTags 는 복수 지정 시 OR 입니다. 기간 필터(startDate~endDate)는 날짜+시간 일시(예: 2026-06-28T14:30)로, 카드 시간구간이 겹치는(overlap) 핀 카드만 매칭하며 시간 없는 큐 카드는 제외됩니다. 한쪽만 보내면 그 방향만 제한합니다. startDate·endDate 를 모두 생략하면 오늘 기준 앞뒤 3개월(총 6개월, 날짜 기준·큐 카드 포함)이 기본 적용됩니다.
  * @summary 일정 필터 검색
  */
 export const searchSchedules = (

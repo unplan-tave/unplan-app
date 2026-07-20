@@ -33,12 +33,6 @@ export function useCardCreateDraft({
   const changeDraftCardType = useScheduleStore((store) => store.changeDraftCardType);
   const personalTags = useScheduleStore((store) => store.personalTags);
   const createPersonalTag = useScheduleStore((store) => store.createPersonalTag);
-  const locationRecentSearches = useScheduleStore((store) => store.locationRecentSearches);
-  const addLocationRecentSearch = useScheduleStore((store) => store.addLocationRecentSearch);
-  const deleteLocationRecentSearch = useScheduleStore((store) => store.deleteLocationRecentSearch);
-  const deleteAllLocationRecentSearches = useScheduleStore(
-    (store) => store.deleteAllLocationRecentSearches,
-  );
   const saveDraft = useScheduleStore((store) => store.saveDraft);
   const deleteCard = useScheduleStore((store) => store.deleteCard);
   const discardDraft = useScheduleStore((store) => store.discardDraft);
@@ -82,10 +76,6 @@ export function useCardCreateDraft({
     changeDraftCardType,
     personalTags,
     createPersonalTag,
-    locationRecentSearches,
-    addLocationRecentSearch,
-    deleteLocationRecentSearch,
-    deleteAllLocationRecentSearches,
     saveDraft,
     deleteCard,
     discardDraft,
