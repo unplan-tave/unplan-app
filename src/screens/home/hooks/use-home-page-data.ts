@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { useScheduleRecommendationsQuery } from '@/domains/ai-recommendation/api/queries';
+import { isUpcomingScheduleRecommendation } from '@/domains/ai-recommendation/model';
 import { useDailyMemosQuery } from '@/domains/daily-memo/api/queries';
 import { useMeasurementAveragesQuery } from '@/domains/measurement/api/queries';
 import { toConditionSummaryFromAverage } from '@/domains/measurement/model';
@@ -29,10 +30,12 @@ const HOME_RECOMMENDATION_FUTURE_DAYS = 7;
 
 /** 홈 화면의 캘린더·컨디션·일정 서버 데이터를 조회해 화면 모델로 조합합니다. */
 export function useHomePageData({
+  now,
   personalTags,
   selectedDate,
   viewMode,
 }: {
+  now: Date;
   personalTags: PersonalTagOption[];
   selectedDate: Date;
   viewMode: HomeViewMode;
@@ -105,7 +108,13 @@ export function useHomePageData({
         .sort((first, second) => first.timeStart.localeCompare(second.timeStart)),
     [cards],
   );
-  const recommendations = scheduleRecommendationsQuery.data ?? [];
+  const recommendations = useMemo(
+    () =>
+      (scheduleRecommendationsQuery.data ?? []).filter((recommendation) =>
+        isUpcomingScheduleRecommendation(recommendation, now),
+      ),
+    [now, scheduleRecommendationsQuery.data],
+  );
   const calendarDays = useMemo(
     () =>
       buildHomeCalendarDays({
