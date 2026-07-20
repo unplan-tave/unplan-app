@@ -116,7 +116,7 @@ export function useSleepMeasureScreen() {
     });
   }, [bedDateId, today, wakeDateId, weekStartDateId]);
 
-  const moveWeek = useCallback(
+  const shiftDateRange = useCallback(
     (direction: 'previous' | 'next') => {
       const lastAvailableWeekStart = subDays(today, 6);
 
@@ -345,7 +345,7 @@ export function useSleepMeasureScreen() {
     subtitle: '수면 패턴을 통해 컨디션값을 보정해요',
     monthLabel,
     weekDays,
-    moveWeek,
+    shiftDateRange,
     bedTime,
     wakeUpTime,
     durationMinutes: isAllNight ? 0 : computedDuration,

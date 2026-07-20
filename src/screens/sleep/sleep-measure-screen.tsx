@@ -111,7 +111,7 @@ export function SleepMeasureScreen() {
                       monthLabel={sleep.monthLabel}
                       days={sleep.weekDays}
                       onSelect={sleep.selectDate}
-                      onMoveWeek={sleep.moveWeek}
+                      onShiftDateRange={sleep.shiftDateRange}
                     />
                     <SleepTooltip
                       placement="date"
