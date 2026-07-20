@@ -95,7 +95,7 @@ export function useEnergyMeasureScreen() {
       id: isEditMode ? conditionId : undefined,
       bodyScore,
       mindScore,
-      dateTime: `${dateId}T${time}:00`,
+      dateTime: `${dateId}T${time}`,
     });
   }, [bodyScore, conditionId, dateId, hasValue, isEditMode, mindScore, saveMutation, time]);
 
