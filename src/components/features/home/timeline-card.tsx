@@ -100,16 +100,18 @@ export function TimelineCard({
         <CardTagList tags={tags} />
         {isRecommendation ? (
           <View style={styles.actions}>
-            <Pressable
-              accessibilityLabel="추천 삭제"
-              accessibilityRole="button"
-              style={({ pressed }) => [styles.actionButton, pressed && styles.pressed]}
-              onPress={onDismissPress}
-            >
-              <Typography variant="bodyS" color={colors.gray[400]} align="center">
-                추천 삭제
-              </Typography>
-            </Pressable>
+            {onDismissPress ? (
+              <Pressable
+                accessibilityLabel="추천 삭제"
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.actionButton, pressed && styles.pressed]}
+                onPress={onDismissPress}
+              >
+                <Typography variant="bodyS" color={colors.gray[400]} align="center">
+                  추천 삭제
+                </Typography>
+              </Pressable>
+            ) : null}
             <Pressable
               accessibilityLabel="추천 일정 추가"
               accessibilityRole="button"

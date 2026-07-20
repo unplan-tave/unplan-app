@@ -74,7 +74,11 @@ export function HomeAddBottomSheet({
                     ]}
                     cardStyle={styles.recommendCard}
                     onAddPress={() => onRecommendationAddPress(item.recommendId)}
-                    onDismissPress={() => onDismissRecommendation(item.recommendId)}
+                    onDismissPress={
+                      item.conditionTagId === 'rest'
+                        ? undefined
+                        : () => onDismissRecommendation(item.recommendId)
+                    }
                   />
                 );
               })}
