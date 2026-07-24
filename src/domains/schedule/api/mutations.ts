@@ -4,6 +4,8 @@
  */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { aiRecommendationQueryKeys } from '@/domains/ai-recommendation/api/query-keys';
+
 import { submitScheduleCreate, submitScheduleDelete, submitScheduleUpdate } from './client';
 import { scheduleQueryKeys } from './query-keys';
 
@@ -31,7 +33,10 @@ export function useCreateScheduleMutation(
     onSuccess: async (data, variables, onMutateResult, context) => {
       // 생성 응답은 상세 응답의 축약본이므로, 입력값으로 상세 캐시를 조립하지 않습니다.
       // 상세 화면은 다음 마운트에서 반드시 서버 상세 엔드포인트를 조회합니다.
-      await queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.all });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: aiRecommendationQueryKeys.all }),
+      ]);
       options?.onSuccess?.(data, variables, onMutateResult, context);
     },
   });
@@ -49,7 +54,10 @@ export function useUpdateScheduleMutation(
     mutationFn: ({ scheduleId, data }) => submitScheduleUpdate(scheduleId, data),
     ...options,
     onSuccess: async (data, variables, onMutateResult, context) => {
-      await queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.all });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: aiRecommendationQueryKeys.all }),
+      ]);
       options?.onSuccess?.(data, variables, onMutateResult, context);
     },
   });
@@ -63,8 +71,11 @@ export function useDeleteScheduleMutation(
   return useMutation({
     mutationFn: ({ scheduleId }) => submitScheduleDelete(scheduleId),
     ...options,
-    onSuccess: (data, variables, onMutateResult, context) => {
-      void queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.all });
+    onSuccess: async (data, variables, onMutateResult, context) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: aiRecommendationQueryKeys.all }),
+      ]);
       void queryClient.removeQueries({ queryKey: scheduleQueryKeys.detail(variables.scheduleId) });
       options?.onSuccess?.(data, variables, onMutateResult, context);
     },
