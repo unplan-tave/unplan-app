@@ -15,7 +15,7 @@ import {
 import {
   getEmptyTimeRecommendSetting as getRecommendationCriteriaSetting,
   updateEmptyTimeRecommendSetting as updateRecommendationCriteriaSetting,
-} from '@/lib/api/endpoints/setting-controller/setting-controller';
+} from '@/lib/api/endpoints/setting/setting';
 
 import {
   toConditionRecommendationViewModel,

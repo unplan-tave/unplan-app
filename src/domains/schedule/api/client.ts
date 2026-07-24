@@ -14,7 +14,7 @@ import {
   searchSchedules as searchScheduleEndpoints,
   updateSchedule,
 } from '@/lib/api/endpoints/schedule-crud/schedule-crud';
-import { recommendTag } from '@/lib/api/endpoints/tag-controller/tag-controller';
+import { recommendTag } from '@/lib/api/endpoints/tag/tag';
 
 import {
   normalizeDateForRequest,

@@ -33,6 +33,10 @@ import type { ErrorType, BodyType } from '../../mutator/orval-mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+/**
+ * 설정 > 추천 개인화 설정 > 일정 추천 기준 화면에서 추천 조건 관련 설정들을 조회합니다
+ * @summary 빈 시간 추천 설정 조회
+ */
 export const getEmptyTimeRecommendSetting = (
   options?: SecondParameter<typeof apiMutator>,
   signal?: AbortSignal,
@@ -128,6 +132,9 @@ export function useGetEmptyTimeRecommendSetting<
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 빈 시간 추천 설정 조회
+ */
 
 export function useGetEmptyTimeRecommendSetting<
   TData = Awaited<ReturnType<typeof getEmptyTimeRecommendSetting>>,
@@ -152,6 +159,10 @@ export function useGetEmptyTimeRecommendSetting<
   return query;
 }
 
+/**
+ * 설정 > 추천 개인화 설정 > 일정 추천 기준 화면에서 추천 조건 관련 설정들을 변경합니다
+ * @summary 빈 시간 추천 설정 변경
+ */
 export const updateEmptyTimeRecommendSetting = (
   emptyTimeSettingRequestDto: BodyType<EmptyTimeSettingRequestDto>,
   options?: SecondParameter<typeof apiMutator>,
@@ -209,6 +220,9 @@ export type UpdateEmptyTimeRecommendSettingMutationResult = NonNullable<
 export type UpdateEmptyTimeRecommendSettingMutationBody = BodyType<EmptyTimeSettingRequestDto>;
 export type UpdateEmptyTimeRecommendSettingMutationError = ErrorType<unknown>;
 
+/**
+ * @summary 빈 시간 추천 설정 변경
+ */
 export const useUpdateEmptyTimeRecommendSetting = <TError = ErrorType<unknown>, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
@@ -230,6 +244,10 @@ export const useUpdateEmptyTimeRecommendSetting = <TError = ErrorType<unknown>, 
 
   return useMutation(mutationOptions, queryClient);
 };
+/**
+ * 설정 화면의 사용자가 설정한 알림 설정 목록을 조회합니다.
+ * @summary 알림 설정 조회
+ */
 export const getAlarmSetting = (
   options?: SecondParameter<typeof apiMutator>,
   signal?: AbortSignal,
@@ -314,6 +332,9 @@ export function useGetAlarmSetting<
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 알림 설정 조회
+ */
 
 export function useGetAlarmSetting<
   TData = Awaited<ReturnType<typeof getAlarmSetting>>,
@@ -336,6 +357,10 @@ export function useGetAlarmSetting<
   return query;
 }
 
+/**
+ * 설정 탭의 알림 설정을 변경합니다.
+ * @summary 알림 설정 변경
+ */
 export const updateAlarmSetting = (
   alarmSettingRequestDto: BodyType<AlarmSettingRequestDto>,
   options?: SecondParameter<typeof apiMutator>,
@@ -393,6 +418,9 @@ export type UpdateAlarmSettingMutationResult = NonNullable<
 export type UpdateAlarmSettingMutationBody = BodyType<AlarmSettingRequestDto>;
 export type UpdateAlarmSettingMutationError = ErrorType<unknown>;
 
+/**
+ * @summary 알림 설정 변경
+ */
 export const useUpdateAlarmSetting = <TError = ErrorType<unknown>, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<

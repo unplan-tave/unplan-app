@@ -20,6 +20,10 @@ import type { ErrorType } from '../../mutator/orval-mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+/**
+ * memberId로 JWT 액세스 토큰을 바로 발급합니다. local/dev 환경에서만 동작합니다.
+ * @summary 테스트용 액세스 토큰 발급
+ */
 export const getAccessToken = (
   params: GetAccessTokenParams,
   options?: SecondParameter<typeof apiMutator>,
@@ -71,6 +75,9 @@ export type GetAccessTokenMutationResult = NonNullable<Awaited<ReturnType<typeof
 
 export type GetAccessTokenMutationError = ErrorType<unknown>;
 
+/**
+ * @summary 테스트용 액세스 토큰 발급
+ */
 export const useGetAccessToken = <TError = ErrorType<unknown>, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
