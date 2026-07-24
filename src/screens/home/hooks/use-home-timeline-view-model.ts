@@ -25,6 +25,12 @@ interface TimelineTimeRange {
   endMinutes: number;
 }
 
+function getTimelineItemStartMinutes(item: TimelineItem): number | null {
+  const startTime = item.kind === 'schedule' ? item.card.timeStart : item.recommendation.startTime;
+
+  return parseTimeToMinutes(startTime);
+}
+
 function getTimelineTimeRange(item: TimelineItem): TimelineTimeRange | null {
   const startTime = item.kind === 'schedule' ? item.card.timeStart : item.recommendation.startTime;
   const endTime = item.kind === 'schedule' ? item.card.timeEnd : item.recommendation.endTime;
@@ -74,12 +80,14 @@ export function useHomeTimelineViewModel({
           recommendation,
         })),
       ].sort((first, second) => {
-        const firstStartTime =
-          first.kind === 'schedule' ? first.card.timeStart : first.recommendation.startTime;
-        const secondStartTime =
-          second.kind === 'schedule' ? second.card.timeStart : second.recommendation.startTime;
+        const firstStartMinutes = getTimelineItemStartMinutes(first);
+        const secondStartMinutes = getTimelineItemStartMinutes(second);
 
-        return firstStartTime.localeCompare(secondStartTime);
+        if (firstStartMinutes == null && secondStartMinutes == null) return 0;
+        if (firstStartMinutes == null) return 1;
+        if (secondStartMinutes == null) return -1;
+
+        return firstStartMinutes - secondStartMinutes;
       }),
     [timelineCards, visibleRecommendations],
   );
@@ -163,7 +171,8 @@ export function useHomeTimelineViewModel({
 
     const timeRanges = timelineItems
       .map(getTimelineTimeRange)
-      .filter((timeRange): timeRange is TimelineTimeRange => timeRange != null);
+      .filter((timeRange): timeRange is TimelineTimeRange => timeRange != null)
+      .sort((first, second) => first.startMinutes - second.startMinutes);
     const activeRange = timeRanges.findLast(
       (timeRange) =>
         timeRange.startMinutes <= currentMinutes && currentMinutes < timeRange.endMinutes,
