@@ -64,6 +64,14 @@ import type {
 
 const API_WEEKDAY_CODES = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const;
 
+/**
+ * OpenAPI 명세는 `end_date`의 명시적 null을 설명하지만 nullable로 선언하지 않아
+ * Orval 생성 타입에는 null이 빠져 있습니다. API 경계에서만 실제 요청 형태를 보완합니다.
+ */
+export type ScheduleUpdateRequestWithNullableEndDate = Omit<ScheduleUpdateRequest, 'end_date'> & {
+  end_date?: string | null;
+};
+
 /** 서버 개인 태그를 화면에서 쓰는 태그 option으로 변환합니다. */
 export function toPersonalTagOptions(response?: PersonalTagResponse[]) {
   return (response ?? []).flatMap((tag) => {
@@ -135,6 +143,7 @@ export function toScheduleListItem(response: ScheduleGetResponse): ScheduleListI
     id: response.schedule_id ?? 0,
     title: response.title ?? '',
     date: normalizeDateForView(response.date),
+    endDate: normalizeDateForView(response.end_date),
     startTime: normalizeTimeToMinute(response.start_time ?? ''),
     endTime: normalizeTimeToMinute(response.end_time ?? ''),
     estimatedMinutes: response.estimated_time ?? null,
@@ -173,6 +182,7 @@ function toScheduleSearchListItem(response: ScheduleSearchResponse): ScheduleLis
     id: response.schedule_id ?? 0,
     title: response.title ?? '',
     date: normalizeDateForView(response.date),
+    endDate: normalizeDateForView(response.end_date),
     startTime: normalizeTimeToMinute(response.start_time ?? ''),
     endTime: normalizeTimeToMinute(response.end_time ?? ''),
     estimatedMinutes: response.estimated_time ?? null,
@@ -238,6 +248,7 @@ export function toScheduleDetail(response: ScheduleDetailResponse): ScheduleDeta
     id: response.schedule_id ?? 0,
     title: response.title ?? '',
     date: normalizeDateForView(response.date),
+    endDate: normalizeDateForView(response.end_date),
     startTime: normalizeTimeToMinute(response.start_time ?? ''),
     endTime: normalizeTimeToMinute(response.end_time ?? ''),
     estimatedMinutes: response.estimated_time ?? null,
@@ -363,6 +374,7 @@ export function toScheduleCreateResult(response: ScheduleCreateResponse): Schedu
     id: detail.id,
     title: detail.title,
     date: detail.date,
+    endDate: detail.endDate,
     startTime: detail.startTime,
     endTime: detail.endTime,
     estimatedMinutes: detail.estimatedMinutes,
@@ -393,6 +405,7 @@ export function toScheduleCreateRequest(input: ScheduleCreateInput): ScheduleCre
     condition_tag: conditionTagToCreateDtoMap[input.conditionTagId],
     personal_tags: input.personalTags,
     date: normalizeDateForRequest(input.date),
+    end_date: normalizeDateForRequest(input.endDate),
     start_time: input.startTime,
     end_time: input.endTime,
     estimated_time: input.estimatedMinutes,
@@ -413,13 +426,17 @@ export function toScheduleCreateRequest(input: ScheduleCreateInput): ScheduleCre
   };
 }
 
-export function toScheduleUpdateRequest(input: ScheduleUpdateInput): ScheduleUpdateRequest {
+export function toScheduleUpdateRequest(
+  input: ScheduleUpdateInput,
+): ScheduleUpdateRequestWithNullableEndDate {
   return {
     title: input.title,
     condition_tag:
       input.conditionTagId == null ? undefined : conditionTagToUpdateDtoMap[input.conditionTagId],
     personal_tags: input.personalTags,
     date: normalizeDateForRequest(input.date),
+    end_date: input.endDate == null ? input.endDate : normalizeDateForRequest(input.endDate),
+    end_date_present: input.endDate === undefined ? undefined : true,
     start_time: input.startTime,
     end_time: input.endTime,
     estimated_time: input.estimatedMinutes,

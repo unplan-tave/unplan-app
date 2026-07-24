@@ -95,6 +95,8 @@ export interface ScheduleListItem {
   id: number;
   title: string;
   date: string;
+  /** 기간 일정의 종료일(포함). 단일 일정과 큐 카드는 빈 문자열입니다. */
+  endDate: string;
   startTime: string;
   endTime: string;
   estimatedMinutes: number | null;
@@ -151,6 +153,7 @@ export interface ScheduleCreateResult {
   id: number;
   title: string;
   date: string;
+  endDate: string;
   startTime: string;
   endTime: string;
   estimatedMinutes: number | null;
@@ -194,6 +197,8 @@ export interface ScheduleCreateInput {
   conditionTagId: ConditionTagId;
   personalTags?: string[];
   date?: string;
+  /** 기간 일정의 종료일(포함). 없으면 단일 일정입니다. */
+  endDate?: string;
   startTime?: string;
   endTime?: string;
   estimatedMinutes?: number;
@@ -213,6 +218,11 @@ export interface ScheduleUpdateInput {
   /** 전달 시 일정의 개인 태그 전체를 교체합니다. */
   personalTags?: string[];
   date?: string;
+  /**
+   * 기간 일정의 종료일(포함).
+   * `null`은 기존 기간 일정을 단일 일정으로 되돌리고, `undefined`는 기존 값을 유지합니다.
+   */
+  endDate?: string | null;
   startTime?: string;
   endTime?: string;
   estimatedMinutes?: number;
