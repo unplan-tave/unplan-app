@@ -205,7 +205,7 @@ export function CardListFilterChips({
           >
             <Icon name="chevronUp" size={16} color={colors.gray[700]} />
           </Pressable>
-          <View>
+          <View style={styles.dropdownOptions}>
             <View>
               {expanded.key === 'personal' && isPersonalTagsLoading ? (
                 <Typography variant="bodyS" color={colors.gray[400]}>
@@ -368,6 +368,7 @@ const styles = StyleSheet.create({
     zIndex: 20,
     flexDirection: 'row',
     alignItems: 'flex-start',
+    maxWidth: '100%',
     gap: spacing[2] + 2,
     paddingVertical: spacing[2] - 2,
     paddingLeft: spacing[1] + 1,
@@ -380,6 +381,11 @@ const styles = StyleSheet.create({
   },
   selectedOptionsRow: {
     flexDirection: 'row',
+    flexShrink: 1,
+    flexWrap: 'wrap',
+  },
+  dropdownOptions: {
+    flexShrink: 1,
   },
   emptyText: {
     textAlign: 'center',
