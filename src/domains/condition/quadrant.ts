@@ -50,13 +50,23 @@ export function snapConditionQuadrantValue(value: number): number {
 }
 
 export function toConditionHistoryListPosition(x: number, y: number) {
+  const position = toConditionQuadrantPosition(x, y);
+  const left = Number.parseFloat(position.left);
+  const top = Number.parseFloat(position.top);
+
   return {
     ...(x <= 0
-      ? { left: CONDITION_QUADRANT.markerSize / 2 }
-      : { right: CONDITION_QUADRANT.markerSize / 2 }),
+      ? { left: position.left, marginLeft: CONDITION_QUADRANT.markerSize / 2 }
+      : {
+          right: `${100 - left}%` as `${number}%`,
+          marginRight: CONDITION_QUADRANT.markerSize / 2,
+        }),
     ...(y >= 0
-      ? { top: CONDITION_QUADRANT.markerSize / 2 }
-      : { bottom: CONDITION_QUADRANT.markerSize / 2 }),
+      ? { top: position.top, marginTop: CONDITION_QUADRANT.markerSize / 2 }
+      : {
+          bottom: `${100 - top}%` as `${number}%`,
+          marginBottom: CONDITION_QUADRANT.markerSize / 2,
+        }),
   };
 }
 

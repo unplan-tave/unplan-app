@@ -25,11 +25,16 @@ interface SleepWeekPickerProps {
   monthLabel: string;
   days: SleepWeekDay[];
   onSelect: (id: string) => void;
-  onMoveWeek: (direction: 'previous' | 'next') => void;
+  onShiftDateRange: (direction: 'previous' | 'next') => void;
 }
 
 /** 수면 측정 카드의 주간 날짜 범위 선택기입니다. (취침일~기상일) */
-export function SleepWeekPicker({ monthLabel, days, onSelect, onMoveWeek }: SleepWeekPickerProps) {
+export function SleepWeekPicker({
+  monthLabel,
+  days,
+  onSelect,
+  onShiftDateRange,
+}: SleepWeekPickerProps) {
   const translateX = useSharedValue(0);
   const hasMovedDate = useSharedValue(false);
   const slideStyle = useAnimatedStyle(() => ({
@@ -50,7 +55,7 @@ export function SleepWeekPicker({ monthLabel, days, onSelect, onMoveWeek }: Slee
       if (hasMovedDate.value || Math.abs(event.translationX) < DATE_CHANGE_THRESHOLD) return;
 
       hasMovedDate.value = true;
-      runOnJS(onMoveWeek)(event.translationX < 0 ? 'previous' : 'next');
+      runOnJS(onShiftDateRange)(event.translationX < 0 ? 'previous' : 'next');
     })
     .onEnd(() => {
       translateX.value = withSpring(0, { damping: 18, stiffness: 260 });

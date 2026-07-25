@@ -57,10 +57,10 @@ export function useCardListScreen() {
     }, []),
   );
 
-  const searchInput = useMemo(
+  const pinSearchInput = useMemo(
     () => ({
       keyword: filters.searchQuery,
-      isQueue: filters.cardType === 'all' ? undefined : filters.cardType === 'queue' ? true : false,
+      isQueue: false,
       status: filters.progressStatuses.map(progressStatusToScheduleStatus),
       conditionTagIds: filters.conditionTagIds,
       personalTags: personalTags
@@ -72,7 +72,6 @@ export function useCardListScreen() {
       endTime: filters.endTime,
     }),
     [
-      filters.cardType,
       filters.conditionTagIds,
       filters.personalTagIds,
       filters.progressStatuses,
@@ -84,12 +83,38 @@ export function useCardListScreen() {
       personalTags,
     ],
   );
-  const scheduleSearchQuery = useInfiniteScheduleSearchQuery(searchInput, {
-    enabled: isScreenFocused,
+  const queueSearchInput = useMemo(
+    () => ({
+      keyword: filters.searchQuery,
+      isQueue: true,
+      status: filters.progressStatuses.map(progressStatusToScheduleStatus),
+      conditionTagIds: filters.conditionTagIds,
+      personalTags: personalTags
+        .filter((tag) => filters.personalTagIds.includes(tag.id))
+        .map((tag) => tag.label),
+    }),
+    [
+      filters.conditionTagIds,
+      filters.personalTagIds,
+      filters.progressStatuses,
+      filters.searchQuery,
+      personalTags,
+    ],
+  );
+  const isPinQueryEnabled = isScreenFocused && filters.cardType !== 'queue';
+  const isQueueQueryEnabled = isScreenFocused && filters.cardType !== 'pin';
+  const pinSearchQuery = useInfiniteScheduleSearchQuery(pinSearchInput, {
+    enabled: isPinQueryEnabled,
+  });
+  const queueSearchQuery = useInfiniteScheduleSearchQuery(queueSearchInput, {
+    enabled: isQueueQueryEnabled,
   });
   const schedules = useMemo(
-    () => scheduleSearchQuery.data?.pages.flatMap((page) => page.schedules) ?? [],
-    [scheduleSearchQuery.data],
+    () => [
+      ...(pinSearchQuery.data?.pages.flatMap((page) => page.schedules) ?? []),
+      ...(queueSearchQuery.data?.pages.flatMap((page) => page.schedules) ?? []),
+    ],
+    [pinSearchQuery.data, queueSearchQuery.data],
   );
   const cards = useMemo(
     () => toCardItemsFromScheduleList(schedules, personalTags),
@@ -110,10 +135,22 @@ export function useCardListScreen() {
   const handleSearchClear = useCallback(() => {
     router.setParams({ q: '' });
   }, []);
+  const hasNextPage = pinSearchQuery.hasNextPage || queueSearchQuery.hasNextPage;
+  const isFetchingNextPage =
+    pinSearchQuery.isFetchingNextPage || queueSearchQuery.isFetchingNextPage;
+  const fetchNextPage = useCallback(() => {
+    if (pinSearchQuery.hasNextPage && !pinSearchQuery.isFetchingNextPage) {
+      void pinSearchQuery.fetchNextPage();
+    }
+
+    if (queueSearchQuery.hasNextPage && !queueSearchQuery.isFetchingNextPage) {
+      void queueSearchQuery.fetchNextPage();
+    }
+  }, [pinSearchQuery, queueSearchQuery]);
   const handleScroll = useCardListInfiniteScroll({
-    hasNextPage: scheduleSearchQuery.hasNextPage,
-    isFetchingNextPage: scheduleSearchQuery.isFetchingNextPage,
-    fetchNextPage: scheduleSearchQuery.fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
   });
 
   return {
@@ -124,11 +161,17 @@ export function useCardListScreen() {
     filteredCards,
     sections,
     hasActiveFilter,
-    totalCards: scheduleSearchQuery.data?.pages[0]?.totalElements ?? 0,
+    totalCards:
+      (pinSearchQuery.data?.pages[0]?.totalElements ?? 0) +
+      (queueSearchQuery.data?.pages[0]?.totalElements ?? 0),
     periodLabel: formatCardListPeriodLabel(filters.startDate, filters.endDate),
-    isLoading: scheduleSearchQuery.isLoading,
-    isError: scheduleSearchQuery.isError,
-    isFetchingNextPage: scheduleSearchQuery.isFetchingNextPage,
+    isLoading:
+      (isPinQueryEnabled && pinSearchQuery.isLoading) ||
+      (isQueueQueryEnabled && queueSearchQuery.isLoading),
+    isError:
+      (isPinQueryEnabled && pinSearchQuery.isError) ||
+      (isQueueQueryEnabled && queueSearchQuery.isError),
+    isFetchingNextPage,
     handleScroll,
     handleCardPress,
     handleSearchPress,

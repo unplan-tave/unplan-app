@@ -3,13 +3,7 @@
  * 소셜 로그인, 토큰 재발급, 로그아웃, 탈퇴 호출을 감싸고
  * token storage와 화면이 사용할 세션 모델로 변환합니다.
  */
-import {
-  googleLogin,
-  kakaoLogin,
-  logout,
-  reissue,
-  withdraw,
-} from '@/lib/api/endpoints/auth-controller/auth-controller';
+import { googleLogin, kakaoLogin, logout, reissue, withdraw } from '@/lib/api/endpoints/auth/auth';
 import { tokenStorage } from '@/lib/auth/token-storage';
 
 import { toAuthSession, toReissuedAuthSession } from './mapper';

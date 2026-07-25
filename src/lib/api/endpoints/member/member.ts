@@ -28,6 +28,10 @@ import type { ErrorType, BodyType } from '../../mutator/orval-mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+/**
+ * 로그인한 사용자의 정보와 온보딩 완료 여부를 조회합니다
+ * @summary 회원 정보 조회
+ */
 export const getProfile = (options?: SecondParameter<typeof apiMutator>, signal?: AbortSignal) => {
   return apiMutator<GetProfileResponseDto>(
     { url: `/member/profile`, method: 'GET', signal },
@@ -109,6 +113,9 @@ export function useGetProfile<
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 회원 정보 조회
+ */
 
 export function useGetProfile<
   TData = Awaited<ReturnType<typeof getProfile>>,
@@ -131,6 +138,10 @@ export function useGetProfile<
   return query;
 }
 
+/**
+ * 로그인한 사용자의 프로필 정보를 변경합니다
+ * @summary 회원 정보 변경
+ */
 export const updateProfile = (
   updateProfileRequestDto: BodyType<UpdateProfileRequestDto>,
   options?: SecondParameter<typeof apiMutator>,
@@ -186,6 +197,9 @@ export type UpdateProfileMutationResult = NonNullable<Awaited<ReturnType<typeof 
 export type UpdateProfileMutationBody = BodyType<UpdateProfileRequestDto>;
 export type UpdateProfileMutationError = ErrorType<unknown>;
 
+/**
+ * @summary 회원 정보 변경
+ */
 export const useUpdateProfile = <TError = ErrorType<unknown>, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<

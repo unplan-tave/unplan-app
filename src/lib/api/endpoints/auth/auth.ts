@@ -27,6 +27,10 @@ import type { ErrorType, BodyType } from '../../mutator/orval-mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+/**
+ * access 토큰 만료시 refresh 토큰으로 access 토큰을 재발급합니다. 이때 사용된 refresh토큰은 삭제하고 access 토큰과 함께 refresh 토큰도 재발급됩니다
+ * @summary access 토큰 재발급
+ */
 export const reissue = (
   tokenReissueRequestDto: BodyType<TokenReissueRequestDto>,
   options?: SecondParameter<typeof apiMutator>,
@@ -84,6 +88,9 @@ export type ReissueMutationResult = NonNullable<Awaited<ReturnType<typeof reissu
 export type ReissueMutationBody = BodyType<TokenReissueRequestDto>;
 export type ReissueMutationError = ErrorType<unknown>;
 
+/**
+ * @summary access 토큰 재발급
+ */
 export const useReissue = <TError = ErrorType<unknown>, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
@@ -105,6 +112,10 @@ export const useReissue = <TError = ErrorType<unknown>, TContext = unknown>(
 
   return useMutation(mutationOptions, queryClient);
 };
+/**
+ * 로그인한 사용자를 로그아웃처리합니다.
+ * @summary 회원 로그아웃
+ */
 export const logout = (
   logoutRequestDto: BodyType<LogoutRequestDto>,
   options?: SecondParameter<typeof apiMutator>,
@@ -162,6 +173,9 @@ export type LogoutMutationResult = NonNullable<Awaited<ReturnType<typeof logout>
 export type LogoutMutationBody = BodyType<LogoutRequestDto>;
 export type LogoutMutationError = ErrorType<unknown>;
 
+/**
+ * @summary 회원 로그아웃
+ */
 export const useLogout = <TError = ErrorType<unknown>, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
@@ -183,6 +197,10 @@ export const useLogout = <TError = ErrorType<unknown>, TContext = unknown>(
 
   return useMutation(mutationOptions, queryClient);
 };
+/**
+ * 카카오 access 토큰으로 로그인 및 회원가입 처리후 언플랜 JWT를 발급합니다. 최초 로그인시 회원가입 처리를 하고 회원가입 이후에는 로그인 처리됩니다.
+ * @summary 카카오 로그인
+ */
 export const kakaoLogin = (
   kakaoLoginRequestDto: BodyType<KakaoLoginRequestDto>,
   options?: SecondParameter<typeof apiMutator>,
@@ -240,6 +258,9 @@ export type KakaoLoginMutationResult = NonNullable<Awaited<ReturnType<typeof kak
 export type KakaoLoginMutationBody = BodyType<KakaoLoginRequestDto>;
 export type KakaoLoginMutationError = ErrorType<unknown>;
 
+/**
+ * @summary 카카오 로그인
+ */
 export const useKakaoLogin = <TError = ErrorType<unknown>, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
@@ -261,6 +282,10 @@ export const useKakaoLogin = <TError = ErrorType<unknown>, TContext = unknown>(
 
   return useMutation(mutationOptions, queryClient);
 };
+/**
+ * 구글에서 발급된 JWT로 로그인 및 회원가입 처리후 언플랜 JWT를 발급합니다. 최초 로그인시 회원가입 처리를 하고 회원가입 이후에는 로그인 처리됩니다.
+ * @summary 구글 로그인
+ */
 export const googleLogin = (
   googleLoginRequestDto: BodyType<GoogleLoginRequestDto>,
   options?: SecondParameter<typeof apiMutator>,
@@ -318,6 +343,9 @@ export type GoogleLoginMutationResult = NonNullable<Awaited<ReturnType<typeof go
 export type GoogleLoginMutationBody = BodyType<GoogleLoginRequestDto>;
 export type GoogleLoginMutationError = ErrorType<unknown>;
 
+/**
+ * @summary 구글 로그인
+ */
 export const useGoogleLogin = <TError = ErrorType<unknown>, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
@@ -339,6 +367,10 @@ export const useGoogleLogin = <TError = ErrorType<unknown>, TContext = unknown>(
 
   return useMutation(mutationOptions, queryClient);
 };
+/**
+ * 로그인한 사용자를 탈퇴처리합니다. 30일 이후에는 회원 관련 데이터가 완전히 삭제됩니다
+ * @summary 회원 탈퇴
+ */
 export const withdraw = (options?: SecondParameter<typeof apiMutator>) => {
   return apiMutator<void>({ url: `/auth/withdraw`, method: 'PATCH' }, options);
 };
@@ -368,6 +400,9 @@ export type WithdrawMutationResult = NonNullable<Awaited<ReturnType<typeof withd
 
 export type WithdrawMutationError = ErrorType<unknown>;
 
+/**
+ * @summary 회원 탈퇴
+ */
 export const useWithdraw = <TError = ErrorType<unknown>, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<Awaited<ReturnType<typeof withdraw>>, TError, void, TContext>;

@@ -15,6 +15,7 @@ export interface ScheduleDetailResponse {
   schedule_id?: number;
   title?: string;
   date?: string;
+  end_date?: string;
   start_time?: string;
   end_time?: string;
   estimated_time?: number;

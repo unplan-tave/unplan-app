@@ -63,6 +63,9 @@ export function ConditionQuadrantPlot({
   showOrigin = true,
 }: ConditionQuadrantPlotProps) {
   const interaction = useConditionQuadrantInteraction(onSelect);
+  const activeHistoryPoint = points.find(
+    (point) => point.id === activeMarkerId && (point.count ?? 1) >= 2,
+  );
 
   return (
     <View style={styles.container} onLayout={interaction.onLayout}>
@@ -242,37 +245,6 @@ export function ConditionQuadrantPlot({
                   {activeMarkerTime}
                 </Typography>
               ) : null}
-              {active && badge && activeMarkerRecords.length > 0 ? (
-                <View
-                  style={[styles.historyList, toConditionHistoryListPosition(point.x, point.y)]}
-                >
-                  {activeMarkerRecords.map((record, index) => (
-                    <View key={record.id}>
-                      {index > 0 ? <View style={styles.historyDivider} /> : null}
-                      <Pressable
-                        accessibilityLabel={`${record.label} 기록 선택`}
-                        accessibilityRole="button"
-                        accessibilityState={{ selected: selectedHistoryRecordId === record.id }}
-                        hitSlop={spacing[1]}
-                        style={[
-                          styles.historyRecord,
-                          selectedHistoryRecordId === record.id && styles.historyRecordSelected,
-                        ]}
-                        onPress={() => onHistoryRecordPress?.(record.id)}
-                      >
-                        <Typography
-                          variant="caption"
-                          align="center"
-                          color={colors.gray[700]}
-                          numberOfLines={1}
-                        >
-                          {record.label}
-                        </Typography>
-                      </Pressable>
-                    </View>
-                  ))}
-                </View>
-              ) : null}
             </View>
           );
         }
@@ -291,6 +263,41 @@ export function ConditionQuadrantPlot({
           </View>
         );
       })}
+
+      {activeHistoryPoint != null && activeMarkerRecords.length > 0 ? (
+        <View
+          style={[
+            styles.historyList,
+            toConditionHistoryListPosition(activeHistoryPoint.x, activeHistoryPoint.y),
+          ]}
+        >
+          {activeMarkerRecords.map((record, index) => (
+            <View key={record.id}>
+              {index > 0 ? <View style={styles.historyDivider} /> : null}
+              <Pressable
+                accessibilityLabel={`${record.label} 기록 선택`}
+                accessibilityRole="button"
+                accessibilityState={{ selected: selectedHistoryRecordId === record.id }}
+                hitSlop={spacing[1]}
+                style={[
+                  styles.historyRecord,
+                  selectedHistoryRecordId === record.id && styles.historyRecordSelected,
+                ]}
+                onPress={() => onHistoryRecordPress?.(record.id)}
+              >
+                <Typography
+                  variant="caption"
+                  align="center"
+                  color={colors.gray[700]}
+                  numberOfLines={1}
+                >
+                  {record.label}
+                </Typography>
+              </Pressable>
+            </View>
+          ))}
+        </View>
+      ) : null}
 
       {value != null ? (
         <View
