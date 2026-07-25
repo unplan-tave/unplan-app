@@ -15,11 +15,8 @@ import type { UseQueryOptions } from '@tanstack/react-query';
 
 type MeasurementQueryOptions<TData> = Omit<UseQueryOptions<TData>, 'queryKey' | 'queryFn'>;
 
-/**
- * 지난 날짜 기록은 세션 중 재방문해도 다시 부르지 않는다.
- * 데일리↔위클리↔먼슬리 반복 이동 시 과거 날짜 재요청을 막는 핵심.
- */
-const PAST_DATE_STALE_TIME = Infinity;
+/** 과거 기록도 다른 기기에서 변경될 수 있으므로 화면 재진입·앱 복귀 시 재검증합니다. */
+const PAST_DATE_STALE_TIME = 0;
 /**
  * 오늘/이번 주·월 기록은 하루 중 바뀔 수 있으나, 갱신은 시간 폴링이 아니라
  * 컨디션·수면 기록 mutation의 invalidate로 처리한다.

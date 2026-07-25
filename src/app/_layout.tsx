@@ -1,10 +1,11 @@
 import 'react-native-gesture-handler';
 
-import { QueryClientProvider } from '@tanstack/react-query';
+import { focusManager, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { fontFamilyWeight } from '@/constants/typography';
@@ -30,6 +31,14 @@ export default function RootLayout() {
   useEffect(() => {
     if (error) throw error;
   }, [error]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      focusManager.setFocused(state === 'active');
+    });
+
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     const initializeApp = async () => {

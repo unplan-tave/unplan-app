@@ -111,10 +111,14 @@ export function useCardListScreen() {
   });
   const schedules = useMemo(
     () => [
-      ...(pinSearchQuery.data?.pages.flatMap((page) => page.schedules) ?? []),
-      ...(queueSearchQuery.data?.pages.flatMap((page) => page.schedules) ?? []),
+      ...(isPinQueryEnabled
+        ? (pinSearchQuery.data?.pages.flatMap((page) => page.schedules) ?? [])
+        : []),
+      ...(isQueueQueryEnabled
+        ? (queueSearchQuery.data?.pages.flatMap((page) => page.schedules) ?? [])
+        : []),
     ],
-    [pinSearchQuery.data, queueSearchQuery.data],
+    [isPinQueryEnabled, isQueueQueryEnabled, pinSearchQuery.data, queueSearchQuery.data],
   );
   const cards = useMemo(
     () => toCardItemsFromScheduleList(schedules, personalTags),
@@ -135,18 +139,25 @@ export function useCardListScreen() {
   const handleSearchClear = useCallback(() => {
     router.setParams({ q: '' });
   }, []);
-  const hasNextPage = pinSearchQuery.hasNextPage || queueSearchQuery.hasNextPage;
+  const hasNextPage =
+    (isPinQueryEnabled && pinSearchQuery.hasNextPage) ||
+    (isQueueQueryEnabled && queueSearchQuery.hasNextPage);
   const isFetchingNextPage =
-    pinSearchQuery.isFetchingNextPage || queueSearchQuery.isFetchingNextPage;
+    (isPinQueryEnabled && pinSearchQuery.isFetchingNextPage) ||
+    (isQueueQueryEnabled && queueSearchQuery.isFetchingNextPage);
   const fetchNextPage = useCallback(() => {
-    if (pinSearchQuery.hasNextPage && !pinSearchQuery.isFetchingNextPage) {
+    if (isPinQueryEnabled && pinSearchQuery.hasNextPage && !pinSearchQuery.isFetchingNextPage) {
       void pinSearchQuery.fetchNextPage();
     }
 
-    if (queueSearchQuery.hasNextPage && !queueSearchQuery.isFetchingNextPage) {
+    if (
+      isQueueQueryEnabled &&
+      queueSearchQuery.hasNextPage &&
+      !queueSearchQuery.isFetchingNextPage
+    ) {
       void queueSearchQuery.fetchNextPage();
     }
-  }, [pinSearchQuery, queueSearchQuery]);
+  }, [isPinQueryEnabled, isQueueQueryEnabled, pinSearchQuery, queueSearchQuery]);
   const handleScroll = useCardListInfiniteScroll({
     hasNextPage,
     isFetchingNextPage,
@@ -162,8 +173,8 @@ export function useCardListScreen() {
     sections,
     hasActiveFilter,
     totalCards:
-      (pinSearchQuery.data?.pages[0]?.totalElements ?? 0) +
-      (queueSearchQuery.data?.pages[0]?.totalElements ?? 0),
+      (isPinQueryEnabled ? (pinSearchQuery.data?.pages[0]?.totalElements ?? 0) : 0) +
+      (isQueueQueryEnabled ? (queueSearchQuery.data?.pages[0]?.totalElements ?? 0) : 0),
     periodLabel: formatCardListPeriodLabel(filters.startDate, filters.endDate),
     isLoading:
       (isPinQueryEnabled && pinSearchQuery.isLoading) ||
