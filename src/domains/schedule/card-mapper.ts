@@ -34,6 +34,7 @@ export function toScheduleCreateInput(
   return {
     ...baseInput,
     date: requirePinDate(values),
+    endDate: getPinEndDate(values),
     startTime: requirePinTime(values.timeStart, 'startTime'),
     endTime: requirePinTime(values.timeEnd, 'endTime'),
     recurrence: values.repeatEnabled ? values.recurrence : null,
@@ -52,6 +53,7 @@ export function toScheduleUpdateInput(
     conditionTagId: createInput.conditionTagId,
     personalTags: createInput.personalTags,
     date: createInput.date,
+    endDate: cardType === 'pin' ? (createInput.endDate ?? null) : undefined,
     startTime: cardType === 'pin' ? createInput.startTime : '',
     endTime: cardType === 'pin' ? createInput.endTime : '',
     estimatedMinutes: toEstimatedMinutes(values),
@@ -74,6 +76,7 @@ export function toQueueConversionUpdateInput(draft: DueDurationDraft): ScheduleU
 
   return {
     date: normalizeOptionalDate(draft.dueDate),
+    endDate: null,
     startTime: '',
     endTime: '',
     estimatedMinutes: minutes != null && minutes > 0 ? minutes : undefined,
@@ -97,8 +100,9 @@ export function toCardItemFromScheduleDetail(
     conditionTagId: detail.conditionTagId,
     personalTagIds: toPersonalTagIds(detail.personalTags, personalTags),
     personalTagLabels: detail.personalTags,
-    dateMode: detail.isQueue ? 'empty' : 'single',
+    dateMode: detail.isQueue ? 'empty' : detail.endDate ? 'range' : 'single',
     dateStart: detail.isQueue ? '' : detail.date,
+    dateEnd: detail.isQueue ? '' : detail.endDate,
     timeFilled: isPinTimeFilled,
     timeStart: isPinTimeFilled ? detail.startTime : '',
     timeEnd: isPinTimeFilled ? detail.endTime : '',
@@ -141,8 +145,9 @@ export function toCardItemFromScheduleListItem(
     personalTagIds: toPersonalTagIds(item.personalTags, personalTags),
     personalTagLabels: item.personalTags,
     progressStatus: toCardProgressStatus(item.status),
-    dateMode: item.isQueue ? 'empty' : 'single',
+    dateMode: item.isQueue ? 'empty' : item.endDate ? 'range' : 'single',
     dateStart: item.isQueue ? '' : item.date,
+    dateEnd: item.isQueue ? '' : item.endDate,
     timeFilled: isPinTimeFilled,
     timeStart: isPinTimeFilled ? item.startTime : '',
     timeEnd: isPinTimeFilled ? item.endTime : '',
@@ -247,6 +252,18 @@ function requirePinDate(values: CardFormValues) {
   }
 
   return date;
+}
+
+function getPinEndDate(values: CardFormValues) {
+  if (values.dateMode !== 'range') return undefined;
+
+  const endDate = normalizeOptionalDate(values.dateEnd);
+
+  if (endDate == null) {
+    throw new Error('Pin card end date is required for a date range.');
+  }
+
+  return endDate;
 }
 
 function requirePinTime(value: string, fieldName: string) {

@@ -23,6 +23,10 @@ import type { ErrorType, BodyType } from '../../mutator/orval-mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+/**
+ * 일정 카드 편집화면에서 사용자가 입력한 일정 제목을 기반으로 컨디션 태그를 추천합니다.
+ * @summary 일정 제목 기반 태그 추천
+ */
 export const recommendTag = (
   tagRecommendationRequestDto: BodyType<TagRecommendationRequestDto>,
   options?: SecondParameter<typeof apiMutator>,
@@ -80,6 +84,9 @@ export type RecommendTagMutationResult = NonNullable<Awaited<ReturnType<typeof r
 export type RecommendTagMutationBody = BodyType<TagRecommendationRequestDto>;
 export type RecommendTagMutationError = ErrorType<unknown>;
 
+/**
+ * @summary 일정 제목 기반 태그 추천
+ */
 export const useRecommendTag = <TError = ErrorType<unknown>, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<

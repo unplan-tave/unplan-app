@@ -76,6 +76,7 @@ export function ConvertToPinBottomSheet({
     setCandidateIndex(0);
     setKeepOriginal(defaultKeepOriginal);
     setDurationMinutes(Math.max(0, originalDurationMinutes - 10));
+    setMode('loading');
   }, [defaultKeepOriginal, originalDurationMinutes, visible]);
 
   useEffect(() => {

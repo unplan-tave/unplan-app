@@ -1,11 +1,9 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo } from 'react';
 
-import { useScheduleDetailQuery } from '@/domains/schedule/api/queries';
+import { usePersonalTagsQuery, useScheduleDetailQuery } from '@/domains/schedule/api/queries';
 import { toCardItemFromScheduleDetail } from '@/domains/schedule/card-mapper';
-import { getCardPersonalTagLabels } from '@/domains/schedule/list';
 import { getConditionTagById } from '@/domains/schedule/model';
-import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 import { useGoBack } from '@/hooks/use-go-back';
 
 import { useCardViewConversion } from './use-card-view-conversion';
@@ -23,7 +21,8 @@ export function useCardViewScreen() {
     returnTo?: string;
   }>();
   const numericCardId = parseNumericCardId(cardId);
-  const personalTags = useScheduleStore((store) => store.personalTags);
+  const personalTagsQuery = usePersonalTagsQuery();
+  const personalTags = useMemo(() => personalTagsQuery.data ?? [], [personalTagsQuery.data]);
   const scheduleDetailQuery = useScheduleDetailQuery(numericCardId, {
     enabled: numericCardId != null,
   });
@@ -45,10 +44,7 @@ export function useCardViewScreen() {
   });
 
   const conditionTag = card == null ? null : getConditionTagById(card.conditionTagId);
-  const cardPersonalTagLabels = useMemo(
-    () => (card == null ? [] : getCardPersonalTagLabels(card, personalTags)),
-    [card, personalTags],
-  );
+  const cardPersonalTagLabels = useMemo(() => (card == null ? [] : card.personalTagLabels), [card]);
 
   const handleBack = useCallback(() => {
     if (returnTo === 'card-list') {

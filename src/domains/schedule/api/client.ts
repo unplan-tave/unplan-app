@@ -14,7 +14,7 @@ import {
   searchSchedules as searchScheduleEndpoints,
   updateSchedule,
 } from '@/lib/api/endpoints/schedule-crud/schedule-crud';
-import { recommendTag } from '@/lib/api/endpoints/tag-controller/tag-controller';
+import { recommendTag } from '@/lib/api/endpoints/tag/tag';
 
 import {
   normalizeDateForRequest,
@@ -159,7 +159,12 @@ export async function submitScheduleUpdate(
   scheduleId: number,
   input: ScheduleUpdateInput,
 ): Promise<ScheduleDetail> {
-  const response = await updateSchedule(scheduleId, toScheduleUpdateRequest(input));
+  const request = toScheduleUpdateRequest(input);
+  // OpenAPI의 nullable 누락으로 생성 타입에는 null이 없지만, 서버는 null로 기간 일정을 단일 일정으로 바꿉니다.
+  const response = await updateSchedule(
+    scheduleId,
+    request as Parameters<typeof updateSchedule>[1],
+  );
 
   return toScheduleDetail(response);
 }

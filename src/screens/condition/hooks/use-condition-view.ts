@@ -63,16 +63,9 @@ export function useConditionView() {
     setPeriodMode(getNextConditionPeriodMode);
   }, []);
 
-  const handleCalendarDateSelect = useCallback(
-    (date: Date) => {
-      setSelectedDate(date);
-      // 주차 달력의 날짜 선택은 해당 일자의 데일리 뷰로 진입합니다.
-      if (periodMode === 'weekly') {
-        setPeriodMode('daily');
-      }
-    },
-    [periodMode],
-  );
+  const handleCalendarDateSelect = useCallback((date: Date) => {
+    setSelectedDate(date);
+  }, []);
   const calendar = useConditionCalendar({
     selectedDate,
     periodMode,
@@ -83,6 +76,12 @@ export function useConditionView() {
     (direction: 'previous' | 'next') => {
       if (periodMode === 'daily') {
         if (direction === 'next') {
+          const nextDate = addDays(selectedDate, 1);
+
+          if (isConditionDateSelectable(nextDate)) {
+            setSelectedDate(nextDate);
+          }
+
           return;
         }
 

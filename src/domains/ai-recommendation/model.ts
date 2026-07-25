@@ -71,6 +71,14 @@ export function isUpcomingScheduleRecommendation(
   return startMinutes > now.getHours() * 60 + now.getMinutes();
 }
 
+/** 마감일이 있는 큐 카드는 마감일 이후의 추천 슬롯을 노출하지 않습니다. */
+export function isScheduleRecommendationWithinDeadline(
+  recommendation: Pick<ScheduleRecommendation, 'date'>,
+  dueDate: string,
+): boolean {
+  return dueDate.length === 0 || recommendation.date <= dueDate;
+}
+
 export type QueueTimeRecommendationErrorMode = 'error-no-duration' | 'error-7day' | 'error-14day';
 
 export type RecommendationAcceptErrorKind = 'expired' | 'conflict' | 'network' | 'unknown';

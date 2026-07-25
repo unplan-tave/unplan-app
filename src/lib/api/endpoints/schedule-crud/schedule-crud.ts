@@ -1028,6 +1028,10 @@ export function useGetSchedulesByMonth<
   return query;
 }
 
+/**
+ * 사용자의 컨디션을 기반으로 홈화면에 나타날 컨디션 문구를 조회합니다.
+ * @summary 홈화면 컨디션 문구 조회
+ */
 export const getDailyMessage = (
   params: GetDailyMessageParams,
   options?: SecondParameter<typeof apiMutator>,
@@ -1119,6 +1123,9 @@ export function useGetDailyMessage<
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 홈화면 컨디션 문구 조회
+ */
 
 export function useGetDailyMessage<
   TData = Awaited<ReturnType<typeof getDailyMessage>>,

@@ -21,6 +21,8 @@ export interface ScheduleCreateRequest {
    */
   personal_tags?: string[];
   date?: string;
+  /** 기간 일정 종료 날짜(포함). null이면 단일 날짜 일정 */
+  end_date?: string;
   start_time?: string;
   end_time?: string;
   estimated_time?: number;

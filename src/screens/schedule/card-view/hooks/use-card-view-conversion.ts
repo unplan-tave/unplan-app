@@ -4,7 +4,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { getQueueTimeRecommendationErrorMode } from '@/domains/ai-recommendation/api/client';
 import { useAcceptRecommendationMutation } from '@/domains/ai-recommendation/api/mutations';
 import { useQueueTimeRecommendationsQuery } from '@/domains/ai-recommendation/api/queries';
-import { isUpcomingScheduleRecommendation } from '@/domains/ai-recommendation/model';
+import {
+  isScheduleRecommendationWithinDeadline,
+  isUpcomingScheduleRecommendation,
+} from '@/domains/ai-recommendation/model';
 import {
   useCreateScheduleMutation,
   useUpdateScheduleMutation,
@@ -40,6 +43,7 @@ export function useCardViewConversion({
   const updateScheduleMutation = useUpdateScheduleMutation();
   const acceptRecommendationMutation = useAcceptRecommendationMutation();
   const [isConvertSheetVisible, setIsConvertSheetVisible] = useState(false);
+  const [shouldRefetchRecommendation, setShouldRefetchRecommendation] = useState(false);
   const [recommendationDays, setRecommendationDays] = useState(7);
   const [toast, setToast] = useState<CardViewToast>(initialToast);
   const queueRecommendationQuery = useQueueTimeRecommendationsQuery(
@@ -55,8 +59,19 @@ export function useCardViewConversion({
     updateScheduleMutation.isPending ||
     acceptRecommendationMutation.isPending;
   const queueRecommendationCandidates = (queueRecommendationQuery.data?.candidates ?? []).filter(
-    (recommendation) => isUpcomingScheduleRecommendation(recommendation, now),
+    (recommendation) =>
+      isUpcomingScheduleRecommendation(recommendation, now) &&
+      isScheduleRecommendationWithinDeadline(recommendation, card?.dueDate ?? ''),
   );
+
+  useEffect(() => {
+    if (!isConvertSheetVisible || !shouldRefetchRecommendation) {
+      return;
+    }
+
+    setShouldRefetchRecommendation(false);
+    void queueRecommendationQuery.refetch();
+  }, [isConvertSheetVisible, queueRecommendationQuery, shouldRefetchRecommendation]);
 
   useEffect(() => {
     if (toast == null) {
@@ -72,10 +87,12 @@ export function useCardViewConversion({
 
   const openConvertSheet = useCallback(() => {
     setRecommendationDays(7);
+    setShouldRefetchRecommendation(true);
     setIsConvertSheetVisible(true);
   }, []);
   const closeConvertSheet = useCallback(() => {
     if (!isConverting) {
+      setShouldRefetchRecommendation(false);
       setIsConvertSheetVisible(false);
     }
   }, [isConverting]);
@@ -182,7 +199,8 @@ export function useCardViewConversion({
     handleSearch14Days,
     handleEditDuration,
     queueRecommendationCandidates,
-    isQueueRecommendationLoading: queueRecommendationQuery.isFetching,
+    isQueueRecommendationLoading:
+      shouldRefetchRecommendation || queueRecommendationQuery.isFetching,
     queueRecommendationErrorMode: getQueueTimeRecommendationErrorMode(
       queueRecommendationQuery.error,
     ),

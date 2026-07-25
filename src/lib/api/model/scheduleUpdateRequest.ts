@@ -20,6 +20,9 @@ export interface ScheduleUpdateRequest {
    */
   personal_tags?: string[];
   date?: string;
+  /** 기간 일정 종료 날짜(포함). 명시적 null이면 단일 날짜로 변경하고, 필드 미전송이면 기존 값 유지 */
+  end_date?: string;
+  end_date_present?: boolean;
   start_time?: string;
   end_time?: string;
   estimated_time?: number;
