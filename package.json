@@ -67,7 +67,13 @@
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "api:generate": "orval --config orval.config.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "demo:web": "node scripts/demo-run.cjs web",
+    "demo:start": "node scripts/demo-run.cjs start",
+    "demo:export": "node scripts/demo-run.cjs export",
+    "demo:ios": "node scripts/demo-run.cjs ios",
+    "test:demo": "node --test scripts/demo-config.test.cjs scripts/demo-client.test.cjs",
+    "demo:smoke": "node scripts/demo-smoke.cjs"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

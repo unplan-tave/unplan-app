@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { Config } from '@/constants/config';
 import { useScheduleRecommendationsQuery } from '@/domains/ai-recommendation/api/queries';
 import { isUpcomingScheduleRecommendation } from '@/domains/ai-recommendation/model';
 import { useDailyMemosQuery } from '@/domains/daily-memo/api/queries';
@@ -85,16 +86,18 @@ export function useHomePageData({
     };
   }, [selectedDate, selectedDateValue, viewMode]);
   const dailyMessageQuery = useDailyMessageQuery(selectedDateValue, {
-    enabled: viewMode === 'daily',
+    enabled: viewMode === 'daily' && !Config.isDemo,
   });
-  const dailyMemosQuery = useDailyMemosQuery(selectedDateValue);
-  const measurementAveragesQuery = useMeasurementAveragesQuery(averageInput);
+  const dailyMemosQuery = useDailyMemosQuery(selectedDateValue, { enabled: !Config.isDemo });
+  const measurementAveragesQuery = useMeasurementAveragesQuery(averageInput, {
+    enabled: !Config.isDemo,
+  });
   const canShowRecommendations =
     viewMode === 'daily' &&
     !isPastDate(selectedDate) &&
     isWithinFutureDays(selectedDate, HOME_RECOMMENDATION_FUTURE_DAYS);
   const scheduleRecommendationsQuery = useScheduleRecommendationsQuery(selectedDateValue, {
-    enabled: canShowRecommendations,
+    enabled: canShowRecommendations && !Config.isDemo,
   });
 
   const cards = useMemo(

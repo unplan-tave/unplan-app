@@ -1,8 +1,12 @@
+import { Config } from './config';
+
+const prefix = Config.isDemo ? 'chatbot_demo_' : '';
+
 export const STORAGE_KEYS = {
-  AUTH_TOKEN: 'auth_token',
-  DEVICE_ID: 'device_id',
-  REFRESH_TOKEN: 'refresh_token',
-  USER_PREFERENCES: 'user_preferences',
+  AUTH_TOKEN: `${prefix}auth_token`,
+  DEVICE_ID: `${prefix}device_id`,
+  REFRESH_TOKEN: `${prefix}refresh_token`,
+  USER_PREFERENCES: `${prefix}user_preferences`,
 } as const;
 
 export const APP_ENV = {

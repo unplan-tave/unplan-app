@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 
+import { Config } from '@/constants/config';
+import { useDemoSessionStore } from '@/domains/schedule/chat/use-demo-session-store';
 import { useConditionCalendar } from '@/hooks/use-condition-calendar';
 import { addDays, getWeekStart } from '@/lib/utils/date';
 
@@ -15,6 +17,10 @@ import {
 
 /** 홈 화면의 날짜·보기 모드·현재 시각·제스처·캘린더 상태를 소유합니다. */
 export function useHomePageState() {
+  const demoDate = useDemoSessionStore((state) => state.selectedDate);
+  useEffect(() => {
+    if (Config.isDemo && demoDate) setSelectedDate(new Date(`${demoDate}T12:00:00`));
+  }, [demoDate]);
   const [now, setNow] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [viewMode, setViewMode] = useState<HomeViewMode>('daily');

@@ -2,6 +2,7 @@
 import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
 
+import { Config } from '@/constants/config';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 
 import {
@@ -143,13 +144,13 @@ export function useHomeScreen() {
       onEdit: scheduleFlow.detail.onEdit,
     },
     notification: {
-      visible: notification.isNotificationModalVisible,
+      visible: !Config.isDemo && notification.isNotificationModalVisible,
       isSubmitting: notification.isUpdatingNotification,
       errorMessage: notification.notificationErrorMessage,
       updateSettings: notification.updateNotificationSettings,
     },
     conditionPrompt: {
-      visible: conditionPrompt.isVisible,
+      visible: !Config.isDemo && conditionPrompt.isVisible,
       onClose: conditionPrompt.close,
       onConditionPress: conditionPrompt.openConditionMeasure,
     },

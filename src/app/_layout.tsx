@@ -8,12 +8,11 @@ import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { Config } from '@/constants/config';
 import { fontFamilyWeight } from '@/constants/typography';
 import { useAuthStore } from '@/domains/auth/use-auth-store';
 import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
 import { queryClient } from '@/lib/api/query-client';
-import { configureGoogleAuthSDK } from '@/lib/auth/google-sdk';
-import { initializeKakaoAuthSDK } from '@/lib/auth/kakao-sdk';
 
 const suitFonts = {
   [fontFamilyWeight.extraLight]: require('@sun-typeface/suit/fonts/static/ttf/SUIT-ExtraLight.ttf'),
@@ -43,9 +42,15 @@ export default function RootLayout() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        configureGoogleAuthSDK();
+        const initializeSocialSDKs = async () => {
+          if (Config.isDemo) return;
+          const { configureGoogleAuthSDK } = await import('@/lib/auth/google-sdk');
+          const { initializeKakaoAuthSDK } = await import('@/lib/auth/kakao-sdk');
+          configureGoogleAuthSDK();
+          await initializeKakaoAuthSDK();
+        };
         useOnboardingStore.getState().hydrateOnboarding();
-        await Promise.all([initializeKakaoAuthSDK(), useAuthStore.getState().hydrateSession()]);
+        await Promise.all([initializeSocialSDKs(), useAuthStore.getState().hydrateSession()]);
       } catch (appInitError: unknown) {
         console.error('Failed to initialize app session.', appInitError);
       }
@@ -63,6 +68,8 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <StatusBar style="auto" />
         <Stack>
+          <Stack.Screen name="demo-login" options={{ headerShown: false }} />
+          <Stack.Screen name="demo-chat" options={{ headerShown: false }} />
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />

@@ -3,6 +3,7 @@ import axios, { AxiosHeaders } from 'axios';
 import { Config } from '@/constants/config';
 import { applyAuthSession, clearAuthSession } from '@/lib/auth/auth-session-controller';
 import { tokenStorage } from '@/lib/auth/token-storage';
+import { assertDemoApiUrl } from '@/lib/demo-environment';
 import { getDeviceId } from '@/lib/device/device-id';
 
 import { logApiRequest, logApiResponse } from './dev-logger';
@@ -94,6 +95,7 @@ async function reissueTokens(): Promise<TokenReissueResponseDto> {
 
 apiClient.interceptors.request.use(
   async (config) => {
+    if (Config.isDemo) assertDemoApiUrl(Config.apiUrl);
     const accessToken = await tokenStorage.getAccessToken();
     const headers = toAxiosHeaders(config.headers);
     const hasAuthorization = headers.has('Authorization');
@@ -125,6 +127,11 @@ apiClient.interceptors.response.use(
         error.config?.url,
         error.response?.data,
       );
+
+      if (Config.isDemo && error.response && AUTH_REFRESH_STATUS_CODES.has(error.response.status)) {
+        await clearAuthSession();
+        return Promise.reject(error);
+      }
 
       if (shouldReissue(error)) {
         const originalRequest = error.config;

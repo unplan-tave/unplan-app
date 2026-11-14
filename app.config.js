@@ -1,7 +1,11 @@
+const { configureDemoVariant } = require('./scripts/demo-config.cjs');
+
 const normalizeNativeConfigValue = (value) => value?.trim().replace(/\\+$/, '');
 
 const kakaoNativeAppKey = normalizeNativeConfigValue(process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY);
-const googleIosUrlScheme = normalizeNativeConfigValue(process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME);
+const googleIosUrlScheme = normalizeNativeConfigValue(
+  process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME,
+);
 
 // TODO: Set EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY in .env.local/EAS env before iOS prebuild/build.
 // The fallback is a non-secret placeholder so Expo config can still be evaluated locally.
@@ -83,3 +87,5 @@ module.exports = {
     },
   },
 };
+
+configureDemoVariant(module.exports.expo, process.env);

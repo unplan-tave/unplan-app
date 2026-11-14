@@ -1,6 +1,9 @@
 const trimTrailingSlash = (value: string) => value.replace(/\/+$/, '');
 
+const isDemo = process.env.EXPO_PUBLIC_APP_ENV === 'demo';
+
 export const Config = {
+  isDemo,
   apiUrl: trimTrailingSlash(process.env.EXPO_PUBLIC_API_URL ?? ''),
   appEnv: process.env.EXPO_PUBLIC_APP_ENV ?? 'development',
   googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '',

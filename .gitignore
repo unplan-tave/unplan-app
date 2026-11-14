@@ -50,3 +50,8 @@ scratchpad/
 /android
 .claude/settings.local.json
 .codex/
+
+# Local chatbot demo output
+dist-demo/
+.env.demo
+dist-demo-ios/

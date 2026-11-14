@@ -1,4 +1,3 @@
-import { initializeKakaoSDK } from '@react-native-kakao/core';
 import { Platform } from 'react-native';
 
 import { Config } from '@/constants/config';
@@ -22,10 +21,12 @@ export function initializeKakaoAuthSDK(): Promise<void> {
     return Promise.resolve();
   }
 
-  initializePromise ??= initializeKakaoSDK(Config.kakaoNativeAppKey).catch((error: unknown) => {
-    initializePromise = null;
-    throw error;
-  });
+  initializePromise ??= import('@react-native-kakao/core')
+    .then(({ initializeKakaoSDK }) => initializeKakaoSDK(Config.kakaoNativeAppKey))
+    .catch((error: unknown) => {
+      initializePromise = null;
+      throw error;
+    });
 
   return initializePromise;
 }

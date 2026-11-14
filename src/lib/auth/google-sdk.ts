@@ -1,6 +1,6 @@
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-
 import { Config } from '@/constants/config';
+
+import type * as GoogleSDK from '@react-native-google-signin/google-signin';
 
 let isConfigured = false;
 
@@ -21,6 +21,7 @@ export function configureGoogleAuthSDK(): void {
     return;
   }
 
+  const { GoogleSignin } = require('@react-native-google-signin/google-signin') as typeof GoogleSDK;
   GoogleSignin.configure({
     webClientId: Config.googleWebClientId,
     iosClientId: Config.googleIosClientId || undefined,

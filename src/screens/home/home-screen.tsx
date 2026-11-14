@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
@@ -22,6 +23,7 @@ import { Icon } from '@/components/ui/Icon';
 import { ScreenLayout } from '@/components/ui/ScreenLayout';
 import { Typography } from '@/components/ui/Typography';
 import { ViewModeButton } from '@/components/ui/ViewModeButton';
+import { Config } from '@/constants/config';
 import { colors, radius, spacing, typography } from '@/constants/theme';
 import { getConditionScoreTheme } from '@/domains/condition/score-theme';
 import { t } from '@/lib/i18n';
@@ -129,6 +131,18 @@ export function HomeScreen() {
           </Defs>
           <Rect width={393} height={HOME_HEADER_OVERLAY_HEIGHT} fill="url(#homeHeaderOverlay)" />
         </Svg>
+      ) : null}
+      {Config.isDemo ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="AI로 일정 관리"
+          style={styles.demoChat}
+          onPress={() => router.push('/demo-chat')}
+        >
+          <Typography variant="bodyM" color={colors.gray.white}>
+            AI로 일정 관리 · DEMO
+          </Typography>
+        </Pressable>
       ) : null}
       <View pointerEvents="box-none" style={styles.header}>
         <View style={styles.statusColumn}>
@@ -340,6 +354,15 @@ function HomeCurrentTimeMarker({ time, top }: { time: string; top: number }) {
 }
 
 const styles = StyleSheet.create({
+  demoChat: {
+    position: 'absolute',
+    right: spacing[5],
+    bottom: spacing[16] + spacing[6],
+    zIndex: 5,
+    padding: spacing[3],
+    borderRadius: radius.full,
+    backgroundColor: colors.primary,
+  },
   content: { flex: 1, overflow: 'hidden' },
   canvas: { width: '100%', maxWidth: 393, flex: 1, alignSelf: 'center' },
   header: {

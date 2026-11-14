@@ -2,12 +2,7 @@
  * 소셜 로그인 SDK와 auth API를 이어 주는 도메인 orchestration입니다.
  * Kakao/Google SDK 결과를 서버 로그인 요청으로 바꾸고, 성공 시 세션 저장과 provider별 분기를 처리합니다.
  */
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import {
-  isKakaoTalkLoginAvailable,
-  login as kakaoLogin,
-  type KakaoLoginToken,
-} from '@react-native-kakao/user';
+
 import { isAxiosError } from 'axios';
 import { Platform } from 'react-native';
 
@@ -18,6 +13,8 @@ import { getDeviceId } from '@/lib/device/device-id';
 import { submitSocialLogin } from './api/client';
 import { type AuthSession } from './model';
 import { useAuthStore } from './use-auth-store';
+
+import type { KakaoLoginToken } from '@react-native-kakao/user';
 
 export type SocialLoginErrorType =
   | 'cancelled'
@@ -132,6 +129,7 @@ function toSocialLoginError(error: unknown): SocialLoginError {
 
 async function requestKakaoAccessToken(): Promise<KakaoLoginToken> {
   await ensureKakaoAuthSDKInitialized();
+  const { isKakaoTalkLoginAvailable, login: kakaoLogin } = await import('@react-native-kakao/user');
 
   const isTalkLoginAvailable = await isKakaoTalkLoginAvailable().catch(() => false);
 
@@ -170,6 +168,7 @@ export async function loginWithKakao(): Promise<AuthSession> {
 
 async function requestGoogleIdToken(): Promise<string> {
   ensureGoogleAuthSDKConfigured();
+  const { GoogleSignin } = await import('@react-native-google-signin/google-signin');
 
   if (Platform.OS === 'android') {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
