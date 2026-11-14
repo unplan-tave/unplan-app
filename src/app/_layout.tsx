@@ -5,9 +5,10 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Platform, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { colors } from '@/constants/colors';
 import { Config } from '@/constants/config';
 import { fontFamilyWeight } from '@/constants/typography';
 import { useAuthStore } from '@/domains/auth/use-auth-store';
@@ -64,23 +65,50 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <QueryClientProvider client={queryClient}>
-        <StatusBar style="auto" />
-        <Stack>
-          <Stack.Screen name="demo-login" options={{ headerShown: false }} />
-          <Stack.Screen name="demo-chat" options={{ headerShown: false }} />
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="card" options={{ headerShown: false }} />
-          <Stack.Screen name="sleep" options={{ headerShown: false }} />
-          <Stack.Screen name="energy" options={{ headerShown: false }} />
-          <Stack.Screen name="settings" options={{ headerShown: false }} />
-          <Stack.Screen name="notifications" options={{ headerShown: false }} />
-        </Stack>
-      </QueryClientProvider>
-    </GestureHandlerRootView>
+    <View style={[styles.root, Config.isDemo && Platform.OS === 'web' && styles.demoBackdrop]}>
+      <GestureHandlerRootView
+        style={[styles.app, Config.isDemo && Platform.OS === 'web' && styles.demoViewport]}
+      >
+        <QueryClientProvider client={queryClient}>
+          <StatusBar style="auto" />
+          <Stack>
+            <Stack.Screen name="demo-login" options={{ headerShown: false }} />
+            <Stack.Screen name="demo-chat" options={{ headerShown: false }} />
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="onboarding"
+              options={{ headerShown: false, gestureEnabled: false }}
+            />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="card" options={{ headerShown: false }} />
+            <Stack.Screen name="sleep" options={{ headerShown: false }} />
+            <Stack.Screen name="energy" options={{ headerShown: false }} />
+            <Stack.Screen name="settings" options={{ headerShown: false }} />
+            <Stack.Screen name="notifications" options={{ headerShown: false }} />
+          </Stack>
+        </QueryClientProvider>
+      </GestureHandlerRootView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+  app: {
+    flex: 1,
+  },
+  demoBackdrop: {
+    alignItems: 'center',
+    backgroundColor: colors.onboardingMutedBackground,
+  },
+  demoViewport: {
+    width: '100%',
+    maxWidth: 430,
+    minHeight: 0,
+    overflow: 'hidden',
+    backgroundColor: colors.background,
+  },
+});
