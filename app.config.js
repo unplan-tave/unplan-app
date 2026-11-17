@@ -1,4 +1,4 @@
-const normalizeNativeConfigValue = (value) => value?.trim().replace(/\\+$/, '');
+const normalizeNativeConfigValue = (value) => value?.trim().replace(/\\+$/, '') || undefined;
 
 const kakaoNativeAppKey = normalizeNativeConfigValue(process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY);
 const googleIosUrlScheme = normalizeNativeConfigValue(process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME);
@@ -49,6 +49,7 @@ module.exports = {
     plugins: [
       './plugins/with-kakao-maven-repository',
       './plugins/with-google-modular-headers',
+      './plugins/with-ios-pod-deployment-target',
       ['expo-router', { root: 'src/app' }],
       'expo-status-bar',
       [
