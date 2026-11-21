@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { createDefaultCardListFilters, toggleCardListFilterValue } from '@/domains/schedule/list';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 
 import type { CardListFilters, CardListMultiFilterKey } from '@/domains/schedule/list';
 import type { CardProgressStatus, DateTimeDraft } from '@/domains/schedule/model';
@@ -11,9 +12,10 @@ export function useCardListFilters(searchQuery: string | undefined) {
   const [expandedFilter, setExpandedFilter] = useState<CardListMultiFilterKey | null>(null);
   const [isDateRangeSheetVisible, setIsDateRangeSheetVisible] = useState(false);
 
-  useEffect(() => {
+  const isSearchQueryChanged = useDepsChanged([searchQuery]);
+  if (isSearchQueryChanged) {
     setFilters((previous) => ({ ...previous, searchQuery: searchQuery ?? '' }));
-  }, [searchQuery]);
+  }
 
   const handleChangeCardType = useCallback((cardType: CardListFilters['cardType']) => {
     setFilters((previous) => ({ ...previous, cardType }));

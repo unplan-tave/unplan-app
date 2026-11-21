@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type LayoutChangeEvent, type ScrollView } from 'react-native';
 
 interface TimelineMarkerLayout {
@@ -19,7 +19,6 @@ export function useFocusTimelineCurrentTime(
 ) {
   const scrollRef = useRef<ScrollView>(null);
   const [cardLayouts, setCardLayouts] = useState<Record<string, TimelineMarkerLayout>>({});
-  const [markerTop, setMarkerTop] = useState<number | null>(null);
 
   const handleCardLayout = useCallback((cardId: string, event: LayoutChangeEvent) => {
     const { height, y } = event.nativeEvent.layout;
@@ -32,23 +31,17 @@ export function useFocusTimelineCurrentTime(
     });
   }, []);
 
-  useEffect(() => {
-    if (markerPosition == null) {
-      setMarkerTop(null);
-      return;
-    }
+  const markerTop = useMemo(() => {
+    if (markerPosition == null) return null;
 
     const startLayout = cardLayouts[markerPosition.startCardId];
     const endLayout = cardLayouts[markerPosition.endCardId];
-    if (startLayout == null || endLayout == null) {
-      setMarkerTop(null);
-      return;
-    }
+    if (startLayout == null || endLayout == null) return null;
 
     const startY = startLayout.y + (startLayout === endLayout ? 0 : startLayout.height);
     const endY = endLayout.y + (startLayout === endLayout ? endLayout.height : 0);
 
-    setMarkerTop(startY + (endY - startY) * markerPosition.offsetRatio);
+    return startY + (endY - startY) * markerPosition.offsetRatio;
   }, [cardLayouts, markerPosition]);
 
   useEffect(() => {

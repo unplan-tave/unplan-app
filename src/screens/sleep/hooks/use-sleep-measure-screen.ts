@@ -12,7 +12,7 @@ import {
   subMinutes,
 } from 'date-fns';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { type SleepWeekDay } from '@/components/features/sleep/sleep-week-picker';
 import {
@@ -21,6 +21,7 @@ import {
 } from '@/domains/sleep/api/mutations';
 import { useSleepRecordQuery } from '@/domains/sleep/api/queries';
 import { timeToMinutes } from '@/domains/sleep/measure';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 import { isSleepConditionOverlapError } from '@/lib/api/error';
 
 const DATE_ID = 'yyyy-MM-dd';
@@ -32,8 +33,7 @@ export function useSleepMeasureScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const sleepId = params.id != null ? Number(params.id) : null;
   const isEditMode = sleepId != null && !Number.isNaN(sleepId);
-  const now = useMemo(() => new Date(), []);
-  const today = useMemo(() => startOfDay(now), [now]);
+  const [today] = useState(() => startOfDay(new Date()));
   const [bedDateId, setBedDateId] = useState(() => format(subDays(today, 1), DATE_ID));
   const [wakeDateId, setWakeDateId] = useState(() => format(today, DATE_ID));
   const [weekStartDateId, setWeekStartDateId] = useState(() => format(subDays(today, 6), DATE_ID));
@@ -55,9 +55,9 @@ export function useSleepMeasureScreen() {
   const isRecordLoadError = isEditMode && recordQuery.isError;
   const loadedRecord = recordQuery.data;
 
-  useEffect(() => {
-    if (!isEditMode || loadedRecord == null) return;
-
+  // 수정 모드에서 기록을 불러오면 입력값을 기록으로 채웁니다.
+  const isLoadedRecordChanged = useDepsChanged([isEditMode, loadedRecord, today]);
+  if (isLoadedRecordChanged && isEditMode && loadedRecord != null) {
     const crossesDay =
       timeToMinutes(loadedRecord.wakeUpTime) <= timeToMinutes(loadedRecord.bedTime);
     setBedTime(loadedRecord.bedTime);
@@ -66,7 +66,7 @@ export function useSleepMeasureScreen() {
     setWakeDateId(format(today, DATE_ID));
     setIsNap(loadedRecord.isNap);
     setIsAllNight(loadedRecord.isAllNight);
-  }, [isEditMode, loadedRecord, today]);
+  }
 
   const monthLabel = useMemo(() => format(parseISO(weekStartDateId), 'yyyy.MM'), [weekStartDateId]);
   const wakeDateTime = useMemo(

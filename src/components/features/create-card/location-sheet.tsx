@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 
 const LOCATION_TEXT_MAX_LENGTH = 200;
 
@@ -22,11 +23,11 @@ export function LocationSheet({ visible, onClose, onSelect }: LocationBottomShee
     searchInputRef.current?.focus();
   }, []);
 
-  useEffect(() => {
-    if (!visible) {
-      setLocation('');
-    }
-  }, [visible]);
+  // sheet가 닫히면 입력값을 비웁니다.
+  const isVisibleChanged = useDepsChanged([visible]);
+  if (isVisibleChanged && !visible) {
+    setLocation('');
+  }
 
   const handleDone = () => {
     if (!canDone) {

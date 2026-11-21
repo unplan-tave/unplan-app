@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { TodayDot } from '@/components/domain/schedule/today-dot';
@@ -17,6 +17,8 @@ import {
   formatDurationInline,
   UNKNOWN_DURATION_LABEL,
 } from '@/domains/schedule/queue';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
+import { useToday } from '@/hooks/use-today';
 
 import type { CalendarCell } from '@/domains/schedule/model';
 import type { DueDurationDraft } from '@/domains/schedule/queue';
@@ -61,13 +63,18 @@ export function DueDurationSheet({
   const [draft, setDraft] = useState<DueDurationDraft>(value);
   const [calendarBaseDate, setCalendarBaseDate] = useState(() => new Date());
   const calendar = getCalendarMonth(calendarBaseDate);
-  const todayValue = formatDueDateForStorage(new Date());
+  const today = useToday();
+  const todayValue = formatDueDateForStorage(today);
 
-  useEffect(() => {
-    if (!visible) {
-      return;
-    }
-
+  // sheet가 열리거나 열린 상태에서 value가 바뀌면 draft를 value로 맞춥니다.
+  const shouldResetDraft = useDepsChanged([
+    value.dueDate,
+    value.durationHours,
+    value.durationMinutes,
+    value.durationUnknown,
+    visible,
+  ]);
+  if (shouldResetDraft && visible) {
     setDraft({
       dueDate: value.dueDate,
       durationHours: value.durationHours,
@@ -75,7 +82,7 @@ export function DueDurationSheet({
       durationUnknown: value.durationUnknown,
     });
     setCalendarBaseDate(getInitialCalendarBaseDate(value.dueDate));
-  }, [value.dueDate, value.durationHours, value.durationMinutes, value.durationUnknown, visible]);
+  }
 
   const handleSelectDate = useCallback((dateValue: string) => {
     if (dateValue.length === 0) {

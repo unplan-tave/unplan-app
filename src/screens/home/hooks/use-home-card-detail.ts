@@ -6,6 +6,7 @@ import { toCardItemFromScheduleDetail } from '@/domains/schedule/card-mapper';
 import { getCardPersonalTagLabels, progressStatusToScheduleStatus } from '@/domains/schedule/list';
 import { getConditionTagById } from '@/domains/schedule/model';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 
 import type { CardProgressStatus } from '@/domains/schedule/model';
 
@@ -38,9 +39,10 @@ export function useHomeCardDetail({
   );
 
   // 카드가 바뀌거나 sheet를 다시 열면 낙관적 상태 override를 초기화합니다.
-  useEffect(() => {
+  const shouldResetStatusOverride = useDepsChanged([cardId, visible]);
+  if (shouldResetStatusOverride) {
     setStatusOverride(null);
-  }, [cardId, visible]);
+  }
 
   useEffect(() => {
     if (!visible || cardId == null) return;

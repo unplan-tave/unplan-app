@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
@@ -49,7 +49,7 @@ export function OnboardingStepLayout({
 }: OnboardingStepLayoutProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const raisedProgress = useRef(new Animated.Value(contentRaised ? 1 : 0)).current;
+  const [raisedProgress] = useState(() => new Animated.Value(contentRaised ? 1 : 0));
 
   useEffect(() => {
     Animated.timing(raisedProgress, {

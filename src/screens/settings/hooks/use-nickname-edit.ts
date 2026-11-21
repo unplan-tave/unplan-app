@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useUpdateMemberProfileMutation } from '@/domains/member/api/mutations';
 import { useMemberProfileQuery } from '@/domains/member/api/queries';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 import { t } from '@/lib/i18n';
 
 const MAX_NICKNAME_LENGTH = 20;
@@ -26,11 +27,11 @@ export function useNicknameEdit() {
 
   const placeholder = useMemo(() => `1~${MAX_NICKNAME_LENGTH}자`, []);
 
-  useEffect(() => {
-    if (profileQuery.data?.nickname != null) {
-      setNickname(profileQuery.data.nickname);
-    }
-  }, [profileQuery.data?.nickname]);
+  // 프로필 닉네임을 불러오면 입력값을 채웁니다.
+  const isProfileNicknameChanged = useDepsChanged([profileQuery.data?.nickname]);
+  if (isProfileNicknameChanged && profileQuery.data?.nickname != null) {
+    setNickname(profileQuery.data.nickname);
+  }
 
   const updateNickname = (value: string) => {
     setErrorMessage(null);

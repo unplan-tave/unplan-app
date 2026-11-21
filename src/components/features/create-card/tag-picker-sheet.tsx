@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -20,10 +20,13 @@ import {
   normalizePersonalTagLabel,
   sortPersonalTags,
 } from '@/domains/schedule/model';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 
 import type { CardTagTab, ConditionTagId, PersonalTagOption } from '@/domains/schedule/model';
 
 const TAG_DOT_SIZE = 5.411;
+// 기본값을 렌더마다 새 배열로 만들면 선택값 동기화가 매 렌더 다시 실행되므로 상수를 씁니다.
+const EMPTY_TAG_LABELS: string[] = [];
 
 interface TagPickerSheetProps {
   visible: boolean;
@@ -49,7 +52,7 @@ export function TagPickerSheet({
   selectedConditionTagId,
   personalTags,
   selectedPersonalTagIds,
-  selectedPersonalTagLabels = [],
+  selectedPersonalTagLabels = EMPTY_TAG_LABELS,
   isPersonalTagsLoading = false,
   isPersonalTagsError = false,
   onSwitchTab,
@@ -64,20 +67,24 @@ export function TagPickerSheet({
     useState<string[]>(selectedPersonalTagLabels);
   const [conditionViewMode, setConditionViewMode] = useState<'list' | 'description'>('list');
 
-  useEffect(() => {
-    if (!visible) return;
-    if (activeTab === 'personal') {
-      setDraftPersonalIds(selectedPersonalTagIds);
-      setDraftPersonalLabels(selectedPersonalTagLabels);
-      setQuery('');
-    }
-  }, [selectedPersonalTagIds, selectedPersonalTagLabels, visible, activeTab]);
+  // 열린 sheet의 개인 태그 탭에 들어오거나 선택값이 바뀌면 draft를 선택값으로 맞춥니다.
+  const shouldResetPersonalDraft = useDepsChanged([
+    selectedPersonalTagIds,
+    selectedPersonalTagLabels,
+    visible,
+    activeTab,
+  ]);
+  if (shouldResetPersonalDraft && visible && activeTab === 'personal') {
+    setDraftPersonalIds(selectedPersonalTagIds);
+    setDraftPersonalLabels(selectedPersonalTagLabels);
+    setQuery('');
+  }
 
-  useEffect(() => {
-    if (activeTab === 'condition') {
-      setConditionViewMode('list');
-    }
-  }, [activeTab]);
+  // 컨디션 탭으로 바뀌면 목록 보기로 돌아갑니다.
+  const isActiveTabChanged = useDepsChanged([activeTab]);
+  if (isActiveTabChanged && activeTab === 'condition') {
+    setConditionViewMode('list');
+  }
 
   const normalizedQuery = normalizePersonalTagLabel(query);
   const sortedTags = useMemo(() => sortPersonalTags(personalTags), [personalTags]);

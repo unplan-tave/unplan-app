@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useAcceptConditionRecommendationMutation } from '@/domains/ai-recommendation/api/mutations';
 import { useConditionRecommendationsQuery } from '@/domains/ai-recommendation/api/queries';
@@ -7,6 +7,7 @@ import {
   formatFreeSlotMessage,
   isRecoveryRecommendation,
 } from '@/domains/condition/recommendation';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 import { t } from '@/lib/i18n';
 import { formatDateValue } from '@/lib/utils/date';
 
@@ -48,11 +49,13 @@ export function useConditionRecommendation(selectedDate: Date) {
     return activeRecommendation.reasonMessages;
   }, [activeRecommendation]);
 
-  useEffect(() => {
+  // 추천 개수가 바뀌면 선택 index를 범위 안으로 맞춥니다.
+  const isRecommendationCountChanged = useDepsChanged([recommendations.length]);
+  if (isRecommendationCountChanged) {
     setActiveIndex((currentIndex) =>
       recommendations.length === 0 ? 0 : Math.min(currentIndex, recommendations.length - 1),
     );
-  }, [recommendations.length]);
+  }
 
   const openSheet = useCallback(() => {
     setActiveIndex(0);

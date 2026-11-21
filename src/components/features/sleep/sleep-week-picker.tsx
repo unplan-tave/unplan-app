@@ -38,27 +38,26 @@ export function SleepWeekPicker({
   const translateX = useSharedValue(0);
   const hasMovedDate = useSharedValue(false);
   const slideStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
+    transform: [{ translateX: translateX.get() }],
   }));
   const swipeGesture = Gesture.Pan()
     .activeOffsetX([-20, 20])
     .failOffsetY([-20, 20])
     .onBegin(() => {
-      hasMovedDate.value = false;
+      hasMovedDate.set(false);
     })
     .onUpdate((event) => {
-      translateX.value = Math.max(
-        -MAX_SWIPE_DISTANCE,
-        Math.min(MAX_SWIPE_DISTANCE, event.translationX),
+      translateX.set(
+        Math.max(-MAX_SWIPE_DISTANCE, Math.min(MAX_SWIPE_DISTANCE, event.translationX)),
       );
 
-      if (hasMovedDate.value || Math.abs(event.translationX) < DATE_CHANGE_THRESHOLD) return;
+      if (hasMovedDate.get() || Math.abs(event.translationX) < DATE_CHANGE_THRESHOLD) return;
 
-      hasMovedDate.value = true;
+      hasMovedDate.set(true);
       runOnJS(onShiftDateRange)(event.translationX < 0 ? 'previous' : 'next');
     })
     .onEnd(() => {
-      translateX.value = withSpring(0, { damping: 18, stiffness: 260 });
+      translateX.set(withSpring(0, { damping: 18, stiffness: 260 }));
     });
 
   return (

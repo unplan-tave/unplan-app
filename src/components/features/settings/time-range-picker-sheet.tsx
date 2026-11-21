@@ -5,6 +5,7 @@ import { CardToast } from '@/components/domain/schedule/card-toast';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 import { t } from '@/lib/i18n';
 
 import type { MinuteRange } from '@/domains/ai-recommendation/model';
@@ -35,12 +36,16 @@ export function TimeRangePickerSheet({
   const [startMinutes, setStartMinutes] = useState(initialRange.startMinutes);
   const [endMinutes, setEndMinutes] = useState(initialRange.endMinutes);
 
-  useEffect(() => {
-    if (visible) {
-      setStartMinutes(initialRange.startMinutes);
-      setEndMinutes(initialRange.endMinutes);
-    }
-  }, [initialRange.endMinutes, initialRange.startMinutes, visible]);
+  // sheet가 열리거나 열린 상태에서 initialRange가 바뀌면 선택값을 맞춥니다.
+  const shouldResetRange = useDepsChanged([
+    initialRange.endMinutes,
+    initialRange.startMinutes,
+    visible,
+  ]);
+  if (shouldResetRange && visible) {
+    setStartMinutes(initialRange.startMinutes);
+    setEndMinutes(initialRange.endMinutes);
+  }
 
   return (
     <BottomSheet visible={visible} onClose={onClose}>

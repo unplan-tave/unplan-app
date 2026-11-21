@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 import { type RecurrencePreset, type RecurrenceValue } from '@/domains/schedule/recurrence';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 
 const PRESET_OPTIONS: ReadonlyArray<{
   preset: Exclude<RecurrencePreset, 'custom'>;
@@ -35,18 +36,11 @@ export function RepeatPresetSheet({
     null,
   );
 
-  useEffect(() => {
-    if (!visible) {
-      return;
-    }
-
-    if (value != null && value.preset !== 'custom') {
-      setSelectedPreset(value.preset);
-      return;
-    }
-
-    setSelectedPreset(null);
-  }, [value, visible]);
+  // sheet가 열리거나 열린 상태에서 value가 바뀌면 선택값을 value로 맞춥니다.
+  const shouldResetSelection = useDepsChanged([value, visible]);
+  if (shouldResetSelection && visible) {
+    setSelectedPreset(value != null && value.preset !== 'custom' ? value.preset : null);
+  }
 
   const canDone = selectedPreset != null;
 
