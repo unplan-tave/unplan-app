@@ -16,6 +16,7 @@
     ".expo/types/**/*.ts"
   ],
   "exclude": [
+    ".claude",
     "**/*.test.ts",
     "**/*.test.tsx"
   ]
