@@ -2,7 +2,7 @@
 
 [← 컨벤션](./README.md)
 
-사람 리뷰어와 CodeRabbit이 함께 쓰는 리뷰 기준입니다. CodeRabbit은 `.coderabbit.yaml`의 `knowledge_base.code_guidelines`로 이 문서와 `AGENTS.md`를 읽습니다.
+사람 리뷰어와 Codex 코드 리뷰가 함께 쓰는 리뷰 기준입니다. Codex는 `AGENTS.md`의 `## Code Review Rules` 섹션을 읽습니다. 그 섹션은 이 문서의 요약이므로, 기준을 바꾸면 두 곳을 함께 고칩니다.
 
 ## 원칙
 
@@ -127,12 +127,20 @@
 - `app.config.*`, `app.json`, `eas.json`, `package.json`의 네이티브 의존성, `plugins/**` 변경이 `ci.yml`의 `detect-preview-changes` 필터에 걸려 네이티브 빌드로 가는지
 - 워크플로에서 실패가 성공으로 처리되지 않는지(`continue-on-error`, `always()`, step outcome 판정, `|| true`)
 
-## CodeRabbit 코멘트와의 대응
+## Codex 리뷰
 
-CodeRabbit 인라인 코멘트는 자체 라벨로 달립니다. 위 섹션과는 아래처럼 맞춰 읽습니다.
+구현은 Claude Code로 하고, 리뷰는 다른 모델인 Codex로 받습니다. 같은 모델이 놓치는 부분을 다른 모델로 보완하려는 목적입니다.
 
-| CodeRabbit 라벨 | 이 문서의 섹션 |
-|-----------------|----------------|
-| Potential issue | `Must Fix` |
-| Refactor suggestion | `Recommendations` |
-| Nitpick | `Recommendations` (반영 여부는 작성자 판단) |
+- 저장소 연결: ChatGPT의 Codex 설정에서 GitHub를 연결하고, 저장소 접근은 `unplan-tave/unplan-app`만 선택합니다.
+- 자동 리뷰: Codex 설정의 Code review에서 Automatic review를 켭니다.
+- 수동 요청: PR 댓글에 `@codex review`를 남깁니다.
+- 리뷰 기준: `AGENTS.md`의 `## Code Review Rules`
+
+Codex는 P0·P1 우선순위의 문제만 인라인으로 지적합니다. 이 문서의 섹션과는 아래처럼 맞춰 읽습니다.
+
+| Codex 우선순위 | 이 문서의 섹션 |
+|----------------|----------------|
+| P0 | `Must Fix` (`critical`) |
+| P1 | `Must Fix` (`high`) |
+
+`medium` 이하와 `Recommendations`, `Good Points`는 사람 리뷰어가 씁니다.
