@@ -11,6 +11,10 @@ inputs:
   deploy-status:
     description: Outcome of the deployment step
     required: true
+  job-status:
+    description: Job status (job.status). Used when the deployment step was skipped because an earlier step failed or the job was cancelled.
+    required: false
+    default: ''
   ref-name:
     description: Branch or tag name
     required: true
@@ -36,6 +40,7 @@ runs:
         WEBHOOK_URL: ${{ inputs.webhook-url }}
         DEPLOY_TYPE: ${{ inputs.deploy-type }}
         DEPLOY_STATUS: ${{ inputs.deploy-status }}
+        JOB_STATUS: ${{ inputs.job-status }}
         REF_NAME: ${{ inputs.ref-name }}
         COMMIT_SHA: ${{ inputs.commit-sha }}
         ACTOR: ${{ inputs.actor }}
@@ -45,6 +50,12 @@ runs:
         if [ -z "$WEBHOOK_URL" ]; then
           echo "Discord webhook URL is not configured; skipping notification."
           exit 0
+        fi
+
+        # 배포 단계 이전에 job이 실패·취소되면 deploy outcome은 skipped가 됩니다.
+        # 이때는 job 상태(failure/cancelled)로 알립니다.
+        if [ "$DEPLOY_STATUS" = "skipped" ] && { [ "$JOB_STATUS" = "failure" ] || [ "$JOB_STATUS" = "cancelled" ]; }; then
+          DEPLOY_STATUS="$JOB_STATUS"
         fi
 
         case "$DEPLOY_STATUS" in

@@ -55,6 +55,7 @@ jobs:
           webhook-url: ${{ secrets.DISCORD_APP_DEPLOY_WEBHOOK_URL }}
           deploy-type: iOS TestFlight Build
           deploy-status: ${{ steps.deploy.outcome }}
+          job-status: ${{ job.status }}
           ref-name: ${{ github.ref_name }}
           commit-sha: ${{ github.sha }}
           actor: ${{ github.actor }}
