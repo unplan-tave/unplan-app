@@ -130,7 +130,7 @@ src/
 ## 6. API 레이어
 
 - **클라이언트**: `lib/api/client.ts` — `Config.apiUrl` 기반 axios. 요청 인터셉터가 SecureStore의 access token을 Bearer로 주입. 응답 인터셉터에 **401 refresh-token 재시도 TODO**(미구현).
-- **Orval 자동생성**: `orval.config.ts`가 `OPENAPI_SPEC_URL`에서 스펙을 받아 `src/lib/api/endpoints`(태그별 React Query 훅)와 `src/lib/api/model`(타입)을 생성. 커스텀 mutator(`orval-mutator.ts`)로 공용 axios 인스턴스 재사용. 두 디렉터리는 ESLint ignore 대상.
+- **Orval 자동생성**: `orval.config.ts`가 `OPENAPI_SPEC_URL`에서 스펙을 받아 `src/lib/api/endpoints`(태그별 React Query 훅)와 `src/lib/api/model`(타입)을 생성. 커스텀 mutator(`orval-mutator.ts`)로 공용 axios 인스턴스 재사용. 두 디렉터리는 oxlint ignore 대상.
 - 생성된 태그: `auth-controller`, `daily-memo`, `onboarding`, `setting-onboarding`, `schedule-crud`, `test-controller`.
 - 인증·온보딩·schedule은 각 `src/domains/<domain>/api/client.ts`의 domain API wrapper를 통해 generated endpoint를 사용함. screen/components는 generated endpoint/model을 직접 참조하지 않음.
 
@@ -173,7 +173,7 @@ src/
 - **`release.yml`** — `v*.*.*` 태그 푸시 시 `eas build --profile production --platform all`.
 
 ### 코드 품질 게이트
-- ESLint(flat config) + Prettier + Husky(pre-commit) + lint-staged. 커밋 시 `eslint --fix --max-warnings 0` + `prettier --write`.
+- oxlint(`.oxlintrc.json`, 타입 기반 규칙 포함) + Prettier(import 정렬 플러그인) + Husky(pre-commit) + lint-staged. 커밋 시 `oxlint --fix` + `prettier --write`.
 - 스크립트: `type-check`, `lint`, `lint:fix`, `format`, `api:generate`.
 
 ---
@@ -183,7 +183,7 @@ src/
 ### 잘 되어 있는 점
 - 책임이 명확히 분리된 구조(app=라우트 / screens / components / domains / lib)와 thin route layer.
 - 인증 인프라가 견고: SecureStore(민감)·MMKV(일반) 분리, SDK 지연초기화 가드, 소셜 로그인 에러 정규화, 디바이스 ID 영속.
-- 타입 안전성(strict TS, 경로 alias) + 자동화(Orval, ESLint/Prettier/Husky) + 정교한 CI(OTA/네이티브 빌드 분기).
+- 타입 안전성(strict TS, 경로 alias) + 자동화(Orval, oxlint/Prettier/Husky) + 정교한 CI(OTA/네이티브 빌드 분기).
 - 디자인 토큰 + primitive-first 컨벤션으로 디자인 변경에 강함.
 
 ### 정리하면 좋은 점 (불필요 / 중복)

@@ -13,7 +13,7 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
 | [docs/frontend/component-decomposition.md](./docs/frontend/component-decomposition.md) | screen/component 분리 기준 |
 | [docs/roadmap/development-checklist.md](./docs/roadmap/development-checklist.md) | 병행 개발 원칙 + PR 분리 계획 |
 
-린트·포맷 규칙은 `eslint.config.js`, `.prettierrc`가 우선입니다.
+린트·포맷 규칙은 `.oxlintrc.json`, `.prettierrc`가 우선입니다. 린트는 oxlint, import 정렬은 Prettier(`@ianvs/prettier-plugin-sort-imports`)가 담당합니다.
 
 ## 구조 원칙
 

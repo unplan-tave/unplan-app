@@ -60,3 +60,16 @@ Orval generated API 변화는 domain API boundary에서 흡수하고, screen/com
 - 도메인 표현 컴포넌트라면 `components/domain/<domain>`
 - 도메인 지식이 없다면 `components/ui`
 - 순수 로직이라면 `domains/<domain>`
+
+## lint로 강제하는 규칙
+
+아래 규칙은 `.oxlintrc.json`의 `no-restricted-imports`로 검사합니다. 위반하면 `npm run lint`가 실패합니다.
+
+| 대상 | 금지 |
+|------|------|
+| `src/**` (`src/domains/*/api`, `src/lib/api` 제외) | `@/lib/api/endpoints`, `@/lib/api/model` |
+| `src/domains/**` | `@/components/**` |
+| `src/components/**` | `use-*-store`, `@tanstack/react-query`, `@/lib/api/**` |
+| `src/components/ui/**` | `components/domain`, `components/features`, `screens` |
+| `src/components/domain/**` | `components/features`, `screens` |
+| `src/components/features/**` | 다른 feature(`@/components/features/**`, `../**`), `screens` |
