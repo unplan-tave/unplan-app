@@ -1,15 +1,12 @@
 /** 홈 화면에서 쓰는 React 비의존 계산을 모읍니다. */
 import { getCardPersonalTagLabels } from '@/domains/schedule/list';
-import {
-  getConditionTagById,
-  type CardItem,
-  type PersonalTagOption,
-} from '@/domains/schedule/model';
+import { getConditionTagById } from '@/domains/schedule/model';
 import { type DueDurationDraft } from '@/domains/schedule/queue';
 import { addMinutesToTime, parseTimeToMinutes } from '@/domains/schedule/time';
 import { getLocale } from '@/lib/i18n';
 
 import type { ScheduleRecommendation } from '@/domains/ai-recommendation/model';
+import type { CardItem, PersonalTagOption } from '@/domains/schedule/model';
 
 /** 타임라인 카드가 화면에 표시할 props를 생성합니다. */
 export function toHomeTimelineCardViewModel(

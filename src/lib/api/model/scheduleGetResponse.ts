@@ -5,8 +5,8 @@
  * Unplan Server API Documentation
  * OpenAPI spec version: v1.0.0
  */
-import type { ScheduleGetResponseStatus } from './scheduleGetResponseStatus';
 import type { ScheduleGetResponseConditionTag } from './scheduleGetResponseConditionTag';
+import type { ScheduleGetResponseStatus } from './scheduleGetResponseStatus';
 
 export interface ScheduleGetResponse {
   schedule_id?: number;

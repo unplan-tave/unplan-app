@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Keyboard, type KeyboardEvent, Platform } from 'react-native';
+import { Keyboard, Platform } from 'react-native';
+
+import type { KeyboardEvent } from 'react-native';
 
 export function useKeyboardHeight(): number {
   const [height, setHeight] = useState(0);

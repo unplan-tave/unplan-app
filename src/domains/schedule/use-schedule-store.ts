@@ -5,22 +5,19 @@
 import { create } from 'zustand';
 
 import {
-  cloneCardFormValues,
   canCreatePersonalTag,
+  cloneCardFormValues,
   createCardDraft,
   createCardEditDraft,
   createCardItem,
   createPersonalTag,
-  type CardTab,
-  type CardDraft,
-  type CardFormValues,
-  type CardItem,
-  type PersonalTagOption,
   sortPersonalTags,
   updateCardItem,
 } from './model';
 import { createQueueToPinValues } from './queue';
 import { addCardRecentSearch, removeCardRecentSearch } from './search';
+
+import type { CardDraft, CardFormValues, CardItem, CardTab, PersonalTagOption } from './model';
 
 interface ScheduleStoreState {
   cards: CardItem[];

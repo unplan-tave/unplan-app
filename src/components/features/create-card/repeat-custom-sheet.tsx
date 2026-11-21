@@ -9,15 +9,16 @@ import { colors, radius, spacing } from '@/constants/theme';
 import { getCalendarMonth } from '@/domains/schedule/model';
 import {
   combineIntervalDigits,
+  DIGIT_ITEMS,
   isDateOnOrAfterSchedule,
   normalizeRecurrenceForCustomEdit,
-  type RecurrenceValue,
   RECURRENCE_END_OPTIONS,
   RECURRENCE_FREQ_OPTIONS,
   splitIntervalDigits,
   WEEKLY_DETAIL_DAYS,
-  DIGIT_ITEMS,
 } from '@/domains/schedule/recurrence';
+
+import type { RecurrenceValue } from '@/domains/schedule/recurrence';
 
 const DRUM_ITEM_HEIGHT = 32;
 const DRUM_PADDING = 2;

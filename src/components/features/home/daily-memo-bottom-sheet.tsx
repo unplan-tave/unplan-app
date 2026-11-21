@@ -5,12 +5,10 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
-import {
-  DAILY_MEMO_MAX_COUNT,
-  DAILY_MEMO_MAX_LENGTH,
-  type DailyMemo,
-} from '@/domains/daily-memo/model';
+import { DAILY_MEMO_MAX_COUNT, DAILY_MEMO_MAX_LENGTH } from '@/domains/daily-memo/model';
 import { t } from '@/lib/i18n';
+
+import type { DailyMemo } from '@/domains/daily-memo/model';
 
 interface DailyMemoBottomSheetProps {
   visible: boolean;

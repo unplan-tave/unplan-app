@@ -20,18 +20,18 @@ import {
 import {
   toConditionRecommendationViewModel,
   toEmptyTimeSettingRequest,
+  toQueueTimeRecommendationResult,
   toRecommendationAcceptRequest,
   toRecommendationCriteriaSettings,
-  toQueueTimeRecommendationResult,
   toScheduleRecommendations,
 } from './mapper';
 
 import type {
   AcceptConditionRecommendationInput,
   AcceptRecommendationResult,
-  RecommendationAcceptErrorKind,
   QueueTimeRecommendationErrorMode,
   QueueTimeRecommendationResult,
+  RecommendationAcceptErrorKind,
   RecommendationCriteriaSettings,
   ScheduleRecommendation,
 } from '../model';

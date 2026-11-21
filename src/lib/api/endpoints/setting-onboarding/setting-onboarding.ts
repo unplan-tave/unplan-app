@@ -6,6 +6,22 @@
  * OpenAPI spec version: v1.0.0
  */
 import { useMutation, useQuery } from '@tanstack/react-query';
+
+import { apiMutator } from '../../mutator/orval-mutator';
+
+import type {
+  ApiResponseGetBiorhythm,
+  ApiResponseGetMethods,
+  ApiResponseSleepConditionResponse,
+  ApiResponseTransportResponse,
+  ApiResponseUpdateBiorhythm,
+  ApiResponseUpdateMethods,
+  BiorhythmRequest,
+  TransportRequest,
+  UpdateConditions,
+  UpdateMethods,
+} from '../../model';
+import type { BodyType, ErrorType } from '../../mutator/orval-mutator';
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -20,22 +36,6 @@ import type {
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query';
-
-import type {
-  ApiResponseGetBiorhythm,
-  ApiResponseGetMethods,
-  ApiResponseSleepConditionResponse,
-  ApiResponseTransportResponse,
-  ApiResponseUpdateBiorhythm,
-  ApiResponseUpdateMethods,
-  BiorhythmRequest,
-  TransportRequest,
-  UpdateConditions,
-  UpdateMethods,
-} from '../../model';
-
-import { apiMutator } from '../../mutator/orval-mutator';
-import type { ErrorType, BodyType } from '../../mutator/orval-mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 

@@ -6,8 +6,8 @@ import Svg, {
   RadialGradient,
   Stop,
   Text as SvgText,
-  TSpan,
   SvgXml,
+  TSpan,
 } from 'react-native-svg';
 
 import { colors, fontFamilyWeight } from '@/constants/theme';

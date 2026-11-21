@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 import {
-  type ModalProps as RNModalProps,
   type PressableProps,
+  type ModalProps as RNModalProps,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';

@@ -1,6 +1,8 @@
-import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { OnboardingOptionCard, ONBOARDING_OPTION_CARD_WIDTH } from './onboarding-option-card';
+import { ONBOARDING_OPTION_CARD_WIDTH, OnboardingOptionCard } from './onboarding-option-card';
+
+import type { StyleProp, ViewStyle } from 'react-native';
 
 interface OnboardingOption {
   id: string;

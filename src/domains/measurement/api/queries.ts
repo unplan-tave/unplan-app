@@ -9,8 +9,8 @@ import { isMeasurementRangeCurrent } from '../period';
 import { fetchDailyMeasurement, fetchMeasurementAverages } from './client';
 import { measurementQueryKeys } from './query-keys';
 
-import type { FetchMeasurementAveragesInput } from './client';
 import type { DailyMeasurementSummary, MeasurementAverages } from '../model';
+import type { FetchMeasurementAveragesInput } from './client';
 import type { UseQueryOptions } from '@tanstack/react-query';
 
 type MeasurementQueryOptions<TData> = Omit<UseQueryOptions<TData>, 'queryKey' | 'queryFn'>;

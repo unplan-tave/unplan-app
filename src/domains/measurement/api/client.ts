@@ -7,10 +7,10 @@ import { getAverageRecords, getDailyRecord } from '@/lib/api/endpoints/measureme
 import { toDailyMeasurementSummary, toMeasurementAverages } from './mapper';
 
 import type {
+  DailyMeasurementSummary,
   MeasurementAverageGroupBy,
   MeasurementAverages,
   MeasurementAverageType,
-  DailyMeasurementSummary,
 } from '../model';
 
 export interface FetchMeasurementAveragesInput {

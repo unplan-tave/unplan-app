@@ -11,10 +11,13 @@ import {
   SLEEP_CONDITION_MAX_RANGE_MINUTES,
   SLEEP_CONDITION_STEP_MINUTES,
   SLEEP_CONDITION_VISIBLE_MAX_MINUTES,
-  type SleepCondition,
-  type SleepConditionThresholds,
 } from '@/domains/onboarding/sleep-condition';
 import { t } from '@/lib/i18n';
+
+import type {
+  SleepCondition,
+  SleepConditionThresholds,
+} from '@/domains/onboarding/sleep-condition';
 
 interface SleepConditionCircleProps {
   targetSleepMinutes: number;

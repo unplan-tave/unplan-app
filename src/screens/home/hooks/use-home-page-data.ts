@@ -15,15 +15,15 @@ import {
 import { toCardItemsFromScheduleList } from '@/domains/schedule/card-mapper';
 
 import {
+  buildHomeCalendarDays,
   formatDateValue,
   getMonthDateValues,
   getWeekDateValues,
   isPastDate,
   isWithinFutureDays,
-  buildHomeCalendarDays,
-  type HomeViewMode,
 } from '../home-calendar';
 
+import type { HomeViewMode } from '../home-calendar';
 import type { PersonalTagOption } from '@/domains/schedule/model';
 
 const HOME_RECOMMENDATION_FUTURE_DAYS = 7;

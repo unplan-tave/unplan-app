@@ -7,12 +7,10 @@ import { Typography } from '@/components/ui/Typography';
 import { CONDITION_CALENDAR_WEEKDAY_LABELS } from '@/constants/condition-ui';
 import { colors, radius, spacing } from '@/constants/theme';
 import { toConditionCalendarWeeks } from '@/domains/condition/calendar';
-import {
-  getConditionCalendarSelectionPosition,
-  type ConditionCalendarDay,
-} from '@/domains/condition/period';
+import { getConditionCalendarSelectionPosition } from '@/domains/condition/period';
 
 import type { ConditionPeriodMode } from '@/domains/condition/model';
+import type { ConditionCalendarDay } from '@/domains/condition/period';
 
 interface ConditionCalendarModalProps {
   visible: boolean;

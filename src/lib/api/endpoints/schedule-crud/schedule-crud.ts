@@ -6,20 +6,8 @@
  * OpenAPI spec version: v1.0.0
  */
 import { useMutation, useQuery } from '@tanstack/react-query';
-import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseQueryResult,
-  MutationFunction,
-  QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseMutationOptions,
-  UseMutationResult,
-  UseQueryOptions,
-  UseQueryResult,
-} from '@tanstack/react-query';
+
+import { apiMutator } from '../../mutator/orval-mutator';
 
 import type {
   ApiResponseDailyMessageResponseDto,
@@ -38,9 +26,21 @@ import type {
   ScheduleWeeklyResponse,
   SearchSchedulesParams,
 } from '../../model';
-
-import { apiMutator } from '../../mutator/orval-mutator';
-import type { ErrorType, BodyType } from '../../mutator/orval-mutator';
+import type { BodyType, ErrorType } from '../../mutator/orval-mutator';
+import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
+  MutationFunction,
+  QueryClient,
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
+  UseQueryOptions,
+  UseQueryResult,
+} from '@tanstack/react-query';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 

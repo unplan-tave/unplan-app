@@ -1,8 +1,10 @@
-import { type StyleProp, Pressable, StyleSheet, Switch, View, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Switch, View } from 'react-native';
 
 import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
+
+import type { StyleProp, ViewStyle } from 'react-native';
 
 export interface SettingsListRow {
   label: string;

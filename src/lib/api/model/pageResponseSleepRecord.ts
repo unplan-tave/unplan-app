@@ -5,8 +5,8 @@
  * Unplan Server API Documentation
  * OpenAPI spec version: v1.0.0
  */
-import type { SleepRecord } from './sleepRecord';
 import type { PaginationInfo } from './paginationInfo';
+import type { SleepRecord } from './sleepRecord';
 
 export interface PageResponseSleepRecord {
   data?: SleepRecord[];

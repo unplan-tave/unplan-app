@@ -8,16 +8,18 @@ import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 import { WEEKDAY_LABELS } from '@/domains/schedule/data';
-import { getCalendarMonth, type CalendarCell } from '@/domains/schedule/model';
+import { getCalendarMonth } from '@/domains/schedule/model';
 import {
   addDurationMinutes,
   createDefaultDurationDraft,
   DURATION_INCREMENT_BUTTONS,
   formatDueDateForStorage,
   formatDurationInline,
-  type DueDurationDraft,
   UNKNOWN_DURATION_LABEL,
 } from '@/domains/schedule/queue';
+
+import type { CalendarCell } from '@/domains/schedule/model';
+import type { DueDurationDraft } from '@/domains/schedule/queue';
 
 const DATE_CELL_SIZE = spacing[8];
 const SHEET_HEADER_MAX_WIDTH = 369;

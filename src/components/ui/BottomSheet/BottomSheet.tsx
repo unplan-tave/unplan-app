@@ -3,12 +3,11 @@ import {
   Animated,
   Easing,
   Keyboard,
-  Modal as RNModal,
   Platform,
   Pressable,
+  Modal as RNModal,
   StyleSheet,
   View,
-  type KeyboardEvent,
 } from 'react-native';
 
 import { Typography } from '@/components/ui/Typography';
@@ -16,6 +15,8 @@ import { colors, radius, spacing } from '@/constants/theme';
 
 import { type BottomSheetProps } from './bottomSheet.types';
 import { BottomSheetHandle } from './BottomSheetHandle';
+
+import type { KeyboardEvent } from 'react-native';
 
 // 뒤 콘텐츠가 살짝 비치도록 중간 강도. (native scale 1–100, Figma 4.5px보다 약간 강함)
 const SHEET_BLUR_INTENSITY = 24;
