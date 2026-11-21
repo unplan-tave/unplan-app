@@ -5,10 +5,10 @@
  * Unplan Server API Documentation
  * OpenAPI spec version: v1.0.0
  */
-import type { ScheduleCreateRequestConditionTag } from './scheduleCreateRequestConditionTag';
-import type { ScheduleCreateRequestRemindType } from './scheduleCreateRequestRemindType';
-import type { ScheduleCreateRequestRemindSoundType } from './scheduleCreateRequestRemindSoundType';
 import type { RecurrenceRequest } from './recurrenceRequest';
+import type { ScheduleCreateRequestConditionTag } from './scheduleCreateRequestConditionTag';
+import type { ScheduleCreateRequestRemindSoundType } from './scheduleCreateRequestRemindSoundType';
+import type { ScheduleCreateRequestRemindType } from './scheduleCreateRequestRemindType';
 
 export interface ScheduleCreateRequest {
   /** @minLength 1 */

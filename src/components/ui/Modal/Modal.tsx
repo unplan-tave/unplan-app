@@ -1,4 +1,4 @@
-import { Modal as RNModal, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, Modal as RNModal, StyleSheet, View } from 'react-native';
 
 import { colors, radius } from '@/constants/theme';
 

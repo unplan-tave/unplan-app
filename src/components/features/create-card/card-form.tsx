@@ -3,11 +3,11 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 import {
+  type CardFormValues,
   type CardTab,
   type ConditionTagOption,
   type DateMode,
   type PersonalTagOption,
-  type CardFormValues,
   type RecurrenceValue,
   type TimeFocus,
 } from '@/domains/schedule/model';

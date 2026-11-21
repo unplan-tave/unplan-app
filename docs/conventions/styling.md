@@ -20,6 +20,7 @@ const styles = StyleSheet.create({
 
 - `'#EAF4FF'`, `'rgba(...)'`, `borderRadius: 13` 같은 리터럴을 직접 쓰지 않습니다.
 - 토큰이 없으면 `constants`에 먼저 추가합니다.
+- `src/app`, `src/screens`, `src/components`의 색상 문자열 리터럴(`#...`, `rgb(...)`, `hsl(...)`)은 lint(`unplan/no-color-literals`)가 잡습니다.
 - StyleSheet 밖의 동적 계산값만 인라인을 허용합니다.
 
 ## 반응형 폭

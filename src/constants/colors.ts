@@ -105,6 +105,13 @@ export const colors = {
     disabled: '#D9DFE5', // gray.200
     inverse: '#FFFFFF',
   },
+
+  // ─── Social login (각 사 브랜드 가이드 색상) ──────────────────
+  socialLogin: {
+    apple: { background: '#000000' },
+    google: { border: '#747775', label: '#1F1F1F' },
+    kakao: { background: '#FEE500', label: '#191919' },
+  },
 } as const;
 
 export type Colors = typeof colors;

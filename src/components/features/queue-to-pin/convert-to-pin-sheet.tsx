@@ -11,11 +11,12 @@ import { type CardFormValues, type CardItem, type DateTimeDraft } from '@/domain
 import {
   createQueueToPinValuesFromCandidate,
   formatDurationInline,
-  type RecommendationCandidate,
 } from '@/domains/schedule/queue';
 import { isValidTimeRange } from '@/hooks/use-time-range-validation';
 
 import type { ScheduleRecommendation } from '@/domains/ai-recommendation/model';
+import type { RecommendationCandidate } from '@/domains/schedule/queue';
+
 const SHEET_HEADER_MAX_WIDTH = 369;
 
 type SheetMode =

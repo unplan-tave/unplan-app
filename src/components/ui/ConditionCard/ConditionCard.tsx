@@ -1,11 +1,13 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Card } from '@/components/ui/Card';
-import { Tag, type ConditionType } from '@/components/ui/Tag';
+import { Tag } from '@/components/ui/Tag';
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
 
 import { type ConditionCardProps } from './conditionCard.types';
+
+import type { ConditionType } from '@/components/ui/Tag';
 
 export function ConditionCard({
   title,

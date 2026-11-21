@@ -1,0 +1,313 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  // 레이어 의존 방향: docs/architecture/dependency-rules.md
+  // screens → features → domain → ui (한 방향만)
+  "plugins": ["typescript", "react", "oxc", "unicorn"],
+  "jsPlugins": ["./lint/unplan-plugin.mjs"],
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "builtin": true,
+    "es2022": true
+  },
+  "globals": {
+    "__DEV__": "readonly",
+    "process": "readonly",
+    "require": "readonly",
+    "module": "readonly",
+    "__dirname": "readonly"
+  },
+  "options": {
+    "typeAware": true,
+    "denyWarnings": true,
+    "reportUnusedDisableDirectives": "error"
+  },
+  "ignorePatterns": [
+    "node_modules/**",
+    ".claude/**",
+    ".expo/**",
+    "dist/**",
+    "build/**",
+    "coverage/**",
+    "ios/**",
+    "android/**",
+    "src/lib/api/endpoints/**",
+    "src/lib/api/model/**"
+  ],
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "error",
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "typescript/consistent-type-imports": ["error", { "prefer": "type-imports" }],
+    "typescript/no-floating-promises": "error",
+    "no-console": ["warn", { "allow": ["info", "warn", "error"] }],
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "warn",
+    // React Compiler 규칙: 기존 코드 위반(53건)이 있어 후속 PR에서 정리한 뒤 켭니다.
+    "react/set-state-in-effect": "off",
+    "react/refs": "off",
+    "react/purity": "off",
+    "react/immutability": "off",
+    "react/incompatible-library": "off"
+  },
+  "overrides": [
+    {
+      // Orval 생성 코드는 src/domains/<domain>/api에서만 import합니다.
+      "files": ["src/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/lib/api/endpoints",
+                  "@/lib/api/endpoints/**",
+                  "@/lib/api/model",
+                  "@/lib/api/model/**",
+                  "**/lib/api/endpoints",
+                  "**/lib/api/endpoints/**",
+                  "**/lib/api/model",
+                  "**/lib/api/model/**"
+                ],
+                "message": "Generated Orval code can only be imported from src/domains/<domain>/api."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/domains/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/lib/api/endpoints",
+                  "@/lib/api/endpoints/**",
+                  "@/lib/api/model",
+                  "@/lib/api/model/**",
+                  "**/lib/api/endpoints",
+                  "**/lib/api/endpoints/**",
+                  "**/lib/api/model",
+                  "**/lib/api/model/**"
+                ],
+                "message": "Generated Orval code can only be imported from src/domains/<domain>/api."
+              },
+              {
+                "group": ["@/components", "@/components/**", "**/components", "**/components/**"],
+                "message": "Domains cannot import from components."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/domains/*/api/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/components", "@/components/**", "**/components", "**/components/**"],
+                "message": "Domains cannot import from components."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/lib/api/**"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      // 모든 components: store, React Query, API 호출은 screen(또는 screen hook)에서 합니다.
+      "files": ["src/components/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/domains/*/use-*-store",
+                  "@/domains/*/use-*-store.*",
+                  "**/domains/*/use-*-store",
+                  "**/domains/*/use-*-store.*"
+                ],
+                "message": "Store hooks belong in screens (or screen hooks). Pass resolved data as props."
+              },
+              {
+                "group": ["@tanstack/react-query", "@tanstack/react-query/**"],
+                "message": "React Query belongs in screens (or screen hooks). Pass resolved data as props."
+              },
+              {
+                "group": ["@/lib/api", "@/lib/api/**", "**/lib/api", "**/lib/api/**"],
+                "message": "API calls belong in screens (or screen hooks). Pass resolved data as props."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/components/ui/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/components/domain",
+                  "@/components/domain/**",
+                  "**/components/domain",
+                  "**/components/domain/**"
+                ],
+                "message": "UI layer cannot import from domain layer."
+              },
+              {
+                "group": [
+                  "@/components/features",
+                  "@/components/features/**",
+                  "**/components/features",
+                  "**/components/features/**"
+                ],
+                "message": "UI layer cannot import from features layer."
+              },
+              {
+                "group": ["@/screens", "@/screens/**", "**/screens", "**/screens/**"],
+                "message": "UI layer cannot import from screens."
+              },
+              {
+                "group": [
+                  "@/domains/*/use-*-store",
+                  "@/domains/*/use-*-store.*",
+                  "**/domains/*/use-*-store",
+                  "**/domains/*/use-*-store.*"
+                ],
+                "message": "Store hooks belong in screens (or screen hooks). Pass resolved data as props."
+              },
+              {
+                "group": ["@tanstack/react-query", "@tanstack/react-query/**"],
+                "message": "React Query belongs in screens (or screen hooks). Pass resolved data as props."
+              },
+              {
+                "group": ["@/lib/api", "@/lib/api/**", "**/lib/api", "**/lib/api/**"],
+                "message": "API calls belong in screens (or screen hooks). Pass resolved data as props."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/components/domain/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/components/features",
+                  "@/components/features/**",
+                  "**/components/features",
+                  "**/components/features/**"
+                ],
+                "message": "Domain layer cannot import from features layer."
+              },
+              {
+                "group": ["@/screens", "@/screens/**", "**/screens", "**/screens/**"],
+                "message": "Domain layer cannot import from screens."
+              },
+              {
+                "group": [
+                  "@/domains/*/use-*-store",
+                  "@/domains/*/use-*-store.*",
+                  "**/domains/*/use-*-store",
+                  "**/domains/*/use-*-store.*"
+                ],
+                "message": "Store hooks belong in screens (or screen hooks). Pass resolved data as props."
+              },
+              {
+                "group": ["@tanstack/react-query", "@tanstack/react-query/**"],
+                "message": "React Query belongs in screens (or screen hooks). Pass resolved data as props."
+              },
+              {
+                "group": ["@/lib/api", "@/lib/api/**", "**/lib/api", "**/lib/api/**"],
+                "message": "API calls belong in screens (or screen hooks). Pass resolved data as props."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      // 같은 feature 안에서는 './'로 import합니다. 다른 feature가 필요하면 components/domain 또는 ui로 승격합니다.
+      "files": ["src/components/features/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/components/features",
+                  "@/components/features/**",
+                  "**/components/features",
+                  "**/components/features/**",
+                  "../**"
+                ],
+                "message": "Features cannot import other features. Use './' inside the same feature, or promote shared code to components/domain or components/ui."
+              },
+              {
+                "group": ["@/screens", "@/screens/**", "**/screens", "**/screens/**"],
+                "message": "Features layer cannot import from screens."
+              },
+              {
+                "group": [
+                  "@/domains/*/use-*-store",
+                  "@/domains/*/use-*-store.*",
+                  "**/domains/*/use-*-store",
+                  "**/domains/*/use-*-store.*"
+                ],
+                "message": "Store hooks belong in screens (or screen hooks). Pass resolved data as props."
+              },
+              {
+                "group": ["@tanstack/react-query", "@tanstack/react-query/**"],
+                "message": "React Query belongs in screens (or screen hooks). Pass resolved data as props."
+              },
+              {
+                "group": ["@/lib/api", "@/lib/api/**", "**/lib/api", "**/lib/api/**"],
+                "message": "API calls belong in screens (or screen hooks). Pass resolved data as props."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      // AGENTS.md: hook이 250줄을 넘으면 분해를 검토합니다.
+      "files": ["src/**/use-*.ts", "src/**/use-*.tsx"],
+      "rules": {
+        "max-lines": ["error", { "max": 250, "skipBlankLines": true, "skipComments": true }]
+      }
+    },
+    {
+      "files": ["src/app/**", "src/screens/**", "src/components/**"],
+      "rules": {
+        "unplan/no-color-literals": "error"
+      }
+    }
+  ]
+}

@@ -27,10 +27,10 @@ import type {
   EmptyTime,
   EmptyTimeSettingRequestDto,
   EmptyTimeSettingResponseDto,
-  RecommendBanTime,
   RecommendationAcceptRequest,
   RecommendationItem,
   RecommendationListResponse,
+  RecommendBanTime,
 } from '@/lib/api/model';
 
 function toMinuteRange(banTime: RecommendBanTime): MinuteRange {

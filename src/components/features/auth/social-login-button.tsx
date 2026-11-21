@@ -16,21 +16,21 @@ interface SocialLoginButtonProps {
 
 const providerStyles = {
   apple: {
-    backgroundColor: '#000000',
-    borderColor: '#000000',
+    backgroundColor: colors.socialLogin.apple.background,
+    borderColor: colors.socialLogin.apple.background,
     color: colors.gray.white,
     icon: 'Apple',
   },
   google: {
     backgroundColor: colors.gray.white,
-    borderColor: '#747775',
-    color: '#1F1F1F',
+    borderColor: colors.socialLogin.google.border,
+    color: colors.socialLogin.google.label,
     icon: 'G',
   },
   kakao: {
-    backgroundColor: '#FEE500',
-    borderColor: '#FEE500',
-    color: '#191919',
+    backgroundColor: colors.socialLogin.kakao.background,
+    borderColor: colors.socialLogin.kakao.background,
+    color: colors.socialLogin.kakao.label,
     icon: '●',
   },
 } as const;

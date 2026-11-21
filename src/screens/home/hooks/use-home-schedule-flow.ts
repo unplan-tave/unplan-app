@@ -1,3 +1,4 @@
+/* oxlint-disable max-lines -- TODO: 250줄 기준을 넘어 분해가 필요합니다 (홈 일정 흐름). */
 /** 진행 확인·시간 연장·큐 전환·재일정 sheet를 하나의 상태 기계로 소유합니다. */
 import { router } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
@@ -22,7 +23,7 @@ import {
   type CardProgressStatus,
   type PersonalTagOption,
 } from '@/domains/schedule/model';
-import { createQueueCardForReschedule, type DueDurationDraft } from '@/domains/schedule/queue';
+import { createQueueCardForReschedule } from '@/domains/schedule/queue';
 
 import {
   createHomeQueueDraft,
@@ -30,6 +31,8 @@ import {
   getHomeProgressTimeSummary,
   isHomeScheduleEnded,
 } from '../home-screen-logic';
+
+import type { DueDurationDraft } from '@/domains/schedule/queue';
 
 const EXTEND_STEP_MINUTES = 10;
 const RESCHEDULE_INITIAL_DAYS = 7;

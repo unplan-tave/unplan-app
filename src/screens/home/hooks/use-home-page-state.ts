@@ -10,8 +10,9 @@ import {
   getHomeDateLabel,
   getNextHomeViewMode,
   getZoomedHomeViewMode,
-  type HomeViewMode,
 } from '../home-calendar';
+
+import type { HomeViewMode } from '../home-calendar';
 
 /** 홈 화면의 날짜·보기 모드·현재 시각·제스처·캘린더 상태를 소유합니다. */
 export function useHomePageState() {

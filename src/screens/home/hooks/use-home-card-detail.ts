@@ -4,8 +4,10 @@ import { useUpdateScheduleMutation } from '@/domains/schedule/api/mutations';
 import { useScheduleDetailQuery } from '@/domains/schedule/api/queries';
 import { toCardItemFromScheduleDetail } from '@/domains/schedule/card-mapper';
 import { getCardPersonalTagLabels, progressStatusToScheduleStatus } from '@/domains/schedule/list';
-import { getConditionTagById, type CardProgressStatus } from '@/domains/schedule/model';
+import { getConditionTagById } from '@/domains/schedule/model';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
+
+import type { CardProgressStatus } from '@/domains/schedule/model';
 
 /** 홈 상세 sheet에 표시할 카드 상세를 조회하고 진행 상태 변경을 처리합니다. */
 export function useHomeCardDetail({

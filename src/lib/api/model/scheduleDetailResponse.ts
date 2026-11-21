@@ -5,11 +5,11 @@
  * Unplan Server API Documentation
  * OpenAPI spec version: v1.0.0
  */
-import type { ScheduleDetailResponseStatus } from './scheduleDetailResponseStatus';
-import type { ScheduleDetailResponseConditionTag } from './scheduleDetailResponseConditionTag';
-import type { ScheduleDetailResponseRemindType } from './scheduleDetailResponseRemindType';
-import type { ScheduleDetailResponseRemindSoundType } from './scheduleDetailResponseRemindSoundType';
 import type { Recurrence } from './recurrence';
+import type { ScheduleDetailResponseConditionTag } from './scheduleDetailResponseConditionTag';
+import type { ScheduleDetailResponseRemindSoundType } from './scheduleDetailResponseRemindSoundType';
+import type { ScheduleDetailResponseRemindType } from './scheduleDetailResponseRemindType';
+import type { ScheduleDetailResponseStatus } from './scheduleDetailResponseStatus';
 
 export interface ScheduleDetailResponse {
   schedule_id?: number;

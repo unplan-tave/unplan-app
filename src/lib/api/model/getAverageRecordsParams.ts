@@ -5,8 +5,8 @@
  * Unplan Server API Documentation
  * OpenAPI spec version: v1.0.0
  */
-import type { GetAverageRecordsType } from './getAverageRecordsType';
 import type { GetAverageRecordsGroupBy } from './getAverageRecordsGroupBy';
+import type { GetAverageRecordsType } from './getAverageRecordsType';
 
 export type GetAverageRecordsParams = {
   from: string;

@@ -8,9 +8,10 @@ import {
   CONDITION_QUADRANT_GRID_LINES,
   toConditionHistoryListPosition,
   toConditionQuadrantPosition,
-  type QuadrantPoint,
 } from '@/domains/condition/quadrant';
 import { useConditionQuadrantInteraction } from '@/hooks/use-condition-quadrant-interaction';
+
+import type { QuadrantPoint } from '@/domains/condition/quadrant';
 
 export type { QuadrantPoint } from '@/domains/condition/quadrant';
 

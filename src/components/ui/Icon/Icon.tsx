@@ -1,9 +1,11 @@
 import { StyleSheet, View } from 'react-native';
-import Svg, { Circle, G, Line, Path, Polyline, Rect, type NumberProp } from 'react-native-svg';
+import Svg, { Circle, G, Line, Path, Polyline, Rect } from 'react-native-svg';
 
 import { colors } from '@/constants/theme';
 
 import { type IconProps } from './icon.types';
+
+import type { NumberProp } from 'react-native-svg';
 
 const DEFAULT_STROKE_WIDTH = 1.8;
 

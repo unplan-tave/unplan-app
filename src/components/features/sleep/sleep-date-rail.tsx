@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { type LayoutChangeEvent, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
+
+import type { LayoutChangeEvent } from 'react-native';
 
 export interface SleepDateItem {
   /** 'YYYY-MM-DD' — 선택 콜백과 key로 사용합니다. */

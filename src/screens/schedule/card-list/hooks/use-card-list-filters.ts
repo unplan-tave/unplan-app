@@ -1,12 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import {
-  createDefaultCardListFilters,
-  toggleCardListFilterValue,
-  type CardListFilters,
-  type CardListMultiFilterKey,
-} from '@/domains/schedule/list';
+import { createDefaultCardListFilters, toggleCardListFilterValue } from '@/domains/schedule/list';
 
+import type { CardListFilters, CardListMultiFilterKey } from '@/domains/schedule/list';
 import type { CardProgressStatus, DateTimeDraft } from '@/domains/schedule/model';
 
 /** 카드 목록의 필터 선택 상태와 토글 이벤트를 관리합니다. */

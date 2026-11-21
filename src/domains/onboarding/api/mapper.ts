@@ -21,17 +21,17 @@ import type {
   TransportOptionId,
 } from '../model';
 import type {
+  UpdateMethodsDefaultMethodsItem as BackendRecoveryOption,
+  OnboardingRequestTransportationsItem as BackendTransportOption,
   BiorhythmRequest,
   GetBiorhythm,
   GetMethods,
   OnboardingRequest,
-  OnboardingRequestTransportationsItem as BackendTransportOption,
   SleepConditionResponse,
   TransportRequest,
   TransportResponse,
   UpdateConditions,
   UpdateMethods,
-  UpdateMethodsDefaultMethodsItem as BackendRecoveryOption,
 } from '@/lib/api/model';
 
 const recoveryOptionMap: Record<Exclude<RecoveryOptionId, 'custom'>, BackendRecoveryOption> = {

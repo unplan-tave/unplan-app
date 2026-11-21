@@ -1,12 +1,14 @@
 /** 설정 메인 화면의 프로필, 알림 설정, route 이동을 조합합니다. */
 import Constants from 'expo-constants';
-import { type Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 
 import { useMemberProfileQuery } from '@/domains/member/api/queries';
 import { t } from '@/lib/i18n';
 
 import { useAlarmSettings } from './use-alarm-settings';
+
+import type { Href } from 'expo-router';
 
 /** 설정 메인 화면이 렌더링에 사용할 상태와 navigation 이벤트를 반환합니다. */
 export function useSettingsScreen() {

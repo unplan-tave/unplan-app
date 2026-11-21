@@ -76,7 +76,7 @@ export function useDeleteScheduleMutation(
         queryClient.invalidateQueries({ queryKey: scheduleQueryKeys.all }),
         queryClient.invalidateQueries({ queryKey: aiRecommendationQueryKeys.all }),
       ]);
-      void queryClient.removeQueries({ queryKey: scheduleQueryKeys.detail(variables.scheduleId) });
+      queryClient.removeQueries({ queryKey: scheduleQueryKeys.detail(variables.scheduleId) });
       options?.onSuccess?.(data, variables, onMutateResult, context);
     },
   });

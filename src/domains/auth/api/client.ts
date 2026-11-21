@@ -33,6 +33,8 @@ export async function submitSocialLogin({
     return toAuthSession(response);
   }
 
+  // `satisfies never`로 provider 분기 누락을 컴파일 단계에서 잡습니다.
+  // oxlint-disable-next-line typescript/restrict-template-expressions
   throw new Error(`Unsupported social provider: ${provider satisfies never}`);
 }
 

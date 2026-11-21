@@ -7,27 +7,27 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import {
   fetchDailyMessage,
   fetchPersonalTags,
-  fetchTagRecommendation,
   fetchScheduleDetail,
   fetchSchedulesByDate,
   fetchSchedulesByMonth,
   fetchSchedulesByWeek,
+  fetchTagRecommendation,
   searchSchedules,
   searchSchedulesPage,
 } from './client';
 import { scheduleQueryKeys } from './query-keys';
 
-import type { SearchSchedulesInput } from './client';
 import type {
   DailyMessage,
   DailyScheduleGroup,
+  PersonalTagOption,
   ScheduleDetail,
   ScheduleListItem,
   ScheduleMonthlyOverview,
   ScheduleSearchPage,
-  PersonalTagOption,
   TagRecommendation,
 } from '../model';
+import type { SearchSchedulesInput } from './client';
 import type { UseQueryOptions } from '@tanstack/react-query';
 
 type ScheduleQueryOptions<TData> = Omit<UseQueryOptions<TData>, 'queryKey' | 'queryFn'>;

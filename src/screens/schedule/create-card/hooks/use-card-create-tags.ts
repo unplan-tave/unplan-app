@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useTagRecommendationQuery } from '@/domains/schedule/api/queries';
-import {
-  getConditionTagIdByRecommendation,
-  type CardFormValues,
-  type ConditionTagId,
-} from '@/domains/schedule/model';
+import { getConditionTagIdByRecommendation } from '@/domains/schedule/model';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
+import type { CardFormValues, ConditionTagId } from '@/domains/schedule/model';
 import type { UseFormSetValue } from 'react-hook-form';
 
 type TagFeedbackState = 'none' | 'success' | 'error';

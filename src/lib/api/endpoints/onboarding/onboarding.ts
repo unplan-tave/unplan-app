@@ -6,17 +6,17 @@
  * OpenAPI spec version: v1.0.0
  */
 import { useMutation } from '@tanstack/react-query';
+
+import { apiMutator } from '../../mutator/orval-mutator';
+
+import type { ApiResponseOnboardingResponse, OnboardingRequest } from '../../model';
+import type { BodyType, ErrorType } from '../../mutator/orval-mutator';
 import type {
   MutationFunction,
   QueryClient,
   UseMutationOptions,
   UseMutationResult,
 } from '@tanstack/react-query';
-
-import type { ApiResponseOnboardingResponse, OnboardingRequest } from '../../model';
-
-import { apiMutator } from '../../mutator/orval-mutator';
-import type { ErrorType, BodyType } from '../../mutator/orval-mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
