@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# 리뷰 기준: docs/conventions/code-review.md
+language: ko-KR
+tone_instructions: '동작 회귀와 아키텍처 경계 위반에 집중하고, 스타일 지적은 줄입니다. 확실하지 않으면 단정하지 말고 질문으로 남깁니다.'
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_instructions: |
+    한국어 bullet로 변경 의도, 영향 범위(화면, 상태 관리, 라우팅, API 연동), 배포 영향(OTA로 나가는지, 네이티브 빌드가 필요한지)을 씁니다.
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+  path_filters:
+    - '!src/lib/api/endpoints/**'
+    - '!src/lib/api/model/**'
+  path_instructions:
+    - path: 'src/**'
+      instructions: |
+        CI가 tsc, lint, Prettier를 돌립니다. 타입·린트·포맷·이름 취향은 지적하지 않습니다.
+        테스트 누락도 지적하지 않습니다. 동작 회귀와 변경의 영향 범위를 우선 봅니다.
+    - path: 'src/domains/**/api/**'
+      instructions: |
+        - 일정 생성·수정·삭제 mutation 뒤 카드 목록, 홈 타임라인, AI 추천 query가 invalidate되는지
+        - 낙관적 업데이트가 실패하면 롤백되는지
+        - mapper가 null, 빈 배열, 누락 필드에서 깨지지 않는지
+        - generated DTO가 이 폴더 밖으로 노출되지 않는지
+    - path: 'src/{domains/auth,lib/auth}/**'
+      instructions: 로그아웃·계정 전환 시 query cache, store, MMKV 값이 비워지는지, 토큰이 SecureStore 밖(MMKV, 로그)에 남지 않는지 확인합니다.
+    - path: 'src/app/**'
+      instructions: route/layout 파일만 둡니다. 화면 로직이나 데이터 조립이 들어오면 src/screens로 옮기도록 짚습니다.
+    - path: 'src/screens/**'
+      instructions: 에러, 로딩, 빈 응답에서 화면이 깨지지 않는지, catch에서 에러를 삼키지 않는지, 타이머와 리스너가 언마운트 시 정리되는지 봅니다.
+    - path: 'src/components/ui/**'
+      instructions: |
+        base 스타일·기본 동작 변경이 기존 소비 화면에 주는 영향을 짚습니다.
+        새 모양을 variant로 분기했는지, 고정 px 폭 때문에 좁은 화면에서 잘리지 않는지 봅니다.
+    - path: '{app.config.*,app.json,eas.json,package.json,plugins/**}'
+      instructions: 네이티브에 영향을 주는 변경이면 .github/workflows/ci.yml의 detect-preview-changes 필터에 걸려 네이티브 빌드로 가는지(OTA로만 나가지 않는지) 확인합니다.
+    - path: '.github/**'
+      instructions: 실패가 성공으로 처리되는 경우(continue-on-error, always(), step outcome 판정, || true)를 짚습니다.
+  tools:
+    # CI가 lint를 돌리므로 같은 지적이 중복되지 않게 끕니다.
+    eslint:
+      enabled: false
+    oxc:
+      enabled: false
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - AGENTS.md
+      - docs/conventions/**/*.md
+      - docs/architecture/**/*.md
+      - docs/frontend/**/*.md

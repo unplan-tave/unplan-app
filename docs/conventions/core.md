@@ -23,6 +23,7 @@
 | [hooks.md](./hooks.md) | 전역 hook과 screen hook 분리 |
 | [api.md](./api.md) | API 호출, 에러, 환경변수 규칙 |
 | [git.md](./git.md) | 브랜치, 커밋, PR, 리뷰 체크 |
+| [code-review.md](./code-review.md) | 리뷰 기준, 코멘트 구성, CodeRabbit 설정 |
 | [testing.md](./testing.md) | 테스트 우선순위와 파일 위치 |
 | [advanced.md](./advanced.md) | 접근성, 성능, 보안, CI/CD 등 확장 주제의 색인 |
 

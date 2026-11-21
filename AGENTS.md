@@ -12,6 +12,7 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
 | [docs/architecture/api-boundary.md](./docs/architecture/api-boundary.md) | Orval/API wrapper/ViewModel 경계 |
 | [docs/frontend/component-decomposition.md](./docs/frontend/component-decomposition.md) | screen/component 분리 기준 |
 | [docs/roadmap/development-checklist.md](./docs/roadmap/development-checklist.md) | 병행 개발 원칙 + PR 분리 계획 |
+| [docs/conventions/code-review.md](./docs/conventions/code-review.md) | 리뷰 기준 (CodeRabbit 공용) |
 
 린트·포맷 규칙은 `eslint.config.js`, `.prettierrc`가 우선입니다.
 
