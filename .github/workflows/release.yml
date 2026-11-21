@@ -17,14 +17,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-deps
 
       - name: Type check
         run: npm run type-check
@@ -44,24 +38,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Setup Expo and EAS
-        uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-deps
 
       - name: Build and submit to TestFlight
         id: deploy
-        run: eas build --platform ios --profile production --auto-submit --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx eas build --platform ios --profile production --auto-submit --non-interactive
 
       - name: Notify Discord
         if: always()
@@ -71,6 +55,7 @@ jobs:
           webhook-url: ${{ secrets.DISCORD_APP_DEPLOY_WEBHOOK_URL }}
           deploy-type: iOS TestFlight Build
           deploy-status: ${{ steps.deploy.outcome }}
+          job-status: ${{ job.status }}
           ref-name: ${{ github.ref_name }}
           commit-sha: ${{ github.sha }}
           actor: ${{ github.actor }}
