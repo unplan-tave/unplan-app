@@ -24,14 +24,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-deps
 
       - name: Type check
         run: npm run type-check
@@ -75,24 +69,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Setup Expo and EAS
-        uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-deps
 
       - name: OTA Update (preview channel)
         id: deploy
-        run: eas update --channel preview --message "$(git log -1 --pretty=%s)" --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx eas update --channel preview --message "$(git log -1 --pretty=%s)" --non-interactive
 
       - name: Notify Discord
         if: always()
@@ -118,24 +102,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Setup Expo and EAS
-        uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-deps
 
       - name: Build preview (iOS simulator)
         id: deploy
-        run: eas build --platform ios --profile development-simulator --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx eas build --platform ios --profile development-simulator --non-interactive
 
       - name: Notify Discord
         if: always()
