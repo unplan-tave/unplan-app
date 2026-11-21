@@ -57,6 +57,9 @@ export function useCardCreateForm() {
     [personalTags, scheduleDetailQuery.data],
   );
 
+  // react-hook-form의 watch는 React Compiler가 메모할 수 없는 API입니다.
+  // 이 hook만 컴파일러 최적화에서 빠지고 동작은 같습니다. useWatch 전환은 별도로 검토합니다.
+  // oxlint-disable-next-line react/incompatible-library
   const title = watch('title') ?? '';
   const conditionTagId = watch('conditionTagId');
   const personalTagIds = watch('personalTagIds');

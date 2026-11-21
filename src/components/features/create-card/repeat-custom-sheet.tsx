@@ -17,6 +17,7 @@ import {
   splitIntervalDigits,
   WEEKLY_DETAIL_DAYS,
 } from '@/domains/schedule/recurrence';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 
 import type { RecurrenceValue } from '@/domains/schedule/recurrence';
 
@@ -49,11 +50,9 @@ export function RepeatCustomSheet({
   const [activePicker, setActivePicker] = useState<ActivePicker>('none');
   const [calendarBaseDate, setCalendarBaseDate] = useState(() => new Date());
 
-  useEffect(() => {
-    if (!visible) {
-      return;
-    }
-
+  // sheet가 열리거나 열린 상태에서 value가 바뀌면 draft와 메뉴 상태를 초기화합니다.
+  const shouldResetDraft = useDepsChanged([scheduleDate, value, visible]);
+  if (shouldResetDraft && visible) {
     const normalized = normalizeRecurrenceForCustomEdit(value, scheduleDate);
 
     setDraft({
@@ -63,7 +62,7 @@ export function RepeatCustomSheet({
     setOpenMenu('none');
     setActivePicker('none');
     setCalendarBaseDate(getInitialCalendarBaseDate(normalized.until || scheduleDate));
-  }, [scheduleDate, value, visible]);
+  }
 
   const calendar = getCalendarMonth(calendarBaseDate);
   const freqLabel =

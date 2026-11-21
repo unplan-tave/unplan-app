@@ -69,6 +69,9 @@ export function useCardViewConversion({
       return;
     }
 
+    // 이 flag는 sheet를 연 직후 refetch가 시작되기 전까지 로딩을 보여줍니다.
+    // refetch를 시작하는 effect에서 함께 내립니다.
+    // oxlint-disable-next-line react/set-state-in-effect
     setShouldRefetchRecommendation(false);
     void queueRecommendationQuery.refetch();
   }, [isConvertSheetVisible, queueRecommendationQuery, shouldRefetchRecommendation]);

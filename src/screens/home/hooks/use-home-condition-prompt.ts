@@ -22,6 +22,8 @@ export function useHomeConditionPrompt(today: string, enabled = true) {
       if (hasRecordedToday && lastShownDate !== today) {
         mmkvStorage.set(LAST_SHOWN_DATE_KEY, today);
       }
+      // 하루 한 번 표시 여부를 mmkv 기록과 함께 정하므로 effect에서 처리합니다.
+      // oxlint-disable-next-line react/set-state-in-effect
       setIsVisible(false);
       return;
     }

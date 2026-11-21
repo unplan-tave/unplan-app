@@ -53,10 +53,11 @@ export function HomeScreen() {
     feedback,
   } = home;
   const scoreTheme = getConditionScoreTheme(header.conditionScore);
-  const timelineFocus = useFocusTimelineCurrentTime(
-    timeline.currentTimeMarker,
-    HOME_HEADER_OVERLAY_HEIGHT,
-  );
+  const {
+    scrollRef: timelineScrollRef,
+    markerTop: timelineMarkerTop,
+    handleCardLayout: handleTimelineCardLayout,
+  } = useFocusTimelineCurrentTime(timeline.currentTimeMarker, HOME_HEADER_OVERLAY_HEIGHT);
 
   return (
     <ScreenLayout
@@ -80,22 +81,19 @@ export function HomeScreen() {
                 <Rect width="1" height="100%" fill="url(#homeTimelineLine)" />
               </Svg>
               <ScrollView
-                ref={timelineFocus.scrollRef}
+                ref={timelineScrollRef}
                 style={styles.timelineScroll}
                 contentContainerStyle={styles.timelineContent}
                 showsVerticalScrollIndicator={false}
               >
-                {timelineFocus.markerTop != null ? (
-                  <HomeCurrentTimeMarker
-                    time={timeline.currentTimeLabel}
-                    top={timelineFocus.markerTop}
-                  />
+                {timelineMarkerTop != null ? (
+                  <HomeCurrentTimeMarker time={timeline.currentTimeLabel} top={timelineMarkerTop} />
                 ) : null}
                 {timeline.cards.map((card) => (
                   <View
                     key={card.id}
                     style={styles.timelineCardSlot}
-                    onLayout={(event) => timelineFocus.handleCardLayout(card.id, event)}
+                    onLayout={(event) => handleTimelineCardLayout(card.id, event)}
                   >
                     <TimelineCard {...card} />
                   </View>

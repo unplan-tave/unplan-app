@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Animated,
   Easing,
@@ -46,7 +46,7 @@ export function BottomSheet({
   transparent = true,
   ...props
 }: BottomSheetProps) {
-  const keyboardHeightAnim = useRef(new Animated.Value(0)).current;
+  const [keyboardHeightAnim] = useState(() => new Animated.Value(0));
   const innerStyle = styles.sheetInner;
   const contentAreaStyle = [styles.sheetContent, contentStyle];
   const sheetBorderStyle = [

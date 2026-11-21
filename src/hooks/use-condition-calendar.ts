@@ -5,6 +5,7 @@ import {
   getConditionCalendarTitle,
   isConditionDateSelectable,
 } from '@/domains/condition/period';
+import { useToday } from '@/hooks/use-today';
 
 import type { ConditionPeriodMode } from '@/domains/condition/model';
 
@@ -27,9 +28,10 @@ export function useConditionCalendar({
     [calendarMonth, periodMode],
   );
   const title = useMemo(() => getConditionCalendarTitle(calendarMonth), [calendarMonth]);
+  const today = useToday();
   const canGoNext =
-    calendarMonth.getFullYear() < new Date().getFullYear() ||
-    calendarMonth.getMonth() < new Date().getMonth();
+    calendarMonth.getFullYear() < today.getFullYear() ||
+    calendarMonth.getMonth() < today.getMonth();
 
   const openCalendar = useCallback(() => {
     setCalendarMonth(selectedDate);

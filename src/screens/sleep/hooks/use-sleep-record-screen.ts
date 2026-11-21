@@ -23,7 +23,7 @@ const DATE_ID = 'yyyy-MM-dd';
 /** 컨디션·수면 기록 내역을 선택 날짜 기준으로 보여줍니다. */
 export function useSleepRecordScreen() {
   const params = useLocalSearchParams<{ tab?: string }>();
-  const today = useMemo(() => startOfDay(new Date()), []);
+  const [today] = useState(() => startOfDay(new Date()));
   const [tab, setTab] = useState<RecordHistoryTab>(() =>
     params.tab === 'sleep' ? 'sleep' : 'bodyMind',
   );

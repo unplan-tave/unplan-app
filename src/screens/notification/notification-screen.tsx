@@ -13,6 +13,7 @@ import { colors, radius, spacing } from '@/constants/theme';
 import { useUpdateScheduleMutation } from '@/domains/schedule/api/mutations';
 import { useSchedulesByDateQuery } from '@/domains/schedule/api/queries';
 import { hasScheduleEnded } from '@/domains/schedule/model';
+import { useToday } from '@/hooks/use-today';
 import { t } from '@/lib/i18n';
 import { formatDateValue } from '@/lib/utils/date';
 
@@ -37,7 +38,8 @@ const ALARM_NOTIFICATIONS = [
 export function NotificationScreen() {
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<NotificationTab>('all');
-  const schedulesQuery = useSchedulesByDateQuery(formatDateValue(new Date()));
+  const today = useToday();
+  const schedulesQuery = useSchedulesByDateQuery(formatDateValue(today));
   const updateScheduleMutation = useUpdateScheduleMutation();
   const endedSchedules = useMemo(
     () =>
