@@ -15,6 +15,7 @@
 | [hooks.md](./hooks.md) | 전역 hook, screen hook, 상태 분리 |
 | [api.md](./api.md) | generated API, wrapper, 에러, 환경변수 |
 | [git.md](./git.md) | 브랜치, 커밋, PR |
+| [code-review.md](./code-review.md) | 리뷰 기준, 코멘트 구성, Claude Code 리뷰 |
 | [testing.md](./testing.md) | 테스트 우선순위와 파일 위치 |
 | [advanced.md](./advanced.md) | 기존 확장 컨벤션 호환용 색인 |
 

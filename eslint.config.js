@@ -43,6 +43,7 @@ module.exports = [
   {
     ignores: [
       'node_modules/**',
+      '.claude/**',
       '.expo/**',
       'dist/**',
       'build/**',
