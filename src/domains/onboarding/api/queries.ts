@@ -10,7 +10,7 @@ import {
   fetchSleepConditionSettings,
   fetchTransportSettings,
 } from './client';
-import { onboardingSettingsQueryKeys } from './query-keys';
+import { onboardingQueryKeys } from './query-keys';
 
 import type {
   ActivityPatternSettings,
@@ -26,7 +26,7 @@ export function useRecoveryMethodsSettingsQuery(
   options?: SettingsQueryOptions<RecoveryMethodsSettings>,
 ) {
   return useQuery({
-    queryKey: onboardingSettingsQueryKeys.recoveryMethods(),
+    queryKey: onboardingQueryKeys.recoveryMethods(),
     queryFn: fetchRecoveryMethodsSettings,
     ...options,
   });
@@ -36,7 +36,7 @@ export function useSleepConditionSettingsQuery(
   options?: SettingsQueryOptions<SleepConditionSettings>,
 ) {
   return useQuery({
-    queryKey: onboardingSettingsQueryKeys.sleepCondition(),
+    queryKey: onboardingQueryKeys.sleepCondition(),
     queryFn: fetchSleepConditionSettings,
     ...options,
   });
@@ -46,7 +46,7 @@ export function useActivityPatternSettingsQuery(
   options?: SettingsQueryOptions<ActivityPatternSettings>,
 ) {
   return useQuery({
-    queryKey: onboardingSettingsQueryKeys.activityPattern(),
+    queryKey: onboardingQueryKeys.activityPattern(),
     queryFn: fetchActivityPatternSettings,
     ...options,
   });
@@ -54,7 +54,7 @@ export function useActivityPatternSettingsQuery(
 
 export function useTransportSettingsQuery(options?: SettingsQueryOptions<TransportOptionId[]>) {
   return useQuery({
-    queryKey: onboardingSettingsQueryKeys.transport(),
+    queryKey: onboardingQueryKeys.transport(),
     queryFn: fetchTransportSettings,
     ...options,
   });
