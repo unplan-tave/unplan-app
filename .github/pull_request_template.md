@@ -38,3 +38,5 @@
 ## 참고 사항
 
 - 
+
+<!-- PR을 열면 Claude Code 리뷰가 한 번 자동으로 돕니다. 커밋을 더 푸시한 뒤나 draft에서 받으려면 댓글로 `@claude review`를 남깁니다. (REVIEW.md) -->

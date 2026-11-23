@@ -12,6 +12,8 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
 | [docs/architecture/api-boundary.md](./docs/architecture/api-boundary.md) | Orval/API wrapper/ViewModel 경계 |
 | [docs/frontend/component-decomposition.md](./docs/frontend/component-decomposition.md) | screen/component 분리 기준 |
 | [docs/roadmap/development-checklist.md](./docs/roadmap/development-checklist.md) | 병행 개발 원칙 + PR 분리 계획 |
+| [docs/conventions/code-review.md](./docs/conventions/code-review.md) | 리뷰 기준 (사람 리뷰어용) |
+| [REVIEW.md](./REVIEW.md) | Claude Code 리뷰 봇 설정 |
 
 린트·포맷 규칙은 `.oxlintrc.json`, `.prettierrc`가 우선입니다. 린트는 oxlint, import 정렬은 Prettier(`@ianvs/prettier-plugin-sort-imports`)가 담당합니다.
 
@@ -90,3 +92,7 @@ components/domain -> components/features 금지
 - **선택 props는 안전 기본값** — 옵셔널 배열/객체 prop은 기본값(`tags = []`)을 둬 `undefined` 런타임 에러를 방지합니다.
 - **죽은 코드 제거** — 빈 스타일(`selected: {}`), 미사용 prop, 주석 처리된 코드는 남기지 않습니다.
 - **순수 로직 테스트는 후순위** — 날짜 비교·라벨 매핑 등 순수 함수는 `domains/<domain>`에 두고, `*.test.ts`는 기능 작업이 끝난 뒤 한꺼번에 추가합니다. 기능·리팩터링 PR마다 테스트를 필수로 넣지 않습니다.
+
+## Code Review Rules
+
+리뷰 설정은 저장소 루트의 [REVIEW.md](./REVIEW.md)에 있습니다. Claude Code 리뷰 봇(`.github/workflows/claude-code-review.yml`)이 이 파일을 읽고, 사람 리뷰어용 전체 기준은 [docs/conventions/code-review.md](./docs/conventions/code-review.md)에 있습니다. 리뷰 기준을 바꿀 때는 두 파일을 함께 고칩니다.

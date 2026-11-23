@@ -1,0 +1,89 @@
+name: Claude Code Review
+
+# 리뷰 설정: REVIEW.md (PR이 아니라 base 또는 기본 브랜치의 것을 씁니다). 사람용 기준: docs/conventions/code-review.md
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+  issue_comment:
+    types: [created]
+
+jobs:
+  review:
+    # 자동: draft가 아닌 PR을 열 때 한 번. 수동: PR 댓글 맨 앞에 `@claude review` (draft도 가능).
+    # 댓글 요청자의 쓰기 권한은 claude-code-action이 확인합니다.
+    if: >-
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request &&
+       startsWith(github.event.comment.body, '@claude review'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+
+    steps:
+      # PR head를 받아 리뷰 중 관련 파일 전체를 읽을 수 있게 합니다. 코드는 실행하지 않습니다.
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ env.PR_NUMBER }}/head
+          fetch-depth: 1
+
+      # PR이 리뷰 기준을 바꿔 리뷰를 피하지 못하도록 PR 밖의 REVIEW.md를 씁니다.
+      # 순서: base 브랜치 → 기본 브랜치(다른 PR 위에 쌓인 PR) → PR의 것(REVIEW.md를 처음 추가하는 PR).
+      # 404가 아닌 실패(네트워크, rate limit)는 다음 후보로 넘어가지 않고 실패시킵니다.
+      - name: Load review rules
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          mkdir -p .claude-review
+          base=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json baseRefName -q .baseRefName)
+          for ref in "$base" "$DEFAULT_BRANCH"; do
+            if gh api "repos/$GITHUB_REPOSITORY/contents/REVIEW.md?ref=$ref" \
+              -H "Accept: application/vnd.github.raw" > .claude-review/REVIEW.md 2> .claude-review/error.log; then
+              echo "REVIEW.md: $ref 브랜치"
+              exit 0
+            elif ! grep -q "HTTP 404" .claude-review/error.log; then
+              cat .claude-review/error.log >&2
+              exit 1
+            fi
+          done
+          if [ -f REVIEW.md ]; then
+            cp REVIEW.md .claude-review/REVIEW.md
+            echo "REVIEW.md: base와 기본 브랜치에 없어 PR의 것을 사용"
+          else
+            echo "REVIEW.md를 찾지 못했습니다." >&2
+            exit 1
+          fi
+
+      - name: Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ env.PR_NUMBER }}
+
+            너는 이 저장소의 PR 리뷰어다. 아래 순서를 지켜 리뷰한다.
+
+            1. `.claude-review/REVIEW.md`를 읽는다. 이것이 리뷰 설정이며 저장소 루트의 REVIEW.md보다 우선한다.
+               그 안에서 가리키는 `docs/conventions/code-review.md`도 읽는다.
+            2. `gh pr view ${{ env.PR_NUMBER }} --json title,body,baseRefName,headRefOid,files`와
+               `gh pr diff ${{ env.PR_NUMBER }}`로 PR 의도와 변경 내용을 파악한다.
+            3. 작업 트리는 PR head 상태다. 문제를 지적하기 전에 Read·Grep·Glob으로 관련 파일 전체와 호출부를 확인한다.
+               diff만 보고 단정하지 않는다. 확인하지 못한 내용은 Questions로 보낸다.
+            4. REVIEW.md의 심각도 기준에서 인라인 대상인 문제는 해당 줄에
+               `mcp__github_inline_comment__create_inline_comment`로 단다(`confirmed: true`).
+               형식은 REVIEW.md의 "인라인 코멘트 형식"을 따른다. 같은 문제는 한 번만 단다.
+            5. 마지막으로 REVIEW.md의 "요약 댓글 형식"대로 요약 댓글을 하나 남긴다.
+               `gh pr comment ${{ env.PR_NUMBER }} --body-file - <<'EOF'` 형태의 heredoc으로 본문을 넘긴다.
+
+            모든 코멘트는 한국어로 쓴다. 코드를 실행하거나 파일을 수정하지 않는다.
+          claude_args: >-
+            --max-turns 60
+            --allowedTools "Read,Grep,Glob,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),mcp__github_inline_comment__create_inline_comment"
