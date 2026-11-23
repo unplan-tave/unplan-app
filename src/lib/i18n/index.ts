@@ -1,4 +1,6 @@
-import { ko, type TranslationKey } from '@/translations/ko';
+import { ko } from '@/translations/ko';
+
+import type { TranslationKey } from '@/translations/ko';
 
 const translations = {
   ko,

@@ -1,6 +1,6 @@
 import { BlurView } from 'expo-blur';
 import { useState } from 'react';
-import { type LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { colors } from '@/constants/theme';
@@ -9,6 +9,8 @@ import { t } from '@/lib/i18n';
 import { type GNBItems, type GNBProps } from './gnb.types';
 import { GNBAddButton } from './GNBAddButton';
 import { GNBItem } from './GNBItem';
+
+import type { LayoutChangeEvent } from 'react-native';
 
 function createDefaultItems(): GNBItems {
   return [

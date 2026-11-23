@@ -6,9 +6,9 @@
  * OpenAPI spec version: v1.0.0
  */
 import type { ScheduleUpdateRequestConditionTag } from './scheduleUpdateRequestConditionTag';
-import type { ScheduleUpdateRequestStatus } from './scheduleUpdateRequestStatus';
-import type { ScheduleUpdateRequestRemindType } from './scheduleUpdateRequestRemindType';
 import type { ScheduleUpdateRequestRemindSoundType } from './scheduleUpdateRequestRemindSoundType';
+import type { ScheduleUpdateRequestRemindType } from './scheduleUpdateRequestRemindType';
+import type { ScheduleUpdateRequestStatus } from './scheduleUpdateRequestStatus';
 
 export interface ScheduleUpdateRequest {
   title?: string;

@@ -5,10 +5,10 @@
  * Unplan Server API Documentation
  * OpenAPI spec version: v1.0.0
  */
-import type { UpdateMethods } from './updateMethods';
-import type { UpdateConditions } from './updateConditions';
 import type { BiorhythmRequest } from './biorhythmRequest';
 import type { OnboardingRequestTransportationsItem } from './onboardingRequestTransportationsItem';
+import type { UpdateConditions } from './updateConditions';
+import type { UpdateMethods } from './updateMethods';
 
 export interface OnboardingRequest {
   recovery: UpdateMethods;

@@ -1,8 +1,11 @@
-import { Pressable, StyleSheet, type StyleProp, View, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Card, CardTagList, type CardTagItem } from '@/components/ui/Card';
+import { Card, CardTagList } from '@/components/ui/Card';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
+
+import type { CardTagItem } from '@/components/ui/Card';
+import type { StyleProp, ViewStyle } from 'react-native';
 
 type TimelineCardStatus = 'complete' | 'default' | 'recommendation';
 type TimelineCardKind = 'schedule' | 'placeholder' | 'add';

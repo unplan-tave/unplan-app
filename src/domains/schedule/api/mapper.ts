@@ -4,8 +4,6 @@
  */
 import {
   RecurrenceRequestFreq,
-  SearchSchedulesConditionTagsItem,
-  SearchSchedulesStatusItem,
   ScheduleCreateRequestConditionTag,
   ScheduleCreateRequestRemindSoundType,
   ScheduleCreateRequestRemindType,
@@ -19,6 +17,8 @@ import {
   ScheduleUpdateRequestRemindSoundType,
   ScheduleUpdateRequestRemindType,
   ScheduleUpdateRequestStatus,
+  SearchSchedulesConditionTagsItem,
+  SearchSchedulesStatusItem,
 } from '@/lib/api/model';
 
 import { getMonthDayFromDate, getWeekdayFromDate } from '../recurrence';
@@ -26,8 +26,8 @@ import { normalizeTimeToMinute } from '../time';
 
 import type {
   ConditionTagId,
-  DailyScheduleGroup,
   DailyMessage,
+  DailyScheduleGroup,
   DailyScheduleSummary,
   MonthlyScheduleCount,
   ReminderSoundType,
@@ -43,10 +43,11 @@ import type {
 } from '../model';
 import type { RecurrenceValue } from '../recurrence';
 import type {
-  DailyCount,
   ApiResponseDailyMessageResponseDto,
   ApiResponsePageResponseScheduleSearchResponse,
+  DailyCount,
   DailySchedules,
+  PersonalTagResponse,
   RecurrenceRequest,
   ScheduleCreateRequest,
   ScheduleCreateResponse,
@@ -58,7 +59,6 @@ import type {
   ScheduleUpdateRequest,
   ScheduleWeeklyResponse,
   SearchSchedulesParams,
-  PersonalTagResponse,
   TagRecommendationResponseDto,
 } from '@/lib/api/model';
 
@@ -475,9 +475,7 @@ function toMonthlyScheduleCount(response: DailyCount): MonthlyScheduleCount {
   };
 }
 
-function toConditionTagId(
-  conditionTag?: ScheduleGetResponseConditionTag | ScheduleDetailResponseConditionTag | string,
-): ConditionTagId {
+function toConditionTagId(conditionTag?: string): ConditionTagId {
   switch (conditionTag) {
     case ScheduleGetResponseConditionTag.URGENT:
     case ScheduleDetailResponseConditionTag.URGENT:
@@ -501,9 +499,7 @@ function toConditionTagId(
   }
 }
 
-function toScheduleStatus(
-  status?: ScheduleGetResponseStatus | ScheduleDetailResponseStatus | string,
-): ScheduleStatus {
+function toScheduleStatus(status?: string): ScheduleStatus {
   switch (status) {
     case ScheduleGetResponseStatus.DONE:
     case ScheduleDetailResponseStatus.DONE:

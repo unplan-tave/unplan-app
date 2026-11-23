@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { Card, CardTagList, type CardTagItem } from '@/components/ui/Card';
+import { Card, CardTagList } from '@/components/ui/Card';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 import { formatQueueDateMeta, getCardProgressStatus } from '@/domains/schedule/list';
@@ -8,6 +8,7 @@ import { formatQueueDateMeta, getCardProgressStatus } from '@/domains/schedule/l
 import { CardListMetaRow } from './card-list-meta-row';
 import { CARD_TITLE_LINE_HEIGHT } from './card-list-typography';
 
+import type { CardTagItem } from '@/components/ui/Card';
 import type { CardItem } from '@/domains/schedule/model';
 
 export function CardListQueueItem({

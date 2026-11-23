@@ -5,11 +5,7 @@ import { useForm } from 'react-hook-form';
 import { usePersonalTagsQuery, useScheduleDetailQuery } from '@/domains/schedule/api/queries';
 import { toCardItemFromScheduleDetail } from '@/domains/schedule/card-mapper';
 import { getCardCreateValidation } from '@/domains/schedule/create/validation';
-import {
-  type CardFormValues,
-  type CardTab,
-  createDefaultCardFormValues,
-} from '@/domains/schedule/model';
+import { createDefaultCardFormValues } from '@/domains/schedule/model';
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 import { useKeyboardHeight } from '@/hooks/use-keyboard-height';
 
@@ -19,6 +15,8 @@ import { useCardCreateDraft } from './use-card-create-draft';
 import { useCardCreateScroll } from './use-card-create-scroll';
 import { useCardCreateSheets } from './use-card-create-sheets';
 import { useCardCreateTags } from './use-card-create-tags';
+
+import type { CardFormValues, CardTab } from '@/domains/schedule/model';
 
 /** 카드 생성 화면의 세부 hook을 조합해 form controller를 반환합니다. */
 export function useCardCreateForm() {

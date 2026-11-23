@@ -7,16 +7,12 @@ import {
   useUpdateScheduleMutation,
 } from '@/domains/schedule/api/mutations';
 import { toScheduleCreateInput, toScheduleUpdateInput } from '@/domains/schedule/card-mapper';
-import {
-  MEMO_MAX_LENGTH,
-  type CardFormValues,
-  type CardTab,
-  type PersonalTagOption,
-} from '@/domains/schedule/model';
+import { MEMO_MAX_LENGTH } from '@/domains/schedule/model';
 import { useGoBack } from '@/hooks/use-go-back';
 
 import { useCardCreateFeedback } from './use-card-create-feedback';
 
+import type { CardFormValues, CardTab, PersonalTagOption } from '@/domains/schedule/model';
 import type { UseFormHandleSubmit } from 'react-hook-form';
 
 interface UseCardCreateActionsParams {

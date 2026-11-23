@@ -10,7 +10,10 @@ export const apiMutator = <T>(
     ...config,
     ...options,
     headers: {
+      // AxiosHeaders는 헤더를 own property로 저장하므로 객체 spread로 복사됩니다.
+      // oxlint-disable-next-line typescript/no-misused-spread
       ...config.headers,
+      // oxlint-disable-next-line typescript/no-misused-spread
       ...options?.headers,
     },
     params: {

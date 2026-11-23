@@ -1,7 +1,9 @@
-import { Image, StyleSheet, View, type ImageSourcePropType } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { colors } from '@/constants/theme';
+
+import type { ImageSourcePropType } from 'react-native';
 
 /** 홈·카드 리스트·컨디션 탭이 공유하는 전면 그라디언트 배경. */
 export function AppBackground({

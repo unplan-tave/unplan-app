@@ -5,9 +5,9 @@
  * Unplan Server API Documentation
  * OpenAPI spec version: v1.0.0
  */
+import type { ConditionRecommendationItem } from './conditionRecommendationItem';
 import type { EmptyTime } from './emptyTime';
 import type { SummaryTag } from './summaryTag';
-import type { ConditionRecommendationItem } from './conditionRecommendationItem';
 
 export interface ConditionRecommendationResponse {
   date?: string;

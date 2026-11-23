@@ -3,11 +3,7 @@
  * Kakao/Google SDK 결과를 서버 로그인 요청으로 바꾸고, 성공 시 세션 저장과 provider별 분기를 처리합니다.
  */
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import {
-  isKakaoTalkLoginAvailable,
-  login as kakaoLogin,
-  type KakaoLoginToken,
-} from '@react-native-kakao/user';
+import { isKakaoTalkLoginAvailable, login as kakaoLogin } from '@react-native-kakao/user';
 import { isAxiosError } from 'axios';
 import { Platform } from 'react-native';
 
@@ -18,6 +14,8 @@ import { getDeviceId } from '@/lib/device/device-id';
 import { submitSocialLogin } from './api/client';
 import { type AuthSession } from './model';
 import { useAuthStore } from './use-auth-store';
+
+import type { KakaoLoginToken } from '@react-native-kakao/user';
 
 export type SocialLoginErrorType =
   | 'cancelled'

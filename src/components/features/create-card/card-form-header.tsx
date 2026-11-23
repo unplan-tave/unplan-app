@@ -1,14 +1,16 @@
-import { Controller, type Control } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Tag } from '@/components/ui/Tag';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
 import {
+  type CardFormValues,
   type ConditionTagOption,
   type PersonalTagOption,
-  type CardFormValues,
 } from '@/domains/schedule/model';
+
+import type { Control } from 'react-hook-form';
 
 const CONTENT_MAX_WIDTH = 353;
 const REQUIRED_MARK_SIZE = 14;

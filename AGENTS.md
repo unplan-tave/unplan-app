@@ -15,7 +15,7 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
 | [docs/conventions/code-review.md](./docs/conventions/code-review.md) | 리뷰 기준 (사람 리뷰어용) |
 | [REVIEW.md](./REVIEW.md) | Claude Code 리뷰 봇 설정 |
 
-린트·포맷 규칙은 `eslint.config.js`, `.prettierrc`가 우선입니다.
+린트·포맷 규칙은 `.oxlintrc.json`, `.prettierrc`가 우선입니다. 린트는 oxlint, import 정렬은 Prettier(`@ianvs/prettier-plugin-sort-imports`)가 담당합니다.
 
 ## 구조 원칙
 

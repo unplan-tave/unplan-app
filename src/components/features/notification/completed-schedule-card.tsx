@@ -1,11 +1,13 @@
 import { StyleSheet, View } from 'react-native';
 
-import { Card, CardTagList, type CardTagItem } from '@/components/ui/Card';
-import { ProgressSegment, type ProgressSegmentValue } from '@/components/ui/ProgressSegment';
+import { Card, CardTagList } from '@/components/ui/Card';
+import { ProgressSegment } from '@/components/ui/ProgressSegment';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 import { getConditionTagById } from '@/domains/schedule/model';
 
+import type { CardTagItem } from '@/components/ui/Card';
+import type { ProgressSegmentValue } from '@/components/ui/ProgressSegment';
 import type { ScheduleListItem } from '@/domains/schedule/model';
 
 const PROGRESS_OPTIONS = [

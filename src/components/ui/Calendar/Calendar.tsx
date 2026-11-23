@@ -1,10 +1,12 @@
-import { type DimensionValue, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Typography } from '@/components/ui/Typography';
 import { colors } from '@/constants/theme';
 
 import { type CalendarProps } from './calendar.types';
 import { CalendarDayCell } from './CalendarDayCell';
+
+import type { DimensionValue } from 'react-native';
 
 const WEEKDAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 const DAY_CELL_WIDTH_PERCENT = `${100 / WEEKDAY_LABELS.length}%` as DimensionValue;

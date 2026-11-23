@@ -5,8 +5,8 @@
  * Unplan Server API Documentation
  * OpenAPI spec version: v1.0.0
  */
-import type { ScheduleSearchResponse } from './scheduleSearchResponse';
 import type { PaginationInfo } from './paginationInfo';
+import type { ScheduleSearchResponse } from './scheduleSearchResponse';
 
 export interface PageResponseScheduleSearchResponse {
   data?: ScheduleSearchResponse[];

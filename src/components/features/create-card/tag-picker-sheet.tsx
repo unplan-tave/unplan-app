@@ -19,10 +19,9 @@ import {
   MAX_PERSONAL_TAGS_PER_SCHEDULE,
   normalizePersonalTagLabel,
   sortPersonalTags,
-  type CardTagTab,
-  type ConditionTagId,
-  type PersonalTagOption,
 } from '@/domains/schedule/model';
+
+import type { CardTagTab, ConditionTagId, PersonalTagOption } from '@/domains/schedule/model';
 
 const TAG_DOT_SIZE = 5.411;
 

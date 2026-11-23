@@ -7,15 +7,10 @@ import { Card } from '@/components/ui/Card';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing } from '@/constants/theme';
 import { DEFAULT_TIME_RANGE, WEEKDAY_LABELS } from '@/domains/schedule/data';
-import {
-  type DateTimeDraft,
-  type CalendarCell,
-  getCalendarMonth,
-  isDateInDraftRange,
-  sortDateValues,
-  type TimeFocus,
-} from '@/domains/schedule/model';
+import { getCalendarMonth, isDateInDraftRange, sortDateValues } from '@/domains/schedule/model';
 import { parseTimeToMinutes } from '@/domains/schedule/time';
+
+import type { CalendarCell, DateTimeDraft, TimeFocus } from '@/domains/schedule/model';
 
 const DATE_CELL_SIZE = spacing[8];
 const SHEET_HEADER_MAX_WIDTH = 369;

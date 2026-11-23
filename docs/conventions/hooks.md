@@ -92,7 +92,7 @@ Hook 하나는 하나의 screen concern만 담당합니다.
 |------|------|
 | 150줄 이하 | 대체로 허용 |
 | 150~250줄 | 책임이 2개 이상 섞였는지 검토 |
-| 250줄 초과 | 분해를 우선 검토 |
+| 250줄 초과 | 분해를 우선 검토. `use-*` 파일은 lint(`max-lines`, 빈 줄·주석 제외)가 잡습니다. |
 | 350줄 초과 | 특별한 이유가 없으면 분해 |
 
 반환 객체 key가 15개를 넘거나, form 값/validation/sheet state/submit handler/scroll handler/toast handler가 한 반환값에 섞이면 분해를 검토합니다. 반환값은 concern별 객체로 묶을 수 있습니다.

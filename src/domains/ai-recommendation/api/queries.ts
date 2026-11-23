@@ -13,9 +13,12 @@ import {
 } from './client';
 import { aiRecommendationQueryKeys, recommendationCriteriaQueryKeys } from './query-keys';
 
+import type {
+  QueueTimeRecommendationResult,
+  RecommendationCriteriaSettings,
+  ScheduleRecommendation,
+} from '../model';
 import type { ConditionRecommendationResult } from './client';
-import type { QueueTimeRecommendationResult, ScheduleRecommendation } from '../model';
-import type { RecommendationCriteriaSettings } from '../model';
 import type { UseQueryOptions } from '@tanstack/react-query';
 
 type AiRecommendationQueryOptions<TData> = Omit<UseQueryOptions<TData>, 'queryKey' | 'queryFn'>;

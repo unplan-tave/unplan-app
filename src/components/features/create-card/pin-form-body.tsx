@@ -1,18 +1,20 @@
 import { useRef, useState } from 'react';
-import { Controller, type Control } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Card } from '@/components/ui/Card';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
-import {
-  type DateMode,
-  MEMO_MAX_LENGTH,
-  type CardFormValues,
-  type RecurrenceValue,
-  type TimeFocus,
-} from '@/domains/schedule/model';
+import { MEMO_MAX_LENGTH } from '@/domains/schedule/model';
 import { formatRecurrenceChipSegments } from '@/domains/schedule/recurrence';
+
+import type {
+  CardFormValues,
+  DateMode,
+  RecurrenceValue,
+  TimeFocus,
+} from '@/domains/schedule/model';
+import type { Control } from 'react-hook-form';
 
 const BOX_PADDING = spacing[4];
 const FIELD_LABEL_WIDTH = 72;

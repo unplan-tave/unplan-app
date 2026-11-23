@@ -5,8 +5,8 @@
  * Unplan Server API Documentation
  * OpenAPI spec version: v1.0.0
  */
-import type { SearchSchedulesStatusItem } from './searchSchedulesStatusItem';
 import type { SearchSchedulesConditionTagsItem } from './searchSchedulesConditionTagsItem';
+import type { SearchSchedulesStatusItem } from './searchSchedulesStatusItem';
 
 export type SearchSchedulesParams = {
   /**

@@ -32,7 +32,7 @@
 ## 핵심 원칙
 
 - Expo SDK 56 기준으로 작성합니다.
-- `eslint.config.js`, `.prettierrc`, `tsconfig.json`처럼 도구가 강제하는 규칙이 문서보다 우선합니다.
+- `.oxlintrc.json`, `.prettierrc`, `tsconfig.json`처럼 도구가 강제하는 규칙이 문서보다 우선합니다.
 - `src/app`에는 Expo Router route/layout 파일만 둡니다.
 - 실제 화면 구현은 `src/screens/<domain>/*-screen.tsx`에 둡니다.
 - UI가 아닌 도메인 로직은 `src/domains/<domain>`에 둡니다.
