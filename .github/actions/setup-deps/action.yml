@@ -1,0 +1,32 @@
+name: Setup dependencies
+description: Set up Node from .nvmrc and restore node_modules from cache, running npm ci only on a cache miss.
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node
+      id: setup-node
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvmrc
+
+    # restore-keys(부분 일치)는 쓰지 않습니다. lockfile과 맞지 않는 node_modules를 쓰지 않기 위해서입니다.
+    - name: Restore node_modules
+      id: cache
+      uses: actions/cache/restore@v4
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('package-lock.json') }}
+
+    - name: Install dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: npm ci
+
+    # 설치 직후 저장해 이후 단계(lint, test 등)가 실패해도 캐시가 남게 합니다.
+    - name: Save node_modules
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: node_modules
+        key: ${{ steps.cache.outputs.cache-primary-key }}
