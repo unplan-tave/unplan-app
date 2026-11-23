@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { useTagRecommendationQuery } from '@/domains/schedule/api/queries';
 import { getConditionTagIdByRecommendation } from '@/domains/schedule/model';
@@ -42,7 +42,9 @@ export function useCardCreateTags({
   const [feedback, setFeedback] = useState<TagFeedbackState>('none');
 
   const conditionTagIdRef = useRef(conditionTagId);
-  conditionTagIdRef.current = conditionTagId;
+  useLayoutEffect(() => {
+    conditionTagIdRef.current = conditionTagId;
+  });
 
   const applyConditionTag = useCallback(
     (nextId: ConditionTagId) => {
@@ -71,6 +73,8 @@ export function useCardCreateTags({
     }
 
     applyConditionTag('daily');
+    // applyConditionTag가 form 값·draft store를 바꾸는 흐름과 같이 피드백을 정합니다.
+    // oxlint-disable-next-line react/set-state-in-effect
     setFeedback('none');
   }, [applyConditionTag, trimmedTitle]);
 
@@ -82,6 +86,8 @@ export function useCardCreateTags({
 
     if (recommendationStatus === 'error') {
       applyConditionTag('daily');
+      // 추천 결과를 form 값·draft store에 반영하는 흐름과 같이 피드백을 정합니다.
+      // oxlint-disable-next-line react/set-state-in-effect
       setFeedback('error');
       return;
     }

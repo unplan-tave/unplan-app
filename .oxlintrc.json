@@ -43,13 +43,7 @@
     "typescript/no-floating-promises": "error",
     "no-console": ["warn", { "allow": ["info", "warn", "error"] }],
     "react/rules-of-hooks": "error",
-    "react/exhaustive-deps": "warn",
-    // React Compiler 규칙: 기존 코드 위반(53건)이 있어 후속 PR에서 정리한 뒤 켭니다.
-    "react/set-state-in-effect": "off",
-    "react/refs": "off",
-    "react/purity": "off",
-    "react/immutability": "off",
-    "react/incompatible-library": "off"
+    "react/exhaustive-deps": "warn"
   },
   "overrides": [
     {

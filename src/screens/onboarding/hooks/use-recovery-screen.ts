@@ -1,11 +1,12 @@
 /** 회복 수단 설정 화면의 custom 입력과 store 동기화를 관리합니다. */
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Keyboard } from 'react-native';
 
 import { type RecoveryOptionId } from '@/domains/onboarding/model';
 import { onboardingRoutes } from '@/domains/onboarding/routes';
 import { useOnboardingStore } from '@/domains/onboarding/use-onboarding-store';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 import { t } from '@/lib/i18n';
 import { type TranslationKey } from '@/translations/ko';
 
@@ -33,9 +34,9 @@ export function useRecoveryScreen() {
   const [isCustomEditing, setIsCustomEditing] = useState(false);
   const [customDraft, setCustomDraft] = useState(customRecoveryLabel ?? '');
 
-  useEffect(() => {
-    if (!isCustomEditing) setCustomDraft(customRecoveryLabel ?? '');
-  }, [customRecoveryLabel, isCustomEditing]);
+  // 직접 입력 중이 아니면 draft를 저장된 값으로 맞춥니다.
+  const shouldSyncCustomDraft = useDepsChanged([customRecoveryLabel, isCustomEditing]);
+  if (shouldSyncCustomDraft && !isCustomEditing) setCustomDraft(customRecoveryLabel ?? '');
 
   const recoveryOptions = useMemo(
     () => RECOVERY_OPTION_DEFINITIONS.map((option) => ({ ...option, label: t(option.labelKey) })),

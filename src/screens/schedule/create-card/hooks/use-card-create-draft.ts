@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 import { useScheduleStore } from '@/domains/schedule/use-schedule-store';
 
@@ -42,9 +42,11 @@ export function useCardCreateDraft({
   const onInitRef = useRef(onInit);
   const resetRef = useRef(reset);
 
-  initialValuesRef.current = initialValues;
-  onInitRef.current = onInit;
-  resetRef.current = reset;
+  useLayoutEffect(() => {
+    initialValuesRef.current = initialValues;
+    onInitRef.current = onInit;
+    resetRef.current = reset;
+  });
 
   useEffect(() => {
     if (cardId != null && editCard == null) {

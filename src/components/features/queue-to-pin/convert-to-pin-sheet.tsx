@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
@@ -12,6 +12,7 @@ import {
   createQueueToPinValuesFromCandidate,
   formatDurationInline,
 } from '@/domains/schedule/queue';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 import { isValidTimeRange } from '@/hooks/use-time-range-validation';
 
 import type { ScheduleRecommendation } from '@/domains/ai-recommendation/model';
@@ -71,18 +72,25 @@ export function ConvertToPinBottomSheet({
   const [durationMinutes, setDurationMinutes] = useState(0);
   const currentCandidate = candidates[candidateIndex] ?? candidates[0];
 
-  useEffect(() => {
-    if (!visible) return;
-
+  // sheet가 열리면 후보 선택과 소요시간 draft를 초기화합니다.
+  const shouldResetSheet = useDepsChanged([defaultKeepOriginal, originalDurationMinutes, visible]);
+  if (shouldResetSheet && visible) {
     setCandidateIndex(0);
     setKeepOriginal(defaultKeepOriginal);
     setDurationMinutes(Math.max(0, originalDurationMinutes - 10));
     setMode('loading');
-  }, [defaultKeepOriginal, originalDurationMinutes, visible]);
+  }
 
-  useEffect(() => {
-    if (!visible || mode === 'manual' || mode === 'duration') return;
-
+  // 직접 입력·소요시간 변경 중이 아니면 추천 조회 상태에 맞춰 mode를 정합니다.
+  const shouldSyncMode = useDepsChanged([
+    card.durationUnknown,
+    candidates.length,
+    isRecommendationLoading,
+    mode,
+    recommendationErrorMode,
+    visible,
+  ]);
+  if (shouldSyncMode && visible && mode !== 'manual' && mode !== 'duration') {
     if (card.durationUnknown) {
       setMode('error-no-duration');
     } else if (isRecommendationLoading) {
@@ -92,14 +100,7 @@ export function ConvertToPinBottomSheet({
     } else {
       setMode(candidates.length > 0 ? 'recommend' : 'error-7day');
     }
-  }, [
-    card.durationUnknown,
-    candidates.length,
-    isRecommendationLoading,
-    mode,
-    recommendationErrorMode,
-    visible,
-  ]);
+  }
 
   const handleAccept = useCallback(() => {
     if (mode === 'manual') {

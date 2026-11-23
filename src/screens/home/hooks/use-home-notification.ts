@@ -1,7 +1,8 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useUpdateAlarmSettingsMutation } from '@/domains/member/api/mutations';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 import { t } from '@/lib/i18n';
 
 import type { AlarmSettings } from '@/domains/member/model';
@@ -11,9 +12,8 @@ export function useHomeNotification() {
   const [isVisible, setIsVisible] = useState(() => params.onboardingNotification === '1');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const mutation = useUpdateAlarmSettingsMutation();
-  useEffect(() => {
-    if (params.onboardingNotification === '1') setIsVisible(true);
-  }, [params.onboardingNotification]);
+  const isNotificationParamChanged = useDepsChanged([params.onboardingNotification]);
+  if (isNotificationParamChanged && params.onboardingNotification === '1') setIsVisible(true);
   const close = useCallback(() => {
     setIsVisible(false);
     setErrorMessage(null);

@@ -1,12 +1,13 @@
 /** 에너지(Body/Mind) 측정 = 컨디션 기록 추가·수정 화면의 상태와 저장 로직입니다. */
 import { format, parse } from 'date-fns';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { getConditionSubmissionErrorMessage } from '@/domains/condition/api/client';
 import { useSaveConditionRecordMutation } from '@/domains/condition/api/mutations';
 import { useConditionRecordQuery } from '@/domains/condition/api/queries';
 import { normalizedToScore, scoreToNormalized } from '@/domains/condition/energy';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 import { isSleepConditionOverlapError } from '@/lib/api/error';
 
 const DATE_ID = 'yyyy-MM-dd';
@@ -26,7 +27,7 @@ export function useEnergyMeasureScreen() {
   const conditionId = params.id != null ? Number(params.id) : null;
   const isEditMode = conditionId != null && !Number.isNaN(conditionId);
 
-  const now = useMemo(() => new Date(), []);
+  const [now] = useState(() => new Date());
   const [bodyScore, setBodyScore] = useState(3);
   const [mindScore, setMindScore] = useState(3);
   // 피그마의 신규 입력 화면은 중앙값(Body/Mind 3점)을 기본 선택 상태로 보여줍니다.
@@ -51,9 +52,9 @@ export function useEnergyMeasureScreen() {
   });
 
   const loadedRecord = recordQuery.data;
-  useEffect(() => {
-    if (!isEditMode || loadedRecord == null) return;
-
+  // 수정 모드에서 기록을 불러오면 입력값을 기록으로 채웁니다.
+  const isLoadedRecordChanged = useDepsChanged([isEditMode, loadedRecord]);
+  if (isLoadedRecordChanged && isEditMode && loadedRecord != null) {
     setBodyScore(loadedRecord.bodyScore);
     setMindScore(loadedRecord.mindScore);
     setHasValue(true);
@@ -62,7 +63,7 @@ export function useEnergyMeasureScreen() {
       if (datePart) setDateId(datePart);
       if (timePart) setTime(timePart.slice(0, 5));
     }
-  }, [isEditMode, loadedRecord]);
+  }
 
   const value = hasValue
     ? { x: scoreToNormalized(mindScore), y: scoreToNormalized(bodyScore) }

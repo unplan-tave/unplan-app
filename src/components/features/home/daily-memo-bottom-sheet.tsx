@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { BottomSheet } from '@/components/ui/BottomSheet';
@@ -6,6 +6,7 @@ import { Icon } from '@/components/ui/Icon';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
 import { DAILY_MEMO_MAX_COUNT, DAILY_MEMO_MAX_LENGTH } from '@/domains/daily-memo/model';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 import { t } from '@/lib/i18n';
 
 import type { DailyMemo } from '@/domains/daily-memo/model';
@@ -46,12 +47,12 @@ export function DailyMemoBottomSheet({
   const canAdd = !isAtLimit && !isCreating;
   const canSubmit = normalizedContent.length > 0 && !isAtLimit && !isCreating;
 
-  useEffect(() => {
-    if (!visible) {
-      setContent('');
-      setIsComposing(false);
-    }
-  }, [visible]);
+  // sheet가 닫히면 작성 중이던 내용을 비웁니다.
+  const isVisibleChanged = useDepsChanged([visible]);
+  if (isVisibleChanged && !visible) {
+    setContent('');
+    setIsComposing(false);
+  }
 
   const handleStartComposing = () => {
     if (!canAdd) {

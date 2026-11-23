@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import {
   InputAccessoryView,
   Keyboard,
@@ -17,6 +17,7 @@ import { AppBackground } from '@/components/ui/AppBackground';
 import { Header, HeaderCancel } from '@/components/ui/Header';
 import { Typography } from '@/components/ui/Typography';
 import { colors, radius, spacing, typography } from '@/constants/theme';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 import { t } from '@/lib/i18n';
 
 import { useSleepMeasureScreen } from './hooks/use-sleep-measure-screen';
@@ -233,13 +234,13 @@ const TwoDigitTimeInput = forwardRef<
   const hoursInputRef = useRef<TextInput>(null);
   const minutesInputRef = useRef<TextInput>(null);
 
-  useEffect(() => {
-    if (value == null) return;
-
+  // 바깥 value가 바뀌면 입력칸을 value로 맞춥니다.
+  const isValueChanged = useDepsChanged([value]);
+  if (isValueChanged && value != null) {
     const next = timeParts(value);
     setHours(next.hours);
     setMinutes(next.minutes);
-  }, [value]);
+  }
 
   useImperativeHandle(ref, () => ({
     focusHours: () => hoursInputRef.current?.focus(),
@@ -329,13 +330,13 @@ function SleepDurationInput({
   const [minutes, setMinutes] = useState(initial.minutes);
   const minutesInputRef = useRef<TextInput>(null);
 
-  useEffect(() => {
-    if (durationMinutes == null) return;
-
+  // 바깥 durationMinutes가 바뀌면 입력칸을 값으로 맞춥니다.
+  const isDurationChanged = useDepsChanged([durationMinutes]);
+  if (isDurationChanged && durationMinutes != null) {
     const next = durationParts(durationMinutes);
     setHours(next.hours);
     setMinutes(next.minutes);
-  }, [durationMinutes]);
+  }
 
   const commit = (nextHours: string, nextMinutes: string) => {
     if (nextHours.length !== 2 || nextMinutes.length !== 2 || Number(nextMinutes) > 59) {

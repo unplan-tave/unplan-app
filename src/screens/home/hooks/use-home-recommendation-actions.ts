@@ -6,6 +6,7 @@ import {
   useAcceptRecommendationMutation,
   usePassRecommendationMutation,
 } from '@/domains/ai-recommendation/api/mutations';
+import { useDepsChanged } from '@/hooks/use-deps-changed';
 import { t } from '@/lib/i18n';
 
 import type { ScheduleRecommendation } from '@/domains/ai-recommendation/model';
@@ -26,12 +27,17 @@ export function useHomeRecommendationActions({
   const acceptRecommendationMutation = useAcceptRecommendationMutation();
   const passRecommendationMutation = usePassRecommendationMutation();
 
+  // openAddSheet=1로 들어오면 추가 sheet를 열고, 다시 열리지 않게 param을 지웁니다.
+  const isOpenAddSheetParamChanged = useDepsChanged([params.openAddSheet]);
+  if (isOpenAddSheetParamChanged && params.openAddSheet === '1') {
+    setIsAddSheetVisible(true);
+  }
+
   useEffect(() => {
     if (params.openAddSheet !== '1') {
       return;
     }
 
-    setIsAddSheetVisible(true);
     router.setParams({ openAddSheet: undefined });
   }, [params.openAddSheet]);
 

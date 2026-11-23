@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { PanResponder, StyleSheet, View } from 'react-native';
 import Svg, { Defs, Path, RadialGradient, Stop } from 'react-native-svg';
 
@@ -243,42 +243,45 @@ export function SleepConditionCircle({
     ],
   );
 
+  // PanResponder는 한 번만 만들고, 드래그 중에는 최신 lineValues/updateLine을 ref로 읽습니다.
   const dragStateRef = useRef({ lineValues, updateLine });
-  dragStateRef.current = { lineValues, updateLine };
+  useLayoutEffect(() => {
+    dragStateRef.current = { lineValues, updateLine };
+  });
 
-  const panResponder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: () => true,
-        onPanResponderGrant: (event) => {
-          const { locationX, locationY } = event.nativeEvent;
-          const minutes = getMinutesFromLocation(locationX, locationY);
-          const { lineValues: currentLineValues, updateLine: currentUpdateLine } =
-            dragStateRef.current;
-          const nearestLine = findNearestLine(minutes, currentLineValues);
+  // PanResponder 콜백은 터치 이벤트에서만 ref를 읽고 render 중에는 호출되지 않습니다.
+  // oxlint-disable-next-line react/refs
+  const [panResponder] = useState(() =>
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (event) => {
+        const { locationX, locationY } = event.nativeEvent;
+        const minutes = getMinutesFromLocation(locationX, locationY);
+        const { lineValues: currentLineValues, updateLine: currentUpdateLine } =
+          dragStateRef.current;
+        const nearestLine = findNearestLine(minutes, currentLineValues);
 
-          activeLineRef.current = nearestLine;
-          currentUpdateLine(nearestLine, minutes);
-        },
-        onPanResponderMove: (event) => {
-          const activeLine = activeLineRef.current;
+        activeLineRef.current = nearestLine;
+        currentUpdateLine(nearestLine, minutes);
+      },
+      onPanResponderMove: (event) => {
+        const activeLine = activeLineRef.current;
 
-          if (!activeLine) {
-            return;
-          }
+        if (!activeLine) {
+          return;
+        }
 
-          const { locationX, locationY } = event.nativeEvent;
-          dragStateRef.current.updateLine(activeLine, getMinutesFromLocation(locationX, locationY));
-        },
-        onPanResponderRelease: () => {
-          activeLineRef.current = null;
-        },
-        onPanResponderTerminate: () => {
-          activeLineRef.current = null;
-        },
-      }),
-    [],
+        const { locationX, locationY } = event.nativeEvent;
+        dragStateRef.current.updateLine(activeLine, getMinutesFromLocation(locationX, locationY));
+      },
+      onPanResponderRelease: () => {
+        activeLineRef.current = null;
+      },
+      onPanResponderTerminate: () => {
+        activeLineRef.current = null;
+      },
+    }),
   );
 
   const targetSleepCondition = classifySleepMinutes(targetSleepMinutes, thresholds);
