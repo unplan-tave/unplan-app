@@ -1,6 +1,6 @@
 name: Claude Code Review
 
-# 리뷰 설정: REVIEW.md (base 브랜치의 것을 씁니다). 사람용 기준: docs/conventions/code-review.md
+# 리뷰 설정: REVIEW.md (PR이 아니라 base 또는 기본 브랜치의 것을 씁니다). 사람용 기준: docs/conventions/code-review.md
 on:
   pull_request:
     types: [opened, reopened, ready_for_review]
@@ -32,23 +32,31 @@ jobs:
           ref: refs/pull/${{ env.PR_NUMBER }}/head
           fetch-depth: 1
 
-      # PR이 리뷰 기준을 바꿔 리뷰를 피하지 못하도록 base 브랜치의 REVIEW.md를 씁니다.
-      # base에 아직 없을 때(404, REVIEW.md를 처음 추가하는 PR)만 PR의 것을 씁니다.
-      # 그 밖의 실패(네트워크, rate limit)는 PR의 기준으로 넘어가지 않고 실패시킵니다.
-      - name: Load review rules from base branch
+      # PR이 리뷰 기준을 바꿔 리뷰를 피하지 못하도록 PR 밖의 REVIEW.md를 씁니다.
+      # 순서: base 브랜치 → 기본 브랜치(다른 PR 위에 쌓인 PR) → PR의 것(REVIEW.md를 처음 추가하는 PR).
+      # 404가 아닌 실패(네트워크, rate limit)는 다음 후보로 넘어가지 않고 실패시킵니다.
+      - name: Load review rules
         env:
           GH_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           mkdir -p .claude-review
           base=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json baseRefName -q .baseRefName)
-          if gh api "repos/$GITHUB_REPOSITORY/contents/REVIEW.md?ref=$base" \
-            -H "Accept: application/vnd.github.raw" > .claude-review/REVIEW.md 2> .claude-review/error.log; then
-            echo "REVIEW.md: $base 브랜치"
-          elif grep -q "HTTP 404" .claude-review/error.log; then
+          for ref in "$base" "$DEFAULT_BRANCH"; do
+            if gh api "repos/$GITHUB_REPOSITORY/contents/REVIEW.md?ref=$ref" \
+              -H "Accept: application/vnd.github.raw" > .claude-review/REVIEW.md 2> .claude-review/error.log; then
+              echo "REVIEW.md: $ref 브랜치"
+              exit 0
+            elif ! grep -q "HTTP 404" .claude-review/error.log; then
+              cat .claude-review/error.log >&2
+              exit 1
+            fi
+          done
+          if [ -f REVIEW.md ]; then
             cp REVIEW.md .claude-review/REVIEW.md
-            echo "REVIEW.md: base에 없어 PR의 것을 사용"
+            echo "REVIEW.md: base와 기본 브랜치에 없어 PR의 것을 사용"
           else
-            cat .claude-review/error.log >&2
+            echo "REVIEW.md를 찾지 못했습니다." >&2
             exit 1
           fi
 
