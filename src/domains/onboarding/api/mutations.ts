@@ -10,7 +10,7 @@ import {
   submitSleepConditionSettings,
   submitTransportSettings,
 } from './client';
-import { onboardingSettingsQueryKeys } from './query-keys';
+import { onboardingQueryKeys } from './query-keys';
 
 import type {
   ActivityPatternSettings,
@@ -31,7 +31,7 @@ export function useUpdateRecoveryMethodsSettingsMutation(
 ) {
   return useOptimisticQueryMutation({
     mutationFn: submitRecoveryMethodsSettings,
-    queryKey: onboardingSettingsQueryKeys.recoveryMethods(),
+    queryKey: onboardingQueryKeys.recoveryMethods(),
     ...options,
   });
 }
@@ -41,7 +41,7 @@ export function useUpdateSleepConditionSettingsMutation(
 ) {
   return useOptimisticQueryMutation({
     mutationFn: submitSleepConditionSettings,
-    queryKey: onboardingSettingsQueryKeys.sleepCondition(),
+    queryKey: onboardingQueryKeys.sleepCondition(),
     ...options,
   });
 }
@@ -51,7 +51,7 @@ export function useUpdateActivityPatternSettingsMutation(
 ) {
   return useOptimisticQueryMutation({
     mutationFn: submitActivityPatternSettings,
-    queryKey: onboardingSettingsQueryKeys.activityPattern(),
+    queryKey: onboardingQueryKeys.activityPattern(),
     ...options,
   });
 }
@@ -61,7 +61,7 @@ export function useUpdateTransportSettingsMutation(
 ) {
   return useOptimisticQueryMutation({
     mutationFn: submitTransportSettings,
-    queryKey: onboardingSettingsQueryKeys.transport(),
+    queryKey: onboardingQueryKeys.transport(),
     ...options,
   });
 }
