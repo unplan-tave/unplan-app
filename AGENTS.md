@@ -12,7 +12,8 @@ Expo SDK 56 기준으로 코드를 작성합니다. 공식 문서: https://docs.
 | [docs/architecture/api-boundary.md](./docs/architecture/api-boundary.md) | Orval/API wrapper/ViewModel 경계 |
 | [docs/frontend/component-decomposition.md](./docs/frontend/component-decomposition.md) | screen/component 분리 기준 |
 | [docs/roadmap/development-checklist.md](./docs/roadmap/development-checklist.md) | 병행 개발 원칙 + PR 분리 계획 |
-| [docs/conventions/code-review.md](./docs/conventions/code-review.md) | 리뷰 기준 (Claude Code 리뷰 공용) |
+| [docs/conventions/code-review.md](./docs/conventions/code-review.md) | 리뷰 기준 (사람 리뷰어용) |
+| [REVIEW.md](./REVIEW.md) | Claude Code 리뷰 봇 설정 |
 
 린트·포맷 규칙은 `eslint.config.js`, `.prettierrc`가 우선입니다.
 
@@ -94,18 +95,4 @@ components/domain -> components/features 금지
 
 ## Code Review Rules
 
-Claude Code 리뷰(`.github/workflows/claude-code-review.yml`)와 사람 리뷰어가 따르는 기준입니다. 자세한 내용은 [docs/conventions/code-review.md](./docs/conventions/code-review.md)를 봅니다.
-
-- 리뷰 코멘트는 한국어로 씁니다. 코드 식별자, 에러 메시지, 라이브러리 이름은 원문을 유지합니다.
-- 다음을 우선 짚습니다.
-  - **동작 회귀**: 로그아웃·계정 전환 후 이전 계정의 query cache·store·MMKV 값이 남는 경우, 일정 생성·수정·삭제 뒤 카드 목록·홈 타임라인·AI 추천 query가 invalidate되지 않는 경우, 낙관적 업데이트 실패 시 롤백이 없는 경우, 에러·빈 응답에서 화면이 깨지는 경우
-  - **아키텍처 경계**: `src/app`에 화면 로직이 들어오는 경우, 화면·컴포넌트가 Orval 생성 DTO를 직접 쓰는 경우, 서로 다른 feature가 직접 의존하는 경우
-  - **보안**: 토큰이 SecureStore 밖(MMKV, 로그)에 남는 경우, `console.error`에 axios 에러 객체를 통째로 넘겨 Authorization 헤더가 로그에 남는 경우, `EXPO_PUBLIC_*`에 비밀 값이 들어간 경우
-  - **날짜·시간**: UTC와 로컬 시간이 섞여 KST 자정 근처에서 날짜가 밀리는 경우
-  - **UI 영향**: `src/components/ui` primitive의 base 동작 변경이 기존 화면에 영향을 주는 경우, 고정 px 폭 때문에 좁은 기기에서 잘리는 경우
-  - **배포 영향**: `app.config.*`, `app.json`, `eas.json`, `plugins/**`, 네이티브 의존성 변경이 `.github/workflows/ci.yml`의 `detect-preview-changes` 필터에 걸리지 않아 OTA로만 배포되는 경우, 워크플로에서 실패가 성공으로 처리되는 경우
-- 다음은 지적하지 않습니다.
-  - `tsc`, lint, Prettier가 CI와 pre-push에서 잡는 타입·린트·포맷 문제
-  - Orval 생성물(`src/lib/api/endpoints`, `src/lib/api/model`)과 `package-lock.json`
-  - 이름이나 줄바꿈 같은 취향 문제, 테스트 누락
-- 코드만으로 확정할 수 없는 설계 의도(서버 API 계약, Figma 수치, 타임존 정책)는 버그로 단정하지 말고 질문으로 남깁니다.
+리뷰 설정은 저장소 루트의 [REVIEW.md](./REVIEW.md)에 있습니다. Claude Code 리뷰 봇(`.github/workflows/claude-code-review.yml`)이 이 파일을 읽고, 사람 리뷰어용 전체 기준은 [docs/conventions/code-review.md](./docs/conventions/code-review.md)에 있습니다. 리뷰 기준을 바꿀 때는 두 파일을 함께 고칩니다.
