@@ -2,7 +2,7 @@
 
 [← 컨벤션](./README.md)
 
-사람 리뷰어와 Codex 코드 리뷰가 함께 쓰는 리뷰 기준입니다. Codex는 `AGENTS.md`의 `## Code Review Rules` 섹션을 읽습니다. 그 섹션은 이 문서의 요약이므로, 기준을 바꾸면 두 곳을 함께 고칩니다.
+사람 리뷰어와 Claude Code 리뷰가 함께 쓰는 리뷰 기준입니다. Claude Code 리뷰는 `CLAUDE.md`가 불러오는 `AGENTS.md`의 `## Code Review Rules` 섹션을 읽습니다. 그 섹션은 이 문서의 요약이므로, 기준을 바꾸면 두 곳을 함께 고칩니다.
 
 ## 원칙
 
@@ -127,20 +127,16 @@
 - `app.config.*`, `app.json`, `eas.json`, `package.json`의 네이티브 의존성, `plugins/**` 변경이 `ci.yml`의 `detect-preview-changes` 필터에 걸려 네이티브 빌드로 가는지
 - 워크플로에서 실패가 성공으로 처리되지 않는지(`continue-on-error`, `always()`, step outcome 판정, `|| true`)
 
-## Codex 리뷰
+## Claude Code 리뷰
 
-구현은 Claude Code로 하고, 리뷰는 다른 모델인 Codex로 받습니다. 같은 모델이 놓치는 부분을 다른 모델로 보완하려는 목적입니다.
+`.github/workflows/claude-code-review.yml`이 [Claude Code GitHub Action](https://code.claude.com/docs/ko/github-actions)과 공식 `code-review` 플러그인으로 PR을 리뷰합니다.
 
-- 저장소 연결: ChatGPT의 Codex 설정에서 GitHub를 연결하고, 저장소 접근은 `unplan-tave/unplan-app`만 선택합니다.
-- 자동 리뷰: Codex 설정의 Code review에서 Automatic review를 켭니다.
-- 수동 요청: PR 댓글에 `@codex review`를 남깁니다.
-- 리뷰 기준: `AGENTS.md`의 `## Code Review Rules`
+- 자동 리뷰: draft가 아닌 PR을 열거나, 다시 열거나, ready for review로 바꾸면 한 번 돕니다. 커밋을 푸시할 때마다 돌지는 않습니다.
+- 다시 리뷰받기: PR 댓글 맨 앞에 `@claude review`를 남깁니다. 저장소 쓰기 권한이 있는 사람만 요청할 수 있습니다.
+- 인증: 저장소 secret `CLAUDE_CODE_OAUTH_TOKEN`(Claude 구독 토큰, `claude setup-token`으로 발급)을 씁니다. 리뷰 사용량은 토큰을 발급한 계정의 구독 한도에서 빠집니다.
+- 리뷰 기준: `CLAUDE.md`가 불러오는 `AGENTS.md`의 `## Code Review Rules`
+- 코멘트 작성자: `github-actions[bot]`
 
-Codex는 P0·P1 우선순위의 문제만 인라인으로 지적합니다. 이 문서의 섹션과는 아래처럼 맞춰 읽습니다.
+리뷰는 버그와 규칙 위반만 인라인으로 지적하므로, 이 문서의 `Must Fix`에 해당합니다. `Questions`, `Recommendations`, `Good Points`는 사람 리뷰어가 씁니다.
 
-| Codex 우선순위 | 이 문서의 섹션 |
-|----------------|----------------|
-| P0 | `Must Fix` (`critical`) |
-| P1 | `Must Fix` (`high`) |
-
-`medium` 이하와 `Recommendations`, `Good Points`는 사람 리뷰어가 씁니다.
+> Claude의 관리형 [Code Review](https://code.claude.com/docs/ko/code-review)는 Team·Enterprise 플랜에서만 쓸 수 있어 위 GitHub Action 방식을 씁니다. 나중에 플랜을 바꿔 관리형으로 옮기면 기준을 저장소 루트의 `REVIEW.md`로 옮기고 이 워크플로를 지웁니다.
