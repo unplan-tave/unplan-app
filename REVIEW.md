@@ -2,7 +2,7 @@
 
 Claude Code 리뷰 봇(`.github/workflows/claude-code-review.yml`)이 읽는 리뷰 설정입니다. 사람 리뷰어용 전체 기준과 중점 확인 항목은 [docs/conventions/code-review.md](./docs/conventions/code-review.md)에 있습니다. 봇은 이 파일을 먼저 따르고, 세부 확인 항목은 그 문서를 읽어 적용합니다.
 
-봇은 PR이 아니라 **base 브랜치에 있는 이 파일**을 기준으로 리뷰합니다. 이 파일을 바꾼 PR은 머지된 뒤부터 반영됩니다.
+봇은 PR이 아니라 **base 브랜치에 있는 이 파일**을 기준으로 리뷰합니다. base에 없으면(다른 PR 위에 쌓인 PR) 기본 브랜치의 것을 씁니다. 이 파일을 바꾼 PR은 머지된 뒤부터 반영됩니다.
 
 ## 언어와 톤
 

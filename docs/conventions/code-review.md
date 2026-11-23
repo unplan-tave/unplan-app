@@ -134,7 +134,7 @@
 - 자동 리뷰: draft가 아닌 PR을 열거나, 다시 열거나, ready for review로 바꾸면 한 번 돕니다. 커밋을 푸시할 때마다 돌지는 않습니다.
 - 다시 리뷰받기: PR 댓글 맨 앞에 `@claude review`를 남깁니다. draft PR도 이 방법으로 리뷰받을 수 있습니다. 저장소 쓰기 권한이 있는 사람만 요청할 수 있습니다.
 - 결과: `critical`·`high`·`medium` 문제는 해당 줄에 인라인 코멘트로, 전체 결과는 이 문서의 코멘트 구성(Summary / Must Fix / Questions / Recommendations / Good Points)을 따른 요약 댓글로 남깁니다.
-- 기준 파일: PR이 아니라 base 브랜치의 `REVIEW.md`를 씁니다. `REVIEW.md`를 바꾼 PR은 머지된 뒤부터 반영됩니다.
+- 기준 파일: PR이 아니라 base 브랜치의 `REVIEW.md`를 씁니다. base에 없으면(다른 PR 위에 쌓인 PR) 기본 브랜치의 것을 씁니다. `REVIEW.md`를 바꾼 PR은 머지된 뒤부터 반영됩니다.
 - 인증: 저장소 secret `CLAUDE_CODE_OAUTH_TOKEN`(Claude 구독 토큰, `claude setup-token`으로 발급)을 씁니다. 리뷰 사용량은 토큰을 발급한 계정의 구독 한도에서 빠집니다.
 - 코멘트 작성자: `github-actions[bot]`
 - 봇 리뷰는 사람 리뷰를 대신하지 않습니다. 승인·머지 판단은 사람이 합니다.
