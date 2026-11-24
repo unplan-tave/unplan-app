@@ -75,12 +75,15 @@ jobs:
                그 안에서 가리키는 `docs/conventions/code-review.md`도 읽는다.
             2. `gh pr view ${{ env.PR_NUMBER }} --json title,body,baseRefName,headRefOid,files`와
                `gh pr diff ${{ env.PR_NUMBER }}`로 PR 의도와 변경 내용을 파악한다.
-            3. 작업 트리는 PR head 상태다. 문제를 지적하기 전에 Read·Grep·Glob으로 관련 파일 전체와 호출부를 확인한다.
-               diff만 보고 단정하지 않는다. 확인하지 못한 내용은 Questions로 보낸다.
-            4. REVIEW.md의 심각도 기준에서 인라인 대상인 문제는 해당 줄에
-               `mcp__github_inline_comment__create_inline_comment`로 단다(`confirmed: true`).
+            3. 작업 트리는 PR head 상태다. 바뀐 소스 파일은 생성물·lockfile을 빼고 모두 Read로 읽는다.
+               문제를 지적하기 전에 Read·Grep·Glob으로 관련 파일 전체와 호출부를 확인한다.
+               diff만 보고 단정하지 않는다. 확인하지 못한 내용은 Questions로 보내고, 읽지 못한 파일이 있으면 Summary에 밝힌다.
+            4. 찾은 문제마다 REVIEW.md의 "위험도"에 따라 영향과 발생 조건을 정하고, 표로 P0~P3 단계를 매긴다.
+               근거를 코드로 확인하지 못했으면 P0·P1을 붙이지 않는다.
+            5. P0·P1·P2 문제는 해당 줄에 `mcp__github_inline_comment__create_inline_comment`로 단다(`confirmed: true`).
                형식은 REVIEW.md의 "인라인 코멘트 형식"을 따른다. 같은 문제는 한 번만 단다.
-            5. 마지막으로 REVIEW.md의 "요약 댓글 형식"대로 요약 댓글을 하나 남긴다.
+            6. 마지막으로 REVIEW.md의 "머지 판단"과 "요약 댓글 형식"대로 요약 댓글을 하나 남긴다.
+               맨 위의 머지 판단, 단계별 개수, 마지막 줄 `<!-- claude-review-risk: ... -->`의 개수가 서로 맞아야 한다.
                `gh pr comment ${{ env.PR_NUMBER }} --body-file - <<'EOF'` 형태의 heredoc으로 본문을 넘긴다.
 
             모든 코멘트는 한국어로 쓴다. 코드를 실행하거나 파일을 수정하지 않는다.
